@@ -30,6 +30,10 @@ public static class LagnaFunctionalNature
             .OrderBy(h => h)
             .ToArray();
 
+        if (ruledHouses.Length == 0)
+            throw new InvalidOperationException(
+                $"No sign rulership found for {planet} — ClassicalDignity.GetSignLord contract drift?");
+
         var isMaraka = ruledHouses.Contains(2) || ruledHouses.Contains(7);
         var hasKendra  = ruledHouses.Intersect(Kendras).Any();
         var hasTrikona = ruledHouses.Intersect(Trikonas).Any();

@@ -92,12 +92,15 @@ var chartGenerationService = new ChartGenerationService(
     new ChartAspectsRepository(connectionFactory));
 
 // --- One-off backfill mode: `dotnet run -- backfill-analytics` ---
-// Recomputes KeyDetails/HouseLords/Conjunctions/Aspects for every stored ChartResult that doesn't
-// have any yet (e.g. D9 rows for people saved before D9 got the same analytical tables as D1,
-// 2026-08-24). Recomputes from Swiss Ephemeris (via the same calculator that originally produced the
-// chart) rather than round-tripping the stored ResultJson — old D9 rows predate NirayanaLongitudeDegrees
-// being in their JSON at all, and recomputing is deterministic (same birth data -> same signs/houses)
-// so it's no less correct. Safe to re-run (skips ChartResults that already have KeyDetails rows).
+// Unconditionally re-derives all four analytics tables (KeyDetails/HouseLords/Conjunctions/Aspects)
+// for every calculable chart type of every saved person — delete-then-reinsert, with no "skip
+// ChartResults that already have rows" guard (that guard was removed once the write path was
+// single-sourced through ChartGenerationService.RecomputeAnalytics). Recomputes from Swiss Ephemeris
+// (via the same calculator that originally produced the chart) rather than round-tripping the stored
+// ResultJson; that is deterministic (same birth data -> same signs/houses) so it's no less correct.
+// NOTE: this mode is now equivalent to `recompute-keydetails` — both just call
+// ChartGenerationService.RecomputeAnalytics(person, chartTypeFilter: null). Kept as two names
+// pending a decision to merge them (out of scope here).
 if (args.Length > 0 && args[0] == "backfill-analytics")
 {
     Console.WriteLine("Recomputing analytics (KeyDetails/HouseLords/Conjunctions/Aspects) for every saved person...");
@@ -214,6 +217,50 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
+// --- One-off check: `dotnet run -- compare-functional-nature` ---
+// Records where the computed heuristic (LagnaFunctionalNature.For) diverges from the seeded book
+// table (tbl_Dim_LagnaFunctionalNature, migration 031) — Plan 2 renders both side by side, so the
+// divergence set must be documented. Walks all 84 cells (Lagna 1-12 x the 7 classical planets),
+// prints one row per mismatch (and one per table row the source never classified), then a count.
+if (args.Length > 0 && args[0] == "compare-functional-nature")
+{
+    var lfnRepo = new LagnaFunctionalNatureRepository(connectionFactory);
+    var classicalPlanets = new[]
+    {
+        PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury,
+        PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn
+    };
+
+    var divergences = 0;
+    var notClassified = 0;
+    Console.WriteLine($"{"Lagna",-12} {"Planet",-9} {"heuristic",-11} table");
+    Console.WriteLine(new string('-', 46));
+    for (var signIndex = 0; signIndex < 12; signIndex++)
+    {
+        var sign = (ZodiacName)signIndex;
+        var rows = lfnRepo.GetForLagna((byte)(signIndex + 1));
+        foreach (var planet in classicalPlanets)
+        {
+            var heuristic = LagnaFunctionalNature.For(sign, planet).Nature.ToString();
+            var tableNature = rows.FirstOrDefault(r => r.PlanetId == (int)planet + 1)?.FunctionalNature;
+
+            if (tableNature is null)
+            {
+                Console.WriteLine($"{sign,-12} {planet,-9} {heuristic,-11} table: not classified");
+                notClassified++;
+            }
+            else if (heuristic != tableNature)
+            {
+                Console.WriteLine($"{sign,-12} {planet,-9} {heuristic,-11} {tableNature}");
+                divergences++;
+            }
+        }
+    }
+    Console.WriteLine(new string('-', 46));
+    Console.WriteLine($"{divergences} cell(s) diverge; {notClassified} not classified in the table.");
+    return;
+}
+
 // --- One-off backfill mode: `dotnet run -- recompute-keydetails` ---
 // Re-derives tbl_Chart_KeyDetails rows for every stored ChartResult that has a registered
 // IChartCalculator (D1, D2, D6, D9, D10, D11 — everything except VimshottariDasha), even ones that
@@ -225,9 +272,10 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
 if (args.Length > 0 && args[0] == "recompute-keydetails")
 {
     Console.WriteLine("Re-deriving analytics for every saved person.");
-    Console.WriteLine("NOTE: as of Task 7 this recomputes ALL 4 analytics tables (KeyDetails/HouseLords/Conjunctions/");
-    Console.WriteLine("Aspects), not KeyDetails only — an intentional, idempotent no-op widening now that the write");
-    Console.WriteLine("path is single-sourced through ChartGenerationService.RecomputeAnalytics.");
+    Console.WriteLine("NOTE: as of Task 7 this recomputes ALL 4 analytics tables");
+    Console.WriteLine("(KeyDetails / HouseLords / Conjunctions / Aspects), not KeyDetails only —");
+    Console.WriteLine("an intentional, idempotent no-op widening now that the write path is");
+    Console.WriteLine("single-sourced through ChartGenerationService.RecomputeAnalytics.");
     foreach (var person in birthDetailsRepo.GetAll())
     {
         var personReport = chartGenerationService.RecomputeAnalytics(person, chartTypeFilter: null);
@@ -524,9 +572,21 @@ var report = chartGenerationService.GenerateAll(birthDetails);
 Console.WriteLine($"Stored: [{string.Join(", ", report.ChartTypesWritten)}]{(report.DashaWritten ? " + Vimshottari Dasha" : "")}\n");
 
 // --- Print summary (read back from the store) ---
-foreach (var result in chartResultsRepo.GetByBirthDetailId(birthDetails.Id))
+// Skip the VimshottariDasha ChartResult: its ResultJson is the full 3-level tree serialised with
+// WriteIndented = true (thousands of lines). It gets a readable summary below instead.
+foreach (var result in chartResultsRepo.GetByBirthDetailId(birthDetails.Id)
+             .Where(r => r.ChartType != VimshottariDashaCalculator.ChartType))
 {
     Console.WriteLine($"--- {result.ChartType} ({result.Ayanamsha}, {result.HouseSystem}) ---");
     Console.WriteLine(result.ResultJson);
+    Console.WriteLine();
+}
+
+// --- Readable Vimshottari Dasha summary (mirrors `show-dasha` / `compute-dasha`) ---
+var dashaTree = new DashaPeriodsRepository(connectionFactory).GetTreeByBirthDetailId(birthDetails.Id);
+if (dashaTree.Count > 0)
+{
+    Console.WriteLine($"--- Vimshottari Dasha for {birthDetails.Name} ---");
+    PrintDashaTree(dashaTree);
     Console.WriteLine();
 }

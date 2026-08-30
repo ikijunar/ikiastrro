@@ -1,4 +1,4 @@
-namespace VedicHoroGen.Core.LifeArea;
+namespace VedicHoroGen.Core.LifeAreas;
 
 /// <summary>The four life-area groupings the Web workspace is organised around.</summary>
 public enum LifeArea { PersonalityHealth, Relationships, Career, Money }

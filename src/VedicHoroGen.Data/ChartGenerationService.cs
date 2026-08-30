@@ -1,4 +1,5 @@
 using VedicHoroGen.Core.Calculators;
+using VedicHoroGen.Core.Dasha;
 using VedicHoroGen.Core.Models;
 
 namespace VedicHoroGen.Data;
@@ -75,7 +76,7 @@ public class ChartGenerationService
         }
 
         var dashaWritten = false;
-        if (!existing.Contains("VimshottariDasha")) { _dashaService.ComputeAndStore(birthDetails); dashaWritten = true; }
+        if (!existing.Contains(VimshottariDashaCalculator.ChartType)) { _dashaService.ComputeAndStore(birthDetails); dashaWritten = true; }
 
         var skipped = _orchestrator.Calculators.Select(c => c.ChartType).Where(existing.Contains).ToList();
         return new GenerationReport(written, dashaWritten, skipped);
