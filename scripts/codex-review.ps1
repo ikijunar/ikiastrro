@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Ask OpenAI Codex CLI (ChatGPT) for a read-only advisory review of vedic_horo_gen.
+    Ask OpenAI Codex CLI (ChatGPT) for a read-only advisory review of ikiastrro.
 
 .DESCRIPTION
     Claude Code stays the build engine. This script bundles the repo's source,
     SQL and design docs into one prompt and pipes it to `codex exec`. Codex never
     touches the filesystem - it only reads the piped text and replies.
 
-    Output is saved to  D:\@ChatGPT\vedic_horo_gen\  (the global default ChatGPT
+    Output is saved to  D:\@ChatGPT\ikiastrro\  (the global default ChatGPT
     folder, per ~/.claude/CLAUDE.md). The filename is STABLE and overwritten on
     each run - no timestamp - unless -Versioned is passed.
 
@@ -32,7 +32,7 @@
 
 .PARAMETER OutName
     Override the output file name (with or without .md). Still saved under
-    D:\@ChatGPT\vedic_horo_gen\.
+    D:\@ChatGPT\ikiastrro\.
 
 .PARAMETER Versioned
     Append -yyyy-MM-dd-HHmm to the file name instead of overwriting. Use when you
@@ -65,7 +65,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
 # Global default ChatGPT folder (see ~/.claude/CLAUDE.md), per-project subfolder.
-$outDir = "D:\@ChatGPT\vedic_horo_gen"
+$outDir = "D:\@ChatGPT\ikiastrro"
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Force | Out-Null }
 
 if ($OutName) {
@@ -89,7 +89,7 @@ $files = Get-ChildItem -Path $repoRoot -Recurse -File |
     Where-Object {
         $wantExt -contains $_.Extension -and
         $_.FullName -notmatch $skip -and
-        ($_.FullName -match $pathRx -or $_.Name -in @('README.md','VedicHoroGen.slnx'))
+        ($_.FullName -match $pathRx -or $_.Name -in @('README.md','Ikiastrro.slnx'))
     } |
     Sort-Object FullName
 
@@ -118,7 +118,7 @@ $kb = [math]::Round($bundle.Length / 1KB)
 $instr = @"
 You are an external technical reviewer. Everything you need is in the <stdin>
 text below - a .NET (C#) + SQL Server Vedic astrology horoscope generator.
-Projects: VedicHoroGen.Core (calculations), .Data (persistence), .Cli, .Web.
+Projects: Ikiastrro.Core (calculations), .Data (persistence), .Cli, .Web.
 
 Do NOT run any commands or ask for files. Review from the bundle only.
 
