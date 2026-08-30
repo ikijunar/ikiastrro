@@ -9,16 +9,16 @@ migration 031 = 84 rows / 3 NULL / 6 Yogakaraka.
 
 ## Interface changes Plan 2 binds to
 
-- `VedicHoroGen.Core.Calculators.ChartViewModel` / `.PlanetRow` (renamed from `D1*`).
-- `VedicHoroGen.Core.Calculators.LagnaFunctionalNature.For(ZodiacName, PlanetName) : FunctionalNatureResult`
+- `Ikiastrro.Core.Calculators.ChartViewModel` / `.PlanetRow` (renamed from `D1*`).
+- `Ikiastrro.Core.Calculators.LagnaFunctionalNature.For(ZodiacName, PlanetName) : FunctionalNatureResult`
   (`enum FunctionalNature { Benefic, Malefic, Neutral, Yogakaraka }`; record fields
   `Nature, RuledHouses(int[]), IsMaraka(bool), KendradhipatiDosha(bool), Rationale(string)`).
   Throws `ArgumentOutOfRangeException` for Rahu/Ketu, `InvalidOperationException` if sign
   rulership can't be resolved.
-- `VedicHoroGen.Core.LifeAreas.LifeArea` (enum) + `.LifeAreaSpec` (record: `int[] Houses,
+- `Ikiastrro.Core.LifeAreas.LifeArea` (enum) + `.LifeAreaSpec` (record: `int[] Houses,
   string[] Karakas, string[] Vargas, string DefaultVarga`) + `.LifeAreaMap.Specs`.
   **Namespace is `LifeAreas` (plural)** — a `Core.*` consumer that imports both
-  `VedicHoroGen.Core` and this must use the plural or fully-qualify.
+  `Ikiastrro.Core` and this must use the plural or fully-qualify.
 - `ChartKeyDetailsRepository/ChartHouseLordsRepository/ChartConjunctionsRepository/
   ChartAspectsRepository.GetByBirthDetailId(int)` — every row for a person across all
   chart types, **ordered by `Id` (chart types interleaved)** → group by `ChartResultId`,
@@ -43,7 +43,7 @@ is a mixed-lordship planet on the Neutral boundary — the heuristic never emits
 for these, and it downgrades 5 book-`Benefic` natural malefics (Mars ×3, Mercury, Jupiter)
 to `Malefic`. **No polarity contradictions (no Benefic↔Malefic flips), no Yogakaraka flips.**
 This is expected/documented. `FunctionalNaturePanel` (spec §7.3) shows both side by side;
-`dotnet run --project src/VedicHoroGen.Cli -- compare-functional-nature` prints the full set.
+`dotnet run --project src/Ikiastrro.Cli -- compare-functional-nature` prints the full set.
 
 ## Parked findings — address in Plan 2 or note as accepted
 
@@ -73,4 +73,4 @@ No test project. Gates: `dotnet build` 0/0 · `verify-vargas` + `verify-function
 exit 0 (add UI-relevant assert modes if a pure function warrants it) · the
 `1_Ramakrishnan` reference chart as golden record · a live browser smoke test
 (machine Application Control blocks direct `.exe` launch — use `dotnet exec` on the built
-Web DLL, or `dotnet run --project src/VedicHoroGen.Web`).
+Web DLL, or `dotnet run --project src/Ikiastrro.Web`).

@@ -1,5 +1,5 @@
 -- 020_create_planet_sign_transit_events.sql
--- Point 2 of D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\vedic-reference-tables.md: sign-boundary-crossing
+-- Point 2 of D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md: sign-boundary-crossing
 -- events for slow planets (Saturn, Jupiter, Rahu -- Mars deliberately excluded, per the
 -- original scope; Ketu is derived from Rahu, never stored).
 --

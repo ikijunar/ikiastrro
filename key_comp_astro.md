@@ -9,7 +9,7 @@ computations still need to be added and in what order.
 working session; an identical copy is saved at `D:\@ClaudeSpace\Scratchpad\Rammy_Jagannatha.txt`
 (same person/data, includes all 23 divisional-chart grids D1–D144 and all six dasha listings —
 byte-for-byte the same source analysed here, not a second chart).
-**Sources:** `README.md`, `cproj_vedic_horo_gen.md`, `docs/bhava-coverage.md`,
+**Sources:** `README.md`, `ikiastrro.md`, `docs/bhava-coverage.md`,
 `docs/vedic-reference-tables.md`, `methods_prodmag.md` (Opportunity Backlog), live grep of
 `src/`.
 

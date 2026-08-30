@@ -1,0 +1,241 @@
+@page "/charts/{Id:int}"
+@using Ikiastrro.Core.Astro
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject SadeSatiRepository SadeSatiRepo
+@inject LagnaFunctionalNatureRepository LagnaFunctionalNatureRepo
+@inject BirthDetailDeletionService DeletionService
+@inject NavigationManager Nav
+
+<PageTitle>@(birthDetails?.Name ?? "Chart") — ikiastrro</PageTitle>
+
+<div class="ws-head">
+    <p class="back-link"><a href="/charts">&larr; All saved charts</a></p>
+    @if (birthDetails is not null)
+    {
+        <DeleteIconButton Title="@($"Delete {birthDetails.Name}'s chart")" OnClick="() => confirmingDelete = true" />
+    }
+</div>
+
+@if (notFound)
+{
+    <p class="muted">No saved chart found for that person.</p>
+}
+else if (birthDetails is not null && charts.TryGetValue("D1", out var d1))
+{
+    <header class="identity">
+        <h1>@birthDetails.Name</h1>
+        <div class="sub">
+            Born <strong>@birthDetails.DateOfBirth.ToString("d MMMM yyyy") @birthDetails.EffectiveTimeOfBirth.ToString("h:mm tt") (@birthDetails.UtcOffset)</strong>
+            &middot; <strong>@birthDetails.PlaceCity, @birthDetails.PlaceCountry</strong>
+            &middot; Lahiri ayanamsha &middot; Whole Sign houses
+        </div>
+    </header>
+
+    <section class="ppt-section">
+        <h2>Planetary positions &mdash; D1</h2>
+        <PlanetPositionsTable Rows="d1PlanetRows" LagnaSign="@d1.AscSign" BookRows="bookRows" />
+    </section>
+
+    <div class="cols3">
+        <aside class="side">
+            <h3>Vimshottari Dasha</h3>
+            <p class="side-hint">Select a Mahadasha to open its Antardashas, then an Antardasha for its Pratyantardashas.</p>
+            @if (dashaRoots.Count > 0)
+            {
+                <DashaTimeline Roots="dashaRoots" />
+            }
+            else
+            {
+                <p class="muted">No Dasha computed &mdash; run <code>compute-dasha @birthDetails.Name</code>.</p>
+            }
+        </aside>
+
+        <main class="mid">
+            <TabBar Tabs="TabDefs" Selected="@ActiveTab" />
+            <div class="charts">
+                @foreach (var type in ChartsForTab(ActiveTab))
+                {
+                    if (charts.TryGetValue(type, out var lc))
+                    {
+                        <div class="crow">
+                            <div class="crow-head">
+                                <span class="stat">@type@(type == "D1" ? " · static" : "")</span>
+                                <span class="crow-label">@lc.Label</span>
+                            </div>
+                            <SouthIndianGrid AscendantSign="@lc.AscSign"
+                                             MoonSign="@lc.MoonSign"
+                                             PlanetsBySign="lc.PlanetsBySign"
+                                             AspectedByGlyphs="lc.AspectedBy"
+                                             CenterTitle="@lc.CenterTitle">
+                                <CenterMeta>
+                                    <b>Lagna</b> @Display(lc.AscSign)@if (lc.MoonSign is not null) { <text><br><b>Moon</b> @Display(lc.MoonSign)</text> }
+                                    @if (lc.MoonNakshatra is not null) { <text><br><b>Nakshatra</b> @lc.MoonNakshatra (Moon)</text> }
+                                </CenterMeta>
+                            </SouthIndianGrid>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="crow missing">@type not computed for @birthDetails.Name &mdash; run <code>backfill-charts</code></div>
+                    }
+                }
+            </div>
+
+            <div class="legend">
+                <span class="li"><span class="sw" style="background:var(--house-lagna)"></span>house from Lagna</span>
+                <span class="li"><span class="sw" style="background:var(--house-moon)"></span>house from Moon</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-exalted)"></span>Exalted</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-good)"></span>Moolatrikona / Own / Gt friend</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-friend)"></span>Friend</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-neutral)"></span>Neutral</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-enemy)"></span>Enemy</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-great-enemy)"></span>Great enemy</span>
+                <span class="li"><span class="sw" style="background:var(--dignity-debilitated)"></span>Debilitated</span>
+                <span class="li">(R) retrograde &middot; 🔥 combust</span>
+            </div>
+        </main>
+
+        <aside class="side">
+            <h3>Sade Sati, Kantaka &amp; Ashtama</h3>
+            <p class="side-hint">Saturn afflictions from the natal Moon, in date order.</p>
+            <SadeSatiTable Periods="sadeSati" BirthDate="birthDetails.DateOfBirth.ToDateTime(birthDetails.EffectiveTimeOfBirth)" />
+        </aside>
+    </div>
+}
+else if (birthDetails is not null)
+{
+    <p class="muted">@birthDetails.Name has a stored birth record but no D1 chart yet.</p>
+}
+
+<ConfirmDialog IsOpen="confirmingDelete"
+               Message="@($"Delete {birthDetails?.Name}'s chart and all computed data? This can't be undone.")"
+               IsBusy="isDeleting"
+               OnConfirm="HandleDelete"
+               OnCancel="@(() => confirmingDelete = false)" />
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "tab")] public string? Tab { get; set; }
+
+    private static readonly string[] AllTypes = { "D1", "D2", "D6", "D9", "D10", "D11" };
+
+    private static readonly IReadOnlyList<(string Key, string Label)> TabDefs = new[]
+    {
+        ("your-qualities", "Your Qualities"),
+        ("your-relationships", "Your Relationships"),
+        ("your-career-wealth", "Your Career & Wealth"),
+    };
+
+    private static readonly Dictionary<string, string[]> TabVargas = new()
+    {
+        ["your-qualities"] = new[] { "D6" },
+        ["your-relationships"] = new[] { "D9" },
+        ["your-career-wealth"] = new[] { "D10", "D2", "D11" },
+    };
+
+    private string ActiveTab => Tab is not null && TabVargas.ContainsKey(Tab) ? Tab : "your-qualities";
+
+    private static IEnumerable<string> ChartsForTab(string tab) => new[] { "D1" }.Concat(TabVargas[tab]);
+
+    private sealed record LoadedChart(
+        string Type, string Label, string CenterTitle, string AscSign, string? MoonSign,
+        IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> PlanetsBySign,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> AspectedBy,
+        string? MoonNakshatra);
+
+    private static readonly Dictionary<string, string> VargaLabels = new()
+    {
+        ["D1"] = "Rasi", ["D2"] = "Hora", ["D6"] = "Shashtamsa",
+        ["D9"] = "Navamsa", ["D10"] = "Dasamsa", ["D11"] = "Rudramsa",
+    };
+
+    private BirthDetails? birthDetails;
+    private bool notFound;
+    private bool confirmingDelete;
+    private bool isDeleting;
+
+    private readonly Dictionary<string, LoadedChart> charts = new();
+    private IReadOnlyList<PlanetRow> d1PlanetRows = Array.Empty<PlanetRow>();
+    private IReadOnlyList<LagnaFunctionalNatureRow> bookRows = Array.Empty<LagnaFunctionalNatureRow>();
+    private IReadOnlyList<DashaPeriodRecord> dashaRoots = Array.Empty<DashaPeriodRecord>();
+    private IReadOnlyList<SadeSatiPeriod> sadeSati = Array.Empty<SadeSatiPeriod>();
+
+    protected override void OnParametersSet()
+    {
+        notFound = false;
+        confirmingDelete = false;
+        charts.Clear();
+
+        birthDetails = BirthDetailsRepo.GetById(Id);
+        if (birthDetails is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        var results = ChartResultsRepo.GetByBirthDetailId(Id);
+
+        foreach (var type in AllTypes)
+        {
+            var result = results.FirstOrDefault(r => r.ChartType == type);
+            if (result is null) continue;
+
+            var keyDetails = ChartKeyDetailsRepo.GetByChartResultId(result.Id);
+            var houseLords = ChartHouseLordsRepo.GetByChartResultId(result.Id);
+            var aspects = ChartAspectsRepo.GetByChartResultId(result.Id);
+
+            var ascSign = keyDetails.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign;
+            if (ascSign is null) continue;
+
+            var moonRow = keyDetails.FirstOrDefault(k => k.Planet == "Moon");
+
+            charts[type] = new LoadedChart(
+                type,
+                VargaLabels.TryGetValue(type, out var l) ? $"{l} · {type}" : type,
+                $"{(VargaLabels.TryGetValue(type, out var l2) ? l2 : type)} · {type}",
+                ascSign,
+                moonRow?.Sign,
+                BuildPlanetsBySign(keyDetails),
+                ChartViewModel.BuildAspectedByGlyphs(keyDetails, aspects),
+                moonRow?.Nakshatra);
+
+            if (type == "D1")
+                d1PlanetRows = ChartViewModel.BuildPlanetRows(keyDetails, houseLords, aspects);
+        }
+
+        if (charts.TryGetValue("D1", out var d1) && Enum.TryParse<ZodiacName>(d1.AscSign, out var lagna))
+            bookRows = LagnaFunctionalNatureRepo.GetForLagna((byte)((int)lagna + 1));
+
+        dashaRoots = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+        sadeSati = SadeSatiRepo.GetByBirthDetailId(Id);
+    }
+
+    private static string Display(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> BuildPlanetsBySign(IReadOnlyList<ChartKeyDetail> keyDetails) =>
+        keyDetails
+            .Where(k => k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<GridPlanetGlyph>)g
+                    .Select(k => new GridPlanetGlyph(
+                        ChartViewModel.PlanetGlyph(k.Planet),
+                        ChartViewModel.DignityToken(k.DignityStatus),
+                        k.IsRetrograde ?? false,
+                        k.IsCombust ?? false))
+                    .ToList());
+
+    private void HandleDelete()
+    {
+        if (birthDetails is null) return;
+        isDeleting = true;
+        DeletionService.DeleteBirthDetail(birthDetails.Id);
+        Nav.NavigateTo("/charts");
+    }
+}

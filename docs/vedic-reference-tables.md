@@ -270,7 +270,7 @@ numbered table section above, following the same shape.
 
 ## Implementation record (2026-08-30)
 
-Migrations `019`-`021` applied to `vedic_horo_gen` (`cproj_vedic_horo_gen\db\`). Resolved on
+Migrations `019`-`021` applied to `vedic_horo_gen` (`ikiastrro\db\`). Resolved on
 the way to implementation:
 
 - **Column casing:** kept `tbl_PascalCase` throughout, except `type_house_element` /
@@ -334,7 +334,7 @@ exist and are queryable.
 
 ## Implementation record, part 2 (2026-08-30, same day) — transit backfill CLI
 
-Built `PlanetTransitEventFinder` (`VedicHoroGen.Core/Transits/`) — walks `SwissEphemerisProvider`
+Built `PlanetTransitEventFinder` (`Ikiastrro.Core/Transits/`) — walks `SwissEphemerisProvider`
 day-by-day (safe at daily granularity specifically because Saturn/Jupiter/Rahu are slow enough
 that none can cross a 30° sign boundary within one day), bisects each detected crossing down to
 within 1 minute, and tags `IsReentry` by checking whether a planet's sign 2-events-back matches
@@ -359,9 +359,9 @@ within 1 minute, and tags `IsReentry` by checking whether a planet's sign 2-even
 matching this project's own earlier hand-verified data (Ramakrishnan's chart audit, same era,
 recorded "Saturn retrograde in Virgo").
 
-Code: `VedicHoroGen.Core/Transits/PlanetTransitEventFinder.cs`,
-`VedicHoroGen.Data/PlanetSignTransitEventsRepository.cs`, two new modes in
-`VedicHoroGen.Cli/Program.cs`. Idempotent per-planet (checks `CountByPlanet` before inserting),
+Code: `Ikiastrro.Core/Transits/PlanetTransitEventFinder.cs`,
+`Ikiastrro.Data/PlanetSignTransitEventsRepository.cs`, two new modes in
+`Ikiastrro.Cli/Program.cs`. Idempotent per-planet (checks `CountByPlanet` before inserting),
 so re-running is safe; not yet de-duplicating if forcibly re-run after already populating (noted
 in the CLI's own output if that happens).
 

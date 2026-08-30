@@ -1,6 +1,6 @@
 -- vedic_horo_gen: adds retrograde flag, combustion (Asta) logic, and nakshatra lord to
 -- tbl_Chart_KeyDetails — the three gaps identified 2026-08-28 during a manual chart-verification
--- session (see the dated backlog section in cproj_vedic_horo_gen.md), re-scored into
+-- session (see the dated backlog section in ikiastrro.md), re-scored into
 -- methods_prodmag.md's Opportunity Backlog the same day (ICE 8.0 / 6.7 / 7.7) and promoted to Now.
 --
 -- Column-shape rationale:

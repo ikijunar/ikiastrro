@@ -3,12 +3,12 @@
 **Status:** Approved design, pre-implementation
 **Owner:** rammyps
 **Created:** 2026-08-30
-**Approach:** A — in-place incremental rebuild of `VedicHoroGen.Web` (see "Approaches considered")
+**Approach:** A — in-place incremental rebuild of `Ikiastrro.Web` (see "Approaches considered")
 **Related:**
-- `cproj_vedic_horo_gen/README.md` (current Web state + the "hardcoded to D1+D9" known limitation this closes)
-- `cproj_vedic_horo_gen/docs/horoscope_compare.md` (UI research; cross-cutting decisions 1–7)
-- `cproj_vedic_horo_gen/src/VedicHoroGen.Web/Components/DESIGN.md` (design-language rule)
-- `cproj_vedic_horo_gen/docs/house-lagna-significations.md` (migration 031 design — functional nature)
+- `ikiastrro/README.md` (current Web state + the "hardcoded to D1+D9" known limitation this closes)
+- `ikiastrro/docs/horoscope_compare.md` (UI research; cross-cutting decisions 1–7)
+- `ikiastrro/src/Ikiastrro.Web/Components/DESIGN.md` (design-language rule)
+- `ikiastrro/docs/house-lagna-significations.md` (migration 031 design — functional nature)
 - `D:\@ClaudeSpace\BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman — functional benefic/malefic per Lagna, p.16–18; house significations p.12–13)
 - `key_comp_astro.md` (feature-coverage gap analysis — the "computed but invisible" list this surfaces)
 - `D:\@ClaudeSpace\methods_prodmag.md` (PM backlog — mark the life-area UI on ship)
@@ -17,7 +17,7 @@
 
 ## 1. Goal
 
-Recreate `VedicHoroGen.Web`'s read/display layer so it (a) **surfaces data already computed but invisible today** (D2/D6/D10/D11 charts, KP sub-lord, Sade Sati, transit history, house→nakshatra span, conjunctions), (b) **re-architects the foundation** (one generic multi-varga renderer; a shared generate-and-store service used by both Web and CLI; deep-linkable section navigation), and (c) **organises a person's chart around four life areas + timing** rather than around chart types. Visual language stays the parchment/serif dark-only look; execution is refined.
+Recreate `Ikiastrro.Web`'s read/display layer so it (a) **surfaces data already computed but invisible today** (D2/D6/D10/D11 charts, KP sub-lord, Sade Sati, transit history, house→nakshatra span, conjunctions), (b) **re-architects the foundation** (one generic multi-varga renderer; a shared generate-and-store service used by both Web and CLI; deep-linkable section navigation), and (c) **organises a person's chart around four life areas + timing** rather than around chart types. Visual language stays the parchment/serif dark-only look; execution is refined.
 
 **Interpretation is out of scope.** No outcome text, no scoring. A future core Python engine does synthesis. This pass computes and *displays* classical facts (including functional benefic/malefic classification) and organises them by life area.
 
@@ -238,7 +238,7 @@ Not a life area — its own component, no `LifeAreaMap` entry.
 
 ## 11. Shared write path — `ChartGenerationService` (Data, new)
 
-Owns the "given a persisted `BirthDetails`, compute and store everything" pipeline currently duplicated in `Add.razor` and in five spots of `VedicHoroGen.Cli/Program.cs` (`backfill-analytics`, `recompute-keydetails`, `backfill-charts`, `backfill-dasha`, main add flow).
+Owns the "given a persisted `BirthDetails`, compute and store everything" pipeline currently duplicated in `Add.razor` and in five spots of `Ikiastrro.Cli/Program.cs` (`backfill-analytics`, `recompute-keydetails`, `backfill-charts`, `backfill-dasha`, main add flow).
 
 ```csharp
 class ChartGenerationService   // ctor: ChartCalculationOrchestrator, VimshottariDashaService,
@@ -356,7 +356,7 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 - **Phase 3 — Remaining areas.** `Relationships` / `Career` / `Money` tabs; `HouseNakshatraSpanTable` into the shared `LifeAreaTab` body.
 - **Phase 4 — Timing tab.** `TimingTab`, `GocharaPanel`, `SadeSatiTable`; `DashaTimeline` moves in unchanged. `ChartDetail.razor` retired.
 - **Phase 5 — Non-workspace pages.** Home card gallery; `/reference/*`; `/charts/{id}/print` + `print.css`.
-- **Phase 6 — Cleanup & docs.** Dead CSS/params; `dotnet format`; `README.md` (Web section — the "hardcoded to D1+D9" limitation is now removed), `cproj_vedic_horo_gen.md` dated entry, `methods_prodmag.md` (mark shipped), memory pointer.
+- **Phase 6 — Cleanup & docs.** Dead CSS/params; `dotnet format`; `README.md` (Web section — the "hardcoded to D1+D9" limitation is now removed), `ikiastrro.md` dated entry, `methods_prodmag.md` (mark shipped), memory pointer.
 
 ---
 
@@ -397,4 +397,4 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 
 - **A — in-place incremental rebuild (chosen).** Same project, keep the working primitives, rebuild tab-by-tab, app runnable throughout. Lowest risk; honours "keep the design language."
 - **B — parallel component tree, cut over at the end.** Justified only when the live app must keep serving during a long migration — not the case for a 2–3 user private tool. More total work.
-- **C — new `VedicHoroGen.Web2` project.** Re-solves DI/layout/place-resolver/delete-cascade for no gain; fights "keep the design language."
+- **C — new `Ikiastrro.Web2` project.** Re-solves DI/layout/place-resolver/delete-cascade for no gain; fights "keep the design language."

@@ -1,5 +1,5 @@
 -- 021_create_nakshatra_reference_tables.sql
--- Point 3 of D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\vedic-reference-tables.md: tbl_Nakshatras (27),
+-- Point 3 of D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md: tbl_Nakshatras (27),
 -- tbl_NakshatraPadas (108), vw_NakshatraPadaDetails, tbl_NakshatraSubLords (243 -- KP
 -- sub-lord hierarchy levels 1-2 only, per rammyps's explicit call to stop there).
 --

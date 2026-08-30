@@ -1,0 +1,135 @@
+@*
+    Shared 4x4 South Indian style chart grid — fixed sign positions, dignity-dot glyphs, an
+    ascendant highlight, and a 2x2 center info cell. Just the grid+center cell: the dignity legend
+    is rendered once by the caller (D1ChartView shows D1 and D9 side by side, sharing one legend
+    below both, since they use the same 7-tier dignity scale). Extracted from D1ChartView so
+    D1ChartView's own D9 grid and any future compact card preview reuse the exact same rendering
+    instead of copy-pasting the grid markup.
+
+    Reads --paper/--ink/--dignity-* etc. via var(...) from a closer .page-scoped override (D1ChartView's
+    own tokens) — CSS custom-property inheritance follows the real DOM tree and isn't affected by
+    Blazor's per-component scope attributes, so this works even though this component has its own
+    separate CSS-isolation scope.
+
+    House numbers (middle-right badge on each cell) are computed here from AscendantSign rather than
+    passed in — reuses AstroMath.CountFromSignToSign, the same Whole-Sign house-counting helper every
+    calculator already uses, so D1 and D9 both get correct house numbers just by passing their own
+    respective AscendantSign (which the caller already does).
+*@
+
+@using Ikiastrro.Core.Astro
+@using Ikiastrro.Core.Calculators
+
+<div class="grid-root @(Compact ? "compact" : "")">
+    <div class="chart-wrap">
+        <div class="chart">
+            @foreach (var cell in GridCells)
+            {
+                var isAscendant = cell.MatchSign == AscendantSign;
+                var glyphs = PlanetsBySign.TryGetValue(cell.MatchSign, out var list) ? list : Array.Empty<GridPlanetGlyph>();
+                var cellSign = Enum.Parse<ZodiacName>(cell.MatchSign);
+                var houseFromLagna = AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(AscendantSign), cellSign);
+                int? houseFromMoon = string.IsNullOrEmpty(MoonSign)
+                    ? null
+                    : AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(MoonSign), cellSign);
+                var aspectedBy = !Compact && AspectedByGlyphs.TryGetValue(cell.MatchSign, out var byList) ? byList : Array.Empty<string>();
+
+                <div class="cell @(isAscendant ? "ascendant" : "")" style="grid-column:@cell.Col;grid-row:@cell.Row;">
+                    @if (isAscendant)
+                    {
+                        <span class="lagna-tag">LAGNA</span>
+                    }
+                    <span class="house-nums">
+                        <span class="house-num from-lagna" title="House @houseFromLagna from Lagna">@houseFromLagna</span>
+                        @if (houseFromMoon is int hm)
+                        {
+                            <span class="house-num from-moon" title="House @hm from the Moon">@hm</span>
+                        }
+                    </span>
+                    <div class="sign-label">
+                        <span class="sign-en">@cell.DisplayEn</span>
+                        @if (!Compact)
+                        {
+                            <span class="sign-sa">@cell.DisplaySa</span>
+                        }
+                    </div>
+                    <div class="planets">
+                        @foreach (var g in glyphs)
+                        {
+                            <span class="planet-glyph">
+                                @if (g.DignityToken is not null)
+                                {
+                                    <span class="dot" style="background:var(--dignity-@g.DignityToken)"></span>
+                                }
+                                @g.Glyph<span class="direction">(@(g.IsRetrograde ? "R" : "D"))</span>
+                                @if (g.IsCombust)
+                                {
+                                    <span class="combust-icon" title="Combust">🔥</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                    @if (aspectedBy.Count > 0)
+                    {
+                        <div class="aspect-strip">
+                            <span class="aspect-label">Aspected by</span>
+                            <div class="planets">
+                                @foreach (var glyph in aspectedBy)
+                                {
+                                    <span class="planet-glyph aspect">@glyph</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="cell center" style="grid-column:2/4;grid-row:2/4;">
+                <div class="center-title">@CenterTitle</div>
+                <div class="center-meta">@CenterMeta</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string AscendantSign { get; set; } = "";
+
+    /// <summary>This chart's own natal Moon sign (internal ZodiacName spelling, e.g. "Scorpio",
+    /// "Capricornus"). When set, every cell also shows its house counted from the Moon, in silver
+    /// beside the gold house-from-Lagna number. Null/empty → only the Lagna number is shown.</summary>
+    [Parameter] public string? MoonSign { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> PlanetsBySign { get; set; }
+        = new Dictionary<string, IReadOnlyList<GridPlanetGlyph>>();
+
+    [Parameter, EditorRequired] public string CenterTitle { get; set; } = "";
+    [Parameter, EditorRequired] public RenderFragment CenterMeta { get; set; } = null!;
+
+    /// <summary>Smaller, reduced-detail rendering for the saved-charts card gallery: hides
+    /// Sanskrit sign names, the LAGNA tag text emphasis, the dignity legend, and the aspect strips.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    /// <summary>
+    /// Sign → distinct glyphs of the planets casting an aspect (Drishti) into that sign, sourced from
+    /// tbl_Chart_Aspects via ChartViewModel.BuildAspectedByGlyphs. Rendered as a dashed "Aspected by"
+    /// strip pinned to the bottom of the cell, below whatever's actually placed there — only for cells
+    /// that receive at least one aspect. Hidden in Compact mode. Empty by default so callers that don't
+    /// pass aspects (or a chart type nothing's been computed for yet) render exactly as before.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<string>> AspectedByGlyphs { get; set; }
+        = new Dictionary<string, IReadOnlyList<string>>();
+
+    // Fixed South Indian grid: sign never moves. MatchSign uses this project's internal
+    // ZodiacName spelling ("Capricornus"); DisplayEn/DisplaySa are the reader-facing labels.
+    private static readonly (string MatchSign, string DisplayEn, string DisplaySa, int Col, int Row)[] GridCells = new[]
+    {
+        ("Pisces", "Pisces", "Meena", 1, 1), ("Aries", "Aries", "Mesha", 2, 1),
+        ("Taurus", "Taurus", "Vrishabha", 3, 1), ("Gemini", "Gemini", "Mithuna", 4, 1),
+        ("Aquarius", "Aquarius", "Kumbha", 1, 2), ("Cancer", "Cancer", "Karka", 4, 2),
+        ("Capricornus", "Capricorn", "Makara", 1, 3), ("Leo", "Leo", "Simha", 4, 3),
+        ("Sagittarius", "Sagittarius", "Dhanu", 1, 4), ("Scorpio", "Scorpio", "Vrishchika", 2, 4),
+        ("Libra", "Libra", "Tula", 3, 4), ("Virgo", "Virgo", "Kanya", 4, 4)
+    };
+}

@@ -1,7 +1,7 @@
 # vedic_horo_gen — Technology Stack
 
-Verified against the actual `.csproj` files in `D:\@ClaudeSpace\cproj_vedic_horo_gen\src\` on 2026-08-26.
-See `cproj_vedic_horo_gen.md` for build/decision history and the project's own `README.md` for
+Verified against the actual `.csproj` files in `D:\@ClaudeSpace\ikiastrro\src\` on 2026-08-26.
+See `ikiastrro.md` for build/decision history and the project's own `README.md` for
 current architecture.
 
 ## Runtime / Language
@@ -13,10 +13,10 @@ current architecture.
 
 | Project | SDK | Type | Depends on |
 |---|---|---|---|
-| `VedicHoroGen.Core` | `Microsoft.NET.Sdk` | class library | — |
-| `VedicHoroGen.Data` | `Microsoft.NET.Sdk` | class library | Core |
-| `VedicHoroGen.Cli` | `Microsoft.NET.Sdk` | console exe | Core, Data |
-| `VedicHoroGen.Web` | `Microsoft.NET.Sdk.Web` | Blazor Server app | Core, Data |
+| `Ikiastrro.Core` | `Microsoft.NET.Sdk` | class library | — |
+| `Ikiastrro.Data` | `Microsoft.NET.Sdk` | class library | Core |
+| `Ikiastrro.Cli` | `Microsoft.NET.Sdk` | console exe | Core, Data |
+| `Ikiastrro.Web` | `Microsoft.NET.Sdk.Web` | Blazor Server app | Core, Data |
 
 ## Key libraries / packages
 

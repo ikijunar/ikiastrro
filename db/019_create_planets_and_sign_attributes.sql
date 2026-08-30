@@ -1,9 +1,9 @@
 -- 019_create_planets_and_sign_attributes.sql
 -- Reference/master data: tbl_Planets (9-row planet master) + tbl_SignAttributes (12 Rashi
--- reference rows). Points 1/1a/1b of D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\vedic-reference-tables.md.
+-- reference rows). Points 1/1a/1b of D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md.
 --
 -- Values cross-checked live against this project's own source of truth:
---   - ZodiacName enum (VedicHoroGen.Core\Astro\ZodiacName.cs) -- ZodiacEnumValue column below
+--   - ZodiacName enum (Ikiastrro.Core\Astro\ZodiacName.cs) -- ZodiacEnumValue column below
 --     exists specifically because that enum spells Capricorn as "Capricornus".
 --   - AstroMath.NakshatraLordOrder / VimshottariDashaCalculator.YearsByLord -- VimshottariYears
 --     and VimshottariSequenceOrder below match those exactly (Ketu 7, Venus 20, Sun 6, Moon 10,

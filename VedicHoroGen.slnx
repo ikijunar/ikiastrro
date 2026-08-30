@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/VedicHoroGen.Cli/VedicHoroGen.Cli.csproj" />
-    <Project Path="src/VedicHoroGen.Core/VedicHoroGen.Core.csproj" />
-    <Project Path="src/VedicHoroGen.Data/VedicHoroGen.Data.csproj" />
-    <Project Path="src/VedicHoroGen.Web/VedicHoroGen.Web.csproj" />
-  </Folder>
-</Solution>

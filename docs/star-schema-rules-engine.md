@@ -16,13 +16,13 @@ per-chart computed results, each row recording which `RuleSetId` produced it. C#
 dictionaries and instead read from `tbl_Rule_*` via new Dapper repositories.
 
 **Tech Stack:** SQL Server (existing `vedic_horo_gen` DB), Dapper (existing pattern in
-`VedicHoroGen.Data`), .NET 8 / C#, xUnit for the calculator refactor (new — no test project
+`Ikiastrro.Data`), .NET 8 / C#, xUnit for the calculator refactor (new — no test project
 exists yet in this solution; see Task 6).
 
 **Spec:** This document is both spec and plan — there is no separate upstream spec file. The
 one-page decision record behind it (context / decision / consequences) is
 `..\decisions\001-star-schema-rules-engine.md`. Prior related design docs:
-`D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\vedic-reference-tables.md` (the
+`D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md` (the
 Planets/SignAttributes/Nakshatras dimension tables this plan builds on).
 
 ## Global Constraints
@@ -63,7 +63,7 @@ Phase 1 ships the part of the ask with the clearest, fastest payoff and no blast
 ## File Structure (Phase 1)
 
 ```
-cproj_vedic_horo_gen/
+ikiastrro/
   db/
     024_create_rule_sets_table.sql              — tbl_Rule_Sets (the version dimension)
     025_create_aspect_offset_rules.sql           — tbl_Rule_AspectOffset
@@ -71,12 +71,12 @@ cproj_vedic_horo_gen/
     027_create_natural_relationship_rules.sql    — tbl_Rule_NaturalRelationship
     028_create_temporary_friendship_rules.sql    — tbl_Rule_TemporaryFriendshipDistance
   src/
-    VedicHoroGen.Data/
+    Ikiastrro.Data/
       RuleSetRepository.cs                       — new: CRUD + "active rule set" lookup
       AspectRuleRepository.cs                     — new
       CombustionRuleRepository.cs                  — new
       NaturalRelationshipRuleRepository.cs         — new
-    VedicHoroGen.Cli/
+    Ikiastrro.Cli/
       Program.cs                                   — modify: add `list-rule-sets`, `show-rules <name>`
   D:\@ClaudeSpace\
     star-schema-rules-engine.md      — this file
@@ -121,7 +121,7 @@ active scheme is an explicit recompute (`recompute-keydetails`-style), never sil
 ## Task 1: `tbl_Rule_Sets` — the version dimension every rule table hangs off
 
 **Files:**
-- Create: `cproj_vedic_horo_gen/db/024_create_rule_sets_table.sql`
+- Create: `ikiastrro/db/024_create_rule_sets_table.sql`
 
 **Interfaces:**
 - Produces: `tbl_Rule_Sets(Id TINYINT PK, RuleSetName VARCHAR(40) UNIQUE, Description
@@ -177,7 +177,7 @@ git commit -m "db: add tbl_Rule_Sets, the version dimension for the rules engine
 ## Task 2: `tbl_Rule_AspectOffset` — transcribes `ClassicalRelationships.AspectOffsets`
 
 **Files:**
-- Create: `cproj_vedic_horo_gen/db/025_create_aspect_offset_rules.sql`
+- Create: `ikiastrro/db/025_create_aspect_offset_rules.sql`
 
 **Interfaces:**
 - Consumes: `tbl_Rule_Sets.Id = 1`, `tbl_Planets.Id` (1-9, Sun..Ketu).
@@ -242,7 +242,7 @@ git commit -m "db: add tbl_Rule_AspectOffset, transcribed from ClassicalRelation
 ## Task 3: `tbl_Rule_CombustionOrb` — transcribes `ClassicalCombustion`'s two orb dictionaries
 
 **Files:**
-- Create: `cproj_vedic_horo_gen/db/026_create_combustion_orb_rules.sql`
+- Create: `ikiastrro/db/026_create_combustion_orb_rules.sql`
 
 **Interfaces:**
 - Produces: `tbl_Rule_CombustionOrb(Id INT IDENTITY PK, RuleSetId TINYINT FK, PlanetId TINYINT
@@ -306,7 +306,7 @@ git commit -m "db: add tbl_Rule_CombustionOrb, transcribed from ClassicalCombust
 ## Task 4: `tbl_Rule_NaturalRelationship` — transcribes `ClassicalDignity.NaturalRelationship`
 
 **Files:**
-- Create: `cproj_vedic_horo_gen/db/027_create_natural_relationship_rules.sql`
+- Create: `ikiastrro/db/027_create_natural_relationship_rules.sql`
 
 **Interfaces:**
 - Produces: `tbl_Rule_NaturalRelationship(Id INT IDENTITY PK, RuleSetId TINYINT FK, PlanetId
@@ -383,7 +383,7 @@ git commit -m "db: add tbl_Rule_NaturalRelationship, transcribed from ClassicalD
 ## Task 5: `tbl_Rule_TemporaryFriendshipDistance` — transcribes the Tatkalika Maitri distance rule
 
 **Files:**
-- Create: `cproj_vedic_horo_gen/db/028_create_temporary_friendship_rules.sql`
+- Create: `ikiastrro/db/028_create_temporary_friendship_rules.sql`
 
 **Interfaces:**
 - Produces: `tbl_Rule_TemporaryFriendshipDistance(RuleSetId TINYINT FK, SignDistance TINYINT
@@ -436,10 +436,10 @@ git commit -m "db: add tbl_Rule_TemporaryFriendshipDistance, transcribed from Cl
 ## Task 6: Dapper repositories — the CLI-facing read layer
 
 **Files:**
-- Create: `src/VedicHoroGen.Data/RuleSetRepository.cs`
-- Create: `src/VedicHoroGen.Data/AspectRuleRepository.cs`
-- Create: `src/VedicHoroGen.Data/CombustionRuleRepository.cs`
-- Create: `src/VedicHoroGen.Data/NaturalRelationshipRuleRepository.cs`
+- Create: `src/Ikiastrro.Data/RuleSetRepository.cs`
+- Create: `src/Ikiastrro.Data/AspectRuleRepository.cs`
+- Create: `src/Ikiastrro.Data/CombustionRuleRepository.cs`
+- Create: `src/Ikiastrro.Data/NaturalRelationshipRuleRepository.cs`
 
 **Interfaces:**
 - Consumes: `SqlConnectionFactory` (existing constructor-injection pattern, e.g.
@@ -459,7 +459,7 @@ git commit -m "db: add tbl_Rule_TemporaryFriendshipDistance, transcribed from Cl
 ```csharp
 using Dapper;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 public record RuleSet(int Id, string RuleSetName, string? Description);
 
@@ -493,9 +493,9 @@ public class RuleSetRepository
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Astro;
+using Ikiastrro.Core.Astro;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>tbl_Rule_AspectOffset -- returns the same shape ClassicalRelationships.AspectOffsets
 /// hardcodes today, so Phase 2's wiring swap is a one-line change at the call site.</summary>
@@ -530,9 +530,9 @@ public class AspectRuleRepository
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Astro;
+using Ikiastrro.Core.Astro;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>tbl_Rule_CombustionOrb -- same two-dictionary shape ClassicalCombustion hardcodes today.</summary>
 public class CombustionRuleRepository
@@ -565,9 +565,9 @@ public class CombustionRuleRepository
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Astro;
+using Ikiastrro.Core.Astro;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>tbl_Rule_NaturalRelationship -- same (Friends,Neutrals,Enemies) tuple shape
 /// ClassicalDignity.NaturalRelationship hardcodes today.</summary>
@@ -605,7 +605,7 @@ public class NaturalRelationshipRuleRepository
 
 - [ ] **Step 5: Build and smoke-test from the CLI project**
 
-Run: `dotnet build src/VedicHoroGen.Data/VedicHoroGen.Data.csproj`
+Run: `dotnet build src/Ikiastrro.Data/Ikiastrro.Data.csproj`
 Expected: 0 errors. (No test project exists yet in this solution — Task 6's verification is a
 build + the manual CLI smoke test in Task 7, not automated xUnit; adding a test project is a
 reasonable follow-up but out of scope for this plan, which only wires up reads.)
@@ -613,7 +613,7 @@ reasonable follow-up but out of scope for this plan, which only wires up reads.)
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/VedicHoroGen.Data/RuleSetRepository.cs src/VedicHoroGen.Data/AspectRuleRepository.cs src/VedicHoroGen.Data/CombustionRuleRepository.cs src/VedicHoroGen.Data/NaturalRelationshipRuleRepository.cs
+git add src/Ikiastrro.Data/RuleSetRepository.cs src/Ikiastrro.Data/AspectRuleRepository.cs src/Ikiastrro.Data/CombustionRuleRepository.cs src/Ikiastrro.Data/NaturalRelationshipRuleRepository.cs
 git commit -m "data: add Dapper repositories reading the new tbl_Rule_* tables"
 ```
 
@@ -622,7 +622,7 @@ git commit -m "data: add Dapper repositories reading the new tbl_Rule_* tables"
 ## Task 7: CLI inspection commands — `list-rule-sets`, `show-rules <name>`
 
 **Files:**
-- Modify: `src/VedicHoroGen.Cli/Program.cs` (add two new `args[0]` branches, same pattern as
+- Modify: `src/Ikiastrro.Cli/Program.cs` (add two new `args[0]` branches, same pattern as
   `backfill-analytics`/`precheck-planet-transits`)
 
 **Interfaces:**
@@ -670,10 +670,10 @@ if (args.Length > 1 && args[0] == "show-rules" && int.TryParse(args[1], out var 
 
 - [ ] **Step 2: Build and run manually**
 
-Run: `dotnet build src/VedicHoroGen.Cli/VedicHoroGen.Cli.csproj`
-Run: `dotnet run --project src/VedicHoroGen.Cli --no-build -- list-rule-sets`
+Run: `dotnet build src/Ikiastrro.Cli/Ikiastrro.Cli.csproj`
+Run: `dotnet run --project src/Ikiastrro.Cli --no-build -- list-rule-sets`
 Expected output: `1: Parashari-Classical [ACTIVE]` plus the description line.
-Run: `dotnet run --project src/VedicHoroGen.Cli --no-build -- show-rules 1`
+Run: `dotnet run --project src/Ikiastrro.Cli --no-build -- show-rules 1`
 Expected: three sections, values matching `ClassicalRelationships.AspectOffsets` /
 `ClassicalCombustion`'s two dictionaries / `ClassicalDignity.NaturalRelationship` exactly —
 this run **is** the end-to-end verification that migrations 025-027 transcribed correctly.
@@ -681,7 +681,7 @@ this run **is** the end-to-end verification that migrations 025-027 transcribed 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/VedicHoroGen.Cli/Program.cs
+git add src/Ikiastrro.Cli/Program.cs
 git commit -m "cli: add list-rule-sets/show-rules for inspecting the new rules tables"
 ```
 
@@ -690,7 +690,7 @@ git commit -m "cli: add list-rule-sets/show-rules for inspecting the new rules t
 ## Task 8: Document Phase 2 scope (no code — a decision record)
 
 **Files:**
-- Modify: `D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\star-schema-rules-engine.md` (this file — append the
+- Modify: `D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md` (this file — append the
   section below)
 - Modify: `D:\@ClaudeSpace\STANDARDS.md` §D (only if/when Phase 2 is approved — flag the need,
   don't edit yet)
@@ -708,7 +708,7 @@ git commit -m "cli: add list-rule-sets/show-rules for inspecting the new rules t
 - [ ] **Step 2: Commit**
 
 ```bash
-git add "D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\star-schema-rules-engine.md"
+git add "D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md"
 git commit -m "docs: record Phase 2 (fact/dim table rename) scope, not started"
 ```
 

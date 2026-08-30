@@ -12,10 +12,14 @@ actually contains for each of the 8 classical Bhava-analysis points, cross-refer
 > *Superseded names, for anyone chasing older references:* this file was renamed 2026-08-30 from
 > `how-to-judje-a-horoscope-i_p1-312.md`; the `_work\...\body.md` raw-OCR path cited in earlier
 > drafts has no front matter or chart transcriptions and should not be used. See the 2026-08-30
-> entry in `cproj_vedic_horo_gen.md`.
+> entry in `ikiastrro.md`.
 **As of:** 2026-08-30
-**Status:** Design/action-plan doc — migrations 030/031 below are approved-and-buildable now;
-everything else is scoped but not yet built.
+**Status:** Migration **031 (`tbl_Dim_LagnaFunctionalNature`) is BUILT** (2026-08-30, as part of
+the Web UI life-area recreate groundwork — see `../ikiastrro.md` and
+`superpowers/plans/2026-08-30-web-ui-recreate-groundwork.md`). Migration **030** (house/planet
+significations, Sthira Karaka) is still scoped-not-built; `LifeAreaMap` (Core) hardcodes the
+house/karaka-per-life-area subset it needs, cross-checked to this source. Everything else here
+(the synthesis layer, yoga detection) is scoped but not built.
 
 ---
 
@@ -42,14 +46,27 @@ in this conversation. Data source: this book for house significations + karaka r
 rows still use the previously-agreed modern convention (8th/12th), since Raman's Sthira Karaka
 list — like most classical sources — doesn't assign them a fixed house role either.
 
-## Migration 031 — ready to build now, 3 rows flagged
+## Migration 031 — BUILT 2026-08-30
 
-`tbl_Dim_LagnaFunctionalNature`, all 12 signs, sourced from p.16-18 of this book. **3 rows seeded
-as `FunctionalNature = NULL, Notes = 'Not classified in source (How to Judge a Horoscope, Raman)'`**
-rather than guessed:
+`db/031_create_lagna_functional_nature.sql` applied. `tbl_Dim_LagnaFunctionalNature`: 84 rows
+(12 Lagnas × 7 classical planets), sourced verbatim from p.16-18 of this book. `Benefic |
+Malefic | Neutral | Yogakaraka` CHECK; `Rank` (1 = "best benefic" / "worst malefic" per the
+book's phrasing); `UNIQUE (LagnaSignId, PlanetId)`; FKs to `tbl_SignAttributes` / `tbl_Planets`.
+6 rows are `Yogakaraka` (Taurus/Saturn, Cancer/Mars, Leo/Mars, Libra/Saturn, Capricorn/Venus,
+Aquarius/Venus). **3 rows seeded `FunctionalNature = NULL, Notes = 'Not classified in source
+(How to Judge a Horoscope, Raman, p.16-18)'`** rather than guessed:
 - Aries Lagna → Moon
 - Gemini Lagna → Saturn
 - Aquarius Lagna → Saturn
+
+Read via `LagnaFunctionalNatureRepository.GetForLagna(byte lagnaSignId)`. This table is a
+**cross-check mirror — the engine does not read it.** The runtime classifier is
+`Core/Calculators/LagnaFunctionalNature.cs` (a house-lordship heuristic). Heuristic vs. this
+table: **17 of 84 cells diverge** — every one a mixed-lordship planet on the Neutral boundary
+(the heuristic never emits `Neutral` for these, and it demotes 5 book-`Benefic` natural malefics
+to `Malefic`); **no Benefic↔Malefic flips, no Yogakaraka flips**. Run
+`dotnet run --project src/Ikiastrro.Cli -- compare-functional-nature` for the full list.
+The later Web UI's `FunctionalNaturePanel` shows both, per spec §7.3.
 
 ## Deferred / not actionable this pass
 

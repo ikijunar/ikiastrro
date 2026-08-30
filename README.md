@@ -11,14 +11,14 @@ that matches what you need rather than re-deriving it:
 
 | Doc | What it's for |
 |---|---|
-| `cproj_vedic_horo_gen.md` | Full running build/decision history, dated sections, every session's "what changed and why" |
+| `ikiastrro.md` | Full running build/decision history, dated sections, every session's "what changed and why" |
 | `methods_prodmag.md` | Product-management process (Vision → JTBD → Opportunity Backlog → ICE scoring → Now/Next/Later roadmap) — read before picking the next feature |
 | `docs/bhava-coverage.md` | Scorecard of what's built vs. missing against the classical 8-point Bhava-analysis checklist — the framework behind several current backlog items |
 | `docs/vedic-reference-tables.md` | Design doc for the classical reference/master-data tables (`tbl_Planets`, `tbl_SignAttributes`, `tbl_Nakshatras`/Padas/SubLords, `tbl_PlanetSignTransitEvents`) |
 | `docs/star-schema-rules-engine.md` | Design doc for the versioned `tbl_Rule_*` rules-engine layer (Phase 1) and its still-open Phase 2 (wiring calculators to read from it) |
 | `decisions/001-star-schema-rules-engine.md` | ADR / decision record behind the above — the context, the star-schema decision, and its consequences in one page (the `docs/` file is the implementation plan) |
 | `docs/house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migrations 030/031 |
-| `docs/horoscope_compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `VedicHoroGen.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
+| `docs/horoscope_compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `Ikiastrro.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
 | `docs/techstack.md` | Verified stack snapshot — pinned package versions and per-project (`Core`/`Data`/`Cli`/`Web`) dependency lists, checked against the `.csproj` files. The `## Stack` section below is the short version |
 | `STANDARDS.md` | Workspace-wide naming/structure conventions (DB/table/view/proc naming, migration numbering) this project follows |
 
@@ -43,20 +43,20 @@ City/Country is geocoded to lat/long via [OpenStreetMap Nominatim](https://nomin
    ```
 2. **Run the CLI**:
    ```
-   dotnet run --project src\VedicHoroGen.Cli
+   dotnet run --project src\Ikiastrro.Cli
    ```
-   It prompts for Name, DOB, Time of Birth, an optional corrected time (+ reason), and Place of Birth (City/Country). It then resolves lat/long/UTC-offset, computes **D1, D2, D6, D9, D10, D11** (+ Vimshottari Dasha), stores everything, and prints the results. (`dotnet run --project src\VedicHoroGen.Cli -- backfill-charts` adds any missing chart type to people saved before it existed; `-- recompute-keydetails` re-derives KeyDetails for every calculable chart type.)
+   It prompts for Name, DOB, Time of Birth, an optional corrected time (+ reason), and Place of Birth (City/Country). It then resolves lat/long/UTC-offset, computes **D1, D2, D6, D9, D10, D11** (+ Vimshottari Dasha) via `ChartGenerationService` (see below), stores everything, and prints the results. One-off modes: `-- compute-all <name>` regenerates every chart type + Dasha for one saved person (post birth-time correction); `-- backfill-charts` adds any missing chart type to people saved before it existed; `-- backfill-analytics` / `-- recompute-keydetails` re-derive the 4 analytics tables for every calculable chart type (these two are now identical code paths); `-- verify-vargas` / `-- verify-functional-nature` run the worked-example assertion suites (no unit-test project); `-- compare-functional-nature` prints where the computed functional-nature heuristic diverges from the seeded `tbl_Dim_LagnaFunctionalNature`.
 3. **Or run the web app**:
    ```
-   dotnet run --project src\VedicHoroGen.Web
+   dotnet run --project src\Ikiastrro.Web
    ```
    Same input flow, plus a native visual D1 chart display and a saved-charts browser — see below.
 
 ## Web app: entry form, native D1+D9 charts, saved charts (2026-08-24)
 
-`VedicHoroGen.Web` (Blazor Server) is more than a form-in/JSON-out shell — the charts render natively, entirely in .NET, no external service involved:
+`Ikiastrro.Web` (Blazor Server) is more than a form-in/JSON-out shell — the charts render natively, entirely in .NET, no external service involved:
 
-- **`D1ChartView.razor`** — D1 (Rasi) and D9 (Navamsa) South Indian-style grids side by side (`SouthIndianGrid.razor`, a shared component both use — plain CSS grid, no slider/carousel, stacks to one column below 760px), one shared dignity legend, and the D1 planetary-positions/house-lordship tables below, all rendered in Razor + CSS-isolated component styles (`D1ChartView.razor.css` / `SouthIndianGrid.razor.css`, scoped so bare `table`/`th`/`td`/`.chart`/`.cell` rules can never leak into the rest of the app). This is the same visual design as the charts previously hand-published as Claude Artifacts (one-off static HTML snapshots, listed in `cproj_vedic_horo_gen.md`) — now built directly into the app, so no external publishing step is needed to see a chart. Supports `prefers-color-scheme: dark` automatically. The Conjunctions table is intentionally **not** shown on this page (rammyps's call, 2026-08-24) — the data and `tbl_Chart_Conjunctions` table are untouched, just not rendered here.
+- **`D1ChartView.razor`** — D1 (Rasi) and D9 (Navamsa) South Indian-style grids side by side (`SouthIndianGrid.razor`, a shared component both use — plain CSS grid, no slider/carousel, stacks to one column below 760px), one shared dignity legend, and the D1 planetary-positions/house-lordship tables below, all rendered in Razor + CSS-isolated component styles (`D1ChartView.razor.css` / `SouthIndianGrid.razor.css`, scoped so bare `table`/`th`/`td`/`.chart`/`.cell` rules can never leak into the rest of the app). This is the same visual design as the charts previously hand-published as Claude Artifacts (one-off static HTML snapshots, listed in `ikiastrro.md`) — now built directly into the app, so no external publishing step is needed to see a chart. Supports `prefers-color-scheme: dark` automatically. The Conjunctions table is intentionally **not** shown on this page (rammyps's call, 2026-08-24) — the data and `tbl_Chart_Conjunctions` table are untouched, just not rendered here.
 - **`D1ChartViewModel.BuildPlanetRows`** (Core) derives the "Rules"/outgoing "Aspects" columns from the already-stored `tbl_Chart_HouseLords`/`tbl_Chart_Aspects` rows in plain C# — the Blazor UI doesn't depend on `vw_Chart_Consolidated` at all, only the same per-entity repository methods (`GetByChartResultId` etc.) already used elsewhere.
 - **Name field autocomplete** on the entry form (`Home.razor`) — typing 2+ characters queries `BirthDetailsRepository.SearchByNamePrefix` live and shows matching saved people (name, DOB, place) in a dropdown. Selecting one auto-fills the whole form from that stored record and switches the submit button to "View Chart": submitting then **fetches and displays the already-stored chart** (no re-insert, no re-geocode, no recompute) — distinct from typing a brand-new name, which still runs the full generate-and-store flow. Typing past what was selected drops back into "new entry" mode automatically.
 - **`/charts`** — lists every saved person (Name, DOB, Place), a "View chart" link to **`/charts/{id}`** (renders `D1ChartView` for that person read straight from the DB), and a **Delete** action (inline confirm, no `window.confirm`) that removes the person and every chart artifact derived from them — see "Deleting a saved chart" below. `/charts/{id}` has the same delete action at the bottom of the page.
@@ -74,7 +74,7 @@ v1 originally embedded `VedAstro.Library` (NuGet 1.2.0). Real testing surfaced f
 
 ## Known limitations (v1 scaffold)
 
-- **`ChartView.razor` is still hardcoded to two charts (D1 + D9)**, not a generic loop over every registered `IChartCalculator` — unlike the write path (§ Extending later), which already handles any chart type with no new code. **D2 (Hora), D6 (Shashtamsa), D10 (Dasamsa), D11 (Rudramsa) were added 2026-08-30 at the DB/CLI level** — they get full analytics + nakshatra linkage for every saved person, but have **no Web UI**: a completely new Web UI covering all six vargas is a deliberate later batch. Wiring one into the current `ChartView.razor` would need its own `KeyDetails`/`Aspects` params, its own `SouthIndianGrid`, and a `D1ChartViewModel.BuildAspectedByGlyphs` call — see "Extending later".
+- **`ChartView.razor` is still hardcoded to two charts (D1 + D9)**, not a generic loop over every registered `IChartCalculator` — unlike the write path (§ Extending later), which already handles any chart type with no new code. **D2 (Hora), D6 (Shashtamsa), D10 (Dasamsa), D11 (Rudramsa) were added 2026-08-30 at the DB/CLI level** — they get full analytics + nakshatra linkage for every saved person, but have **no Web UI**. **This is being addressed by the Web UI life-area recreate** — spec `docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`, Plan 1 (Core/Data/CLI groundwork) merged 2026-08-30 (`ChartViewModel` rename, `ChartGenerationService`, `GetByBirthDetailId` batch reads, `LifeAreaMap`, `LagnaFunctionalNature` + migration 031), Plan 2 (the actual UI — 5 life-area/Timing tabs, generic `VargaChartPanel`, per-planet colour backgrounds, reference browser, print view) not yet started. Carry-forward: `docs/superpowers/plans/groundwork-outcomes-for-plan-2.md`.
 - **D9 has no degree-in-sign/nakshatra fields** — classical divisional-chart display shows sign only for vargas beyond D1, which is what's implemented; flagging so it's a deliberate choice, not an oversight. D9 *does* get full dignity/house-lordship/conjunction/aspect analytics (see below) — it's specifically the continuous-degree fields (DegreesInSign, Moolatrikona's degree-range check, conjunction tightness) that are D1-only, left `NULL` for D9 rather than approximated.
 - **Swiss Ephemeris license**: Swiss Ephemeris (and by extension SwissEphNet) is AGPL/commercial dual-licensed. Fine for this private, non-distributed tool; would need revisiting (AGPL compliance or a commercial license) if this project were ever distributed or hosted as a public service.
 - **`AstroMath`'s linear precession is not in play anymore** — Lahiri ayanamsha now comes straight from Swiss Ephemeris's own `SE_SIDM_LAHIRI`, so there's no approximation-error residual to track here (unlike the old `AyanamshaCorrection`, which had a documented ~36 arcsec/year drift risk). Any future calculator needing a longitude should call `SwissEphemerisProvider.GetSiderealPositions()` and derive everything else via `AstroMath` — never reach for a raw tropical longitude and subtract an ayanamsha by hand.
@@ -182,7 +182,7 @@ interface is planet-position/house shaped, and Dasha has no such shape — but i
   `D:\@ClaudeSpace\methods_prodmag.md`.
 
 Full build/decision history (scope decisions, the SQL review that caught a real join bug before it
-ran, palette-validation detail): see the dated section in `cproj_vedic_horo_gen.md`.
+ran, palette-validation detail): see the dated section in `ikiastrro.md`.
 
 ## Deleting a saved chart
 
@@ -191,13 +191,13 @@ ran, palette-validation detail): see the dated section in `cproj_vedic_horo_gen.
 ## Extending later
 
 This path has now been walked five times — D9 (2026-08-24), then D2/D6/D10/D11 (2026-08-30, mirroring the D9 pair line-for-line). Adding another chart type (e.g. D3, D7, D12) gets full dignity/house-lordship/conjunction/aspect analytics **and** nakshatra linkage **for free**, with no new tables and almost no new code:
-1. Implement `IChartCalculator` in `VedicHoroGen.Core/Calculators/` — two methods: `ComputeAnalysisInput` (Ascendant + planet placements, as a `ChartAnalysisInput`) and `BuildResult` (packages that into the `ChartResult` row to store). The varga-sign math is one pure `AstroMath` function (transcribe it verbatim from PyJHora `charts.py` `chart_method=1`, add worked examples to `verify-vargas`).
+1. Implement `IChartCalculator` in `Ikiastrro.Core/Calculators/` — two methods: `ComputeAnalysisInput` (Ascendant + planet placements, as a `ChartAnalysisInput`) and `BuildResult` (packages that into the `ChartResult` row to store). The varga-sign math is one pure `AstroMath` function (transcribe it verbatim from PyJHora `charts.py` `chart_method=1`, add worked examples to `verify-vargas`).
 2. Register it in `ChartCalculationOrchestrator.CreateDefault()`. (`ChartCalculationOrchestrator.Calculators` exposes the list to the CLI.)
 3. That's it — the CLI and Web write paths already loop over every registered calculator generically and call `ChartAnalyzer.Compute` on each one's `ChartAnalysisInput`, so the new chart type's `tbl_Chart_KeyDetails`/`HouseLords`/`Conjunctions`/`Aspects` rows get written automatically. No database schema change needed either — `tbl_ChartResults` already stores arbitrary `ChartType` rows, and the 4 analytical tables are chart-type-generic (see above).
-4. `dotnet run --project src/VedicHoroGen.Cli -- backfill-charts` creates every registered chart type a saved person is missing (ChartResult + all analytics), idempotently — the way D2/D6/D10/D11 were backfilled for the 5 existing people. (`-- backfill-analytics` only fills analytics for ChartResults that already exist; `-- recompute-keydetails` re-derives KeyDetails for every calculable chart type, e.g. after a column is added.)
+4. `dotnet run --project src/Ikiastrro.Cli -- backfill-charts` creates every registered chart type a saved person is missing (ChartResult + all analytics), idempotently — the way D2/D6/D10/D11 were backfilled for the 5 existing people. (`-- backfill-analytics` only fills analytics for ChartResults that already exist; `-- recompute-keydetails` re-derives KeyDetails for every calculable chart type, e.g. after a column is added.)
 5. **The visual chart still needs manual wiring** (this part is *not* automatic — see "Known limitations" above): in `ChartView.razor`, add `[Parameter]`s for the new chart's `KeyDetails`/`Aspects` (mirroring `D9KeyDetails`/`D9Aspects`), a computed `D1ChartViewModel.BuildAspectedByGlyphs(...)` property (mirroring `D9AspectedByGlyphs`), and a new `<SouthIndianGrid>` passing that into `AspectedByGlyphs`; then fetch and pass the new chart's rows from `ChartDetail.razor`'s `OnParametersSet` the same way `d9KeyDetails`/`d9Aspects` are fetched today.
 
-See `D:\@ClaudeSpace\cproj_vedic_horo_gen.md` for full project history/decisions, including the competitor-tool research and varga comparison matrix.
+See `D:\@ClaudeSpace\ikiastrro.md` for full project history/decisions, including the competitor-tool research and varga comparison matrix.
 
 ## Reference/master data tables (migrations 019-021)
 
@@ -208,7 +208,7 @@ Rashi rows), `tbl_PlanetSignTransitEvents` (Saturn/Jupiter/Rahu sign-boundary cr
 **table only, 0 rows yet**, backfill needs a new CLI mode), `tbl_Nakshatras` (27),
 `tbl_NakshatraPadas` (108, with verified 1:1 Pada↔Navamsa mapping), `tbl_NakshatraSubLords`
 (243, KP sub-lord levels 1-2 only). Full design rationale, classical cross-references, and
-what's still NULL pending a sourced reference: `D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\vedic-reference-tables.md`.
+what's still NULL pending a sourced reference: `D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md`.
 
 Not yet wired into the calculation engine — `ClassicalDignity.cs`/`AstroMath.cs` still hold
 their own hardcoded lookups, cross-checked to match these tables' seed data but not reading
@@ -223,7 +223,7 @@ independent C# implementation of the KP level-2 division, verified row-for-row a
 `tbl_NakshatraSubLords` (not reading from it).
 
 `tbl_PlanetSignTransitEvents` is now populated (1930-2060, Saturn/Jupiter/Rahu) via
-`dotnet run --project src/VedicHoroGen.Cli -- backfill-planet-transits`, following a
+`dotnet run --project src/Ikiastrro.Cli -- backfill-planet-transits`, following a
 `precheck-planet-transits` dry-run cross-checked against published Vedic sidereal transit
 dates first. See `PlanetTransitEventFinder` (Core) for the day-walk/bisection algorithm.
 
@@ -236,7 +236,7 @@ longer source-blocked**: the classical benefic-place contribution tables were pr
 back "pending a cited source", and that source is now in the repo —
 `_research/jyotishganit/jyotishganit/components/ashtakavarga.py` (MIT-licensed, BPHS-based,
 test-covered: `tests/test_ashtakavarga.py`) implements Bhinnashtakavarga + Sarvashtakavarga and
-can be ported to `VedicHoroGen.Core` with attribution, the same way the varga formulas were
+can be ported to `Ikiastrro.Core` with attribution, the same way the varga formulas were
 transcribed from PyJHora. Shadbala is in the same position (`.../components/strengths.py`, MIT,
 all six balas). Only the Sodhya/Rasi/Graha Pinda *reduction* step (Trikona + Ekadhipatya
 Shodhana) still needs BPHS/PyJHora as a reference — jyotishganit stops at the BAV/SAV grids.
@@ -248,21 +248,62 @@ mirrored in `tbl_Rule_*` tables (`tbl_Rule_Sets`, `tbl_Rule_AspectOffset`,
 `tbl_Rule_CombustionOrb`, `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance`),
 each scoped by a `RuleSetId` so a future rule change is a new row set, never an edit — read via
 `RuleSetRepository`/`AspectRuleRepository`/`CombustionRuleRepository`/
-`NaturalRelationshipRuleRepository` (`VedicHoroGen.Data`) and inspectable via
-`dotnet run --project src/VedicHoroGen.Cli -- list-rule-sets` /
+`NaturalRelationshipRuleRepository` (`Ikiastrro.Data`) and inspectable via
+`dotnet run --project src/Ikiastrro.Cli -- list-rule-sets` /
 `show-rules <id>`. **The calculation engine does not read these tables yet** — the hardcoded
 C# dictionaries are still what actually runs; the rule tables are a verified-matching mirror,
 not yet the source of truth. Full design + Phase 2 scope (renaming `tbl_Chart_*` into
 `tbl_Fact_*`/`tbl_Dim_*` and wiring the calculators to read live):
-`D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\star-schema-rules-engine.md`. New tables from 2026-08-30 onward
+`D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md`. New tables from 2026-08-30 onward
 must use the `tbl_Dim_`/`tbl_Rule_`/`tbl_Fact_` infix — see `STANDARDS.md` §D.1.
 
-## House + Lagna significations (design stage, 2026-08-30)
+## House + Lagna significations
 
-Not yet built. Design doc + full sourcing: `D:\@ClaudeSpace\cproj_vedic_horo_gen\docs\house-lagna-significations.md`.
-Three new static `tbl_Dim_*` tables scoped, sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`
-(B.V. Raman): `tbl_Dim_HouseSignification` (12-house natural significations), `tbl_Dim_PlanetSignification`
-+ `tbl_Dim_PlanetHouseKaraka` (Sthira Karaka role-per-planet, e.g. Jupiter=Dhanakaraka/2nd), and
-`tbl_Dim_LagnaFunctionalNature` (functional benefic/malefic per Lagna, all 12 signs, with 3 rows
-flagged NULL where the source itself doesn't classify a planet). Migrations 030/031. Pending
-ICE scoring in `methods_prodmag.md` before build.
+Design doc + full sourcing: `D:\@ClaudeSpace\ikiastrro\docs\house-lagna-significations.md`.
+Sourced from `BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman).
+
+- **`tbl_Dim_LagnaFunctionalNature` — built 2026-08-30, migration `031`.** Raman's 12-Lagna
+  "Benefics and Malefics for each Lagna" table, verbatim: 84 rows (12 Lagnas × 7 classical
+  planets), 3 seeded `NULL` (Aries→Moon, Gemini→Saturn, Aquarius→Saturn — the book never
+  classifies them), 6 `Yogakaraka`. A **cross-check mirror — the engine does not read it**
+  (same pattern as `tbl_Rule_*`). Read via `LagnaFunctionalNatureRepository.GetForLagna(byte)`.
+- **`tbl_Dim_HouseSignification` / `tbl_Dim_PlanetSignification` / `tbl_Dim_PlanetHouseKaraka`
+  (migration `030`) — still reserved/unapplied.** `LifeAreaMap` (Core) currently hardcodes the
+  house/karaka-per-life-area data these tables will hold, cross-checked to the same source.
+
+## Functional benefic/malefic classifier + shared write path (2026-08-30, groundwork for the Web UI recreate)
+
+The project is now **under git** (`master`; baseline `363eeeb` = pre-recreate state — all
+history before that lives only in `D:\@ClaudeSpace\ikiastrro.md`). This batch is
+DB/Core/CLI only — **no Web `.razor`/CSS change** (the Web app still renders the pre-recreate
+D1+D9 view; the life-area UI rebuild is the next plan). Spec:
+`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`.
+
+- **`LagnaFunctionalNature`** (`Core/Calculators/`) — pure Parashari classifier: given a Lagna
+  sign + planet, returns `Benefic | Malefic | Neutral | Yogakaraka` derived from which houses the
+  planet rules from that Lagna, plus `IsMaraka` / `KendradhipatiDosha` / a rationale string. A
+  documented heuristic; it diverges from the `tbl_Dim_LagnaFunctionalNature` book table on **17
+  of 84 cells** (all mixed-lordship planets on the Neutral boundary — no polarity or yogakaraka
+  flips). The later Web UI shows both side by side; `-- compare-functional-nature` prints the set.
+- **`ChartGenerationService`** (`Data/`) — the single "given a persisted `BirthDetails`, compute
+  and store every registered chart type + Vimshottari Dasha" pipeline. `GenerateAll` /
+  `GenerateMissing` / `RecomputeAnalytics(bd, chartTypeFilter?)` → `GenerationReport`. Composes
+  `ChartCalculationOrchestrator` + `ChartAnalyzer` + `VimshottariDashaService` (does not
+  reimplement Dasha). **Both `Add.razor` and the CLI** (`compute-all`, `backfill-charts`,
+  `backfill-analytics`, `recompute-keydetails`, the interactive add flow) now call it instead of
+  each carrying their own copy of the pipeline. Idempotent via delete-first-then-regenerate;
+  **no cross-repo DB transaction** (the repo layer opens a connection per call) — a partial
+  failure is recovered by re-running the same call. The cutover incidentally fixed two latent
+  bugs: `Add.razor` never computed Dasha (web-added people had an empty Dasha section), and old
+  `backfill-analytics` threw on any person that had a `VimshottariDasha` ChartResults row.
+- **New read repositories** (for the later Web UI; not yet consumed): `GetByBirthDetailId(int)`
+  on all four `tbl_Chart_*` repos (one-shot per-person load, ordered by `Id`);
+  `SadeSatiRepository` (`tvf_Chart_SadeSatiPeriods`), `HouseNakshatraSpanRepository`
+  (`vw_Chart_HouseNakshatraSpan`), `PlanetSignTransitEventsRepository.GetSnapshot` (current
+  sign + since/next-change); and `PlanetsReferenceRepository` / `SignAttributesRepository` /
+  `NakshatraReferenceRepository` over the `tbl_Planets` / `tbl_SignAttributes` / `tbl_Nakshatras`
+  (+Padas+SubLords) dimension tables.
+- **`LifeAreaMap`** (`Core/LifeAreas/`) — static `LifeArea` → (houses, karakas, vargas) map for
+  the four life-area workspace tabs (Personality & Health / Relationships / Career / Money).
+- Rename: `D1ChartViewModel` / `D1PlanetRow` → **`ChartViewModel` / `PlanetRow`** (the types were
+  already chart-type-agnostic).

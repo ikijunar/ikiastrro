@@ -4,9 +4,9 @@
 
 **Goal:** Land the Core / Data / CLI / DB groundwork the life-area Web UI depends on — renames, the functional benefic/malefic computation, batch and new read repositories, a shared chart-generation service, and migration 031 — with no visible UI change.
 
-**Architecture:** Additive. Two mechanical renames in Core; one new pure Core class (`LagnaFunctionalNature`) verified by a CLI assertion mode in the mould of `verify-vargas`; new read methods on existing Dapper repositories plus a few new thin ones; one new `VedicHoroGen.Data` service (`ChartGenerationService`) that both the Blazor `Add.razor` and the CLI call in place of their duplicated compute-and-store pipelines; one new DB migration. No chart-schema change.
+**Architecture:** Additive. Two mechanical renames in Core; one new pure Core class (`LagnaFunctionalNature`) verified by a CLI assertion mode in the mould of `verify-vargas`; new read methods on existing Dapper repositories plus a few new thin ones; one new `Ikiastrro.Data` service (`ChartGenerationService`) that both the Blazor `Add.razor` and the CLI call in place of their duplicated compute-and-store pipelines; one new DB migration. No chart-schema change.
 
-**Tech Stack:** .NET 8 / C# (`VedicHoroGen.Core`, `.Data`, `.Cli`, `.Web`), Dapper, MS SQL Server (Windows Auth, `localhost`, DB `vedic_horo_gen`), SwissEphNet. Build/run: `dotnet build`, `dotnet run --project src/VedicHoroGen.Cli -- <mode>`. Migrations: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db\NNN_*.sql`.
+**Tech Stack:** .NET 8 / C# (`Ikiastrro.Core`, `.Data`, `.Cli`, `.Web`), Dapper, MS SQL Server (Windows Auth, `localhost`, DB `vedic_horo_gen`), SwissEphNet. Build/run: `dotnet build`, `dotnet run --project src/Ikiastrro.Cli -- <mode>`. Migrations: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db\NNN_*.sql`.
 
 **Spec:** `docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md` (this plan implements its **Phase 0** — §2, §5 renames, §6.1, §7, §8, §11, §12; the UI Phases 1–6 are Plan 2).
 
@@ -17,8 +17,8 @@
 - **No UI change in this plan.** `Add.razor` is edited only to call the new service (behaviour-equivalent + it now also computes Dasha). No `.razor` markup, no CSS.
 - **Migration numbering:** `030` stays reserved (unapplied) for house significations; this plan uses **`031`** only. `032`–`034` are already applied.
 - **ID conventions (verified in existing repos):** `tbl_Planets.Id = (int)PlanetName + 1` (Sun=1 … Saturn=7, Rahu=8, Ketu=9). `tbl_SignAttributes.Id = (int)ZodiacName + 1` (Aries=1 … Capricornus=10 … Pisces=12).
-- **`ZodiacName`** (`src/VedicHoroGen.Core/Astro/ZodiacName.cs`): `Aries=0 … Capricornus=9 … Pisces=11`. The Latin `Capricornus` spelling is deliberate.
-- **`PlanetName`** (`src/VedicHoroGen.Core/Astro/PlanetName.cs`): `Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu` (0–8). `PlanetNames.All9` is the ordered list.
+- **`ZodiacName`** (`src/Ikiastrro.Core/Astro/ZodiacName.cs`): `Aries=0 … Capricornus=9 … Pisces=11`. The Latin `Capricornus` spelling is deliberate.
+- **`PlanetName`** (`src/Ikiastrro.Core/Astro/PlanetName.cs`): `Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu` (0–8). `PlanetNames.All9` is the ordered list.
 - **`EngineVersion`** string for any new `ChartResult`: reuse whatever the calculators already emit — this plan does not create `ChartResult` rows by hand.
 - **Transactions:** the repo layer opens a connection per call and no write method accepts an injected transaction. Rather than overload every repo, `ChartGenerationService` uses **delete-all-first-then-regenerate** ordering so any partial failure is fully recovered by re-running the same call. A true cross-repo DB transaction is deferred (would require injecting a connection into every `tbl_Chart_*` write method) — noted against spec §11.
 
@@ -27,29 +27,29 @@
 ## File Structure
 
 **Core**
-- `src/VedicHoroGen.Core/Calculators/D1ChartViewModel.cs` → **rename to** `ChartViewModel.cs` (class `D1ChartViewModel` → `ChartViewModel`; record `D1PlanetRow` → `PlanetRow`).
-- `src/VedicHoroGen.Core/Calculators/LagnaFunctionalNature.cs` — **new.** Pure Parashari functional-nature heuristic + yogakaraka detection.
-- `src/VedicHoroGen.Core/LifeArea/LifeAreaMap.cs` — **new.** `enum LifeArea` + static per-area spec (houses / karakas / vargas). Consumed by Plan 2 only, delivered here so Plan 2 binds to a real type.
+- `src/Ikiastrro.Core/Calculators/D1ChartViewModel.cs` → **rename to** `ChartViewModel.cs` (class `D1ChartViewModel` → `ChartViewModel`; record `D1PlanetRow` → `PlanetRow`).
+- `src/Ikiastrro.Core/Calculators/LagnaFunctionalNature.cs` — **new.** Pure Parashari functional-nature heuristic + yogakaraka detection.
+- `src/Ikiastrro.Core/LifeArea/LifeAreaMap.cs` — **new.** `enum LifeArea` + static per-area spec (houses / karakas / vargas). Consumed by Plan 2 only, delivered here so Plan 2 binds to a real type.
 
 **Data**
-- `src/VedicHoroGen.Data/ChartKeyDetailsRepository.cs`, `ChartHouseLordsRepository.cs`, `ChartConjunctionsRepository.cs`, `ChartAspectsRepository.cs` — **modify:** add `GetByBirthDetailId(int)`.
-- `src/VedicHoroGen.Data/PlanetSignTransitEventsRepository.cs` — **modify:** add `GetCurrentSign` + `GetNextChange`.
-- `src/VedicHoroGen.Data/SadeSatiRepository.cs` — **new.** `tvf_Chart_SadeSatiPeriods`.
-- `src/VedicHoroGen.Data/HouseNakshatraSpanRepository.cs` — **new.** `vw_Chart_HouseNakshatraSpan`.
-- `src/VedicHoroGen.Data/PlanetsReferenceRepository.cs`, `SignAttributesRepository.cs`, `NakshatraReferenceRepository.cs` — **new.** Plain reads over `tbl_Planets` / `tbl_SignAttributes` / `tbl_Nakshatras`(+`Padas`+`SubLords`).
-- `src/VedicHoroGen.Data/LagnaFunctionalNatureRepository.cs` — **new.** `GetForLagna(byte)` over `tbl_Dim_LagnaFunctionalNature`.
-- `src/VedicHoroGen.Data/ChartGenerationService.cs` — **new.** `GenerateAll` / `GenerateMissing` / `RecomputeAnalytics`.
+- `src/Ikiastrro.Data/ChartKeyDetailsRepository.cs`, `ChartHouseLordsRepository.cs`, `ChartConjunctionsRepository.cs`, `ChartAspectsRepository.cs` — **modify:** add `GetByBirthDetailId(int)`.
+- `src/Ikiastrro.Data/PlanetSignTransitEventsRepository.cs` — **modify:** add `GetCurrentSign` + `GetNextChange`.
+- `src/Ikiastrro.Data/SadeSatiRepository.cs` — **new.** `tvf_Chart_SadeSatiPeriods`.
+- `src/Ikiastrro.Data/HouseNakshatraSpanRepository.cs` — **new.** `vw_Chart_HouseNakshatraSpan`.
+- `src/Ikiastrro.Data/PlanetsReferenceRepository.cs`, `SignAttributesRepository.cs`, `NakshatraReferenceRepository.cs` — **new.** Plain reads over `tbl_Planets` / `tbl_SignAttributes` / `tbl_Nakshatras`(+`Padas`+`SubLords`).
+- `src/Ikiastrro.Data/LagnaFunctionalNatureRepository.cs` — **new.** `GetForLagna(byte)` over `tbl_Dim_LagnaFunctionalNature`.
+- `src/Ikiastrro.Data/ChartGenerationService.cs` — **new.** `GenerateAll` / `GenerateMissing` / `RecomputeAnalytics`.
 
-**Core Models (new records — one file each under `src/VedicHoroGen.Core/Models/`)**
+**Core Models (new records — one file each under `src/Ikiastrro.Core/Models/`)**
 - `SadeSatiPeriod.cs`, `HouseNakshatraSpanRow.cs`, `PlanetTransitSnapshot.cs`, `PlanetReference.cs`, `SignAttributeReference.cs`, `NakshatraReference.cs`, `NakshatraPadaReference.cs`, `NakshatraSubLordReference.cs`, `LagnaFunctionalNatureRow.cs`.
 
 **CLI**
-- `src/VedicHoroGen.Cli/Program.cs` — **modify:** add `verify-functional-nature` mode; construct one `ChartGenerationService`; route `backfill-analytics`, `backfill-charts`, `recompute-keydetails`, the main add flow through it; add `compute-all <name>` mode.
+- `src/Ikiastrro.Cli/Program.cs` — **modify:** add `verify-functional-nature` mode; construct one `ChartGenerationService`; route `backfill-analytics`, `backfill-charts`, `recompute-keydetails`, the main add flow through it; add `compute-all <name>` mode.
 
 **Web**
-- `src/VedicHoroGen.Web/Program.cs` — **modify:** register `ChartGenerationService` + its dependencies in DI.
-- `src/VedicHoroGen.Web/Components/Pages/Add.razor` — **modify:** `HandleSubmit` calls `ChartGenerationService.GenerateAll` instead of the inline pipeline.
-- `src/VedicHoroGen.Web/Components/Charts/ChartView.razor` — **modify:** update `D1ChartViewModel` / `D1PlanetRow` references to the new names (Task 1).
+- `src/Ikiastrro.Web/Program.cs` — **modify:** register `ChartGenerationService` + its dependencies in DI.
+- `src/Ikiastrro.Web/Components/Pages/Add.razor` — **modify:** `HandleSubmit` calls `ChartGenerationService.GenerateAll` instead of the inline pipeline.
+- `src/Ikiastrro.Web/Components/Charts/ChartView.razor` — **modify:** update `D1ChartViewModel` / `D1PlanetRow` references to the new names (Task 1).
 
 **DB**
 - `db/031_create_lagna_functional_nature.sql` — **new.**
@@ -59,13 +59,13 @@
 ## Task 1: Rename `D1ChartViewModel` → `ChartViewModel`, `D1PlanetRow` → `PlanetRow`
 
 **Files:**
-- Rename: `src/VedicHoroGen.Core/Calculators/D1ChartViewModel.cs` → `src/VedicHoroGen.Core/Calculators/ChartViewModel.cs`
+- Rename: `src/Ikiastrro.Core/Calculators/D1ChartViewModel.cs` → `src/Ikiastrro.Core/Calculators/ChartViewModel.cs`
 - Modify: that file's contents (class + record + any internal self-references)
-- Modify: `src/VedicHoroGen.Web/Components/Charts/ChartView.razor` (all `D1ChartViewModel.` and `D1PlanetRow` references)
+- Modify: `src/Ikiastrro.Web/Components/Charts/ChartView.razor` (all `D1ChartViewModel.` and `D1PlanetRow` references)
 - Modify: any other referencing file surfaced by the grep in Step 1
 
 **Interfaces:**
-- Produces: `VedicHoroGen.Core.Calculators.ChartViewModel` (was `D1ChartViewModel`) with the same static members — `BuildPlanetRows`, `BuildAspectedByGlyphs`, `DignityToken`, `PlanetGlyph`, `DirectionLabel`, `CombustionLabel` (names unchanged, only the containing type renamed); `VedicHoroGen.Core.Calculators.PlanetRow` (was `D1PlanetRow`) with the same fields.
+- Produces: `Ikiastrro.Core.Calculators.ChartViewModel` (was `D1ChartViewModel`) with the same static members — `BuildPlanetRows`, `BuildAspectedByGlyphs`, `DignityToken`, `PlanetGlyph`, `DirectionLabel`, `CombustionLabel` (names unchanged, only the containing type renamed); `Ikiastrro.Core.Calculators.PlanetRow` (was `D1PlanetRow`) with the same fields.
 
 - [ ] **Step 1: Enumerate every reference**
 
@@ -75,15 +75,15 @@ Expected: hits in `Calculators/D1ChartViewModel.cs` and `Web/Components/Charts/C
 - [ ] **Step 2: Rename the file and its types**
 
 ```bash
-git mv src/VedicHoroGen.Core/Calculators/D1ChartViewModel.cs src/VedicHoroGen.Core/Calculators/ChartViewModel.cs 2>/dev/null \
-  || mv src/VedicHoroGen.Core/Calculators/D1ChartViewModel.cs src/VedicHoroGen.Core/Calculators/ChartViewModel.cs
+git mv src/Ikiastrro.Core/Calculators/D1ChartViewModel.cs src/Ikiastrro.Core/Calculators/ChartViewModel.cs 2>/dev/null \
+  || mv src/Ikiastrro.Core/Calculators/D1ChartViewModel.cs src/Ikiastrro.Core/Calculators/ChartViewModel.cs
 ```
 
 In `ChartViewModel.cs`: replace `class D1ChartViewModel` → `class ChartViewModel`; `record D1PlanetRow` → `record PlanetRow` (and its constructor name if positional); every in-file `D1PlanetRow` → `PlanetRow`; every in-file `D1ChartViewModel.` → `ChartViewModel.`. Update the XML doc-comment summary if it names "D1" as a limitation ("the D1 chart's view model" → "a chart's view model — chart-type-agnostic").
 
 - [ ] **Step 3: Update the Web references**
 
-In `src/VedicHoroGen.Web/Components/Charts/ChartView.razor`, replace every `D1ChartViewModel.` → `ChartViewModel.` and every `D1PlanetRow` → `PlanetRow`. Apply the same to any other file from Step 1.
+In `src/Ikiastrro.Web/Components/Charts/ChartView.razor`, replace every `D1ChartViewModel.` → `ChartViewModel.` and every `D1PlanetRow` → `PlanetRow`. Apply the same to any other file from Step 1.
 
 - [ ] **Step 4: Build the whole solution**
 
@@ -97,20 +97,20 @@ Expected: PASS, 0 errors. (This is the only verification — the rename is behav
 ## Task 2: `LagnaFunctionalNature` (Core) + `verify-functional-nature` CLI mode
 
 **Files:**
-- Create: `src/VedicHoroGen.Core/Calculators/LagnaFunctionalNature.cs`
-- Modify: `src/VedicHoroGen.Cli/Program.cs` (new `verify-functional-nature` mode, next to the existing `verify-vargas` block — search for `args[0] == "verify-vargas"`)
+- Create: `src/Ikiastrro.Core/Calculators/LagnaFunctionalNature.cs`
+- Modify: `src/Ikiastrro.Cli/Program.cs` (new `verify-functional-nature` mode, next to the existing `verify-vargas` block — search for `args[0] == "verify-vargas"`)
 
 **Interfaces:**
 - Consumes: `ClassicalDignity.GetSignLord(ZodiacName) : string` (returns a plain planet name like `"Saturn"`); `AstroMath.CountFromSignToSign(ZodiacName from, ZodiacName to) : int` (1-based, same sign = 1); `ZodiacName`, `PlanetName` enums.
 - Produces:
-  - `enum VedicHoroGen.Core.Calculators.FunctionalNature { Benefic, Malefic, Neutral, Yogakaraka }`
-  - `record VedicHoroGen.Core.Calculators.FunctionalNatureResult(FunctionalNature Nature, int[] RuledHouses, bool IsMaraka, bool KendradhipatiDosha, string Rationale)`
+  - `enum Ikiastrro.Core.Calculators.FunctionalNature { Benefic, Malefic, Neutral, Yogakaraka }`
+  - `record Ikiastrro.Core.Calculators.FunctionalNatureResult(FunctionalNature Nature, int[] RuledHouses, bool IsMaraka, bool KendradhipatiDosha, string Rationale)`
   - `static FunctionalNatureResult LagnaFunctionalNature.For(ZodiacName lagnaSign, PlanetName planet)` — defined for the 7 classical planets (`Sun`…`Saturn`); throws `ArgumentOutOfRangeException` for `Rahu`/`Ketu`.
-  - CLI: `dotnet run --project src/VedicHoroGen.Cli -- verify-functional-nature` → PASS/FAIL per case, exit `1` if any FAIL.
+  - CLI: `dotnet run --project src/Ikiastrro.Cli -- verify-functional-nature` → PASS/FAIL per case, exit `1` if any FAIL.
 
 - [ ] **Step 1: Add the `verify-functional-nature` mode (will not compile yet)**
 
-In `src/VedicHoroGen.Cli/Program.cs`, immediately after the closing brace of the `if (args.Length > 0 && args[0] == "verify-vargas") { … }` block, insert:
+In `src/Ikiastrro.Cli/Program.cs`, immediately after the closing brace of the `if (args.Length > 0 && args[0] == "verify-vargas") { … }` block, insert:
 
 ```csharp
 // --- One-off check: `dotnet run -- verify-functional-nature` ---
@@ -161,19 +161,19 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
 }
 ```
 
-Add `using VedicHoroGen.Core.Calculators;` at the top of `Program.cs` if not already present.
+Add `using Ikiastrro.Core.Calculators;` at the top of `Program.cs` if not already present.
 
 - [ ] **Step 2: Build — expect failure**
 
-Run: `dotnet build src/VedicHoroGen.Cli`
+Run: `dotnet build src/Ikiastrro.Cli`
 Expected: FAIL — `CS0246`/`CS0103` for `LagnaFunctionalNature`, `FunctionalNature`, `FunctionalNatureResult`.
 
 - [ ] **Step 3: Implement `LagnaFunctionalNature.cs`**
 
 ```csharp
-using VedicHoroGen.Core.Astro;
+using Ikiastrro.Core.Astro;
 
-namespace VedicHoroGen.Core.Calculators;
+namespace Ikiastrro.Core.Calculators;
 
 /// <summary>Parashari functional nature of a planet with respect to a Lagna — Benefic / Malefic /
 /// Neutral / Yogakaraka — derived from which houses the planet rules from that Lagna.
@@ -267,7 +267,7 @@ public record FunctionalNatureResult(
 
 - [ ] **Step 4: Build + run — expect all PASS**
 
-Run: `dotnet build src/VedicHoroGen.Cli && dotnet run --project src/VedicHoroGen.Cli -- verify-functional-nature`
+Run: `dotnet build src/Ikiastrro.Cli && dotnet run --project src/Ikiastrro.Cli -- verify-functional-nature`
 Expected: every line `[PASS]`, final line `verify-functional-nature: ALL PASS`, exit 0.
 If `Aries/Jupiter houses` fails: check `AstroMath.CountFromSignToSign(Aries, Sagittarius)` = 9 and `(Aries, Pisces)` = 12 — the expected `{9,12}` assumes Jupiter rules Sagittarius + Pisces (it does). If `Leo/Mars` fails as `Benefic` not `Yogakaraka`: Mars rules Aries (9th from Leo) + Scorpio (4th from Leo) → `{4,9}` → hasKendra ∧ hasTrikona → Yogakaraka. Confirm `GetSignLord` returns `"Mars"` exactly (case-sensitive `planet.ToString()`).
 
@@ -278,19 +278,19 @@ If `Aries/Jupiter houses` fails: check `AstroMath.CountFromSignToSign(Aries, Sag
 ## Task 2b: `LifeAreaMap` (Core, static data)
 
 **Files:**
-- Create: `src/VedicHoroGen.Core/LifeArea/LifeAreaMap.cs`
+- Create: `src/Ikiastrro.Core/LifeArea/LifeAreaMap.cs`
 
 **Interfaces:**
 - Produces:
-  - `enum VedicHoroGen.Core.LifeArea.LifeArea { PersonalityHealth, Relationships, Career, Money }`
-  - `record VedicHoroGen.Core.LifeArea.LifeAreaSpec(int[] Houses, string[] Karakas, string[] Vargas, string DefaultVarga)` — `Karakas` are plain planet-name strings (`"Sun"`), matching `ChartKeyDetail.Planet`; `Vargas`/`DefaultVarga` are chart-type strings (`"D6"`).
+  - `enum Ikiastrro.Core.LifeArea.LifeArea { PersonalityHealth, Relationships, Career, Money }`
+  - `record Ikiastrro.Core.LifeArea.LifeAreaSpec(int[] Houses, string[] Karakas, string[] Vargas, string DefaultVarga)` — `Karakas` are plain planet-name strings (`"Sun"`), matching `ChartKeyDetail.Planet`; `Vargas`/`DefaultVarga` are chart-type strings (`"D6"`).
   - `static IReadOnlyDictionary<LifeArea, LifeAreaSpec> LifeAreaMap.Specs`
 - Consumes: nothing. Pure reference data (B.V. Raman house significations, `how-to-judge-a-horoscope-1.md` p.12-13; same basis as the reserved migration 030). No Phase-0 caller — delivered here so Plan 2's `LifeAreaTab` binds to a real type.
 
 - [ ] **Step 1: Create `LifeAreaMap.cs`**
 
 ```csharp
-namespace VedicHoroGen.Core.LifeArea;
+namespace Ikiastrro.Core.LifeArea;
 
 /// <summary>The four life-area groupings the Web workspace is organised around.</summary>
 public enum LifeArea { PersonalityHealth, Relationships, Career, Money }
@@ -332,7 +332,7 @@ public static class LifeAreaMap
 
 - [ ] **Step 2: Build**
 
-Run: `dotnet build src/VedicHoroGen.Core`
+Run: `dotnet build src/Ikiastrro.Core`
 Expected: PASS. (Pure data — no behaviour to assert beyond compilation; `LifeAreaTab` exercises it in Plan 2.)
 
 - [ ] **Step 3: Checkpoint** — Task 2b complete.
@@ -342,10 +342,10 @@ Expected: PASS. (Pure data — no behaviour to assert beyond compilation; `LifeA
 ## Task 3: `GetByBirthDetailId` batch reads on the 4 chart analytics repos
 
 **Files:**
-- Modify: `src/VedicHoroGen.Data/ChartKeyDetailsRepository.cs`
-- Modify: `src/VedicHoroGen.Data/ChartHouseLordsRepository.cs`
-- Modify: `src/VedicHoroGen.Data/ChartConjunctionsRepository.cs`
-- Modify: `src/VedicHoroGen.Data/ChartAspectsRepository.cs`
+- Modify: `src/Ikiastrro.Data/ChartKeyDetailsRepository.cs`
+- Modify: `src/Ikiastrro.Data/ChartHouseLordsRepository.cs`
+- Modify: `src/Ikiastrro.Data/ChartConjunctionsRepository.cs`
+- Modify: `src/Ikiastrro.Data/ChartAspectsRepository.cs`
 
 **Interfaces:**
 - Produces on each repo: `IReadOnlyList<T> GetByBirthDetailId(int birthDetailId)` returning every row for that person across **all** chart types, ordered by `Id` — where `T` is `ChartKeyDetail` / `ChartHouseLord` / `ChartConjunction` / `ChartAspect` respectively.
@@ -376,7 +376,7 @@ Same method, changing type + table:
 
 - [ ] **Step 3: Build**
 
-Run: `dotnet build src/VedicHoroGen.Data`
+Run: `dotnet build src/Ikiastrro.Data`
 Expected: PASS.
 
 - [ ] **Step 4: Verify against the per-chart-result reads (SQL parity)**
@@ -400,12 +400,12 @@ Expected: the two counts are **equal** (the `GetByBirthDetailId` filter and the 
 ## Task 4: New read repos — Sade Sati, transit snapshot, house-nakshatra span
 
 **Files:**
-- Create: `src/VedicHoroGen.Core/Models/SadeSatiPeriod.cs`
-- Create: `src/VedicHoroGen.Core/Models/HouseNakshatraSpanRow.cs`
-- Create: `src/VedicHoroGen.Core/Models/PlanetTransitSnapshot.cs`
-- Create: `src/VedicHoroGen.Data/SadeSatiRepository.cs`
-- Create: `src/VedicHoroGen.Data/HouseNakshatraSpanRepository.cs`
-- Modify: `src/VedicHoroGen.Data/PlanetSignTransitEventsRepository.cs`
+- Create: `src/Ikiastrro.Core/Models/SadeSatiPeriod.cs`
+- Create: `src/Ikiastrro.Core/Models/HouseNakshatraSpanRow.cs`
+- Create: `src/Ikiastrro.Core/Models/PlanetTransitSnapshot.cs`
+- Create: `src/Ikiastrro.Data/SadeSatiRepository.cs`
+- Create: `src/Ikiastrro.Data/HouseNakshatraSpanRepository.cs`
+- Modify: `src/Ikiastrro.Data/PlanetSignTransitEventsRepository.cs`
 
 **Interfaces:**
 - Consumes: `tvf_Chart_SadeSatiPeriods(@BirthDetailId)` — columns `PeriodType VARCHAR`, `SortOrder INT`, `StartDateTimeUtc DATETIME2 NULL`, `EndDateTimeUtc DATETIME2 NULL`, `SaturnSign VARCHAR`. `vw_Chart_HouseNakshatraSpan` — columns `ChartResultId, BirthDetailId, ChartType, HouseNumber, HouseSign, HouseSignId, LordPlanet, NakshatraId, NakshatraName, PadaNumber, PadaStartDegree, PadaEndDegree, NakshatraLordName, NavamsaSignName`. `tvf_PlanetSignAtDate(@PlanetId, @AsOfDateUtc)` — columns `SignId TINYINT, EventDateTimeUtc DATETIME2, MotionDirection VARCHAR`; handles `@PlanetId = 9` (Ketu) internally.
@@ -419,10 +419,10 @@ Expected: the two counts are **equal** (the `GetByBirthDetailId` filter and the 
 
 - [ ] **Step 1: Create the three model records**
 
-`src/VedicHoroGen.Core/Models/SadeSatiPeriod.cs`:
+`src/Ikiastrro.Core/Models/SadeSatiPeriod.cs`:
 
 ```csharp
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 
 /// <summary>One row of tvf_Chart_SadeSatiPeriods — a Saturn-from-natal-Moon affliction window.
 /// PeriodType ∈ SadeSati_Dhaiya1_Rising / SadeSati_Dhaiya2_Peak / SadeSati_Dhaiya3_Setting /
@@ -431,10 +431,10 @@ public record SadeSatiPeriod(
     string PeriodType, int SortOrder, DateTime? StartDateTimeUtc, DateTime? EndDateTimeUtc, string SaturnSign);
 ```
 
-`src/VedicHoroGen.Core/Models/HouseNakshatraSpanRow.cs`:
+`src/Ikiastrro.Core/Models/HouseNakshatraSpanRow.cs`:
 
 ```csharp
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 
 /// <summary>One row of vw_Chart_HouseNakshatraSpan — a (house → sign → nakshatra-pada) slice.
 /// Whole-sign, so each house has exactly 9 pada rows (2.25 nakshatras).</summary>
@@ -444,12 +444,12 @@ public record HouseNakshatraSpanRow(
     decimal PadaStartDegree, decimal PadaEndDegree, string NakshatraLordName, string NavamsaSignName);
 ```
 
-`src/VedicHoroGen.Core/Models/PlanetTransitSnapshot.cs`:
+`src/Ikiastrro.Core/Models/PlanetTransitSnapshot.cs`:
 
 ```csharp
-using VedicHoroGen.Core.Astro;
+using Ikiastrro.Core.Astro;
 
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 
 /// <summary>Where a slow planet (Saturn/Jupiter/Rahu/Ketu) sits sidereally as of a date, plus when it
 /// last entered that sign and when it next leaves — assembled from tbl_PlanetSignTransitEvents.</summary>
@@ -461,9 +461,9 @@ public record PlanetTransitSnapshot(
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Models;
+using Ikiastrro.Core.Models;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>tvf_Chart_SadeSatiPeriods (migration 023) — read-only.</summary>
 public class SadeSatiRepository
@@ -485,9 +485,9 @@ public class SadeSatiRepository
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Models;
+using Ikiastrro.Core.Models;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>vw_Chart_HouseNakshatraSpan (migration 034) — read-only.</summary>
 public class HouseNakshatraSpanRepository
@@ -536,11 +536,11 @@ After `CountByPlanet`, add:
     }
 ```
 
-Add `using VedicHoroGen.Core.Models;` to the file if absent.
+Add `using Ikiastrro.Core.Models;` to the file if absent.
 
 - [ ] **Step 5: Build**
 
-Run: `dotnet build src/VedicHoroGen.Data`
+Run: `dotnet build src/Ikiastrro.Data`
 Expected: PASS. (If Dapper rejects the tuple `QuerySingleOrDefault<(...)?>`, fall back to a private nested `record CurrentRow(byte SignId, DateTime EventDateTimeUtc, string MotionDirection);` and query that.)
 
 - [ ] **Step 6: Verify with `sqlcmd`**
@@ -563,8 +563,8 @@ Expected: `sadesati_rows` > 0; the Saturn row returns one `SignId`; `span_rows` 
 ## Task 5: Reference-data repos (`tbl_Planets`, `tbl_SignAttributes`, `tbl_Nakshatras` + Padas + SubLords)
 
 **Files:**
-- Create: `src/VedicHoroGen.Core/Models/PlanetReference.cs`, `SignAttributeReference.cs`, `NakshatraReference.cs`, `NakshatraPadaReference.cs`, `NakshatraSubLordReference.cs`
-- Create: `src/VedicHoroGen.Data/PlanetsReferenceRepository.cs`, `SignAttributesRepository.cs`, `NakshatraReferenceRepository.cs`
+- Create: `src/Ikiastrro.Core/Models/PlanetReference.cs`, `SignAttributeReference.cs`, `NakshatraReference.cs`, `NakshatraPadaReference.cs`, `NakshatraSubLordReference.cs`
+- Create: `src/Ikiastrro.Data/PlanetsReferenceRepository.cs`, `SignAttributesRepository.cs`, `NakshatraReferenceRepository.cs`
 
 **Interfaces:**
 - Produces: `PlanetsReferenceRepository.GetAll() : IReadOnlyList<PlanetReference>`; `SignAttributesRepository.GetAll() : IReadOnlyList<SignAttributeReference>`; `NakshatraReferenceRepository.GetAll() : IReadOnlyList<NakshatraReference>`, `.GetPadas() : IReadOnlyList<NakshatraPadaReference>`, `.GetSubLords() : IReadOnlyList<NakshatraSubLordReference>`.
@@ -592,13 +592,13 @@ Match property names to columns exactly (Dapper maps by name). Expected shapes (
 
 ```csharp
 // PlanetReference.cs
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 public record PlanetReference(
     byte Id, string PlanetName, string PlanetNameSanskrit, string NaturalNature,
     string? ConditionalRule, bool RulesSign, byte VimshottariYears, byte VimshottariSequenceOrder);
 
 // SignAttributeReference.cs
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 public record SignAttributeReference(
     byte Id, string SignName, string SignNameSanskrit, string ZodiacEnumValue, byte RulingPlanetId,
     string Gender, string Direction, string? RisingType, string SymbolAnimalType, string SymbolDescription,
@@ -609,7 +609,7 @@ public record SignAttributeReference(
 // repo SQL (`type_house_element AS Element`) and add plain props. Confirm from Step 1 and pick one.
 
 // NakshatraReference.cs
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 public record NakshatraReference(
     byte Id, string NakshatraName, decimal StartDegree, decimal EndDegree, byte RulingPlanetId,
     byte SequenceNumber, string? RulingDeity, string? Symbol, string? Guna, string? Gana,
@@ -617,12 +617,12 @@ public record NakshatraReference(
     byte? PrimaryRasiId, bool StraddlesSignBoundary);
 
 // NakshatraPadaReference.cs
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 public record NakshatraPadaReference(
     int Id, byte NakshatraId, byte PadaNumber, decimal StartDegree, decimal EndDegree, byte RasiId, byte NavamsaSignId);
 
 // NakshatraSubLordReference.cs
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 public record NakshatraSubLordReference(
     int Id, byte NakshatraId, byte SubSequenceNumber, byte SubLordId, decimal StartDegree, decimal EndDegree);
 ```
@@ -634,8 +634,8 @@ If `type_house_element` / `type_house_keyattri` / `RulingPlanetNature` exist (th
 ```csharp
 // PlanetsReferenceRepository.cs
 using Dapper;
-using VedicHoroGen.Core.Models;
-namespace VedicHoroGen.Data;
+using Ikiastrro.Core.Models;
+namespace Ikiastrro.Data;
 public class PlanetsReferenceRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;
@@ -651,8 +651,8 @@ public class PlanetsReferenceRepository
 ```csharp
 // SignAttributesRepository.cs — same shape; SELECT with the snake_case aliases from Step 2 if needed.
 using Dapper;
-using VedicHoroGen.Core.Models;
-namespace VedicHoroGen.Data;
+using Ikiastrro.Core.Models;
+namespace Ikiastrro.Data;
 public class SignAttributesRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;
@@ -670,8 +670,8 @@ public class SignAttributesRepository
 ```csharp
 // NakshatraReferenceRepository.cs
 using Dapper;
-using VedicHoroGen.Core.Models;
-namespace VedicHoroGen.Data;
+using Ikiastrro.Core.Models;
+namespace Ikiastrro.Data;
 public class NakshatraReferenceRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;
@@ -696,7 +696,7 @@ public class NakshatraReferenceRepository
 
 - [ ] **Step 4: Build**
 
-Run: `dotnet build src/VedicHoroGen.Data`
+Run: `dotnet build src/Ikiastrro.Data`
 Expected: PASS.
 
 - [ ] **Step 5: Verify row counts**
@@ -717,13 +717,13 @@ Expected: `9  12  27  108  243`.
 ## Task 6: `ChartGenerationService` (Data)
 
 **Files:**
-- Create: `src/VedicHoroGen.Data/ChartGenerationService.cs`
-- Create: `src/VedicHoroGen.Core/Models/GenerationReport.cs`
+- Create: `src/Ikiastrro.Data/ChartGenerationService.cs`
+- Create: `src/Ikiastrro.Core/Models/GenerationReport.cs`
 
 **Interfaces:**
 - Consumes: `ChartCalculationOrchestrator` — `CalculateAll(BirthDetails) : IReadOnlyList<(ChartResult Result, ChartAnalysisInput Input)>`, `ComputeAnalysisInput(string chartType, BirthDetails) : ChartAnalysisInput`, `Calculators : IReadOnlyList<IChartCalculator>` (each has `.ChartType`). `ChartAnalyzer.Compute(ChartAnalysisInput) : (List<ChartKeyDetail> KeyDetails, List<ChartHouseLord> HouseLords, List<ChartConjunction> Conjunctions, List<ChartAspect> Aspects)`. `VimshottariDashaService.ComputeAndStore(BirthDetails) : (ChartResult Result, List<DashaPeriod> Tree)` — self-manages its own delete + insert. `ChartResultsRepository` — `InsertAll`, `GetByBirthDetailId`, `DeleteByBirthDetailIdAndChartType`. The 4 `tbl_Chart_*` repos — `InsertAll`, `DeleteByBirthDetailId`, `DeleteByChartResultId`.
 - Produces:
-  - `record VedicHoroGen.Core.Models.GenerationReport(IReadOnlyList<string> ChartTypesWritten, bool DashaWritten, IReadOnlyList<string> Skipped)`
+  - `record Ikiastrro.Core.Models.GenerationReport(IReadOnlyList<string> ChartTypesWritten, bool DashaWritten, IReadOnlyList<string> Skipped)`
   - `ChartGenerationService.GenerateAll(BirthDetails) : GenerationReport`
   - `ChartGenerationService.GenerateMissing(BirthDetails) : GenerationReport`
   - `ChartGenerationService.RecomputeAnalytics(BirthDetails, string? chartTypeFilter) : GenerationReport`
@@ -731,7 +731,7 @@ Expected: `9  12  27  108  243`.
 - [ ] **Step 1: Create `GenerationReport.cs`**
 
 ```csharp
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 
 /// <summary>Outcome of a ChartGenerationService run — what was (re)written, whether Dasha ran, what was left alone.</summary>
 public record GenerationReport(IReadOnlyList<string> ChartTypesWritten, bool DashaWritten, IReadOnlyList<string> Skipped);
@@ -740,10 +740,10 @@ public record GenerationReport(IReadOnlyList<string> ChartTypesWritten, bool Das
 - [ ] **Step 2: Create `ChartGenerationService.cs`**
 
 ```csharp
-using VedicHoroGen.Core.Calculators;
-using VedicHoroGen.Core.Models;
+using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Models;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>
 /// The one place "compute and store every chart type + Vimshottari Dasha for a persisted BirthDetails"
@@ -880,7 +880,7 @@ public class ChartGenerationService
 
 - [ ] **Step 3: Build**
 
-Run: `dotnet build src/VedicHoroGen.Data`
+Run: `dotnet build src/Ikiastrro.Data`
 Expected: PASS.
 
 - [ ] **Step 4: Checkpoint** — Task 6 complete. Full verification happens in Task 7 (when a caller exercises it).
@@ -890,9 +890,9 @@ Expected: PASS.
 ## Task 7: Wire `ChartGenerationService` into the CLI + Web, add `compute-all`
 
 **Files:**
-- Modify: `src/VedicHoroGen.Cli/Program.cs`
-- Modify: `src/VedicHoroGen.Web/Program.cs`
-- Modify: `src/VedicHoroGen.Web/Components/Pages/Add.razor`
+- Modify: `src/Ikiastrro.Cli/Program.cs`
+- Modify: `src/Ikiastrro.Web/Program.cs`
+- Modify: `src/Ikiastrro.Web/Components/Pages/Add.razor`
 
 **Interfaces:**
 - Consumes: `ChartGenerationService` (Task 6).
@@ -900,7 +900,7 @@ Expected: PASS.
 
 - [ ] **Step 1: CLI — construct one service near the composition root**
 
-In `src/VedicHoroGen.Cli/Program.cs`, near the bottom where the main add-flow repos are created (search for `var chartResultsRepo = new ChartResultsRepository(connectionFactory);`), add — reusing the vars already there where possible:
+In `src/Ikiastrro.Cli/Program.cs`, near the bottom where the main add-flow repos are created (search for `var chartResultsRepo = new ChartResultsRepository(connectionFactory);`), add — reusing the vars already there where possible:
 
 ```csharp
 var vimshottariDashaService = new VimshottariDashaService(
@@ -996,7 +996,7 @@ Place it **before** the fall-through interactive add flow, alongside the other `
 
 - [ ] **Step 7: Web — register the service in DI**
 
-In `src/VedicHoroGen.Web/Program.cs`, wherever repos and `ChartCalculationOrchestrator` are registered, add (matching the existing lifetime — `AddScoped` if that's the pattern):
+In `src/Ikiastrro.Web/Program.cs`, wherever repos and `ChartCalculationOrchestrator` are registered, add (matching the existing lifetime — `AddScoped` if that's the pattern):
 
 ```csharp
 builder.Services.AddScoped<VimshottariDashaService>();       // if not already registered
@@ -1007,7 +1007,7 @@ Confirm `ChartCalculationOrchestrator`, `ChartResultsRepository`, and the 4 `tbl
 
 - [ ] **Step 8: Web — simplify `Add.razor.HandleSubmit`**
 
-In `src/VedicHoroGen.Web/Components/Pages/Add.razor`:
+In `src/Ikiastrro.Web/Components/Pages/Add.razor`:
 - Add `@inject ChartGenerationService ChartGenerationService` near the other `@inject` lines; remove `@inject ChartCalculationOrchestrator Orchestrator` and the four `@inject Chart*Repository` lines that become unused (keep `BirthDetailsRepo`).
 - Replace the block from `// --- Calculate + store every registered chart type ...` through the end of the `foreach ((result, input) in chartResults)` loop with:
 
@@ -1029,12 +1029,12 @@ Expected: PASS, 0 errors. Remove any now-unused `using` lines the compiler warns
 - [ ] **Step 10: Verify idempotency + a regenerate**
 
 ```
-dotnet run --project src/VedicHoroGen.Cli -- backfill-charts
+dotnet run --project src/Ikiastrro.Cli -- backfill-charts
 ```
 Expected: every existing person prints `nothing missing` (no new rows — the 5 saved people already have D1/D2/D6/D9/D10/D11 + Dasha).
 
 ```
-dotnet run --project src/VedicHoroGen.Cli -- compute-all Ramakrishnan
+dotnet run --project src/Ikiastrro.Cli -- compute-all Ramakrishnan
 ```
 Then:
 
@@ -1051,7 +1051,7 @@ Expected: one row each for `D1, D2, D6, D9, D10, D11, VimshottariDasha`; **Moon*
 
 - [ ] **Step 11: Web smoke (manual, optional but recommended)**
 
-Run: `dotnet run --project src/VedicHoroGen.Web`, open the app, `/add` a throwaway person, submit. Expected: redirects to `/charts/{id}`, the existing D1+D9 view renders, and — new — the Dasha section is populated (previously empty for web-added people). Delete the throwaway person via the UI afterwards.
+Run: `dotnet run --project src/Ikiastrro.Web`, open the app, `/add` a throwaway person, submit. Expected: redirects to `/charts/{id}`, the existing D1+D9 view renders, and — new — the Dasha section is populated (previously empty for web-added people). Delete the throwaway person via the UI afterwards.
 
 - [ ] **Step 12: Checkpoint** — Task 7 complete. The write path is now single-sourced.
 
@@ -1061,8 +1061,8 @@ Run: `dotnet run --project src/VedicHoroGen.Web`, open the app, `/add` a throwaw
 
 **Files:**
 - Create: `db/031_create_lagna_functional_nature.sql`
-- Create: `src/VedicHoroGen.Core/Models/LagnaFunctionalNatureRow.cs`
-- Create: `src/VedicHoroGen.Data/LagnaFunctionalNatureRepository.cs`
+- Create: `src/Ikiastrro.Core/Models/LagnaFunctionalNatureRow.cs`
+- Create: `src/Ikiastrro.Data/LagnaFunctionalNatureRepository.cs`
 
 **Interfaces:**
 - Produces: table `dbo.tbl_Dim_LagnaFunctionalNature` (84 rows); `record LagnaFunctionalNatureRow(byte Id, byte LagnaSignId, byte PlanetId, string? FunctionalNature, byte? Rank, string? Notes)`; `LagnaFunctionalNatureRepository.GetForLagna(byte lagnaSignId) : IReadOnlyList<LagnaFunctionalNatureRow>`.
@@ -1166,23 +1166,23 @@ Expected: `total=84`, `nulls=3`, `yogakarakas=6`; Taurus/Saturn = `Yogakaraka` r
 
 - [ ] **Step 4: Create the model + repo**
 
-`src/VedicHoroGen.Core/Models/LagnaFunctionalNatureRow.cs`:
+`src/Ikiastrro.Core/Models/LagnaFunctionalNatureRow.cs`:
 
 ```csharp
-namespace VedicHoroGen.Core.Models;
+namespace Ikiastrro.Core.Models;
 
 /// <summary>One row of tbl_Dim_LagnaFunctionalNature (migration 031) — Raman's functional
 /// classification of one planet for one Lagna. FunctionalNature null = the source does not classify it.</summary>
 public record LagnaFunctionalNatureRow(byte Id, byte LagnaSignId, byte PlanetId, string? FunctionalNature, byte? Rank, string? Notes);
 ```
 
-`src/VedicHoroGen.Data/LagnaFunctionalNatureRepository.cs`:
+`src/Ikiastrro.Data/LagnaFunctionalNatureRepository.cs`:
 
 ```csharp
 using Dapper;
-using VedicHoroGen.Core.Models;
+using Ikiastrro.Core.Models;
 
-namespace VedicHoroGen.Data;
+namespace Ikiastrro.Data;
 
 /// <summary>tbl_Dim_LagnaFunctionalNature (migration 031) — read-only reference mirror.</summary>
 public class LagnaFunctionalNatureRepository
@@ -1208,7 +1208,7 @@ Expected: PASS.
 - [ ] **Step 6: Cross-check the heuristic vs. the book table (informational)**
 
 ```
-dotnet run --project src/VedicHoroGen.Cli -- verify-functional-nature
+dotnet run --project src/Ikiastrro.Cli -- verify-functional-nature
 ```
 Still exits 0. Then eyeball: for Aries Lagna the heuristic gives Jupiter=Benefic, Mercury=Malefic, Sun=Benefic, Saturn=Malefic, Venus=Malefic, Mars=Benefic, Moon=Malefic — matching migration 031 except Moon (book = NULL, heuristic = Malefic, expected divergence per spec §7.3). Record any other divergences in the Task 8 checkpoint note for Plan 2's `FunctionalNaturePanel` to display side by side.
 

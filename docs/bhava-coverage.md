@@ -6,7 +6,7 @@ placement, subject context, sign-specific lord relations) against what `vedic_ho
 computes and stores today, so future feature work can target the real gaps instead of re-deriving
 them.
 **As of:** 2026-08-30
-**Source:** `memproj_vedic_horo_gen.md`, `cproj_vedic_horo_gen.md`, `methods_prodmag.md`
+**Source:** `memproj_vedic_horo_gen.md`, `ikiastrro.md`, `methods_prodmag.md`
 (Opportunity Backlog).
 
 The 8 points (as given):

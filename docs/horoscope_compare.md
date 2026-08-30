@@ -1,7 +1,7 @@
 # Horoscope software comparison — UI/UX & feature reference
 
 **Purpose:** what to borrow (and what to avoid) from existing Vedic-astrology products when
-building `vedic_horo_gen`'s web UI (`src/VedicHoroGen.Web`) and its later feature surface.
+building `vedic_horo_gen`'s web UI (`src/Ikiastrro.Web`) and its later feature surface.
 A working log — updated as more sources are reviewed.
 
 **Inputs behind this doc**
@@ -12,7 +12,7 @@ A working log — updated as more sources are reviewed.
 - Live-site screenshots: `_research/_ui_refs/_screenshots/<source>/` (git-ignored — regenerable
   via the method in `_research/README.md`).
 
-**Design constraint every "adopt" below is filtered through** (`src/VedicHoroGen.Web/Components/DESIGN.md`):
+**Design constraint every "adopt" below is filtered through** (`src/Ikiastrro.Web/Components/DESIGN.md`):
 one dark-only parchment/serif theme, tokens in `wwwroot/css/tokens.css`, per-component
 `.razor.css` isolation, **no CSS framework**. Borrow layout / geometry / interaction ideas;
 re-skin with our tokens. The three OSS repos below are MIT, so their chart-rendering **code**
@@ -104,7 +104,7 @@ browser extension has no permission for (see TODO).
   **DONE** vs **DONE AND SAVE**.
 - **Adopt:** the better model for our desktop, keyboard-first tool than VedAstro's 4 modals —
   everything visible, tab through it. Take: separate H/M/S fields (we keep a nullable *corrected*
-  time — see `cproj_vedic_horo_gen.md` input fields); an **advanced `[+] SETTINGS` disclosure**
+  time — see `ikiastrro.md` input fields); an **advanced `[+] SETTINGS` disclosure**
   for ayanamsa / house system even though v1 hard-codes Lahiri + Whole Sign (room to expose later
   without a redesign); the **"Done" vs "Done and save"** split (calculate once vs persist to
   `tbl_BirthDetails`).
