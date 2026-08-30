@@ -45,6 +45,14 @@ public class ChartKeyDetailsRepository
         return connection.Query<ChartKeyDetail>(sql, new { ChartResultId = chartResultId }).ToList();
     }
 
+    /// <summary>Every KeyDetails row for one person, all chart types — for the Web workspace's one-shot load.</summary>
+    public IReadOnlyList<ChartKeyDetail> GetByBirthDetailId(int birthDetailId)
+    {
+        const string sql = "SELECT * FROM dbo.tbl_Chart_KeyDetails WHERE BirthDetailId = @BirthDetailId ORDER BY Id";
+        using var connection = _connectionFactory.CreateOpenConnection();
+        return connection.Query<ChartKeyDetail>(sql, new { BirthDetailId = birthDetailId }).ToList();
+    }
+
     /// <summary>Deletes every row (every chart type) for one person — used by BirthDetailDeletionService.</summary>
     public void DeleteByBirthDetailId(int birthDetailId)
     {
