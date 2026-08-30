@@ -715,31 +715,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Dim_LagnaFunctionalNature]') AND type in (N'U'))
-BEGIN
-CREATE TABLE [dbo].[tbl_Dim_LagnaFunctionalNature](
-	[Id] [tinyint] IDENTITY(1,1) NOT NULL,
-	[LagnaSignId] [tinyint] NOT NULL,
-	[PlanetId] [tinyint] NOT NULL,
-	[FunctionalNature] [varchar](12) NULL,
-	[Rank] [tinyint] NULL,
-	[Notes] [varchar](120) NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_LagnaFunctionalNature] UNIQUE NONCLUSTERED 
-(
-	[LagnaSignId] ASC,
-	[PlanetId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraSubLords]') AND type in (N'U'))
 BEGIN
 CREATE TABLE [dbo].[tbl_NakshatraSubLords](
@@ -1202,14 +1177,6 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo
 ALTER TABLE [dbo].[tbl_ChartResults]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
 REFERENCES [dbo].[tbl_BirthDetails] ([Id])
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_Dim_L__Lagna__13F1F5EB]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Dim_LagnaFunctionalNature]'))
-ALTER TABLE [dbo].[tbl_Dim_LagnaFunctionalNature]  WITH CHECK ADD FOREIGN KEY([LagnaSignId])
-REFERENCES [dbo].[tbl_SignAttributes] ([Id])
-GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_Dim_L__Plane__14E61A24]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Dim_LagnaFunctionalNature]'))
-ALTER TABLE [dbo].[tbl_Dim_LagnaFunctionalNature]  WITH CHECK ADD FOREIGN KEY([PlanetId])
-REFERENCES [dbo].[tbl_Planets] ([Id])
-GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_Naksh__Naksh__55009F39]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraPadas]'))
 ALTER TABLE [dbo].[tbl_NakshatraPadas]  WITH CHECK ADD FOREIGN KEY([NakshatraId])
 REFERENCES [dbo].[tbl_Nakshatras] ([Id])
@@ -1308,9 +1275,6 @@ ALTER TABLE [dbo].[tbl_Chart_DashaPeriods]  WITH CHECK ADD  CONSTRAINT [CK_Chart
 GO
 IF  EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK_Chart_DashaPeriods_SequenceInParent]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_DashaPeriods]'))
 ALTER TABLE [dbo].[tbl_Chart_DashaPeriods] CHECK CONSTRAINT [CK_Chart_DashaPeriods_SequenceInParent]
-GO
-IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK__tbl_Dim_L__Funct__15DA3E5D]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Dim_LagnaFunctionalNature]'))
-ALTER TABLE [dbo].[tbl_Dim_LagnaFunctionalNature]  WITH CHECK ADD CHECK  (([FunctionalNature]='Yogakaraka' OR [FunctionalNature]='Neutral' OR [FunctionalNature]='Malefic' OR [FunctionalNature]='Benefic'))
 GO
 IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK__tbl_Naksh__PadaN__55F4C372]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraPadas]'))
 ALTER TABLE [dbo].[tbl_NakshatraPadas]  WITH CHECK ADD CHECK  (([PadaNumber]>=(1) AND [PadaNumber]<=(4)))
@@ -2365,99 +2329,6 @@ INSERT [dbo].[tbl_Rule_TemporaryFriendshipDistance] ([RuleSetId], [SignDistance]
 INSERT [dbo].[tbl_Rule_TemporaryFriendshipDistance] ([RuleSetId], [SignDistance], [IsFriend]) VALUES (1, 10, 1)
 INSERT [dbo].[tbl_Rule_TemporaryFriendshipDistance] ([RuleSetId], [SignDistance], [IsFriend]) VALUES (1, 11, 1)
 INSERT [dbo].[tbl_Rule_TemporaryFriendshipDistance] ([RuleSetId], [SignDistance], [IsFriend]) VALUES (1, 12, 1)
-END
-GO
-
--- --- tbl_Dim_LagnaFunctionalNature ---
-IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_LagnaFunctionalNature)
-BEGIN
-SET IDENTITY_INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ON 
-
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (1, 1, 5, N'Benefic', 1, N'Best benefic')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (2, 1, 3, N'Benefic', 2, N'Next benefic')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (3, 1, 1, N'Benefic', 3, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (4, 1, 4, N'Malefic', 1, N'Greatest malefic — lord of 3rd & 6th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (5, 1, 7, N'Malefic', 2, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (6, 1, 6, N'Malefic', 3, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (7, 1, 2, NULL, NULL, N'Not classified in source (How to Judge a Horoscope, Raman, p.16-18)')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (8, 2, 7, N'Yogakaraka', 1, N'Best benefic — owns 9th & 10th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (9, 2, 4, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (10, 2, 3, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (11, 2, 1, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (12, 2, 5, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (13, 2, 2, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (14, 2, 6, N'Neutral', NULL, N'Lagna lord')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (15, 3, 6, N'Benefic', 1, N'Most beneficial')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (16, 3, 3, N'Malefic', 1, N'Most malefic — lord of 6th & 11th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (17, 3, 5, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (18, 3, 1, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (19, 3, 2, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (20, 3, 4, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (21, 3, 7, NULL, NULL, N'Not classified in source (How to Judge a Horoscope, Raman, p.16-18)')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (22, 4, 3, N'Yogakaraka', 1, N'Lord of 5th & 10th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (23, 4, 5, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (24, 4, 6, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (25, 4, 4, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (26, 4, 7, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (27, 4, 2, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (28, 4, 1, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (29, 5, 3, N'Yogakaraka', 1, N'Most auspicious; lord of 4th & 9th (Yogakarakas section)')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (30, 5, 1, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (31, 5, 4, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (32, 5, 6, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (33, 5, 5, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (34, 5, 2, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (35, 5, 7, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (36, 6, 6, N'Benefic', 1, N'Best benefic')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (37, 6, 2, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (38, 6, 3, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (39, 6, 5, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (40, 6, 7, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (41, 6, 1, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (42, 6, 4, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (43, 7, 7, N'Yogakaraka', 1, N'Best benefic — lord of 4th & 5th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (44, 7, 4, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (45, 7, 6, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (46, 7, 3, N'Benefic', NULL, N'Feeble benefic')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (47, 7, 1, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (48, 7, 5, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (49, 7, 2, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (50, 8, 2, N'Benefic', 1, N'Best benefic')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (51, 8, 5, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (52, 8, 1, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (53, 8, 4, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (54, 8, 6, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (55, 8, 3, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (56, 8, 7, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (57, 9, 3, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (58, 9, 1, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (59, 9, 6, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (60, 9, 7, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (61, 9, 4, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (62, 9, 5, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (63, 9, 2, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (64, 10, 6, N'Yogakaraka', 1, N'Most powerful benefic — lord of 5th & 10th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (65, 10, 4, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (66, 10, 7, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (67, 10, 3, N'Malefic', 1, N'Worst')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (68, 10, 5, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (69, 10, 2, N'Malefic', NULL, N'Evil')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (70, 10, 1, N'Neutral', NULL, N'8th lord — becomes neutral')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (71, 11, 6, N'Yogakaraka', 1, N'Lord of 4th & 9th')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (72, 11, 1, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (73, 11, 3, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (74, 11, 5, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (75, 11, 2, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (76, 11, 4, N'Neutral', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (77, 11, 7, NULL, NULL, N'Not classified in source (How to Judge a Horoscope, Raman, p.16-18)')
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (78, 12, 2, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (79, 12, 3, N'Benefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (80, 12, 7, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (81, 12, 1, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (82, 12, 6, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (83, 12, 4, N'Malefic', NULL, NULL)
-INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] ([Id], [LagnaSignId], [PlanetId], [FunctionalNature], [Rank], [Notes]) VALUES (84, 12, 5, N'Neutral', NULL, NULL)
-SET IDENTITY_INSERT [dbo].[tbl_Dim_LagnaFunctionalNature] OFF
 END
 GO
 

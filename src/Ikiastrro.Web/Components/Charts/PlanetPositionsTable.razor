@@ -1,8 +1,7 @@
 @using Ikiastrro.Core.Astro
 @* D1 planetary positions — the reference table above the workspace columns. The Malefic/Benefic
-   column is the computed Parashari functional nature for the natal Lagna (LagnaFunctionalNature),
-   shown as B/M + Raman's rank digit (from tbl_Dim_LagnaFunctionalNature, when the book classifies
-   it) + the houses that planet rules from the Lagna, e.g. B1-[9&12]. Rahu/Ketu/Lagna: not defined. *@
+   column is the computed Parashari functional nature for the natal Lagna (LagnaFunctionalNature):
+   B/M/N + the houses that planet rules from the Lagna, e.g. B-[9&12]. Rahu/Ketu/Lagna: not defined. *@
 <div class="ppt-scroll">
     <table class="ppt">
         <thead>
@@ -56,9 +55,6 @@
     /// <summary>Natal D1 Lagna sign, internal ZodiacName spelling ("Aries", "Capricornus", …).</summary>
     [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
 
-    /// <summary>Raman's per-Lagna rows (migration 031) — used only for the rank digit.</summary>
-    [Parameter] public IReadOnlyList<LagnaFunctionalNatureRow> BookRows { get; set; } = Array.Empty<LagnaFunctionalNatureRow>();
-
     private static string DisplaySign(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
 
     private (string Code, string Color)? Functional(string planet)
@@ -75,10 +71,7 @@
             : r.Nature == FunctionalNature.Malefic ? "var(--dignity-enemy)"
             : "var(--dignity-neutral)";
 
-        var planetId = (byte)((int)p + 1); // tbl_Planets.Id: Sun=1 … Saturn=7
-        var rankDigit = BookRows.FirstOrDefault(b => b.PlanetId == planetId)?.Rank?.ToString() ?? "";
-
         var houses = string.Join("&", r.RuledHouses);
-        return ($"{prefix}{rankDigit}-[{houses}]", color);
+        return ($"{prefix}-[{houses}]", color);
     }
 }

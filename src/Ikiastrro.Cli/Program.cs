@@ -217,50 +217,6 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
-// --- One-off check: `dotnet run -- compare-functional-nature` ---
-// Records where the computed heuristic (LagnaFunctionalNature.For) diverges from the seeded book
-// table (tbl_Dim_LagnaFunctionalNature, migration 031) — Plan 2 renders both side by side, so the
-// divergence set must be documented. Walks all 84 cells (Lagna 1-12 x the 7 classical planets),
-// prints one row per mismatch (and one per table row the source never classified), then a count.
-if (args.Length > 0 && args[0] == "compare-functional-nature")
-{
-    var lfnRepo = new LagnaFunctionalNatureRepository(connectionFactory);
-    var classicalPlanets = new[]
-    {
-        PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury,
-        PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn
-    };
-
-    var divergences = 0;
-    var notClassified = 0;
-    Console.WriteLine($"{"Lagna",-12} {"Planet",-9} {"heuristic",-11} table");
-    Console.WriteLine(new string('-', 46));
-    for (var signIndex = 0; signIndex < 12; signIndex++)
-    {
-        var sign = (ZodiacName)signIndex;
-        var rows = lfnRepo.GetForLagna((byte)(signIndex + 1));
-        foreach (var planet in classicalPlanets)
-        {
-            var heuristic = LagnaFunctionalNature.For(sign, planet).Nature.ToString();
-            var tableNature = rows.FirstOrDefault(r => r.PlanetId == (int)planet + 1)?.FunctionalNature;
-
-            if (tableNature is null)
-            {
-                Console.WriteLine($"{sign,-12} {planet,-9} {heuristic,-11} table: not classified");
-                notClassified++;
-            }
-            else if (heuristic != tableNature)
-            {
-                Console.WriteLine($"{sign,-12} {planet,-9} {heuristic,-11} {tableNature}");
-                divergences++;
-            }
-        }
-    }
-    Console.WriteLine(new string('-', 46));
-    Console.WriteLine($"{divergences} cell(s) diverge; {notClassified} not classified in the table.");
-    return;
-}
-
 // --- One-off backfill mode: `dotnet run -- recompute-keydetails` ---
 // Re-derives tbl_Chart_KeyDetails rows for every stored ChartResult that has a registered
 // IChartCalculator (D1, D2, D6, D9, D10, D11 — everything except VimshottariDasha), even ones that

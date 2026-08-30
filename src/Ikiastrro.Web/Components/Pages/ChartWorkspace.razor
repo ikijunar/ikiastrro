@@ -7,7 +7,6 @@
 @inject ChartAspectsRepository ChartAspectsRepo
 @inject DashaPeriodsRepository DashaPeriodsRepo
 @inject SadeSatiRepository SadeSatiRepo
-@inject LagnaFunctionalNatureRepository LagnaFunctionalNatureRepo
 @inject BirthDetailDeletionService DeletionService
 @inject NavigationManager Nav
 
@@ -38,7 +37,7 @@ else if (birthDetails is not null && charts.TryGetValue("D1", out var d1))
 
     <section class="ppt-section">
         <h2>Planetary positions &mdash; D1</h2>
-        <PlanetPositionsTable Rows="d1PlanetRows" LagnaSign="@d1.AscSign" BookRows="bookRows" />
+        <PlanetPositionsTable Rows="d1PlanetRows" LagnaSign="@d1.AscSign" />
     </section>
 
     <div class="cols3">
@@ -161,7 +160,6 @@ else if (birthDetails is not null)
 
     private readonly Dictionary<string, LoadedChart> charts = new();
     private IReadOnlyList<PlanetRow> d1PlanetRows = Array.Empty<PlanetRow>();
-    private IReadOnlyList<LagnaFunctionalNatureRow> bookRows = Array.Empty<LagnaFunctionalNatureRow>();
     private IReadOnlyList<DashaPeriodRecord> dashaRoots = Array.Empty<DashaPeriodRecord>();
     private IReadOnlyList<SadeSatiPeriod> sadeSati = Array.Empty<SadeSatiPeriod>();
 
@@ -207,9 +205,6 @@ else if (birthDetails is not null)
             if (type == "D1")
                 d1PlanetRows = ChartViewModel.BuildPlanetRows(keyDetails, houseLords, aspects);
         }
-
-        if (charts.TryGetValue("D1", out var d1) && Enum.TryParse<ZodiacName>(d1.AscSign, out var lagna))
-            bookRows = LagnaFunctionalNatureRepo.GetForLagna((byte)((int)lagna + 1));
 
         dashaRoots = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
         sadeSati = SadeSatiRepo.GetByBirthDetailId(Id);

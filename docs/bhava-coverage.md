@@ -34,7 +34,7 @@ The 8 points (as given):
 | 5 | Exaltation/debilitation of house lords | ✅ **Covered** | `ClassicalDignity.cs` computes full sign-dignity (exalted/debilitated/own/moolatrikona/friend/enemy) for every planet, including whichever planet is a given house's lord — this is generic, chart-type-agnostic, and shipped since the SwissEphNet rebuild (2026-08-24). |
 | 6 | House-lord's situation in the Navamsa | 🟡 **Structurally covered, precision gap open** | D9 gets the same full analytics (dignity/lordship/conjunctions/aspects) as D1 via the shared `ChartAnalyzer` — so a lord's D9 sign/house placement is available. **2026-08-30**: D2 (Hora), D6 (Shashtamsa), D10 (Dasamsa), D11 (Rudramsa) were added at DB/CLI level with the same shared analytics + nakshatra linkage, so a house-lord's placement can now be cross-read in the life-area varga too (D6 health, D2/D11 wealth, D10 career). But D9 (and every varga) **within-sign degree is still not computed** (top "Now" item in the ICE backlog, ICE 7.7, not built) — that's what blocks judging *how* favourable a varga placement is (Vargottama needs the sub-degree) and how tight a same-house varga conjunction is. Computation gap, not a sourcing gap. |
 | 7 | Age, position, status, sex of subject | 🟡 **Age covered; position/status/sex not modeled, and still not sourced** | Age is directly wired in via Vimshottari Dasha + the life-in-weeks grid (age-relative, `tbl_Dim_LifeCalendar`) — timing analysis is tied to the subject's actual age. `tbl_BirthDetails` stores only name/date/time/place; there's no gender, social status, or position field, and nothing in the calculation layer conditions on them. **2026-08-30**: searched `how-to-judje-a-horoscope-i_p1-312` for rule material — only the checklist line itself surfaced, no consolidated rule section found; not actionable from this source without a deeper pass or a different reference. |
-| 8 | Sign-specific well/ill-disposed planets (e.g. Sun for Aries; lord-to-Sun relations) | 🟢 **Now fully sourced** | `ClassicalRelationships.cs` already computes generic planet-to-planet friend/enemy/neutral relations. **2026-08-30**: the missing named layer — functional benefic/malefic per Lagna — was found in full for all 12 signs in `how-to-judje-a-horoscope-i_p1-312` (p.16-18). Migration 031 (`tbl_Dim_LagnaFunctionalNature`) designed and ready in `house-lagna-significations.md`, with 3 rows (Aries→Moon, Gemini→Saturn, Aquarius→Saturn) confirmed genuinely absent from the source and flagged NULL rather than guessed. Added to the Opportunity Backlog pending ICE scoring. |
+| 8 | Sign-specific well/ill-disposed planets (e.g. Sun for Aries; lord-to-Sun relations) | 🟢 **Covered by the computed classifier** | `ClassicalRelationships.cs` computes generic planet-to-planet friend/enemy/neutral relations; `Core/Calculators/LagnaFunctionalNature.cs` computes functional benefic/malefic/neutral/yogakaraka per Lagna from house-lordship (shown in the web D1 planet table, checked by CLI `verify-functional-nature`). **2026-08-30**: the named per-Lagna layer from `how-to-judje-a-horoscope-i_p1-312` (p.16-18) was seeded as a cross-check table `tbl_Dim_LagnaFunctionalNature` (migration 031); **2026-08-31 that mirror was removed in full** — the computed classifier stands on its own. |
 
 **Net (updated 2026-08-30): 3 of 8 fully covered or sourced-and-ready (3, 5, 8), 3 partially
 covered (1, 6, 7) — infrastructure exists but synthesis or subject-context data is still missing,
@@ -48,9 +48,10 @@ built.**
 
 The app is strong at **computing discrete planetary facts** (position, dignity, retrograde,
 combustion, nakshatra lord, house-lordship, conjunction, aspect) for D1 and D9 alike — that's the
-`ChartAnalyzer` layer, and it's solid. Point 3 and point 8 are now fully sourced and design-ready
-(migrations 030/031, `house-lagna-significations.md`) — the remaining work there is
-build, not discovery. What's still missing across the rest is the next layer up: **synthesizing
+`ChartAnalyzer` layer, and it's solid. Point 8 is covered by the computed `LagnaFunctionalNature`
+classifier (its Raman cross-check table, migration 031, was removed 2026-08-31). Point 3 is
+sourced and design-ready (migration 030, `house-lagna-significations.md`) — the remaining work
+there is build, not discovery. What's still missing across the rest is the next layer up: **synthesizing
 computed facts + classical reference data into house-level judgments**, and two structural gaps
 that were invisible to the backlog until 2026-08-30:
 

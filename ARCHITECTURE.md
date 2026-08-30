@@ -34,7 +34,7 @@ that matches what you need rather than re-deriving it:
 | `docs/vedic-reference-tables.md` | Design doc for the classical reference/master-data tables (`tbl_Planets`, `tbl_SignAttributes`, `tbl_Nakshatras`/Padas/SubLords, `tbl_PlanetSignTransitEvents`) |
 | `docs/star-schema-rules-engine.md` | Design doc for the versioned `tbl_Rule_*` rules-engine layer (Phase 1) and its still-open Phase 2 (wiring calculators to read from it) |
 | `decisions/001-star-schema-rules-engine.md` | ADR / decision record behind the above — the context, the star-schema decision, and its consequences in one page (the `docs/` file is the implementation plan) |
-| `docs/house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migrations 030/031 |
+| `docs/house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migration 030 (031's Raman mirror table was removed 2026-08-31) |
 | `docs/horoscope_compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `Ikiastrro.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
 | `docs/techstack.md` | Verified stack snapshot — pinned package versions and per-project (`Core`/`Data`/`Cli`/`Web`) dependency lists, checked against the `.csproj` files. The `## Stack` section below is the short version |
 | `STANDARDS.md` | Workspace-wide naming/structure conventions (DB/table/view/proc naming, migration numbering) this project follows |
@@ -64,7 +64,7 @@ City/Country is geocoded to lat/long via [OpenStreetMap Nominatim](https://nomin
    ```
    dotnet run --project src\Ikiastrro.Cli
    ```
-   It prompts for Name, DOB, Time of Birth, an optional corrected time (+ reason), and Place of Birth (City/Country). It then resolves lat/long/UTC-offset, computes **D1, D2, D6, D9, D10, D11** (+ Vimshottari Dasha) via `ChartGenerationService` (see below), stores everything, and prints the results. One-off modes: `-- compute-all <name>` regenerates every chart type + Dasha for one saved person (post birth-time correction); `-- backfill-charts` adds any missing chart type to people saved before it existed; `-- backfill-analytics` / `-- recompute-keydetails` re-derive the 4 analytics tables for every calculable chart type (these two are now identical code paths); `-- verify-vargas` / `-- verify-functional-nature` run the worked-example assertion suites (no unit-test project); `-- compare-functional-nature` prints where the computed functional-nature heuristic diverges from the seeded `tbl_Dim_LagnaFunctionalNature`.
+   It prompts for Name, DOB, Time of Birth, an optional corrected time (+ reason), and Place of Birth (City/Country). It then resolves lat/long/UTC-offset, computes **D1, D2, D6, D9, D10, D11** (+ Vimshottari Dasha) via `ChartGenerationService` (see below), stores everything, and prints the results. One-off modes: `-- compute-all <name>` regenerates every chart type + Dasha for one saved person (post birth-time correction); `-- backfill-charts` adds any missing chart type to people saved before it existed; `-- backfill-analytics` / `-- recompute-keydetails` re-derive the 4 analytics tables for every calculable chart type (these two are now identical code paths); `-- verify-vargas` / `-- verify-functional-nature` run the worked-example assertion suites (no unit-test project).
 3. **Or run the web app**:
    ```
    dotnet run --project src\Ikiastrro.Web
@@ -281,11 +281,13 @@ must use the `tbl_Dim_`/`tbl_Rule_`/`tbl_Fact_` infix — see `STANDARDS.md` §D
 Design doc + full sourcing: `D:\@ClaudeSpace\ikiastrro\docs\house-lagna-significations.md`.
 Sourced from `BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman).
 
-- **`tbl_Dim_LagnaFunctionalNature` — built 2026-08-30, migration `031`.** Raman's 12-Lagna
-  "Benefics and Malefics for each Lagna" table, verbatim: 84 rows (12 Lagnas × 7 classical
-  planets), 3 seeded `NULL` (Aries→Moon, Gemini→Saturn, Aquarius→Saturn — the book never
-  classifies them), 6 `Yogakaraka`. A **cross-check mirror — the engine does not read it**
-  (same pattern as `tbl_Rule_*`). Read via `LagnaFunctionalNatureRepository.GetForLagna(byte)`.
+- **`tbl_Dim_LagnaFunctionalNature` — built 2026-08-30 (migration `031`), removed 2026-08-31.**
+  Was Raman's 12-Lagna "Benefics and Malefics for each Lagna" table (84 rows, verbatim), kept as
+  a cross-check mirror the engine never read. Torn out in full — table + FKs + CHECK + seed
+  dropped from `db/ikiastrro.sql`, `LagnaFunctionalNatureRow`/`LagnaFunctionalNatureRepository`
+  and the `compare-functional-nature` CLI mode deleted, `db/_archive/031_*.sql` removed. Existing
+  databases: run `db/00_drop_lagna_functional_nature.sql`. Functional benefic/malefic is now
+  produced solely by the computed `LagnaFunctionalNature` classifier (below).
 - **`tbl_Dim_HouseSignification` / `tbl_Dim_PlanetSignification` / `tbl_Dim_PlanetHouseKaraka`
   (migration `030`) — still reserved/unapplied.** `LifeAreaMap` (Core) currently hardcodes the
   house/karaka-per-life-area data these tables will hold, cross-checked to the same source.
@@ -301,9 +303,11 @@ D1+D9 view; the life-area UI rebuild is the next plan). Spec:
 - **`LagnaFunctionalNature`** (`Core/Calculators/`) — pure Parashari classifier: given a Lagna
   sign + planet, returns `Benefic | Malefic | Neutral | Yogakaraka` derived from which houses the
   planet rules from that Lagna, plus `IsMaraka` / `KendradhipatiDosha` / a rationale string. A
-  documented heuristic; it diverges from the `tbl_Dim_LagnaFunctionalNature` book table on **17
-  of 84 cells** (all mixed-lordship planets on the Neutral boundary — no polarity or yogakaraka
-  flips). The later Web UI shows both side by side; `-- compare-functional-nature` prints the set.
+  documented heuristic following Raman's general rules (Vol. 1 p.14-15). **This is the single
+  source of the functional-nature verdict across the app** (CLI `verify-functional-nature`; the
+  web D1 planet-positions table's Malefic/Benefic column, shown as `B-[9&12]` / `M-[3&6]` /
+  `N-[…]`). The per-Lagna Raman mirror table it used to be cross-checked against was removed
+  2026-08-31 (see above).
 - **`ChartGenerationService`** (`Data/`) — the single "given a persisted `BirthDetails`, compute
   and store every registered chart type + Vimshottari Dasha" pipeline. `GenerateAll` /
   `GenerateMissing` / `RecomputeAnalytics(bd, chartTypeFilter?)` → `GenerationReport`. Composes

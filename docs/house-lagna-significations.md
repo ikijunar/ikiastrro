@@ -13,13 +13,16 @@ actually contains for each of the 8 classical Bhava-analysis points, cross-refer
 > `how-to-judje-a-horoscope-i_p1-312.md`; the `_work\...\body.md` raw-OCR path cited in earlier
 > drafts has no front matter or chart transcriptions and should not be used. See the 2026-08-30
 > entry in `ikiastrro.md`.
-**As of:** 2026-08-30
-**Status:** Migration **031 (`tbl_Dim_LagnaFunctionalNature`) is BUILT** (2026-08-30, as part of
-the Web UI life-area recreate groundwork — see `../ikiastrro.md` and
-`superpowers/plans/2026-08-30-web-ui-recreate-groundwork.md`). Migration **030** (house/planet
-significations, Sthira Karaka) is still scoped-not-built; `LifeAreaMap` (Core) hardcodes the
-house/karaka-per-life-area subset it needs, cross-checked to this source. Everything else here
-(the synthesis layer, yoga detection) is scoped but not built.
+**As of:** 2026-08-31
+**Status:** Migration **031 (`tbl_Dim_LagnaFunctionalNature`) was built 2026-08-30 and REMOVED
+2026-08-31** — full teardown (table + FKs + CHECK + seed dropped from `db/ikiastrro.sql`,
+`LagnaFunctionalNatureRow`/`LagnaFunctionalNatureRepository` + the `compare-functional-nature`
+CLI mode deleted, `db/_archive/031_*.sql` removed; existing DBs run
+`db/00_drop_lagna_functional_nature.sql`). Functional benefic/malefic is now produced solely by
+the computed classifier `Core/Calculators/LagnaFunctionalNature.cs`. Migration **030**
+(house/planet significations, Sthira Karaka) is still scoped-not-built; `LifeAreaMap` (Core)
+hardcodes the house/karaka-per-life-area subset it needs, cross-checked to this source.
+Everything else here (the synthesis layer, yoga detection) is scoped but not built.
 
 ---
 
@@ -46,7 +49,17 @@ in this conversation. Data source: this book for house significations + karaka r
 rows still use the previously-agreed modern convention (8th/12th), since Raman's Sthira Karaka
 list — like most classical sources — doesn't assign them a fixed house role either.
 
-## Migration 031 — BUILT 2026-08-30
+## Migration 031 — BUILT 2026-08-30, REMOVED 2026-08-31
+
+> **Removed in full 2026-08-31.** The per-Lagna Raman mirror was only ever a cross-check asset
+> the engine didn't read; it was torn out — `tbl_Dim_LagnaFunctionalNature` (table + FKs +
+> CHECK + 84 seed rows) dropped from `db/ikiastrro.sql`, `LagnaFunctionalNatureRow` /
+> `LagnaFunctionalNatureRepository` and the `compare-functional-nature` CLI mode deleted,
+> `db/_archive/031_*.sql` removed. Existing databases: `db/00_drop_lagna_functional_nature.sql`.
+> The computed classifier `Core/Calculators/LagnaFunctionalNature.cs` is now the sole source of
+> the functional benefic/malefic/neutral/yogakaraka verdict (CLI `verify-functional-nature`
+> still covers it; the web D1 planet table shows `B-[9&12]` / `M-[3&6]` / `N-[…]`).
+> The description below is kept as the historical record of what the table held.
 
 `db/031_create_lagna_functional_nature.sql` applied. `tbl_Dim_LagnaFunctionalNature`: 84 rows
 (12 Lagnas × 7 classical planets), sourced verbatim from p.16-18 of this book. `Benefic |

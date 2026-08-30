@@ -3,12 +3,12 @@ using Ikiastrro.Core.Astro;
 namespace Ikiastrro.Core.Calculators;
 
 /// <summary>Parashari functional nature of a planet with respect to a Lagna — Benefic / Malefic /
-/// Neutral / Yogakaraka — derived from which houses the planet rules from that Lagna.
-/// A documented heuristic (B.V. Raman, "How to Judge a Horoscope" Vol. 1, p.16-18, "Benefics and
-/// Malefics for each Lagna"; general rules p.14-15). It will diverge from Raman's explicit per-Lagna
-/// verdict for mixed-lordship planets — the seeded table tbl_Dim_LagnaFunctionalNature (migration
-/// 031) carries that verdict and is authoritative for display; this class is the computable
-/// baseline. Rahu/Ketu are out of scope (no sign rulership).</summary>
+/// Neutral / Yogakaraka — derived from which houses the planet rules from that Lagna. This is the
+/// single source of the functional-nature verdict used across the app (CLI and web).
+/// A documented heuristic following the general rules in B.V. Raman, "How to Judge a Horoscope"
+/// Vol. 1, p.14-15 (kendra/trikona lordship, kendradhipati dosha, maraka/dusthana). For
+/// mixed-lordship planets the catch-all branch below applies. Rahu/Ketu are out of scope
+/// (no sign rulership).</summary>
 public static class LagnaFunctionalNature
 {
     private static readonly HashSet<PlanetName> NaturalBenefics = new()
@@ -79,7 +79,7 @@ public static class LagnaFunctionalNature
         else
         {
             nature = FunctionalNature.Malefic;   // default catch-all: mixed kendra + maraka/dusthana, no trikona
-            why = $"Mixed lordship ({string.Join(" & ", ruledHouses)}) — Malefic (heuristic default; see Raman table)";
+            why = $"Mixed lordship ({string.Join(" & ", ruledHouses)}) — Malefic (heuristic default)";
         }
 
         return new FunctionalNatureResult(nature, ruledHouses, isMaraka, kendradhipatiDosha, why);
