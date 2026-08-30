@@ -13,3 +13,6 @@
 
 # SDD scratch (subagent-driven-development workspace)
 /.superpowers/
+
+# git worktrees (isolated task workspaces)
+/.claude/worktrees/
