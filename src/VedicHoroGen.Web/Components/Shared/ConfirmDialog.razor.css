@@ -1,0 +1,70 @@
+.dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.dialog-box {
+    background: var(--paper-raised);
+    border: 1px solid var(--paper-line);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px var(--shadow);
+    padding: 1.5rem;
+    max-width: 380px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dialog-message {
+    margin: 0 0 1.25rem;
+    color: var(--ink);
+    line-height: 1.4;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+.dialog-actions button {
+    min-height: 40px;
+    padding: 0.5rem 1.1rem;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.btn-cancel {
+    background: transparent;
+    border-color: var(--paper-line);
+    color: var(--ink-soft);
+}
+
+.btn-cancel:hover:not(:disabled) {
+    border-color: var(--ink-soft);
+    color: var(--ink);
+}
+
+.btn-confirm {
+    background: var(--danger);
+    border-color: var(--danger-line);
+    color: #1a0e0c;
+}
+
+.btn-confirm:hover:not(:disabled) {
+    background: var(--danger-line);
+}
+
+.dialog-actions button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}

@@ -1,0 +1,9 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+
+# OSS reference repos — cloned for reading / UI reference, not part of this project.
+# See _research/README.md. Delete the folder anytime to reclaim disk.
+/_research/

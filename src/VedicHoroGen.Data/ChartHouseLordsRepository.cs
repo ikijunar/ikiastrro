@@ -1,0 +1,47 @@
+using Dapper;
+using VedicHoroGen.Core.Models;
+
+namespace VedicHoroGen.Data;
+
+/// <summary>tbl_Chart_HouseLords — shared across every chart type (D1, D9, and any future divisional chart), rows discriminated by ChartResultId/ChartType.</summary>
+public class ChartHouseLordsRepository
+{
+    private readonly SqlConnectionFactory _connectionFactory;
+
+    public ChartHouseLordsRepository(SqlConnectionFactory connectionFactory)
+    {
+        _connectionFactory = connectionFactory;
+    }
+
+    public void InsertAll(IEnumerable<ChartHouseLord> rows)
+    {
+        const string sql = """
+            INSERT INTO dbo.tbl_Chart_HouseLords
+                (ChartResultId, BirthDetailId, ChartType, HouseNumber, HouseSign, LordPlanet,
+                 LordPlacedInHouseFromLagna, LordPlacedInHouseFromSun, LordPlacedInHouseFromMoon,
+                 LordPlacedInSign, LordDignityStatus, ComputedAt)
+            VALUES
+                (@ChartResultId, @BirthDetailId, @ChartType, @HouseNumber, @HouseSign, @LordPlanet,
+                 @LordPlacedInHouseFromLagna, @LordPlacedInHouseFromSun, @LordPlacedInHouseFromMoon,
+                 @LordPlacedInSign, @LordDignityStatus, @ComputedAt)
+            """;
+
+        using var connection = _connectionFactory.CreateOpenConnection();
+        connection.Execute(sql, rows);
+    }
+
+    public IReadOnlyList<ChartHouseLord> GetByChartResultId(int chartResultId)
+    {
+        const string sql = "SELECT * FROM dbo.tbl_Chart_HouseLords WHERE ChartResultId = @ChartResultId ORDER BY HouseNumber";
+        using var connection = _connectionFactory.CreateOpenConnection();
+        return connection.Query<ChartHouseLord>(sql, new { ChartResultId = chartResultId }).ToList();
+    }
+
+    /// <summary>Deletes every row (every chart type) for one person — used by BirthDetailDeletionService.</summary>
+    public void DeleteByBirthDetailId(int birthDetailId)
+    {
+        const string sql = "DELETE FROM dbo.tbl_Chart_HouseLords WHERE BirthDetailId = @BirthDetailId";
+        using var connection = _connectionFactory.CreateOpenConnection();
+        connection.Execute(sql, new { BirthDetailId = birthDetailId });
+    }
+}

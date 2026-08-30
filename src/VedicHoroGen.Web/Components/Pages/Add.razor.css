@@ -1,0 +1,88 @@
+.back-link {
+    margin: 0 0 8px;
+}
+
+.back-link a {
+    color: var(--accent);
+}
+
+h1 {
+    margin: 0 0 4px;
+}
+
+p {
+    color: var(--ink-soft);
+}
+
+/* Mobile-friendly baseline: fields/alerts fill their container (capped by max-width) instead of
+   relying on max-width alone, and every form control gets an explicit width/box-sizing so it
+   actually fills its field on a narrow viewport rather than sitting at the browser's intrinsic
+   input width. font-size:16px on inputs prevents iOS Safari's auto-zoom-on-focus. */
+.field {
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 420px;
+    box-sizing: border-box;
+}
+
+.field label {
+    font-weight: 600;
+}
+
+/* ::deep is required here: InputText/InputDate/InputNumber (Microsoft.AspNetCore.Components.Forms)
+   render their own <input> without inheriting this component's CSS-isolation scope attribute —
+   a plain `.field input` selector silently matches nothing and the browser's UA-default white
+   input renders instead (caught 2026-08-28 by checking computed styles, not just eyeballing). */
+.field ::deep input,
+.field ::deep textarea,
+.field ::deep select {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+    padding: 0.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    color: var(--ink);
+}
+
+.field-error {
+    color: var(--danger);
+    font-size: 0.9rem;
+}
+
+.alert-warning {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(226, 173, 79, 0.12);
+    border: 1px solid var(--accent-line);
+    color: var(--ink);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    max-width: 420px;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+    font-size: 16px;
+    min-height: 44px;
+    background: var(--accent);
+    border: 1px solid var(--accent-line);
+    border-radius: 6px;
+    color: #1a1408;
+    cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--accent-line);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}

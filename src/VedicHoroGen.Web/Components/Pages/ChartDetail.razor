@@ -1,0 +1,129 @@
+@page "/charts/{Id:int}"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject BirthDetailDeletionService DeletionService
+@inject NavigationManager Nav
+
+<PageTitle>@(birthDetails?.Name ?? "Chart") — Enter your DETAILS </PageTitle>
+
+<div class="page-header-row">
+    <p class="back-link"><a href="/charts">&larr; All saved charts</a></p>
+    @if (birthDetails is not null)
+    {
+        <DeleteIconButton Title="@($"Delete {birthDetails.Name}'s chart")" OnClick="() => confirmingDelete = true" />
+    }
+</div>
+
+@if (notFound)
+{
+    <p class="muted">No saved chart found for that person.</p>
+}
+else if (birthDetails is not null && d1Result is not null)
+{
+    <ChartView BirthDetails="birthDetails"
+                 KeyDetails="keyDetails"
+                 HouseLords="houseLords"
+                 Aspects="aspects"
+                 EngineVersion="@d1Result.EngineVersion"
+                 D9AscendantSign="@d9AscendantSign"
+                 D9KeyDetails="d9KeyDetails"
+                 D9RasiLordDisplay="@d9RasiLordDisplay"
+                 D9Aspects="d9Aspects"
+                 D9HouseLords="d9HouseLords" />
+
+    <section class="dasha-section">
+        <h2>Vimshottari Dasha</h2>
+        @if (dashaTree.Count > 0)
+        {
+            <p class="section-note">
+                Mahadasha and Antardasha shown; Pratyantardasha shown only for the current Antardasha.
+                <a href="@($"/charts/{Id}/life-weeks")">View as a life-in-weeks grid &rarr;</a>
+            </p>
+            <DashaTimeline Roots="dashaTree" />
+        }
+        else
+        {
+            <p class="muted">No Dasha computed yet for @birthDetails.Name — run <code>compute-dasha @birthDetails.Name</code> (CLI) or <code>backfill-dasha</code>.</p>
+        }
+    </section>
+
+}
+else if (birthDetails is not null)
+{
+    <p class="muted">@birthDetails.Name has a stored birth record but no D1 chart yet.</p>
+}
+
+<ConfirmDialog IsOpen="confirmingDelete"
+               Message="@($"Delete {birthDetails?.Name}'s chart and all computed data? This can't be undone.")"
+               IsBusy="isDeleting"
+               OnConfirm="HandleDelete"
+               OnCancel="@(() => confirmingDelete = false)" />
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private BirthDetails? birthDetails;
+    private ChartResult? d1Result;
+    private IReadOnlyList<ChartKeyDetail> keyDetails = Array.Empty<ChartKeyDetail>();
+    private IReadOnlyList<ChartHouseLord> houseLords = Array.Empty<ChartHouseLord>();
+    private IReadOnlyList<ChartAspect> aspects = Array.Empty<ChartAspect>();
+
+    // D9 — grid + its own "Planetary positions" table (2026-08-28; grid-only before that).
+    private string? d9AscendantSign;
+    private IReadOnlyList<ChartKeyDetail> d9KeyDetails = Array.Empty<ChartKeyDetail>();
+    private string? d9RasiLordDisplay;
+    private IReadOnlyList<ChartAspect> d9Aspects = Array.Empty<ChartAspect>();
+    private IReadOnlyList<ChartHouseLord> d9HouseLords = Array.Empty<ChartHouseLord>();
+
+    private IReadOnlyList<DashaPeriodRecord> dashaTree = Array.Empty<DashaPeriodRecord>();
+
+    private bool notFound;
+    private bool confirmingDelete;
+    private bool isDeleting;
+
+    protected override void OnParametersSet()
+    {
+        notFound = false;
+        confirmingDelete = false;
+        birthDetails = BirthDetailsRepo.GetById(Id);
+        if (birthDetails is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        var chartResults = ChartResultsRepo.GetByBirthDetailId(Id);
+
+        d1Result = chartResults.FirstOrDefault(c => c.ChartType == "D1");
+        if (d1Result is not null)
+        {
+            keyDetails = ChartKeyDetailsRepo.GetByChartResultId(d1Result.Id);
+            houseLords = ChartHouseLordsRepo.GetByChartResultId(d1Result.Id);
+            aspects = ChartAspectsRepo.GetByChartResultId(d1Result.Id);
+        }
+
+        var d9Result = chartResults.FirstOrDefault(c => c.ChartType == "D9");
+        if (d9Result is not null)
+        {
+            d9KeyDetails = ChartKeyDetailsRepo.GetByChartResultId(d9Result.Id);
+            d9AscendantSign = d9KeyDetails.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign;
+            d9HouseLords = ChartHouseLordsRepo.GetByChartResultId(d9Result.Id);
+            d9RasiLordDisplay = d9HouseLords.FirstOrDefault(h => h.HouseNumber == 1)?.LordPlanet;
+            d9Aspects = ChartAspectsRepo.GetByChartResultId(d9Result.Id);
+        }
+
+        dashaTree = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+    }
+
+    private void HandleDelete()
+    {
+        if (birthDetails is null) return;
+        isDeleting = true;
+        DeletionService.DeleteBirthDetail(birthDetails.Id);
+        Nav.NavigateTo("/charts");
+    }
+}

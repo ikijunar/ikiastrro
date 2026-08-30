@@ -1,0 +1,34 @@
+@* Shared destructive-action confirm modal — replaces the old per-page inline "Delete? Yes/Cancel"
+   text-link pattern (Charts.razor and ChartDetail.razor each had their own copy). One component,
+   used from both, opened by a real trash-icon button rather than a text link (2026-08-28 UI cleanup). *@
+@if (IsOpen)
+{
+    <div class="dialog-backdrop" tabindex="-1" @onclick="HandleBackdropClick" @onkeydown="HandleKeyDown">
+        <div class="dialog-box" role="alertdialog" aria-modal="true" @onclick:stopPropagation="true">
+            <p class="dialog-message">@Message</p>
+            <div class="dialog-actions">
+                <button type="button" class="btn-cancel" @onclick="Cancel" disabled="@IsBusy">Cancel</button>
+                <button type="button" class="btn-confirm" @onclick="Confirm" disabled="@IsBusy">
+                    @(IsBusy ? "Deleting…" : ConfirmLabel)
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public string ConfirmLabel { get; set; } = "Delete";
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task Confirm() => OnConfirm.InvokeAsync();
+
+    private Task Cancel() => IsBusy ? Task.CompletedTask : OnCancel.InvokeAsync();
+
+    private Task HandleBackdropClick() => Cancel();
+
+    private Task HandleKeyDown(KeyboardEventArgs e) => e.Key == "Escape" ? Cancel() : Task.CompletedTask;
+}

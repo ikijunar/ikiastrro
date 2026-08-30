@@ -1,0 +1,73 @@
+@page "/charts/{Id:int}/life-weeks"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+
+<PageTitle>@(birthDetails?.Name ?? "Life in weeks") — Life in weeks</PageTitle>
+
+<p class="back-link"><a href="@($"/charts/{Id}")">&larr; Back to chart</a></p>
+
+@if (notFound)
+{
+    <p class="muted">No saved chart found for that person.</p>
+}
+else if (weeks.Count == 0)
+{
+    <p class="muted">No Dasha computed yet for @birthDetails!.Name — run <code>compute-dasha @birthDetails!.Name</code> (CLI) or <code>backfill-dasha</code>.</p>
+}
+else
+{
+    <header>
+        <h1>@birthDetails!.Name — life in weeks</h1>
+        <p class="section-note">
+            4000 weeks (~76.9 years) from birth, one cell per week, colored by the active Mahadasha.
+            Hover a cell for the exact Mahadasha / Antardasha / Pratyantardasha and date range.
+            The "4000 weeks" span is an assumed-lifespan framing (after Oliver Burkeman's book of the
+            same name), not a prediction — Dasha itself is computed out to the full classical 120-year
+            cycle regardless.
+        </p>
+        <DashaLegend />
+    </header>
+
+    <div class="grid-scroll">
+        <div class="week-grid">
+            @foreach (var week in weeks)
+            {
+                var isCurrent = today >= week.WeekStartDate && today <= week.WeekEndDate;
+                <div class="week-cell @(isCurrent ? "current" : "")"
+                     style="background:@(week.MahaLord is null ? "var(--paper-raised)" : DashaLordColors.CssVar(week.MahaLord))"
+                     title="@BuildTooltip(week)">
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private BirthDetails? birthDetails;
+    private IReadOnlyList<LifeWeek> weeks = Array.Empty<LifeWeek>();
+    private bool notFound;
+    private readonly DateTime today = DateTime.Now;
+
+    protected override void OnParametersSet()
+    {
+        notFound = false;
+        birthDetails = BirthDetailsRepo.GetById(Id);
+        if (birthDetails is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        weeks = DashaPeriodsRepo.GetLifeWeeks(Id);
+    }
+
+    private static string BuildTooltip(LifeWeek week)
+    {
+        var lords = week.MahaLord is null
+            ? "No Dasha computed"
+            : $"{week.MahaLord} / {week.AntarLord} / {week.PratyantarLord}";
+        return $"Week {week.WeekNumber} — {week.WeekStartDate:d MMM yyyy} to {week.WeekEndDate:d MMM yyyy}\n{lords}";
+    }
+}

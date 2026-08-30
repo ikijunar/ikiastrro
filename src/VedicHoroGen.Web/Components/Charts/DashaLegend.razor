@@ -1,0 +1,12 @@
+@* Compact 9-swatch legend for the Dasha lord palette (tokens.css --dasha-*). Color is a scan aid
+   only here, never the sole identifier — every swatch carries its lord name as text. Shared by
+   DashaTimeline and LifeWeeks. *@
+<ul class="dasha-legend">
+    @foreach (var lord in DashaLordColors.LordsInCycleOrder)
+    {
+        <li>
+            <span class="swatch" style="background:@DashaLordColors.CssVar(lord)"></span>
+            @lord
+        </li>
+    }
+</ul>
