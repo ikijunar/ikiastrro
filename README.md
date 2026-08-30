@@ -1,6 +1,19 @@
-# vedic_horo_gen
+# ikiastrro
 
-CLI tool that takes standard birth details (DOB, time, place) and generates + stores D1 (Rasi) and D9 (Navamsa) Vedic astrology charts in MS SQL Server.
+Vedic astrology app (**ikiastrro**; code namespace `Ikiastrro.*`, database `ikiastrro_betav1`).
+Takes standard birth details (DOB, time, place), computes and stores the D1/D2/D6/D9/D10/D11
+charts plus Vimshottari Dasha, classical dignity, house-lordship, conjunctions, aspects,
+retrograde/combustion, Sade Sati and Lagna functional benefic/malefic — via a CLI and a
+Blazor Server web workspace. (Renamed from `vedic_horo_gen` / `VedicHoroGen` on 2026-08-30.)
+
+## Reference specs
+
+| Doc | What it's for |
+|---|---|
+| `ikiastrro_techspecs.md` | Architecture, stack, projects, data layer, DB, build/run, verification |
+| `ikiastrro_uidesignspecs.md` | Web workspace design — layout, design tokens, every component, the decisions behind them |
+| `ikiastrro_calculations.md` | Every astrological calculation: ayanamsha, houses, dignity, vargas, Dasha, combustion, retrograde, Sade Sati, functional nature — with sources |
+| *(product specs — to be added)* | |
 
 ## Related documents
 
@@ -36,11 +49,13 @@ City/Country is geocoded to lat/long via [OpenStreetMap Nominatim](https://nomin
 
 ## Setup
 
-1. **Create the database/tables** (one-time):
-   ```
-   sqlcmd -S localhost -E -C -i db\001_create_database.sql
-   sqlcmd -S localhost -E -C -i db\002_create_tables.sql
-   ```
+1. **Create the database** (one-time). Database name is `ikiastrro_betav1`.
+   - **Fresh machine:** `sqlcmd -S localhost -E -C -i db\ikiastrro_betav1.sql`
+     — one consolidated script: whole schema + all reference/master data + the
+     LifeCalendar dimension. (Replaces the old `db\001..034` migration chain, kept
+     under `db\_archive\` for history.)
+   - **Existing `vedic_horo_gen` database:** `sqlcmd -S localhost -E -C -i db\00_rename_db_to_ikiastrro_betav1.sql`
+     — renames it in place, keeping all saved data.
 2. **Run the CLI**:
    ```
    dotnet run --project src\Ikiastrro.Cli

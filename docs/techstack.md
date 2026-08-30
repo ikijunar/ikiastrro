@@ -1,4 +1,4 @@
-# vedic_horo_gen — Technology Stack
+# ikiastrro — Technology Stack
 
 Verified against the actual `.csproj` files in `D:\@ClaudeSpace\ikiastrro\src\` on 2026-08-26.
 See `ikiastrro.md` for build/decision history and the project's own `README.md` for
@@ -48,13 +48,13 @@ current architecture.
 ## Database
 
 - **Microsoft SQL Server**, Windows Authentication, instance `localhost` (RAMMYPS default instance)
-- Database: `vedic_horo_gen` (bare name — connection string in `SqlConnectionFactory.cs`; the
+- Database: `ikiastrro_betav1` (connection string in `SqlConnectionFactory.cs`; renamed from `vedic_horo_gen` 2026-08-30; the
   `cproj_` folder prefix is a workspace naming convention only, not a DB-naming one)
 - Tables: `tbl_BirthDetails`, `tbl_ChartResults`, `tbl_Chart_KeyDetails`, `tbl_Chart_HouseLords`,
   `tbl_Chart_Conjunctions`, `tbl_Chart_Aspects` (generalized from D1-only to chart-type-generic
   on 2026-08-24, `ChartType` column added)
 - View: `vw_Chart_Consolidated`
-- Schema migrations tracked as numbered `.sql` files (e.g. `010_generalize_chart_analytical_tables.sql`)
+- Schema: single consolidated baseline `db/ikiastrro_betav1.sql` (old numbered migrations in `db/_archive/`)
 - Access pattern: Dapper over `Microsoft.Data.SqlClient`, no full ORM/EF Core
 
 ## Domain conventions (not a library, but core to the stack's behavior)
