@@ -13,6 +13,19 @@
     font-size: 13px;
     letter-spacing: 0.04em;
     margin-right: auto;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.site-nav .brand-name {
+    color: var(--accent);
+    font-size: 18px;
+    letter-spacing: 0.06em;
+}
+
+.site-nav .brand-ded {
+    font-style: italic;
 }
 
 .site-nav a {

@@ -1,0 +1,68 @@
+.ppt-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    background: var(--paper-raised);
+}
+
+table.ppt {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 780px;
+    font-size: 13px;
+}
+
+table.ppt th, table.ppt td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--paper-line);
+    white-space: nowrap;
+}
+
+table.ppt th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    color: var(--ink-faint);
+    font-weight: 400;
+    position: sticky;
+    top: 0;
+    background: var(--paper-raised);
+}
+
+table.ppt tr:last-child td {
+    border-bottom: none;
+}
+
+table.ppt tr.asc td {
+    color: var(--ink-soft);
+    font-style: italic;
+}
+
+table.ppt .mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+table.ppt .asp {
+    color: var(--aspect-faint);
+    white-space: normal;
+    font-size: 12px;
+}
+
+table.ppt .muted {
+    color: var(--ink-faint);
+}
+
+table.ppt .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+table.ppt .pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}

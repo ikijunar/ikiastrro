@@ -39,20 +39,35 @@
     padding: 1px 5px; border-radius: 3px; border: 1px solid var(--accent-line);
 }
 
-.house-num {
+.house-nums {
     position: absolute;
     top: 50%;
     right: 6px;
     transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-end;
+}
+
+.house-num {
     font-size: 10px;
     font-weight: 700;
-    color: var(--accent);
-    background: var(--paper-line);
-  
-    padding: 0px 4px;
+    padding: 0 4px;
     border-radius: 3px;
-    border: 1px solid var(--paper-line);
     line-height: 1.5;
+    min-width: 16px;
+    text-align: center;
+}
+
+.house-num.from-lagna {
+    color: var(--house-lagna-fg);
+    background: var(--house-lagna);
+}
+
+.house-num.from-moon {
+    color: var(--house-moon-fg);
+    background: var(--house-moon);
 }
 
 .planets { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; }
@@ -85,19 +100,19 @@
     margin-top: auto;
 }
 .aspect-label {
-    font-size: 8.5px;
+    font-size: 10px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--ink-faint);
 }
-.aspect-strip .planets { gap: 3px; }
+.aspect-strip .planets { gap: 4px; }
 .planet-glyph.aspect {
     border-style: dashed;
     background: transparent;
     color: var(--aspect-faint);
     font-weight: 600;
-    padding: 0 4px;
-    font-size: 12px;
+    padding: 1px 5px;
+    font-size: 13px;
 }
 
 .center-title { font-family: Georgia, 'Iowan Old Style', serif; font-size: 16px; color: var(--ink); margin-bottom: 4px; }

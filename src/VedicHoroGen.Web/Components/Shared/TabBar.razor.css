@@ -1,0 +1,28 @@
+.tabbar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--paper-line);
+    flex-wrap: wrap;
+}
+
+.tabbar a {
+    padding: 8px 16px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 7px 7px 0 0;
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    font-size: 16px;
+}
+
+.tabbar a:hover {
+    color: var(--ink);
+}
+
+.tabbar a.on {
+    background: var(--accent);
+    color: var(--house-lagna-fg);
+    font-weight: 600;
+    border-color: var(--accent);
+}

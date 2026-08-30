@@ -1,0 +1,94 @@
+@* Saturn afflictions from natal Moon — the 3 Sade Sati cycles plus every Kantaka Shani (4th)
+   and Ashtama Shani (8th) window, from tvf_Chart_SadeSatiPeriods. The raw TVF splits each window
+   on retrograde re-entries; this consolidates contiguous rows back into one window and lists them
+   all in ascending date order. *@
+<table class="sst">
+    <thead>
+        <tr><th>Event</th><th>From</th><th>To</th><th>Age</th></tr>
+    </thead>
+    <tbody>
+        @if (_windows.Count == 0)
+        {
+            <tr><td colspan="4" class="muted">No Sade Sati data — run <code>backfill-planet-transits</code>.</td></tr>
+        }
+        @foreach (var w in _windows)
+        {
+            <tr class="@(IsActive(w) ? "now" : "")">
+                <td>@w.Label<div class="sub">@w.Detail</div></td>
+                <td class="mono">@Fmt(w.Start)</td>
+                <td class="mono">@(w.End is null ? "—" : Fmt(w.End.Value))</td>
+                <td class="mono">@Age(w)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<SadeSatiPeriod> Periods { get; set; } = Array.Empty<SadeSatiPeriod>();
+    [Parameter, EditorRequired] public DateTime BirthDate { get; set; }
+    [Parameter] public DateTime AsOf { get; set; } = DateTime.Now;
+
+    private record Window(string Label, string Detail, DateTime Start, DateTime? End);
+
+    private List<Window> _windows = new();
+
+    protected override void OnParametersSet()
+    {
+        _windows = new List<Window>();
+
+        var sadeSati = Periods.Where(p => p.PeriodType.StartsWith("SadeSati_Dhaiya") && p.StartDateTimeUtc is not null)
+            .OrderBy(p => p.StartDateTimeUtc).ToList();
+        var n = 0;
+        foreach (var grp in GroupContiguous(sadeSati))
+        {
+            n++;
+            _windows.Add(new Window($"Sade Sati {n}", "12th → 2nd from Moon", grp.start, grp.end));
+        }
+
+        foreach (var grp in GroupContiguous(Periods.Where(p => p.PeriodType == "KantakaShani" && p.StartDateTimeUtc is not null).OrderBy(p => p.StartDateTimeUtc).ToList()))
+            _windows.Add(new Window("Kantaka Shani", $"4th from Moon · {grp.sign}", grp.start, grp.end));
+
+        foreach (var grp in GroupContiguous(Periods.Where(p => p.PeriodType == "AshtamaShani" && p.StartDateTimeUtc is not null).OrderBy(p => p.StartDateTimeUtc).ToList()))
+            _windows.Add(new Window("Ashtama Shani", $"8th from Moon · {grp.sign}", grp.start, grp.end));
+
+        _windows = _windows.OrderBy(w => w.Start).ToList();
+    }
+
+    /// <summary>Folds rows separated by ≤ 400 days into one window (retrograde re-entry gaps are months; the gap to the next occurrence is ~decades).</summary>
+    private static IEnumerable<(DateTime start, DateTime? end, string sign)> GroupContiguous(List<SadeSatiPeriod> rows)
+    {
+        if (rows.Count == 0) yield break;
+        var start = rows[0].StartDateTimeUtc!.Value;
+        var end = rows[0].EndDateTimeUtc;
+        var sign = rows[0].SaturnSign;
+
+        for (var i = 1; i < rows.Count; i++)
+        {
+            var r = rows[i];
+            var gapFrom = end ?? start;
+            if ((r.StartDateTimeUtc!.Value - gapFrom).TotalDays > 400)
+            {
+                yield return (start, end, sign);
+                start = r.StartDateTimeUtc.Value;
+                end = r.EndDateTimeUtc;
+                sign = r.SaturnSign;
+            }
+            else if (r.EndDateTimeUtc is null || (end is not null && r.EndDateTimeUtc > end))
+            {
+                end = r.EndDateTimeUtc;
+            }
+        }
+        yield return (start, end, sign);
+    }
+
+    private bool IsActive(Window w) => AsOf >= w.Start && (w.End is null || AsOf <= w.End.Value);
+
+    private static string Fmt(DateTime d) => d.ToString("MMM yyyy");
+
+    private string Age(Window w)
+    {
+        var a0 = (int)((w.Start - BirthDate).TotalDays / 365.2425);
+        var a1 = w.End is null ? a0 : (int)((w.End.Value - BirthDate).TotalDays / 365.2425);
+        return a0 == a1 ? a0.ToString() : $"{a0}–{a1}";
+    }
+}

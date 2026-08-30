@@ -1,0 +1,84 @@
+@using VedicHoroGen.Core.Astro
+@* D1 planetary positions — the reference table above the workspace columns. The Malefic/Benefic
+   column is the computed Parashari functional nature for the natal Lagna (LagnaFunctionalNature),
+   shown as B/M + Raman's rank digit (from tbl_Dim_LagnaFunctionalNature, when the book classifies
+   it) + the houses that planet rules from the Lagna, e.g. B1-[9&12]. Rahu/Ketu/Lagna: not defined. *@
+<div class="ppt-scroll">
+    <table class="ppt">
+        <thead>
+            <tr>
+                <th>Planet</th><th>Rashi</th><th>Degrees</th><th>Nakshatra</th><th>Nak&nbsp;Lord</th>
+                <th>Nak&nbsp;Pad</th><th>Direction</th><th>Dignity</th><th>Malefic&nbsp;/&nbsp;Benefic</th><th>Aspected&nbsp;by</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                var fn = Functional(row.Planet);
+                <tr class="@(row.Planet == "Ascendant" ? "asc" : "")">
+                    <td>@(row.Planet == "Ascendant" ? "Lagna" : row.Planet)</td>
+                    <td>@DisplaySign(row.Sign)</td>
+                    <td class="mono">@(string.IsNullOrEmpty(row.DegreesInSignDisplay) ? "—" : row.DegreesInSignDisplay)@(row.IsCombust == true ? " 🔥" : "")</td>
+                    <td>@(row.Nakshatra ?? "—")</td>
+                    <td>@(row.NakshatraLordPlanet ?? "—")</td>
+                    <td class="mono">@(row.NakshatraPada?.ToString() ?? "—")</td>
+                    <td>@ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
+                    <td>
+                        @if (row.DignityStatus is null)
+                        {
+                            <span class="muted">—</span>
+                        }
+                        else
+                        {
+                            <span class="pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span>
+                        }
+                    </td>
+                    <td>
+                        @if (fn is null)
+                        {
+                            <span class="muted">—</span>
+                        }
+                        else
+                        {
+                            <span class="pill"><span class="dot" style="background:@fn.Value.Color"></span>@fn.Value.Code</span>
+                        }
+                    </td>
+                    <td class="mono asp">@(row.AspectedBy ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<PlanetRow> Rows { get; set; } = Array.Empty<PlanetRow>();
+
+    /// <summary>Natal D1 Lagna sign, internal ZodiacName spelling ("Aries", "Capricornus", …).</summary>
+    [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
+
+    /// <summary>Raman's per-Lagna rows (migration 031) — used only for the rank digit.</summary>
+    [Parameter] public IReadOnlyList<LagnaFunctionalNatureRow> BookRows { get; set; } = Array.Empty<LagnaFunctionalNatureRow>();
+
+    private static string DisplaySign(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+
+    private (string Code, string Color)? Functional(string planet)
+    {
+        if (!Enum.TryParse<PlanetName>(planet, out var p) || p is PlanetName.Rahu or PlanetName.Ketu)
+            return null;
+        if (!Enum.TryParse<ZodiacName>(LagnaSign, out var lagna))
+            return null;
+
+        var r = LagnaFunctionalNature.For(lagna, p);
+        var isBenefic = r.Nature is FunctionalNature.Benefic or FunctionalNature.Yogakaraka;
+        var prefix = isBenefic ? "B" : r.Nature == FunctionalNature.Malefic ? "M" : "N";
+        var color = isBenefic ? "var(--dignity-good)"
+            : r.Nature == FunctionalNature.Malefic ? "var(--dignity-enemy)"
+            : "var(--dignity-neutral)";
+
+        var planetId = (byte)((int)p + 1); // tbl_Planets.Id: Sun=1 … Saturn=7
+        var rankDigit = BookRows.FirstOrDefault(b => b.PlanetId == planetId)?.Rank?.ToString() ?? "";
+
+        var houses = string.Join("&", r.RuledHouses);
+        return ($"{prefix}{rankDigit}-[{houses}]", color);
+    }
+}

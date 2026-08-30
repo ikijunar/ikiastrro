@@ -31,6 +31,14 @@
     --asc-glow: rgba(226, 173, 79, 0.16);
     --shadow: rgba(0, 0, 0, 0.35);
 
+    /* House-number badges on every South Indian grid cell (ChartWorkspace): the house counted
+       from the Lagna reads gold, the house counted from the natal Moon reads silver — two axes,
+       two colours, so a glance separates them. --house-lagna deliberately equals --accent. */
+    --house-lagna: #e2ad4f;
+    --house-lagna-fg: #1a1730;
+    --house-moon: #c7c8d4;
+    --house-moon-fg: #1a1730;
+
     /* Destructive-action color (Delete buttons/icons, the confirm dialog) — one shared token
        instead of the one-off #b00020 that used to live in Home.razor's inline <style> (2026-08-28
        UI cleanup). Matches --dignity-debilitated so "danger" reads consistently across the app. */

@@ -43,8 +43,37 @@ ul.maha-list, ul.antar-list, ul.pratyantar-list {
     font-size: 14px;
 }
 
+button.period-line {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+button.period-line:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
 .maha-row > .period-line {
     font-size: 16px;
+}
+
+.tw {
+    width: 12px;
+    flex: none;
+    color: var(--ink-faint);
+    font-size: 11px;
+}
+
+.maha-row.current > .period-line,
+.antar-row.current > .period-line {
+    background: rgba(226, 173, 79, 0.10);
 }
 
 .swatch {

@@ -1,6 +1,7 @@
-@* Mahadasha -> Antardasha list (Pratyantardasha shown only for whichever Antardasha is current —
-   showing all 729 leaf periods by default would swamp the page). The currently-active period at
-   every level is marked, not just colored, so "what's happening now" never depends on color alone. *@
+@* Vimshottari Dasha, three levels, selectable. Click a Mahadasha to open its Antardashas;
+   click an Antardasha to open its Pratyantardashas. On first render the chain containing
+   AsOf (the current period) is opened, and the active period at every level is badged —
+   so "what's happening now" never depends on colour alone. *@
 <div class="dasha-timeline">
     <DashaLegend />
 
@@ -8,8 +9,10 @@
         @foreach (var maha in Roots.OrderBy(p => p.StartDayOffset))
         {
             var mahaCurrent = IsCurrent(maha);
-            <li class="maha-row @(mahaCurrent ? "current" : "")">
-                <div class="period-line">
+            var mahaOpen = _openMahaId == maha.Id;
+            <li class="maha-row @(mahaCurrent ? "current" : "") @(mahaOpen ? "open" : "")">
+                <button type="button" class="period-line row-toggle" @onclick="() => ToggleMaha(maha.Id)">
+                    <span class="tw">@(mahaOpen ? "▾" : "▸")</span>
                     <span class="swatch" style="background:@DashaLordColors.CssVar(maha.Lord)"></span>
                     <span class="lord">@maha.Lord</span>
                     <span class="label">Mahadasha</span>
@@ -18,48 +21,54 @@
                     {
                         <span class="current-badge">current</span>
                     }
-                </div>
+                </button>
 
-                <ul class="antar-list">
-                    @foreach (var antar in maha.Children.OrderBy(p => p.StartDayOffset))
-                    {
-                        var antarCurrent = mahaCurrent && IsCurrent(antar);
-                        <li class="antar-row @(antarCurrent ? "current" : "")">
-                            <div class="period-line">
-                                <span class="swatch" style="background:@DashaLordColors.CssVar(antar.Lord)"></span>
-                                <span class="lord">@antar.Lord</span>
-                                <span class="label">Antardasha</span>
-                                <span class="range">@FormatRange(antar.StartDate, antar.EndDate)</span>
-                                @if (antarCurrent)
-                                {
-                                    <span class="current-badge">current</span>
-                                }
-                            </div>
-
-                            @if (antarCurrent)
-                            {
-                                <ul class="pratyantar-list">
-                                    @foreach (var pratyantar in antar.Children.OrderBy(p => p.StartDayOffset))
+                @if (mahaOpen)
+                {
+                    <ul class="antar-list">
+                        @foreach (var antar in maha.Children.OrderBy(p => p.StartDayOffset))
+                        {
+                            var antarCurrent = mahaCurrent && IsCurrent(antar);
+                            var antarOpen = _openAntarId == antar.Id;
+                            <li class="antar-row @(antarCurrent ? "current" : "") @(antarOpen ? "open" : "")">
+                                <button type="button" class="period-line row-toggle" @onclick="() => ToggleAntar(antar.Id)">
+                                    <span class="tw">@(antar.Children.Count > 0 ? (antarOpen ? "▾" : "▸") : "·")</span>
+                                    <span class="swatch" style="background:@DashaLordColors.CssVar(antar.Lord)"></span>
+                                    <span class="lord">@antar.Lord</span>
+                                    <span class="label">Antardasha</span>
+                                    <span class="range">@FormatRange(antar.StartDate, antar.EndDate)</span>
+                                    @if (antarCurrent)
                                     {
-                                        var pratyantarCurrent = IsCurrent(pratyantar);
-                                        <li class="pratyantar-row @(pratyantarCurrent ? "current" : "")">
-                                            <div class="period-line">
-                                                <span class="swatch" style="background:@DashaLordColors.CssVar(pratyantar.Lord)"></span>
-                                                <span class="lord">@pratyantar.Lord</span>
-                                                <span class="label">Pratyantardasha</span>
-                                                <span class="range">@FormatRange(pratyantar.StartDate, pratyantar.EndDate)</span>
-                                                @if (pratyantarCurrent)
-                                                {
-                                                    <span class="current-badge">current</span>
-                                                }
-                                            </div>
-                                        </li>
+                                        <span class="current-badge">current</span>
                                     }
-                                </ul>
-                            }
-                        </li>
-                    }
-                </ul>
+                                </button>
+
+                                @if (antarOpen && antar.Children.Count > 0)
+                                {
+                                    <ul class="pratyantar-list">
+                                        @foreach (var pratyantar in antar.Children.OrderBy(p => p.StartDayOffset))
+                                        {
+                                            var pratyantarCurrent = antarCurrent && IsCurrent(pratyantar);
+                                            <li class="pratyantar-row @(pratyantarCurrent ? "current" : "")">
+                                                <div class="period-line">
+                                                    <span class="tw">·</span>
+                                                    <span class="swatch" style="background:@DashaLordColors.CssVar(pratyantar.Lord)"></span>
+                                                    <span class="lord">@pratyantar.Lord</span>
+                                                    <span class="label">Pratyantardasha</span>
+                                                    <span class="range">@FormatRange(pratyantar.StartDate, pratyantar.EndDate)</span>
+                                                    @if (pratyantarCurrent)
+                                                    {
+                                                        <span class="current-badge">current</span>
+                                                    }
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
             </li>
         }
     </ul>
@@ -70,6 +79,32 @@
 
     /// <summary>Defaults to now — overridable for testing/screenshots of a specific moment.</summary>
     [Parameter] public DateTime AsOf { get; set; } = DateTime.Now;
+
+    private int? _openMahaId;
+    private int? _openAntarId;
+    private bool _seeded;
+
+    protected override void OnParametersSet()
+    {
+        if (_seeded || Roots.Count == 0) return;
+        _seeded = true;
+
+        var currentMaha = Roots.FirstOrDefault(IsCurrent);
+        if (currentMaha is null) return;
+        _openMahaId = currentMaha.Id;
+
+        var currentAntar = currentMaha.Children.FirstOrDefault(IsCurrent);
+        if (currentAntar is not null)
+            _openAntarId = currentAntar.Id;
+    }
+
+    private void ToggleMaha(int id)
+    {
+        _openMahaId = _openMahaId == id ? null : id;
+        _openAntarId = null;
+    }
+
+    private void ToggleAntar(int id) => _openAntarId = _openAntarId == id ? null : id;
 
     private bool IsCurrent(DashaPeriodRecord period) => AsOf >= period.StartDate && AsOf <= period.EndDate;
 

@@ -27,7 +27,11 @@
             {
                 var isAscendant = cell.MatchSign == AscendantSign;
                 var glyphs = PlanetsBySign.TryGetValue(cell.MatchSign, out var list) ? list : Array.Empty<GridPlanetGlyph>();
-                var houseNumber = AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(AscendantSign), Enum.Parse<ZodiacName>(cell.MatchSign));
+                var cellSign = Enum.Parse<ZodiacName>(cell.MatchSign);
+                var houseFromLagna = AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(AscendantSign), cellSign);
+                int? houseFromMoon = string.IsNullOrEmpty(MoonSign)
+                    ? null
+                    : AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(MoonSign), cellSign);
                 var aspectedBy = !Compact && AspectedByGlyphs.TryGetValue(cell.MatchSign, out var byList) ? byList : Array.Empty<string>();
 
                 <div class="cell @(isAscendant ? "ascendant" : "")" style="grid-column:@cell.Col;grid-row:@cell.Row;">
@@ -35,7 +39,13 @@
                     {
                         <span class="lagna-tag">LAGNA</span>
                     }
-                    <span class="house-num">@houseNumber</span>
+                    <span class="house-nums">
+                        <span class="house-num from-lagna" title="House @houseFromLagna from Lagna">@houseFromLagna</span>
+                        @if (houseFromMoon is int hm)
+                        {
+                            <span class="house-num from-moon" title="House @hm from the Moon">@hm</span>
+                        }
+                    </span>
                     <div class="sign-label">
                         <span class="sign-en">@cell.DisplayEn</span>
                         @if (!Compact)
@@ -84,6 +94,11 @@
 
 @code {
     [Parameter, EditorRequired] public string AscendantSign { get; set; } = "";
+
+    /// <summary>This chart's own natal Moon sign (internal ZodiacName spelling, e.g. "Scorpio",
+    /// "Capricornus"). When set, every cell also shows its house counted from the Moon, in silver
+    /// beside the gold house-from-Lagna number. Null/empty → only the Lagna number is shown.</summary>
+    [Parameter] public string? MoonSign { get; set; }
 
     [Parameter, EditorRequired]
     public IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> PlanetsBySign { get; set; }
