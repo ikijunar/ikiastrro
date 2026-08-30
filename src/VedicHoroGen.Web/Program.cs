@@ -19,6 +19,7 @@ builder.Services.AddScoped<ChartConjunctionsRepository>();
 builder.Services.AddScoped<ChartAspectsRepository>();
 builder.Services.AddScoped<DashaPeriodsRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();
+builder.Services.AddScoped<ChartGenerationService>();
 builder.Services.AddScoped<BirthDetailDeletionService>();
 builder.Services.AddScoped<IPlaceResolver, NominatimPlaceResolver>();
 builder.Services.AddScoped(_ => ChartCalculationOrchestrator.CreateDefault());

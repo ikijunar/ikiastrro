@@ -77,6 +77,20 @@ TimeOnly ReadTime(string prompt)
 var connectionFactory = SqlConnectionFactory.CreateDefault();
 var birthDetailsRepo = new BirthDetailsRepository(connectionFactory);
 
+// --- Shared compute-and-store pipeline (Task 6/7): one instance, reused by every one-off mode
+//     below and by the interactive add flow near the bottom of this file. ---
+var orchestrator = ChartCalculationOrchestrator.CreateDefault();
+var chartResultsRepo = new ChartResultsRepository(connectionFactory);
+var vimshottariDashaService = new VimshottariDashaService(
+    chartResultsRepo, new DashaPeriodsRepository(connectionFactory));
+var chartGenerationService = new ChartGenerationService(
+    orchestrator, vimshottariDashaService,
+    chartResultsRepo,
+    new ChartKeyDetailsRepository(connectionFactory),
+    new ChartHouseLordsRepository(connectionFactory),
+    new ChartConjunctionsRepository(connectionFactory),
+    new ChartAspectsRepository(connectionFactory));
+
 // --- One-off backfill mode: `dotnet run -- backfill-analytics` ---
 // Recomputes KeyDetails/HouseLords/Conjunctions/Aspects for every stored ChartResult that doesn't
 // have any yet (e.g. D9 rows for people saved before D9 got the same analytical tables as D1,
@@ -86,38 +100,12 @@ var birthDetailsRepo = new BirthDetailsRepository(connectionFactory);
 // so it's no less correct. Safe to re-run (skips ChartResults that already have KeyDetails rows).
 if (args.Length > 0 && args[0] == "backfill-analytics")
 {
-    var chartResultsRepoForBackfill = new ChartResultsRepository(connectionFactory);
-    var keyDetailsRepoForBackfill = new ChartKeyDetailsRepository(connectionFactory);
-    var houseLordsRepoForBackfill = new ChartHouseLordsRepository(connectionFactory);
-    var conjunctionsRepoForBackfill = new ChartConjunctionsRepository(connectionFactory);
-    var aspectsRepoForBackfill = new ChartAspectsRepository(connectionFactory);
-    var orchestratorForBackfill = ChartCalculationOrchestrator.CreateDefault();
-
-    var people = birthDetailsRepo.GetAll();
-    var backfilled = 0;
-    foreach (var person in people)
+    Console.WriteLine("Recomputing analytics (KeyDetails/HouseLords/Conjunctions/Aspects) for every saved person...");
+    foreach (var person in birthDetailsRepo.GetAll())
     {
-        foreach (var result in chartResultsRepoForBackfill.GetByBirthDetailId(person.Id))
-        {
-            if (keyDetailsRepoForBackfill.GetByChartResultId(result.Id).Count > 0) continue; // already has analytics
-
-            var input = orchestratorForBackfill.ComputeAnalysisInput(result.ChartType, person);
-            var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
-            foreach (var row in keyDetails) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in houseLords) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in conjunctions) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in aspects) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-
-            keyDetailsRepoForBackfill.InsertAll(keyDetails);
-            houseLordsRepoForBackfill.InsertAll(houseLords);
-            if (conjunctions.Count > 0) conjunctionsRepoForBackfill.InsertAll(conjunctions);
-            if (aspects.Count > 0) aspectsRepoForBackfill.InsertAll(aspects);
-
-            Console.WriteLine($"Backfilled {person.Name} — {result.ChartType} (ChartResultId={result.Id}): {keyDetails.Count} key-details, {houseLords.Count} house-lords, {conjunctions.Count} conjunctions, {aspects.Count} aspects.");
-            backfilled++;
-        }
+        var personReport = chartGenerationService.RecomputeAnalytics(person, chartTypeFilter: null);
+        Console.WriteLine($"  {person.Name}: recomputed analytics for [{string.Join(", ", personReport.ChartTypesWritten)}]");
     }
-    Console.WriteLine($"\nDone — backfilled {backfilled} chart result(s).");
     return;
 }
 
@@ -236,31 +224,15 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
 // are untouched — none of the new columns live there. Safe to re-run any time.
 if (args.Length > 0 && args[0] == "recompute-keydetails")
 {
-    var chartResultsRepoForRecompute = new ChartResultsRepository(connectionFactory);
-    var keyDetailsRepoForRecompute = new ChartKeyDetailsRepository(connectionFactory);
-    var orchestratorForRecompute = ChartCalculationOrchestrator.CreateDefault();
-    var calculableTypes = orchestratorForRecompute.Calculators.Select(c => c.ChartType).ToHashSet();
-
-    var people = birthDetailsRepo.GetAll();
-    var recomputed = 0;
-    foreach (var person in people)
+    Console.WriteLine("Re-deriving analytics for every saved person.");
+    Console.WriteLine("NOTE: as of Task 7 this recomputes ALL 4 analytics tables (KeyDetails/HouseLords/Conjunctions/");
+    Console.WriteLine("Aspects), not KeyDetails only — an intentional, idempotent no-op widening now that the write");
+    Console.WriteLine("path is single-sourced through ChartGenerationService.RecomputeAnalytics.");
+    foreach (var person in birthDetailsRepo.GetAll())
     {
-        foreach (var result in chartResultsRepoForRecompute.GetByBirthDetailId(person.Id))
-        {
-            if (!calculableTypes.Contains(result.ChartType)) continue; // skip VimshottariDasha (no IChartCalculator / KeyDetails shape)
-
-            var input = orchestratorForRecompute.ComputeAnalysisInput(result.ChartType, person);
-            var (keyDetails, _, _, _) = ChartAnalyzer.Compute(input);
-            foreach (var row in keyDetails) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-
-            keyDetailsRepoForRecompute.DeleteByChartResultId(result.Id);
-            keyDetailsRepoForRecompute.InsertAll(keyDetails);
-
-            Console.WriteLine($"Recomputed {person.Name} — {result.ChartType} (ChartResultId={result.Id}): {keyDetails.Count} key-detail row(s).");
-            recomputed++;
-        }
+        var personReport = chartGenerationService.RecomputeAnalytics(person, chartTypeFilter: null);
+        Console.WriteLine($"  {person.Name}: re-derived [{string.Join(", ", personReport.ChartTypesWritten)}]");
     }
-    Console.WriteLine($"\nDone — recomputed KeyDetails for {recomputed} chart result(s).");
     return;
 }
 
@@ -272,43 +244,14 @@ if (args.Length > 0 && args[0] == "recompute-keydetails")
 // IChartCalculator (e.g. D2/D6/D10/D11, 2026-08-30).
 if (args.Length > 0 && args[0] == "backfill-charts")
 {
-    var chartResultsRepoForCharts = new ChartResultsRepository(connectionFactory);
-    var keyDetailsRepoForCharts = new ChartKeyDetailsRepository(connectionFactory);
-    var houseLordsRepoForCharts = new ChartHouseLordsRepository(connectionFactory);
-    var conjunctionsRepoForCharts = new ChartConjunctionsRepository(connectionFactory);
-    var aspectsRepoForCharts = new ChartAspectsRepository(connectionFactory);
-    var orchestratorForCharts = ChartCalculationOrchestrator.CreateDefault();
-
-    var createdCharts = 0;
+    Console.WriteLine("Creating any missing chart types (+ Vimshottari Dasha) for every saved person...");
     foreach (var person in birthDetailsRepo.GetAll())
     {
-        var existingTypes = chartResultsRepoForCharts.GetByBirthDetailId(person.Id).Select(r => r.ChartType).ToHashSet();
-        foreach (var calculator in orchestratorForCharts.Calculators)
-        {
-            if (existingTypes.Contains(calculator.ChartType)) continue;
-
-            var input = calculator.ComputeAnalysisInput(person);
-            var result = calculator.BuildResult(person, input);
-            result = chartResultsRepoForCharts.Insert(result);   // populates result.Id
-
-            var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
-            foreach (var row in keyDetails) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in houseLords) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in conjunctions) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-            foreach (var row in aspects) { row.ChartResultId = result.Id; row.BirthDetailId = person.Id; }
-
-            keyDetailsRepoForCharts.InsertAll(keyDetails);
-            houseLordsRepoForCharts.InsertAll(houseLords);
-            if (conjunctions.Count > 0) conjunctionsRepoForCharts.InsertAll(conjunctions);
-            if (aspects.Count > 0) aspectsRepoForCharts.InsertAll(aspects);
-
-            Console.WriteLine($"Created {person.Name} — {calculator.ChartType} (ChartResultId={result.Id}): " +
-                              $"{keyDetails.Count} key-details, {houseLords.Count} house-lords, " +
-                              $"{conjunctions.Count} conjunctions, {aspects.Count} aspects.");
-            createdCharts++;
-        }
+        var personReport = chartGenerationService.GenerateMissing(person);
+        Console.WriteLine(personReport.ChartTypesWritten.Count == 0 && !personReport.DashaWritten
+            ? $"  {person.Name}: nothing missing"
+            : $"  {person.Name}: created [{string.Join(", ", personReport.ChartTypesWritten)}]{(personReport.DashaWritten ? " + Dasha" : "")}");
     }
-    Console.WriteLine($"\nDone — created {createdCharts} new chart(s).");
     return;
 }
 
@@ -498,6 +441,27 @@ if (args.Length > 1 && args[0] == "show-dasha")
     return;
 }
 
+// --- Standalone mode: `dotnet run -- compute-all <name>` ---
+// Regenerates every registered chart type + Vimshottari Dasha for one already-saved person by exact
+// name — one command in place of running backfill-charts + backfill-dasha separately, e.g. after a
+// birth-time correction. Delete-first-then-regenerate via ChartGenerationService.GenerateAll, so
+// it's idempotent and safe to re-run.
+if (args.Length > 1 && args[0] == "compute-all")
+{
+    var targetName = string.Join(' ', args.Skip(1));
+    var person = birthDetailsRepo.GetAll().FirstOrDefault(p => p.Name.Equals(targetName, StringComparison.OrdinalIgnoreCase));
+    if (person is null)
+    {
+        Console.WriteLine($"No saved person named \"{targetName}\".");
+        return;
+    }
+
+    var genReport = chartGenerationService.GenerateAll(person);
+    Console.WriteLine($"{person.Name}: regenerated [{string.Join(", ", genReport.ChartTypesWritten)}]"
+                      + (genReport.DashaWritten ? " + Vimshottari Dasha" : ""));
+    return;
+}
+
 string name;
 while (true)
 {
@@ -552,50 +516,15 @@ var birthDetails = new BirthDetails
     IanaTimeZoneId = ianaTimeZoneId
 };
 
-// --- Store input ---
-var chartResultsRepo = new ChartResultsRepository(connectionFactory);
-var chartKeyDetailsRepo = new ChartKeyDetailsRepository(connectionFactory);
-var chartHouseLordsRepo = new ChartHouseLordsRepository(connectionFactory);
-var chartConjunctionsRepo = new ChartConjunctionsRepository(connectionFactory);
-var chartAspectsRepo = new ChartAspectsRepository(connectionFactory);
-var dashaPeriodsRepo = new DashaPeriodsRepository(connectionFactory);
-var vimshottariDashaService = new VimshottariDashaService(chartResultsRepo, dashaPeriodsRepo);
-
+// --- Store input, then compute + store every chart type + Vimshottari Dasha (one pipeline: Task 7) ---
 birthDetailsRepo.Insert(birthDetails);
 Console.WriteLine($"\nStored BirthDetails (Id={birthDetails.Id}).");
 
-// --- Calculate + store every registered chart type (D1 + D9 today) ---
-var orchestrator = ChartCalculationOrchestrator.CreateDefault();
-var chartResults = orchestrator.CalculateAll(birthDetails);
-chartResultsRepo.InsertAll(chartResults.Select(c => c.Result)); // populates each result's Id
-Console.WriteLine($"Stored {chartResults.Count} chart result(s): {string.Join(", ", chartResults.Select(c => c.Result.ChartType))}\n");
+var report = chartGenerationService.GenerateAll(birthDetails);
+Console.WriteLine($"Stored: [{string.Join(", ", report.ChartTypesWritten)}]{(report.DashaWritten ? " + Vimshottari Dasha" : "")}\n");
 
-// --- Derive + store key-details, house-lordship, conjunctions, and aspects for every chart type ---
-foreach (var (result, input) in chartResults)
-{
-    var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
-
-    foreach (var row in keyDetails) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-    foreach (var row in houseLords) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-    foreach (var row in conjunctions) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-    foreach (var row in aspects) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-
-    chartKeyDetailsRepo.InsertAll(keyDetails);
-    chartHouseLordsRepo.InsertAll(houseLords);
-    if (conjunctions.Count > 0) chartConjunctionsRepo.InsertAll(conjunctions);
-    if (aspects.Count > 0) chartAspectsRepo.InsertAll(aspects);
-    Console.WriteLine($"Stored {result.ChartType}: {keyDetails.Count} key-detail row(s), {houseLords.Count} house-lord row(s), {conjunctions.Count} conjunction(s), {aspects.Count} aspect(s).");
-}
-Console.WriteLine();
-
-// --- Compute + store Vimshottari Dasha (Mahadasha/Antardasha/Pratyantardasha) ---
-var (dashaResult, dashaTree) = vimshottariDashaService.ComputeAndStore(birthDetails);
-Console.WriteLine($"Stored VimshottariDasha (ChartResultId={dashaResult.Id}). Mahadasha/Antardasha sequence:\n");
-PrintDashaTreeFromComputed(dashaTree);
-Console.WriteLine();
-
-// --- Print summary ---
-foreach (var (result, _) in chartResults)
+// --- Print summary (read back from the store) ---
+foreach (var result in chartResultsRepo.GetByBirthDetailId(birthDetails.Id))
 {
     Console.WriteLine($"--- {result.ChartType} ({result.Ayanamsha}, {result.HouseSystem}) ---");
     Console.WriteLine(result.ResultJson);

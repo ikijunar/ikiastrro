@@ -1,13 +1,8 @@
 @page "/add"
 @using System.ComponentModel.DataAnnotations
 @inject BirthDetailsRepository BirthDetailsRepo
-@inject ChartResultsRepository ChartResultsRepo
-@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
-@inject ChartHouseLordsRepository ChartHouseLordsRepo
-@inject ChartConjunctionsRepository ChartConjunctionsRepo
-@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartGenerationService ChartGenerationService
 @inject IPlaceResolver PlaceResolver
-@inject ChartCalculationOrchestrator Orchestrator
 @inject NavigationManager Nav
 
 <PageTitle>Add New Person — vedic_horo_gen</PageTitle>
@@ -170,28 +165,9 @@
                 IanaTimeZoneId = ianaTimeZoneId
             };
 
-            // --- Store input ---
+            // --- Store input, then compute + store every chart type + Vimshottari Dasha ---
             BirthDetailsRepo.Insert(birthDetails);
-
-            // --- Calculate + store every registered chart type (D1 + D9 today) ---
-            var chartResults = Orchestrator.CalculateAll(birthDetails);
-            ChartResultsRepo.InsertAll(chartResults.Select(c => c.Result)); // populates each result's Id
-
-            // --- Derive + store key-details, house-lordship, conjunctions, and aspects for every chart type ---
-            foreach (var (result, input) in chartResults)
-            {
-                var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
-
-                foreach (var row in keyDetails) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-                foreach (var row in houseLords) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-                foreach (var row in conjunctions) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-                foreach (var row in aspects) { row.ChartResultId = result.Id; row.BirthDetailId = birthDetails.Id; }
-
-                ChartKeyDetailsRepo.InsertAll(keyDetails);
-                ChartHouseLordsRepo.InsertAll(houseLords);
-                if (conjunctions.Count > 0) ChartConjunctionsRepo.InsertAll(conjunctions);
-                if (aspects.Count > 0) ChartAspectsRepo.InsertAll(aspects);
-            }
+            ChartGenerationService.GenerateAll(birthDetails);
 
             Nav.NavigateTo($"/charts/{birthDetails.Id}");
         }
