@@ -1,4 +1,5 @@
 using System.Globalization;
+using Dapper;
 using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Dasha;
@@ -265,6 +266,68 @@ if (args.Length > 0 && args[0] == "verify-avastha")
     Check("Jagradadi(null)",        Jagradadi(null!),         null);
 
     Console.WriteLine(failures == 0 ? "\nverify-avastha: ALL PASS" : $"\nverify-avastha: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+if (args.Length > 0 && args[0] == "verify-schema")
+{
+    using var conn = connectionFactory.CreateOpenConnection();
+    var failures = 0;
+    void Check(string label, long violations)
+    {
+        var ok = violations == 0;
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: {violations} violation(s)");
+        if (!ok) failures++;
+    }
+    long Count(string sql) => conn.ExecuteScalar<long>(sql);
+
+    // -- backfill completeness (Phase 1) --
+    Check("KeyDetails.PlanetId populated (non-Ascendant)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PlanetId IS NULL AND Planet <> 'Ascendant'"));
+    Check("KeyDetails.SignId populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE SignId IS NULL"));
+    Check("HouseLords ids populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_HouseLords WHERE HouseSignId IS NULL OR LordPlanetId IS NULL OR LordPlacedInSignId IS NULL"));
+    Check("Conjunctions ids populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Conjunctions WHERE Planet1Id IS NULL OR Planet2Id IS NULL OR SignId IS NULL"));
+    Check("Aspects ids populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Aspects WHERE AspectingPlanetId IS NULL OR AspectedTargetType IS NULL OR (AspectedTargetType = 'Planet' AND AspectedPlanetId IS NULL)"));
+    Check("DashaPeriods.LordId populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods WHERE LordId IS NULL"));
+    Check("ChartResults.RuleSetId populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_ChartResults WHERE RuleSetId IS NULL"));
+    Check("ChartResults position charts have ChartTypeId",
+        Count("SELECT COUNT(*) FROM dbo.tbl_ChartResults WHERE CalculationKind = 'PositionChart' AND ChartTypeId IS NULL"));
+    Check("PlanetAvastha.PlanetId populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Fact_PlanetAvastha WHERE PlanetId IS NULL"));
+
+    // -- orphan-id checks --
+    Check("KeyDetails.PlanetId resolves",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd WHERE kd.PlanetId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Planets p WHERE p.Id = kd.PlanetId)"));
+    Check("KeyDetails.SignId resolves",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd WHERE kd.SignId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.tbl_SignAttributes s WHERE s.Id = kd.SignId)"));
+    Check("ChartResults.ChartTypeId resolves",
+        Count("SELECT COUNT(*) FROM dbo.tbl_ChartResults cr WHERE cr.ChartTypeId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType ct WHERE ct.Id = cr.ChartTypeId)"));
+
+    // -- domain probes (become CHECK constraints in migration 06) --
+    Check("KeyDetails longitude in [0,360)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE NirayanaLongitudeDegrees < 0 OR NirayanaLongitudeDegrees >= 360"));
+    Check("KeyDetails degrees-in-sign in [0,30)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE DegreesInSignDecimal IS NOT NULL AND (DegreesInSignDecimal < 0 OR DegreesInSignDecimal >= 30)"));
+    Check("KeyDetails houses in [1,12]",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE HouseNumberFromLagna NOT BETWEEN 1 AND 12 OR HouseNumberFromSun NOT BETWEEN 1 AND 12 OR HouseNumberFromMoon NOT BETWEEN 1 AND 12"));
+    Check("KeyDetails pada in [1,4]",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE NakshatraPada IS NOT NULL AND NakshatraPada NOT BETWEEN 1 AND 4"));
+    Check("BirthDetails lat/long in range",
+        Count("SELECT COUNT(*) FROM dbo.tbl_BirthDetails WHERE Latitude NOT BETWEEN -90 AND 90 OR Longitude NOT BETWEEN -180 AND 180"));
+    Check("DashaPeriods start < end",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods WHERE StartDate >= EndDate OR StartDayOffset > EndDayOffset"));
+
+    // -- rule-set sanity --
+    Check("exactly one active rule set",
+        Count("SELECT ABS(COUNT(*) - 1) FROM dbo.tbl_Rule_Sets WHERE IsActive = 1"));
+
+    Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
