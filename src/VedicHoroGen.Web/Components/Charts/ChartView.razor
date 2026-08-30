@@ -93,8 +93,8 @@
                             <td>@(row.Nakshatra ?? "—")</td>
                             <td>@(row.NakshatraPada?.ToString() ?? "—")</td>
                             <td>@(row.NakshatraLordPlanet is null ? "—" : PlanetDisplayName(row.NakshatraLordPlanet))</td>
-                            <td>@D1ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
-                            <td>@D1ChartViewModel.CombustionLabel(row.IsCombust, row.DistanceFromSunDegrees, row.CombustionOrbUsedDegrees)</td>
+                            <td>@ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
+                            <td>@ChartViewModel.CombustionLabel(row.IsCombust, row.DistanceFromSunDegrees, row.CombustionOrbUsedDegrees)</td>
                             <td>@row.HouseFromLagna</td>
                             <td>@row.HouseFromMoon</td>
                             <td>
@@ -104,7 +104,7 @@
                                 }
                                 else
                                 {
-                                    <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@D1ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span>
+                                    <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span>
                                 }
                             </td>
                             <td>@(row.RulesHouseNumbers ?? "—")</td>
@@ -146,8 +146,8 @@
                                 <td><span class="planet-name-en">@PlanetDisplayName(row.Planet)</span>@if (PlanetSecondaryName(row.Planet) is { } secondary) { <span class="planet-name-sa">@secondary</span> }</td>
                                 <td>@DisplaySignName(row.Sign)</td>
                                 <td>@(row.NakshatraLordPlanet is null ? "—" : PlanetDisplayName(row.NakshatraLordPlanet))</td>
-                                <td>@D1ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
-                                <td>@D1ChartViewModel.CombustionLabel(row.IsCombust, row.DistanceFromSunDegrees, row.CombustionOrbUsedDegrees)</td>
+                                <td>@ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
+                                <td>@ChartViewModel.CombustionLabel(row.IsCombust, row.DistanceFromSunDegrees, row.CombustionOrbUsedDegrees)</td>
                                 <td>@row.HouseFromLagna</td>
                                 <td>@row.HouseFromMoon</td>
                                 <td>
@@ -157,7 +157,7 @@
                                     }
                                     else
                                     {
-                                        <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@D1ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span>
+                                        <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span>
                                     }
                                 </td>
                                 <td>@(row.RulesHouseNumbers ?? "—")</td>
@@ -200,7 +200,7 @@
                                 }
                                 else
                                 {
-                                    <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@D1ChartViewModel.DignityToken(h.LordDignityStatus))"></span>@h.LordDignityStatus</span>
+                                    <span class="dignity-pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(h.LordDignityStatus))"></span>@h.LordDignityStatus</span>
                                 }
                             </td>
                         </tr>
@@ -237,13 +237,13 @@
 
     // EXTENSION POINT: a future divisional chart (D2, D10, ...) needs the same two lines — its own
     // KeyDetails/Aspects in, a BuildAspectedByGlyphs result out, passed to its own SouthIndianGrid's
-    // AspectedByGlyphs parameter — see D1ChartViewModel.BuildAspectedByGlyphs's doc comment.
-    private IReadOnlyDictionary<string, IReadOnlyList<string>> D1AspectedByGlyphs => D1ChartViewModel.BuildAspectedByGlyphs(KeyDetails, Aspects);
-    private IReadOnlyDictionary<string, IReadOnlyList<string>> D9AspectedByGlyphs => D1ChartViewModel.BuildAspectedByGlyphs(D9KeyDetails, D9Aspects);
+    // AspectedByGlyphs parameter — see ChartViewModel.BuildAspectedByGlyphs's doc comment.
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> D1AspectedByGlyphs => ChartViewModel.BuildAspectedByGlyphs(KeyDetails, Aspects);
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> D9AspectedByGlyphs => ChartViewModel.BuildAspectedByGlyphs(D9KeyDetails, D9Aspects);
 
-    private IReadOnlyList<D1PlanetRow> PlanetRows => D1ChartViewModel.BuildPlanetRows(KeyDetails, HouseLords, Aspects);
+    private IReadOnlyList<PlanetRow> PlanetRows => ChartViewModel.BuildPlanetRows(KeyDetails, HouseLords, Aspects);
     // D9's own table (2026-08-28) — BuildPlanetRows was already chart-type-generic, just never called for D9 before.
-    private IReadOnlyList<D1PlanetRow> D9PlanetRows => D1ChartViewModel.BuildPlanetRows(D9KeyDetails, D9HouseLords, D9Aspects);
+    private IReadOnlyList<PlanetRow> D9PlanetRows => ChartViewModel.BuildPlanetRows(D9KeyDetails, D9HouseLords, D9Aspects);
     private string AscendantSign => KeyDetails.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign ?? "";
     private ChartKeyDetail? MoonRow => KeyDetails.FirstOrDefault(k => k.Planet == "Moon");
 
@@ -268,8 +268,8 @@
                 g => g.Key,
                 g => (IReadOnlyList<GridPlanetGlyph>)g
                     .Select(k => new GridPlanetGlyph(
-                        D1ChartViewModel.PlanetGlyph(k.Planet),
-                        D1ChartViewModel.DignityToken(k.DignityStatus),
+                        ChartViewModel.PlanetGlyph(k.Planet),
+                        ChartViewModel.DignityToken(k.DignityStatus),
                         k.IsRetrograde ?? false,
                         k.IsCombust ?? false))
                     .ToList());

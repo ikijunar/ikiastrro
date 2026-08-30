@@ -2,8 +2,8 @@ using VedicHoroGen.Core.Models;
 
 namespace VedicHoroGen.Core.Calculators;
 
-/// <summary>One planet's row for the visual chart display (D1 or D9) — everything a UI needs to render it.</summary>
-public record D1PlanetRow(
+/// <summary>One planet's row for the visual chart display — everything a UI needs to render it.</summary>
+public record PlanetRow(
     string Planet,
     string Sign,
     string DegreesInSignDisplay,
@@ -22,16 +22,16 @@ public record D1PlanetRow(
     string? AspectedBy);
 
 /// <summary>
-/// Builds display-ready D1 chart data from the raw rows already stored per-BirthDetail (KeyDetails,
+/// Builds display-ready chart data from the raw rows already stored per-BirthDetail (KeyDetails,
 /// HouseLords, Conjunctions) — the same rows <c>vw_Chart_Consolidated</c> derives its RulesHouseNumbers
 /// and Aspects columns from. Doing it here in C# instead of re-querying the SQL view keeps the Blazor UI
 /// working from the same repository methods already used elsewhere, with no separate view dependency.
 /// KeyDetails/HouseLords/Aspects are the shared, chart-type-generic rows (ChartKeyDetail etc.) — callers
-/// pass the D1-scoped subset (already filtered by ChartResultId).
+/// pass the chart-type-scoped subset (already filtered by ChartResultId).
 /// </summary>
-public static class D1ChartViewModel
+public static class ChartViewModel
 {
-    public static IReadOnlyList<D1PlanetRow> BuildPlanetRows(
+    public static IReadOnlyList<PlanetRow> BuildPlanetRows(
         IReadOnlyList<ChartKeyDetail> keyDetails,
         IReadOnlyList<ChartHouseLord> houseLords,
         IReadOnlyList<ChartAspect> aspects)
@@ -49,7 +49,7 @@ public static class D1ChartViewModel
                 .Select(a => $"{a.AspectedTarget} ({a.AspectType})")
                 .ToList();
 
-            return new D1PlanetRow(
+            return new PlanetRow(
                 k.Planet,
                 k.Sign,
                 k.DegreesInSignDisplay ?? "",

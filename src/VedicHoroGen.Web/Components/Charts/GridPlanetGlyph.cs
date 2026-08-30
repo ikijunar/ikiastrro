@@ -4,7 +4,7 @@ namespace VedicHoroGen.Web.Components.Charts;
 /// One planet glyph to render inside a <see cref="SouthIndianGrid"/> cell — e.g. "Su" with the
 /// exalted-dignity dot color, or "As" (the Ascendant) with no dot, since it has no dignity of
 /// its own. <paramref name="DignityToken"/> is the `--dignity-{token}` CSS variable suffix
-/// (see <c>D1ChartViewModel.DignityToken</c>) — null means "don't render a dot."
+/// (see <c>ChartViewModel.DignityToken</c>) — null means "don't render a dot."
 ///
 /// <paramref name="IsRetrograde"/>/<paramref name="IsCombust"/> (2026-08-28) render as a "(D)"/"(R)"
 /// direction suffix and a flame icon respectively. Always known (non-nullable) for every glyph this
