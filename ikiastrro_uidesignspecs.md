@@ -24,7 +24,12 @@ Originally built for the D1 chart view; every page matches it, nothing invents i
   what makes bare `table`/`th`/`td` selectors safe.
 - Serif display face: system stack `Georgia, 'Iowan Old Style', 'Palatino Linotype', serif`.
   Body/UI: system sans. Data/dates: `ui-monospace` with `tabular-nums`.
-- No CSS framework, no component library. `dotnet format` before committing.
+- No CSS framework, no component library — **except Syncfusion Blazor for data
+  visualization** (charts, gauges; Community License). Layout, tables, the North/South
+  Indian chart diagrams, and the LifeWeeks grid remain hand-rolled SVG/CSS. Syncfusion's
+  own theme CSS is scoped and its chart palette is driven from `tokens.css`. Rationale,
+  screen-by-screen chart mapping, and NuGet list: `ikiastrro_datavizspecs.md`.
+- `dotnet format` before committing.
 
 ### Token set (`tokens.css`)
 
