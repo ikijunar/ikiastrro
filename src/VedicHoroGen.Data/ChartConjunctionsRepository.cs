@@ -48,4 +48,12 @@ public class ChartConjunctionsRepository
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, new { BirthDetailId = birthDetailId });
     }
+
+    /// <summary>Deletes just one ChartResult's rows (chart types share this table, discriminated by ChartResultId) — used by ChartGenerationService.RecomputeAnalytics to re-derive rows for a ChartResult that already has them.</summary>
+    public void DeleteByChartResultId(int chartResultId)
+    {
+        const string sql = "DELETE FROM dbo.tbl_Chart_Conjunctions WHERE ChartResultId = @ChartResultId";
+        using var connection = _connectionFactory.CreateOpenConnection();
+        connection.Execute(sql, new { ChartResultId = chartResultId });
+    }
 }
