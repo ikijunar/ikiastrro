@@ -1,5 +1,5 @@
 ﻿-- =====================================================================
--- ikiastrro_betav1 - consolidated database baseline
+-- ikiastrro - consolidated database baseline
 -- Generated 2026-08-30 from the live schema of the former 'vedic_horo_gen' database
 -- (SMO script-out). Replaces the db/001..034 migration chain as the single
 -- from-scratch build. Schema for all tables/views/functions + seed data for the
@@ -9,9 +9,9 @@
 -- are schema-only - the app fills them.
 -- =====================================================================
 
-IF DB_ID(N'ikiastrro_betav1') IS NULL CREATE DATABASE [ikiastrro_betav1];
+IF DB_ID(N'ikiastrro') IS NULL CREATE DATABASE [ikiastrro];
 GO
-USE [ikiastrro_betav1];
+USE [ikiastrro];
 GO
 
 -- ------------------------- SCHEMA -------------------------
