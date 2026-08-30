@@ -178,6 +178,54 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
+// --- One-off check: `dotnet run -- verify-functional-nature` ---
+// Worked-example assertions for LagnaFunctionalNature (Parashari functional benefic/malefic
+// heuristic + yogakaraka detection). Solution has no unit-test project.
+if (args.Length > 0 && args[0] == "verify-functional-nature")
+{
+    var failures = 0;
+    void Check(string label, object actual, object expected)
+    {
+        var ok = actual.ToString() == expected.ToString();
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual}, expected {expected}");
+        if (!ok) failures++;
+    }
+    string Houses(FunctionalNatureResult r) => "{" + string.Join(",", r.RuledHouses) + "}";
+
+    var taSa = LagnaFunctionalNature.For(ZodiacName.Taurus, PlanetName.Saturn);
+    Check("Taurus/Saturn nature", taSa.Nature, FunctionalNature.Yogakaraka);
+    Check("Taurus/Saturn houses", Houses(taSa), "{9,10}");
+
+    var arMe = LagnaFunctionalNature.For(ZodiacName.Aries, PlanetName.Mercury);
+    Check("Aries/Mercury nature", arMe.Nature, FunctionalNature.Malefic);
+    Check("Aries/Mercury houses", Houses(arMe), "{3,6}");
+
+    var cnMo = LagnaFunctionalNature.For(ZodiacName.Cancer, PlanetName.Moon);
+    Check("Cancer/Moon nature", cnMo.Nature, FunctionalNature.Neutral);   // Moon as Lagna lord
+    Check("Cancer/Moon houses", Houses(cnMo), "{1}");
+
+    Check("Libra/Saturn",     LagnaFunctionalNature.For(ZodiacName.Libra, PlanetName.Saturn).Nature,      FunctionalNature.Yogakaraka);
+    Check("Cancer/Mars",      LagnaFunctionalNature.For(ZodiacName.Cancer, PlanetName.Mars).Nature,       FunctionalNature.Yogakaraka);
+    Check("Leo/Mars",         LagnaFunctionalNature.For(ZodiacName.Leo, PlanetName.Mars).Nature,          FunctionalNature.Yogakaraka);
+    Check("Capricornus/Venus",LagnaFunctionalNature.For(ZodiacName.Capricornus, PlanetName.Venus).Nature, FunctionalNature.Yogakaraka);
+    Check("Aquarius/Venus",   LagnaFunctionalNature.For(ZodiacName.Aquarius, PlanetName.Venus).Nature,    FunctionalNature.Yogakaraka);
+
+    var arJu = LagnaFunctionalNature.For(ZodiacName.Aries, PlanetName.Jupiter);
+    Check("Aries/Jupiter nature", arJu.Nature, FunctionalNature.Benefic);   // rules 9th (trikona) + 12th
+    Check("Aries/Jupiter houses", Houses(arJu), "{9,12}");
+
+    var arMo = LagnaFunctionalNature.For(ZodiacName.Aries, PlanetName.Moon);
+    Check("Aries/Moon nature", arMo.Nature, FunctionalNature.Malefic);      // natural benefic owning only the 4th
+    Check("Aries/Moon kendradhipati", arMo.KendradhipatiDosha, true);
+
+    var arVe = LagnaFunctionalNature.For(ZodiacName.Aries, PlanetName.Venus);
+    Check("Aries/Venus maraka", arVe.IsMaraka, true);                       // rules 2nd (Taurus) + 7th (Libra)
+    Check("Aries/Venus nature", arVe.Nature, FunctionalNature.Malefic);     // falls through to the catch-all
+
+    Console.WriteLine(failures == 0 ? "\nverify-functional-nature: ALL PASS" : $"\nverify-functional-nature: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
 // --- One-off backfill mode: `dotnet run -- recompute-keydetails` ---
 // Re-derives tbl_Chart_KeyDetails rows for every stored ChartResult that has a registered
 // IChartCalculator (D1, D2, D6, D9, D10, D11 — everything except VimshottariDasha), even ones that
