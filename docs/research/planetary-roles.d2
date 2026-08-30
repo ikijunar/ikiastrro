@@ -1,0 +1,95 @@
+# =============================================================================
+# ikiastrro research diagram — PLANETARY ROLES coverage
+# Which "role" facts about a planet are computed / stored, and from what inputs.
+# Status as of 2026-08-31. Render:  d2 planetary-roles.d2 planetary-roles.svg
+# =============================================================================
+direction: right
+
+classes: {
+  stored:   { style: { fill: "#1b5e20"; font-color: "#ffffff"; stroke: "#2e7d32" } }
+  computed: { style: { fill: "#e65100"; font-color: "#ffffff"; stroke: "#ef6c00" } }
+  missing:  { style: { fill: "#b71c1c"; font-color: "#ffffff"; stroke: "#c62828" } }
+  data:     { style: { fill: "#0d47a1"; font-color: "#ffffff"; stroke: "#1565c0"; stroke-dash: 3 } }
+  ref:      { style: { fill: "#4a148c"; font-color: "#ffffff"; stroke: "#6a1b9a" } }
+}
+
+legend: Legend {
+  near: top-left
+  s: "stored (a DB column / row)";      s.class: stored
+  c: "computed at runtime, not stored"; c.class: computed
+  m: "not built";                        m.class: missing
+  d: "existing input data";             d.class: data
+  r: "reference / rules table";         r.class: ref
+}
+
+# ---- existing inputs (what the roles would read) --------------------------
+inputs: Existing facts (tbl_Chart_KeyDetails unless noted) {
+  lon:  "NirayanaLongitudeDegrees  (float, NOT NULL, every chart type)"; lon.class: data
+  deg:  "DegreesInSignDecimal  (D1 only)";                               deg.class: data
+  sign: "Sign  +  SignLordPlanet";                                       sign.class: data
+  house:"HouseNumberFromLagna / FromSun / FromMoon";                     house.class: data
+  hl:   "tbl_Chart_HouseLords  (HouseSign, LordPlanet, LordPlacedIn*, LordDignityStatus)"; hl.class: data
+  dig:  "DignityStatus  (Panchadha Maitri vs own sign-lord)";           dig.class: data
+  rules:"tbl_Rule_NaturalRelationship (42) + tbl_Rule_TemporaryFriendshipDistance (12)"; rules.class: ref
+  nref: "tbl_Nakshatras (27) + tbl_NakshatraSubLords (243, KP L1-L2)";  nref.class: ref
+}
+
+# ---- the five roles ------------------------------------------------------
+roles: Planetary roles {
+  house_lord: |md
+    ## House Lord  ✅ FULLY CAPTURED
+    Which planet rules each bhava (Whole Sign, from Lagna).
+    - Stored: **tbl_Chart_HouseLords** (1-12 per chart type) — sign, lord, lord's 3x house, lord's sign, lord's dignity
+    - Also: **vw_Chart_Consolidated.RulesHouseNumbers** (houses a planet rules)
+    - Engine: `ClassicalDignity.GetSignLord`
+  | { class: stored }
+
+  nak_lord: |md
+    ## Nakshatra Lord  ✅ FULLY CAPTURED
+    Vimshottari dasa lord of the nakshatra the planet occupies (+ KP sub-lord).
+    - Stored: **tbl_Chart_KeyDetails.NakshatraLordPlanet**, **.NakshatraSubLordPlanet** — every chart type (real-longitude fact)
+    - Engine: `AstroMath.GetNakshatraLord` / `GetNakshatraSubLord`
+  | { class: stored }
+
+  func_lord: |md
+    ## Functional Lordship  🟠 COMPUTED, NOT STORED
+    Functional benefic / malefic / neutral / yogakaraka per Lagna (from house-lordship).
+    - Engine: `Core/Calculators/LagnaFunctionalNature.For(lagnaSign, planet)` -> `FunctionalNatureResult { Nature, RuledHouses, IsMaraka, KendradhipatiDosha, Rationale }`
+    - Surfaced only in the Web D1 planet table; **no persisted column** (the Raman mirror `tbl_Dim_LagnaFunctionalNature` was removed 2026-08-31)
+    - CLI check: `verify-functional-nature`
+  | { class: computed }
+
+  nais_karaka: |md
+    ## Naisargika Karaka  🟠 PARTIAL
+    Fixed/natural significators (Sun=father/self, Moon=mother/mind, Mars=siblings, Mercury=speech, Jupiter=children/wealth, Venus=spouse, Saturn=longevity/grief).
+    - Hardcoded subset in **`Core/LifeAreas/LifeAreaMap.cs`** (`Karakas` per life-area)
+    - **Not** a data table — migration 030 (`tbl_Dim_PlanetHouseKaraka` / `tbl_Dim_PlanetSignification`) is DESIGNED but NOT applied (`docs/house-lagna-significations.md`)
+    - Sapta (7) vs Ashta (8) count convention: **undecided**
+  | { class: computed }
+
+  chara_karaka: |md
+    ## Chara Karaka  🔴 MISSING
+    Jaimini 8-fold movable karakas — AK, AmK, BK, MK, PK, GK, DK (+ variant 8th),
+    planets ranked by degrees-within-sign descending (Rahu reversed).
+    - No calculator, no storage
+    - Input ready: **DegreesInSignDecimal** (D1)
+    - Feeds Karakamsa + every Jaimini rasi dasa (`key_comp_astro.md` Tier-1 #3)
+  | { class: missing }
+}
+
+# ---- wiring: role <- inputs -------------------------------------------------
+inputs.hl -> roles.house_lord
+inputs.sign -> roles.house_lord
+inputs.nref -> roles.nak_lord
+inputs.lon -> roles.nak_lord
+inputs.house -> roles.func_lord: "house-lordship -> kendra/trikona rule"
+inputs.sign -> roles.func_lord
+roles.nais_karaka -> "migration 030 (reserved)": needs seed table { class: missing }
+inputs.deg -> roles.chara_karaka: "rank by degree (not yet consumed)"
+inputs.rules -> roles.func_lord: "Rahu/Ketu convention"
+
+note: |md
+  **Judgment use (BPHS / Raman "How to Judge a Horoscope" p.14, p.20):**
+  a bhava/topic is judged from *house + its lord + its occupants + its **Karaka***,
+  and each of those four is weighed by its **strength & Avastha** (see planetary-avasthas.d2).
+| { near: bottom-right }

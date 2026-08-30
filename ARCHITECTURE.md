@@ -37,6 +37,7 @@ that matches what you need rather than re-deriving it:
 | `docs/house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migration 030 (031's Raman mirror table was removed 2026-08-31) |
 | `docs/horoscope_compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `Ikiastrro.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
 | `docs/techstack.md` | Verified stack snapshot — pinned package versions and per-project (`Core`/`Data`/`Cli`/`Web`) dependency lists, checked against the `.csproj` files. The `## Stack` section below is the short version |
+| `research_ikiastrro.md` | Topic-research master — is a classical technique's raw data captured, and where are the gaps. Topic 1: planetary roles (Naisargika/Chara Karaka, Functional/House/Nakshatra Lord) + Avastha states (Baaladi/Jagradadi/Deeptadi/Lajjitadi/Sayanadi). D2 diagrams under `docs/research/` |
 | `STANDARDS.md` | Workspace-wide naming/structure conventions (DB/table/view/proc naming, migration numbering) this project follows |
 
 ## Stack
