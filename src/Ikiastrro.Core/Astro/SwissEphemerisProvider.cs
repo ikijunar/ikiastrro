@@ -4,13 +4,15 @@ namespace Ikiastrro.Core.Astro;
 
 /// <summary>
 /// Sidereal (nirayana, Lahiri) longitudes for the Ascendant and all 9 planets at one moment/place,
-/// plus each planet's daily motion speed in longitude (deg/day) — negative means retrograde. The
-/// Ascendant has no speed/retrograde concept (it's a house-circle point, not an orbiting body), so
-/// PlanetSpeeds only covers the 9 planets, same set as PlanetLongitudes.
+/// plus each planet's ecliptic latitude (deg) and daily motion speed in longitude (deg/day —
+/// negative means retrograde). The Ascendant has no latitude/speed/retrograde concept (it's a
+/// house-circle point, not an orbiting body), so PlanetLatitudes/PlanetSpeeds only cover the 9
+/// planets, same set as PlanetLongitudes.
 /// </summary>
 public record SiderealPositions(
     double AscendantLongitude,
     IReadOnlyDictionary<PlanetName, double> PlanetLongitudes,
+    IReadOnlyDictionary<PlanetName, double> PlanetLatitudes,
     IReadOnlyDictionary<PlanetName, double> PlanetSpeeds);
 
 /// <summary>
@@ -47,10 +49,11 @@ public static class SwissEphemerisProvider
 
         const int flags = SwissEph.SEFLG_SIDEREAL | SwissEph.SEFLG_MOSEPH | SwissEph.SEFLG_SPEED;
 
-        // xx[0] = longitude, xx[3] = daily motion speed in longitude (deg/day) — negative means
-        // retrograde. Returned together since every caller needs the longitude and the speed comes
-        // free from the same swe_calc_ut call (SEFLG_SPEED is already set).
-        (double Longitude, double Speed) GetPosition(int body, string label)
+        // xx[0] = longitude, xx[1] = ecliptic latitude (deg), xx[3] = daily motion speed in
+        // longitude (deg/day) — negative means retrograde. Returned together since callers need
+        // the longitude and the latitude/speed come free from the same swe_calc_ut call
+        // (SEFLG_SPEED is already set).
+        (double Longitude, double Latitude, double Speed) GetPosition(int body, string label)
         {
             var xx = new double[6];
             var serr = "";
@@ -59,16 +62,18 @@ public static class SwissEphemerisProvider
             {
                 throw new InvalidOperationException($"Swiss Ephemeris calculation failed for {label}: {serr}");
             }
-            return (xx[0], xx[3]);
+            return (xx[0], xx[1], xx[3]);
         }
 
         var planetLongitudes = new Dictionary<PlanetName, double>();
+        var planetLatitudes = new Dictionary<PlanetName, double>();
         var planetSpeeds = new Dictionary<PlanetName, double>();
 
         void SetPosition(PlanetName planet, int body, string label)
         {
-            var (longitude, speed) = GetPosition(body, label);
+            var (longitude, latitude, speed) = GetPosition(body, label);
             planetLongitudes[planet] = longitude;
+            planetLatitudes[planet] = latitude;
             planetSpeeds[planet] = speed;
         }
 
@@ -80,12 +85,15 @@ public static class SwissEphemerisProvider
         SetPosition(PlanetName.Venus, SwissEph.SE_VENUS, "Venus");
         SetPosition(PlanetName.Saturn, SwissEph.SE_SATURN, "Saturn");
 
-        var (rahuLongitude, rahuSpeed) = GetPosition(SwissEph.SE_MEAN_NODE, "Rahu");
+        var (rahuLongitude, rahuLatitude, rahuSpeed) = GetPosition(SwissEph.SE_MEAN_NODE, "Rahu");
         planetLongitudes[PlanetName.Rahu] = rahuLongitude;
+        planetLatitudes[PlanetName.Rahu] = rahuLatitude;
         planetSpeeds[PlanetName.Rahu] = rahuSpeed;
         planetLongitudes[PlanetName.Ketu] = AstroMath.Normalize(rahuLongitude + 180);
         // Ketu is a computed point 180° from Rahu, not a separately-tracked body — it moves exactly
         // as Rahu does, so its retrograde status is Rahu's speed sign, unchanged by the 180° offset.
+        // The mean node lies on the ecliptic (latitude ~0); Ketu takes the opposite-signed latitude.
+        planetLatitudes[PlanetName.Ketu] = -rahuLatitude;
         planetSpeeds[PlanetName.Ketu] = rahuSpeed;
 
         var cusps = new double[13];
@@ -98,6 +106,6 @@ public static class SwissEphemerisProvider
         }
         var ascendantLongitude = ascmc[0];
 
-        return new SiderealPositions(ascendantLongitude, planetLongitudes, planetSpeeds);
+        return new SiderealPositions(ascendantLongitude, planetLongitudes, planetLatitudes, planetSpeeds);
     }
 }

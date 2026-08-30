@@ -46,6 +46,8 @@ public static class D1ChartComputer
                 Sign = sign.ToString(),
                 DegreesInSign = AstroMath.FormatDegreesMinutesSeconds(AstroMath.GetDegreesInSign(nirayanaLongitude)),
                 NirayanaLongitudeDegrees = nirayanaLongitude,
+                EclipticLatitudeDegrees = positions.PlanetLatitudes[planet],
+                SpeedLongitudeDegPerDay = positions.PlanetSpeeds[planet],
                 Nakshatra = AstroMath.GetNakshatraName(nakshatra),
                 NakshatraPada = pada,
                 HouseNumber = houseNumber,

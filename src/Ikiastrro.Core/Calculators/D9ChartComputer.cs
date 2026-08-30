@@ -58,6 +58,8 @@ public static class D9ChartComputer
                 Planet = planet.ToString(),
                 Sign = navamsaSign.ToString(),
                 NirayanaLongitudeDegrees = nirayanaLongitude,
+                EclipticLatitudeDegrees = positions.PlanetLatitudes[planet],
+                SpeedLongitudeDegPerDay = positions.PlanetSpeeds[planet],
                 VargaLongitudeDegrees = AstroMath.GetVargaLongitude(nirayanaLongitude, NavamsaDivisions),
                 HouseNumber = houseNumber,
                 // Same real motion regardless of which divisional chart is reading the longitude —

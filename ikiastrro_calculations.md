@@ -23,8 +23,13 @@ logic is original.
 - **Nodes:** **Rahu = mean node** (`SE_MEAN_NODE`) — verified closer to Prokerala / AstroSage
   than the true node. **Ketu = Rahu + 180°** (derived, never fetched or stored separately;
   DB view `vw_KetuSignTransitEvents` = Rahu events + 6 signs).
-- **Per-planet motion speed** comes from the same `swe_calc_ut` call (`SEFLG_SPEED`, no extra
-  cost) → `PlanetSpeeds`. Used for retrograde and combustion-orb selection.
+- **Per-planet motion speed** (`xx[3]`, deg/day) and **ecliptic latitude** (`xx[1]`, deg)
+  come from the same `swe_calc_ut` call (`SEFLG_SPEED`, no extra cost) →
+  `SiderealPositions.PlanetSpeeds` / `.PlanetLatitudes`. Speed drives retrograde and
+  combustion-orb selection; both are now also **persisted** on `tbl_Chart_KeyDetails`
+  (`SpeedLongitudeDegPerDay`, `EclipticLatitudeDegrees`) for D1 and every varga — real-body
+  values, so identical across chart types, like `IsRetrograde`. Ketu takes Rahu's speed sign
+  and the opposite-signed latitude (mean node sits on the ecliptic, so ≈ 0).
 - **House system:** **Whole Sign** everywhere. House *n* from any reference sign =
   `AstroMath.CountFromSignToSign(referenceSign, targetSign)` (1-based, the sign that holds the
   reference point is house 1).

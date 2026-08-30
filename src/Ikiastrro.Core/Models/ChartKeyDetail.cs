@@ -26,6 +26,21 @@ public class ChartKeyDetail
     public string? DegreesInSignDisplay { get; set; }
     public decimal? DegreesInSignDecimal { get; set; }
     public double NirayanaLongitudeDegrees { get; set; }
+
+    /// <summary>
+    /// Ecliptic latitude in degrees (Swiss Ephemeris xx[1]) — the real out-of-plane position.
+    /// Populated for D1 and every varga (a real-body fact), like NirayanaLongitudeDegrees. Null for
+    /// the Ascendant. Sun/Rahu/Ketu sit on (or ~on) the ecliptic so this is ≈ 0 for them.
+    /// </summary>
+    public double? EclipticLatitudeDegrees { get; set; }
+
+    /// <summary>
+    /// Daily motion in longitude, degrees per day (Swiss Ephemeris xx[3]); negative = retrograde —
+    /// the raw value IsRetrograde is derived from, kept for Cheshta-avastha / combustion-orb use.
+    /// Populated for D1 and every varga; null for the Ascendant.
+    /// </summary>
+    public double? SpeedLongitudeDegPerDay { get; set; }
+
     public string? Nakshatra { get; set; }
     public int? NakshatraPada { get; set; }
 

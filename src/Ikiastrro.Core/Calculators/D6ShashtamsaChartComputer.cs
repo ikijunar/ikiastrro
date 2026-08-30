@@ -40,6 +40,8 @@ public static class D6ShashtamsaChartComputer
                 Planet = planet.ToString(),
                 Sign = vargaSign.ToString(),
                 NirayanaLongitudeDegrees = nirayanaLongitude,
+                EclipticLatitudeDegrees = positions.PlanetLatitudes[planet],
+                SpeedLongitudeDegPerDay = positions.PlanetSpeeds[planet],
                 VargaLongitudeDegrees = AstroMath.GetVargaLongitude(nirayanaLongitude, Divisions),
                 HouseNumber = AstroMath.CountFromSignToSign(lagnaSign, vargaSign),
                 IsRetrograde = positions.PlanetSpeeds[planet] < 0

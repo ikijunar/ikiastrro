@@ -83,6 +83,8 @@ public static class ChartAnalyzer
                 DegreesInSignDisplay = isRasiChart ? planet.DegreesInSign : null,
                 DegreesInSignDecimal = isRasiChart ? Math.Round(degreeInSign, 4) : null,
                 NirayanaLongitudeDegrees = nirayanaLongitude,
+                EclipticLatitudeDegrees = planet.EclipticLatitudeDegrees,
+                SpeedLongitudeDegPerDay = planet.SpeedLongitudeDegPerDay,
                 Nakshatra = isRasiChart ? planet.Nakshatra : null,
                 NakshatraPada = isRasiChart ? planet.NakshatraPada : null,
                 NakshatraLordPlanet = nakshatraLordPlanet,

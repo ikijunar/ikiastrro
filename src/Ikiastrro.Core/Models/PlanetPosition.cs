@@ -14,6 +14,20 @@ public class PlanetPosition
     public double? NirayanaLongitudeDegrees { get; set; }
 
     /// <summary>
+    /// Ecliptic latitude in degrees (xx[1] from Swiss Ephemeris) — the real out-of-plane position.
+    /// A real-body value, the same for D1 and every varga. Null for the Ascendant (an ecliptic
+    /// point, no latitude concept).
+    /// </summary>
+    public double? EclipticLatitudeDegrees { get; set; }
+
+    /// <summary>
+    /// Daily motion in longitude, degrees per day (xx[3] from Swiss Ephemeris); negative means
+    /// retrograde (this is the raw value <see cref="IsRetrograde"/> is derived from). A real-body
+    /// value, the same for D1 and every varga. Null for the Ascendant.
+    /// </summary>
+    public double? SpeedLongitudeDegPerDay { get; set; }
+
+    /// <summary>
     /// The planet's longitude remapped into this varga's own 0-360° space (see
     /// <see cref="Astro.AstroMath.GetVargaLongitude"/>), e.g. Navamsa total longitude for D9. Null for
     /// D1 (there's no remapping — <see cref="NirayanaLongitudeDegrees"/> already IS the varga

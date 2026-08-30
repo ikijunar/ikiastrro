@@ -103,11 +103,10 @@ scoped. The CLI is top-level statements with no container — it news up what it
 |---|---|---|
 | Input | `tbl_BirthDetails` | user (CLI / `Add.razor`) |
 | Chart results | `tbl_ChartResults` (one row per person × chart type + one per Dasha run) | engine |
-| Chart analytics (chart-type-generic, keyed by `ChartResultId` + `ChartType`) | `tbl_Chart_KeyDetails`, `tbl_Chart_HouseLords`, `tbl_Chart_Conjunctions`, `tbl_Chart_Aspects` | `ChartAnalyzer` |
+| Chart analytics (chart-type-generic, keyed by `ChartResultId` + `ChartType`) | `tbl_Chart_KeyDetails` (raw position: longitude / latitude / speed / retrograde / sign / degree / nakshatra, then dignity / house / combustion / aspects), `tbl_Chart_HouseLords`, `tbl_Chart_Conjunctions`, `tbl_Chart_Aspects` | `ChartAnalyzer` |
 | Dasha | `tbl_Chart_DashaPeriods` (self-referencing, 3 levels) | `VimshottariDashaService` |
 | Reference / master | `tbl_Planets` (9), `tbl_SignAttributes` (12), `tbl_Nakshatras` (27), `tbl_NakshatraPadas` (108), `tbl_NakshatraSubLords` (243, KP L1–L2 only), `tbl_PlanetSignTransitEvents` (Sa/Ju/Ra sign-crossing log 1930–2060) | seed data / CLI backfill |
 | Rules engine (versioned; every row carries `RuleSetId`) | `tbl_Rule_Sets`, `tbl_Rule_AspectOffset`, `tbl_Rule_CombustionOrb`, `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance` | seed (`'Parashari-Classical'`) |
-| Cited-source mirrors (engine doesn't read them yet) | `tbl_Dim_LagnaFunctionalNature` (84; Raman's per-Lagna verdict) | seed |
 | Dimensions | `tbl_Dim_LifeCalendar` (age-relative day dimension, 0 = birth) | CTE seed |
 
 ### Views & functions
