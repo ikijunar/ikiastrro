@@ -18,6 +18,14 @@ Isolation is what already made `D1ChartView.razor.css` safe to write bare `table
 selectors in without leaking into the rest of the app; the fix for the rest of the app is
 using the same mechanism consistently, not adopting a new CSS framework or component library.
 
+**One exception — data visualization**: `Syncfusion.Blazor` (Charts / Gauge, Community
+License) is allowed for charts, heatmaps, timelines, and the polar longitude wheel — the
+things this design language never covered. Its theme CSS must be scoped (wrap in
+`.sf-scope`, keep the Syncfusion sheet out of hand-rolled components) and its chart
+`Palettes` fed the same hex values `tokens.css` defines. Layout, tables, and the
+North/South Indian chart *diagrams* stay hand-rolled. Full rules:
+`../../ikiastrro_datavizspecs.md`.
+
 **Tooling**: no new dependency is needed to enforce this — run `dotnet format` before
 committing. If a new page's styling can't be expressed with the existing tokens, extend
 `tokens.css`, don't hard-code around it.

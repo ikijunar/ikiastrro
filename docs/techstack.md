@@ -42,8 +42,13 @@ current architecture.
 
 **Web**
 - `Microsoft.NET.Sdk.Web` — ASP.NET Core / **Blazor Server**
-- No extra packages beyond Core + Data; UI built with CSS-isolated Razor components
-  (e.g. `D1ChartView.razor`, `SouthIndianGrid.razor`)
+- UI built with CSS-isolated Razor components (e.g. `D1ChartView.razor`,
+  `SouthIndianGrid.razor`)
+- `Syncfusion.Blazor.Charts` / `Syncfusion.Blazor.Gauge` / `Syncfusion.Blazor.Themes`
+  — Community License; the sole data-visualization library (strength bars, heatmaps,
+  Dasha timelines, polar longitude wheel). Native Blazor Server, no JS framework.
+  Decision recorded 2026-08-31 in `ikiastrro_datavizspecs.md`; **not yet added to the
+  `.csproj`** — version pin to follow when wired in.
 
 ## Database
 
@@ -71,3 +76,6 @@ current architecture.
 
 - Blazor Server (server-rendered, no separate JS SPA framework) with CSS-isolated `.razor.css`
   components — no client-side JS framework (React/Vue/etc.) in the stack
+- No component library for layout/tables/chart diagrams (hand-rolled SVG/CSS from
+  `tokens.css`); **Syncfusion Blazor** is the one sanctioned exception, for data
+  visualization only (see `ikiastrro_datavizspecs.md`)

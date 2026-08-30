@@ -16,6 +16,7 @@ Blazor Server web workspace. (Renamed from `vedic_horo_gen` / `VedicHoroGen` on 
 |---|---|
 | `ikiastrro_techspecs.md` | Architecture, stack, projects, data layer, DB, build/run, verification |
 | `ikiastrro_uidesignspecs.md` | Web workspace design — layout, design tokens, every component, the decisions behind them |
+| `ikiastrro_datavizspecs.md` | Charting stack — Syncfusion Blazor pick + rationale, screen-by-screen chart mapping, `tokens.css` palette reconciliation, NuGet list |
 | `ikiastrro_calculations.md` | Every astrological calculation: ayanamsha, houses, dignity, vargas, Dasha, combustion, retrograde, Sade Sati, functional nature — with sources |
 | *(product specs — to be added)* | |
 
@@ -45,6 +46,7 @@ that matches what you need rather than re-deriving it:
 - Calculation engine: [SwissEphNet](https://www.nuget.org/packages/SwissEphNet) — a managed C# port of Astrodienst's Swiss Ephemeris, Moshier analytical mode (no ephemeris data files to bundle), embedded NuGet package
 - Database: MS SQL Server, Windows Auth, `localhost` default instance
 - Ayanamsha: Lahiri (Swiss Ephemeris's own `SE_SIDM_LAHIRI` sidereal mode, applied directly — no correction layer needed) · House system: Whole Sign
+- Data visualization: **Syncfusion Blazor** (Charts / Gauge, Community License) — the one sanctioned component library, for strength bars / heatmaps / Dasha timelines / polar longitude wheel only; chart *diagrams* (South/North Indian grids, LifeWeeks) stay hand-rolled SVG. Decision 2026-08-31, `ikiastrro_datavizspecs.md`; not yet wired into `src/`.
 
 ## Place resolution
 
