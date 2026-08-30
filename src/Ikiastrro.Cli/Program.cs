@@ -89,7 +89,9 @@ var chartGenerationService = new ChartGenerationService(
     new ChartKeyDetailsRepository(connectionFactory),
     new ChartHouseLordsRepository(connectionFactory),
     new ChartConjunctionsRepository(connectionFactory),
-    new ChartAspectsRepository(connectionFactory));
+    new ChartAspectsRepository(connectionFactory),
+    new AvasthaRuleRepository(connectionFactory),
+    new PlanetAvasthaRepository(connectionFactory));
 
 // --- One-off backfill mode: `dotnet run -- backfill-analytics` ---
 // Unconditionally re-derives all four analytics tables (KeyDetails/HouseLords/Conjunctions/Aspects)
@@ -214,6 +216,55 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
     Check("Aries/Venus nature", arVe.Nature, FunctionalNature.Malefic);     // falls through to the catch-all
 
     Console.WriteLine(failures == 0 ? "\nverify-functional-nature: ALL PASS" : $"\nverify-functional-nature: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- One-off check: `dotnet run -- verify-avastha` ---
+// Worked-example assertions for the Baaladi + Jagradadi avastha calculators against the seeded
+// tbl_Rule_BaaladiState / tbl_Rule_JagradadiState rows (active rule set). Solution has no unit-test project.
+if (args.Length > 0 && args[0] == "verify-avastha")
+{
+    var rules = new AvasthaRuleRepository(connectionFactory).GetActiveRuleSet();
+    var failures = 0;
+    void Check(string label, object? actual, object? expected)
+    {
+        var ok = $"{actual}" == $"{expected}";
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual}, expected {expected}");
+        if (!ok) failures++;
+    }
+
+    string Baaladi(ZodiacName sign, decimal deg) => BaaladiAvastha.For(sign, deg, rules.Baaladi).StateName;
+    decimal Fraction(ZodiacName sign, decimal deg) => BaaladiAvastha.For(sign, deg, rules.Baaladi).EffectFraction;
+    string? Jagradadi(string dignity) => JagradadiAvastha.For(dignity, rules.JagradadiByDignity)?.StateName;
+
+    // Baaladi — odd sign (Aries) bands run forward 0-6-12-18-24-30
+    Check("Baaladi(Aries, 3)",   Baaladi(ZodiacName.Aries, 3m),   "Baala");
+    Check("Baaladi(Aries, 8)",   Baaladi(ZodiacName.Aries, 8m),   "Kumara");
+    Check("Baaladi(Aries, 15)",  Baaladi(ZodiacName.Aries, 15m),  "Yuva");
+    Check("Baaladi(Aries, 20)",  Baaladi(ZodiacName.Aries, 20m),  "Vriddha");
+    Check("Baaladi(Aries, 27)",  Baaladi(ZodiacName.Aries, 27m),  "Mrita");
+    // Baaladi — even sign (Taurus) bands run reversed
+    Check("Baaladi(Taurus, 3)",  Baaladi(ZodiacName.Taurus, 3m),  "Mrita");
+    Check("Baaladi(Taurus, 27)", Baaladi(ZodiacName.Taurus, 27m), "Baala");
+    Check("Baaladi(Gemini, 8)",  Baaladi(ZodiacName.Gemini, 8m),  "Kumara");   // Gemini is an odd sign
+    // effect fractions
+    Check("Fraction Baala",  Fraction(ZodiacName.Aries, 3m),  0.250m);
+    Check("Fraction Yuva",   Fraction(ZodiacName.Aries, 15m), 1.000m);
+    Check("Fraction Mrita",  Fraction(ZodiacName.Aries, 27m), 0.000m);
+
+    // Jagradadi — from DignityStatus
+    Check("Jagradadi(Exalted)",     Jagradadi("Exalted"),     "Jagrat");
+    Check("Jagradadi(Own Sign)",    Jagradadi("Own Sign"),    "Jagrat");
+    Check("Jagradadi(Moolatrikona)",Jagradadi("Moolatrikona"),"Jagrat");
+    Check("Jagradadi(Great Friend)",Jagradadi("Great Friend"),"Swapna");
+    Check("Jagradadi(Friend)",      Jagradadi("Friend"),      "Swapna");
+    Check("Jagradadi(Neutral)",     Jagradadi("Neutral"),     "Swapna");
+    Check("Jagradadi(Enemy)",       Jagradadi("Enemy"),       "Sushupti");
+    Check("Jagradadi(Great Enemy)", Jagradadi("Great Enemy"), "Sushupti");
+    Check("Jagradadi(Debilitated)", Jagradadi("Debilitated"), "Sushupti");
+    Check("Jagradadi(null)",        Jagradadi(null!),         null);
+
+    Console.WriteLine(failures == 0 ? "\nverify-avastha: ALL PASS" : $"\nverify-avastha: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 

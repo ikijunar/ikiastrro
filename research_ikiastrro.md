@@ -47,12 +47,19 @@ Bhava Balas*** (not in repo — same cited-edition discipline as the descriptive
 
 | System | States | Classical inputs | Mapped to stored fact? | Verdict |
 |---|---|---|---|---|
-| **Baaladi** (infancy) | 5: Baala / Kumara / Yuva / Vriddha / Mrita | degree-in-sign, odd/even sign | ✅ `DegreesInSignDecimal` (D1) + `Sign` | **INPUTS READY** — pure one-line fn, D1 only |
-| **Jagradadi** (waking) | 3: Jagrat / Swapna / Sushupti | dignity (own/exalted → awake; friend/neutral → dream; enemy/debil → sleep) | ✅ `DignityStatus` | **INPUTS READY** — pure map; works for every chart type |
+| **Baaladi** (infancy) | 5: Baala / Kumara / Yuva / Vriddha / Mrita | degree-in-sign, odd/even sign | ✅ `DegreesInSignDecimal` (D1) + `Sign` | ✅ **BUILT 2026-08-31** — `BaaladiAvastha.cs`, `tbl_Rule_BaaladiState` (RuleSetId 1), stored on `tbl_Fact_PlanetAvastha` (D1 only) + `vw_Chart_Consolidated.BaaladiState`/`BaaladiEffectFraction`; `verify-avastha` |
+| **Jagradadi** (waking) | 3: Jagrat / Swapna / Sushupti | dignity (own/exalted → awake; friend/neutral → dream; enemy/debil → sleep) | ✅ `DignityStatus` | ✅ **BUILT 2026-08-31** — `JagradadiAvastha.cs`, `tbl_Rule_JagradadiState` (RuleSetId 1), stored on `tbl_Fact_PlanetAvastha` (every chart type) + `vw_Chart_Consolidated.JagradadiState` |
 | **Deeptadi** (mood) | 9: Deepta / Swastha / Mudita / Shanta / Deena / Vikala / Peedita / Khala / Garvita | dignity + combustion + benefic/malefic association, precedence-ordered | ⚠️ `DignityStatus`, `IsCombust`, `AspectingPlanets`, `tbl_Chart_Conjunctions` present; **needs a natural benefic/malefic classifier**; textual variants | **MOSTLY READY** |
 | **Lajjitadi** (dignity/shame) | 6: Lajjita / Garvita / Kshudhita / Trishita / Mudita / Kshobhita | 5th-house placement, exalt/debil, conjunction with Sun/Mars/Saturn/Rahu/Ketu vs Jupiter/Mercury, malefic/benefic aspect, watery sign | ⚠️ `HouseNumberFromLagna`, `DignityStatus`, `tbl_Chart_Conjunctions`, `AspectingPlanets` present; needs the same classifier + sign-element | **MOSTLY READY** |
 | **Lajjitadi relationships** | — | the planet-to-planet associations the 6 states key off (conjunct Jupiter → Mudita, Saturn → Kshudhita, Sun → Kshobhita, node → Lajjita, …) | ✅ raw conjunctions/aspects stored per chart type; ❌ the classification (benefic / malefic / node / luminary) and the Lajjitadi mapping | **RAW FACTS STORED, interpretation missing** |
 | **Sayanadi** (posture) — *[future]* | 12: Sayana … Nidra (+ a Cheshta/Drishti sub-state) | birth-time (janma ghatis) + nakshatra + lagna + planet-number formula; Cheshta partly from motion speed | ⚠️ `NirayanaLongitudeDegrees` / `NakshatraId` present; **janma ghatis not persisted per chart**; needs a planet-number map; `SpeedLongitudeDegPerDay` now stored (helps Cheshta). High textual variance → needs a cited edition. | **BLOCKED — future** |
+
+**Build status (2026-08-31):** slice 1 — **Baaladi + Jagradadi** — is built as a star-schema
+layer (`STANDARDS.md` §D.1): `tbl_Dim_AvasthaState` (Dim, 8 rows), `tbl_Rule_BaaladiState` +
+`tbl_Rule_JagradadiState` (Rule, `RuleSetId` 1 = 'Parashari-Classical'), `tbl_Fact_PlanetAvastha`
+(Fact). Computed by `PlanetAvasthaComputer` inside `ChartGenerationService.PersistAnalytics`
+(alongside the 4 `tbl_Chart_*` tables), backfilled by `recompute-keydetails`. Rows: 270 =
+5 people × 6 chart types × 9 planets. Follow-on slices below.
 
 ### 1c. Key finding — how roles and avasthas connect
 
@@ -83,14 +90,15 @@ D9 sign); Parashari avasthas still apply to the Chara AK unchanged.
 
 ### 1e. Suggested build order
 
-1. **Baaladi + Jagradadi** — pure functions, all inputs present. New `tbl_Chart_PlanetAvastha`
-   (one row per planet, D1), `BaaladiAvastha` / `JagradadiAvastha` in `Core/Calculators/`,
-   wired through `ChartAnalyzer`, CLI `verify-avastha`.
+1. ✅ **Baaladi + Jagradadi (DONE 2026-08-31)** — `BaaladiAvastha` / `JagradadiAvastha` /
+   `PlanetAvasthaComputer` in `Core/Calculators/`; star-schema `tbl_Dim_AvasthaState` +
+   `tbl_Rule_BaaladiState` + `tbl_Rule_JagradadiState` + `tbl_Fact_PlanetAvastha`; wired through
+   `ChartGenerationService.PersistAnalytics`; CLI `verify-avastha`; on `vw_Chart_Consolidated`.
 2. **Naisargika Karaka table** — apply migration 030 (`tbl_Dim_PlanetHouseKaraka`), decide
    Sapta vs Ashta, switch `LifeAreaMap` to read it.
 3. **Deeptadi + Lajjitadi** — extract a `NaturalBenefics` / node / luminary classifier as a
-   shared `Core/Astro` unit; pin BPHS/Raman for the state precedence; extend
-   `tbl_Chart_PlanetAvastha`.
+   shared `Core/Astro` unit; pin BPHS/Raman for the state precedence; add `DeeptadiStateId` to
+   `tbl_Fact_PlanetAvastha` + a `tbl_Fact_PlanetAvasthaLajjita` child.
 4. **Chara Karaka** — `CharaKarakaCalculator` (Jaimini 8-fold), stored as its own table;
    unblocks Karakamsa + Jaimini rasi dashas.
 5. **Sayanadi** *(future)* — persist janma ghatis on `tbl_ChartResults`, add a planet-number

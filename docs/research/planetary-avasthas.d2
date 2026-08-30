@@ -7,18 +7,22 @@
 direction: right
 
 classes: {
-  ready:    { style: { fill: "#1b5e20"; font-color: "#ffffff"; stroke: "#2e7d32" } }   # all inputs present
+  built:    { style: { fill: "#1b5e20"; font-color: "#ffffff"; stroke: "#66bb6a"; stroke-width: 3 } }  # shipped
+  ready:    { style: { fill: "#33691e"; font-color: "#ffffff"; stroke: "#2e7d32" } }   # all inputs present
   partial:  { style: { fill: "#e65100"; font-color: "#ffffff"; stroke: "#ef6c00" } }   # inputs mostly present
   blocked:  { style: { fill: "#b71c1c"; font-color: "#ffffff"; stroke: "#c62828" } }   # needs new input / source
   data:     { style: { fill: "#0d47a1"; font-color: "#ffffff"; stroke: "#1565c0"; stroke-dash: 3 } }
 }
 
-status: STATUS {
+status: STATUS (2026-08-31) {
   near: top-left
   x: |md
-    - **No avastha is computed or stored today.** `grep -ri avastha src/` = only a doc-comment.
-    - `jyotishganit/components/states.py` is an empty stub; the vendored PyJHora copy has no avastha module either.
-    - Source for the formulae: **BPHS** (public-domain Parashara verses) + **B.V. Raman, *Graha and Bhava Balas*** (not in repo — cited-edition discipline, like the descriptive nakshatra fields).
+    - **Slice 1 SHIPPED:** Baaladi + Jagradadi — star-schema (tbl_Dim_AvasthaState /
+      tbl_Rule_BaaladiState / tbl_Rule_JagradadiState / tbl_Fact_PlanetAvastha), computed by
+      PlanetAvasthaComputer in ChartGenerationService, on vw_Chart_Consolidated. 270 fact rows.
+    - Deeptadi / Lajjitadi / Sayanadi: **not built** (follow-on slices).
+    - `jyotishganit/components/states.py` is an empty stub; the vendored PyJHora copy has no avastha module.
+    - Source: **BPHS** (public-domain) + **B.V. Raman, *Graha and Bhava Balas*** (not in repo — cited-edition discipline).
   |
 }
 
@@ -39,19 +43,19 @@ inputs: Existing stored facts (tbl_Chart_KeyDetails + tbl_Chart_Conjunctions) {
 systems: Avastha systems {
 
   baaladi: |md
-    ## 1. Baaladi (infancy)  —  🟢 INPUTS READY
+    ## 1. Baaladi (infancy)  —  ✅ BUILT 2026-08-31
     5 states from degree-in-sign:
     Baala 0-6 / Kumara 6-12 / Yuva 12-18 / Vriddha 18-24 / Mrita 24-30
-    (reversed in even signs). Effect fraction per state.
-    **Pure one-line function.** D1 only (degree is D1-only).
-  | { class: ready }
+    (reversed in even signs). Effect fraction per state (.25/.50/1/.125/0).
+    `BaaladiAvastha.cs` + `tbl_Rule_BaaladiState` (RuleSetId 1). D1 only. `verify-avastha`.
+  | { class: built }
 
   jagradadi: |md
-    ## 2. Jagradadi (waking)  —  🟢 INPUTS READY
+    ## 2. Jagradadi (waking)  —  ✅ BUILT 2026-08-31
     3 states from dignity:
-    Jagrat (own / exalted) / Swapna (friend / neutral) / Sushupti (enemy / debilitated).
-    **Pure map from DignityStatus.** Works for D1 and every varga.
-  | { class: ready }
+    Jagrat (own / exalted / moolatrikona) / Swapna (friend / neutral) / Sushupti (enemy / debilitated).
+    `JagradadiAvastha.cs` + `tbl_Rule_JagradadiState` (RuleSetId 1). Every chart type.
+  | { class: built }
 
   deeptadi: |md
     ## 3. Deeptadi (mood)  —  🟠 MOSTLY READY
@@ -109,16 +113,15 @@ inputs.lon -> systems.sayanadi
 inputs.bday -> systems.sayanadi: "needs persisting"
 inputs.pnum -> systems.sayanadi: "new constant"
 
-# ---- proposed storage --------------------------------------------------
-store: Proposed: tbl_Chart_PlanetAvastha (one row per planet, D1) {
+# ---- storage (star-schema Fact) ---------------------------------------
+store: tbl_Fact_PlanetAvastha  (built; one row per planet x chart type) {
+  class: built
   cols: |md
-    ChartResultId, BirthDetailId, ChartType, Planet,
-    BaaladiState + BaaladiEffectFraction,
-    JagradadiState,
-    DeeptadiState,
-    LajjitadiStates (multi),
-    SayanadiState  (nullable, future),
-    ComputedAt
+    Id, ChartResultId, BirthDetailId, ChartType, Planet, RuleSetId,
+    BaaladiStateId + BaaladiEffectFraction   (D1 only, FK tbl_Dim_AvasthaState),
+    JagradadiStateId                          (every chart type, FK tbl_Dim_AvasthaState),
+    ComputedAt.
+    Later slices ADD: DeeptadiStateId, SayanadiStateId, + child tbl_Fact_PlanetAvasthaLajjita.
   |
 }
 systems.baaladi -> store

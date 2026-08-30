@@ -108,6 +108,14 @@ Four tables, populated automatically alongside **every** chart type this project
 - **`tbl_Chart_Conjunctions`** — one row per pair of grahas (the 9 planets; Ascendant excluded) sharing the same sign in this chart, with `DegreeSeparation` (0–180°, **D1 only** — see below) showing how tight the conjunction is.
 - **`tbl_Chart_Aspects`** — one row per directional aspect (Graha Drishti): every graha casts a full aspect on the 7th house from itself; Mars additionally casts on the 4th & 8th; Jupiter on the 5th & 9th; Saturn on the 3rd & 10th. `AspectedTarget` can be a graha name or `"Ascendant"`. **Rahu/Ketu use the Jupiter-style convention (5th/7th/9th)** per rammyps's explicit decision (2026-08-24) — their aspect rule, like their exaltation/debilitation, is genuinely disputed across classical texts.
 
+**Avasthas (star-schema, 2026-08-31):** `tbl_Fact_PlanetAvastha` (Fact) holds each planet's
+**Baaladi** (D1 only — the "age" from within-sign degree) and **Jagradadi** (every chart type
+— the "waking state" from dignity) avastha, written by `PlanetAvasthaComputer` alongside the 4
+tables above. Vocabulary in `tbl_Dim_AvasthaState`; the degree bands / dignity map are
+`RuleSetId`-scoped `tbl_Rule_BaaladiState` / `tbl_Rule_JagradadiState`. Surfaced on
+`vw_Chart_Consolidated` (`BaaladiState`, `BaaladiEffectFraction`, `JagradadiState`). Deeptadi /
+Lajjitadi / Sayanadi are follow-on slices — see `research_ikiastrro.md`.
+
 All 4 tables carry a `ChartType` column (`"D1"`, `"D9"`, ...) alongside `ChartResultId`/`BirthDetailId`, so any of them read standalone without a join to `tbl_ChartResults`. (They also used to carry a denormalized `Name` copy of `tbl_BirthDetails.Name` the same way; dropped 2026-08-28 — schema-review finding, nothing read it and nothing kept it in sync, see the dated history for the full list of that day's fixes.)
 
 **Originally D1-only** (`tbl_D1Chart_*`), **generalized 2026-08-24** so D9 gets the exact same tables/analytics instead of a bespoke copy — see "Extending later" below for why this was possible with almost no new code. Two fields are gated to D1 specifically, since they're only meaningful for a continuous-degree rasi chart, not a discrete varga-sign bucket:

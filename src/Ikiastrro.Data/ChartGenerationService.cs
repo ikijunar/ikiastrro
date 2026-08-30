@@ -23,12 +23,19 @@ public class ChartGenerationService
     private readonly ChartHouseLordsRepository _houseLordsRepo;
     private readonly ChartConjunctionsRepository _conjunctionsRepo;
     private readonly ChartAspectsRepository _aspectsRepo;
+    private readonly AvasthaRuleRepository _avasthaRuleRepo;
+    private readonly PlanetAvasthaRepository _planetAvasthaRepo;
+
+    // The avastha rule/dim rows are the same for the whole GenerateAll/Recompute call — load once.
+    private AvasthaRuleSet? _avasthaRules;
+    private AvasthaRuleSet AvasthaRules => _avasthaRules ??= _avasthaRuleRepo.GetActiveRuleSet();
 
     public ChartGenerationService(
         ChartCalculationOrchestrator orchestrator, VimshottariDashaService dashaService,
         ChartResultsRepository chartResultsRepo, ChartKeyDetailsRepository keyDetailsRepo,
         ChartHouseLordsRepository houseLordsRepo, ChartConjunctionsRepository conjunctionsRepo,
-        ChartAspectsRepository aspectsRepo)
+        ChartAspectsRepository aspectsRepo,
+        AvasthaRuleRepository avasthaRuleRepo, PlanetAvasthaRepository planetAvasthaRepo)
     {
         _orchestrator = orchestrator;
         _dashaService = dashaService;
@@ -37,6 +44,8 @@ public class ChartGenerationService
         _houseLordsRepo = houseLordsRepo;
         _conjunctionsRepo = conjunctionsRepo;
         _aspectsRepo = aspectsRepo;
+        _avasthaRuleRepo = avasthaRuleRepo;
+        _planetAvasthaRepo = planetAvasthaRepo;
     }
 
     /// <summary>Every registered chart type + Vimshottari Dasha, replacing whatever exists.</summary>
@@ -49,6 +58,7 @@ public class ChartGenerationService
         _houseLordsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _conjunctionsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _aspectsRepo.DeleteByBirthDetailId(birthDetails.Id);
+        _planetAvasthaRepo.DeleteByBirthDetailId(birthDetails.Id);
         foreach (var calc in _orchestrator.Calculators)
             _chartResultsRepo.DeleteByBirthDetailIdAndChartType(birthDetails.Id, calc.ChartType);
 
@@ -98,6 +108,7 @@ public class ChartGenerationService
             _houseLordsRepo.DeleteByChartResultId(result.Id);
             _conjunctionsRepo.DeleteByChartResultId(result.Id);
             _aspectsRepo.DeleteByChartResultId(result.Id);
+            _planetAvasthaRepo.DeleteByChartResultId(result.Id);
             PersistAnalytics(birthDetails.Id, result.Id, input);
             written.Add(result.ChartType);
         }
@@ -115,13 +126,16 @@ public class ChartGenerationService
     private void PersistAnalytics(int birthDetailId, int chartResultId, ChartAnalysisInput input)
     {
         var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
+        var avasthas = PlanetAvasthaComputer.Compute(input, keyDetails, AvasthaRules);
         foreach (var r in keyDetails)    { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
         foreach (var r in houseLords)    { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
         foreach (var r in conjunctions)  { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
         foreach (var r in aspects)       { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
+        foreach (var r in avasthas)      { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
         _keyDetailsRepo.InsertAll(keyDetails);
         _houseLordsRepo.InsertAll(houseLords);
         if (conjunctions.Count > 0) _conjunctionsRepo.InsertAll(conjunctions);
         if (aspects.Count > 0) _aspectsRepo.InsertAll(aspects);
+        if (avasthas.Count > 0) _planetAvasthaRepo.InsertAll(avasthas);
     }
 }

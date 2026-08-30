@@ -92,12 +92,15 @@ ikiastrro/
 | Dimension | `tbl_SignAttributes` | exists (→ `tbl_Dim_SignAttributes` in Phase 2) |
 | Dimension | `tbl_Nakshatras` / `tbl_NakshatraPadas` / `tbl_NakshatraSubLords` | exist (→ `tbl_Dim_*` in Phase 2) |
 | Dimension | `tbl_Dim_LifeCalendar` | exists, already correctly named |
+| Dimension | `tbl_Dim_AvasthaState` | **2026-08-31** — avastha-state vocabulary (born correctly named per §D.1) |
 | Dimension | `tbl_BirthDetails` | exists (conceptually the "Person" dimension; stays as-is — it's also the transactional entry point, not renamed) |
 | **Rule (new, Phase 1)** | `tbl_Rule_Sets` | **this plan** |
 | **Rule (new, Phase 1)** | `tbl_Rule_AspectOffset` | **this plan** |
 | **Rule (new, Phase 1)** | `tbl_Rule_CombustionOrb` | **this plan** |
 | **Rule (new, Phase 1)** | `tbl_Rule_NaturalRelationship` | **this plan** |
 | **Rule (new, Phase 1)** | `tbl_Rule_TemporaryFriendshipDistance` | **this plan** |
+| Rule | `tbl_Rule_BaaladiState` / `tbl_Rule_JagradadiState` | **2026-08-31** — avastha slice 1 (`RuleSetId` 1); born §D.1-compliant |
+| Fact | `tbl_Fact_PlanetAvastha` | **2026-08-31** — avastha slice 1; born as a real `tbl_Fact_*`, carries `RuleSetId` |
 | Fact | `tbl_ChartResults` | exists (→ `tbl_Fact_ChartResults` in Phase 2, gains `RuleSetId`) |
 | Fact | `tbl_Chart_KeyDetails` | exists (→ `tbl_Fact_ChartKeyDetails` in Phase 2) |
 | Fact | `tbl_Chart_HouseLords` | exists (→ `tbl_Fact_ChartHouseLords` in Phase 2) |

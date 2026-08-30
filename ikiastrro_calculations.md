@@ -205,7 +205,7 @@ Built **purely from** the stored natal **Moon sign** (`tbl_Chart_KeyDetails`) +
 
 ---
 
-## 10. Functional benefic / malefic (`LagnaFunctionalNature.cs` + `tbl_Dim_LagnaFunctionalNature`)
+## 10. Functional benefic / malefic (`LagnaFunctionalNature.cs`)
 
 Parashari **functional** nature of a planet *for a given Lagna* — distinct from natural
 nature — from which houses it rules from that Lagna. `enum FunctionalNature { Benefic,
@@ -230,13 +230,37 @@ IsMaraka, KendradhipatiDosha, Rationale)`. Rahu/Ketu out of scope (no sign ruler
   seeded **verbatim from Raman p.16–18**, with a `Rank` column (1 = best benefic / worst
   malefic) and **3 rows left NULL** — Aries→Moon, Gemini→Saturn, Aquarius→Saturn — because
   the book never classifies them (not guessed).
-- Computed vs. book **diverge on 17 of 84 cells** (+ the 3 NULL). Every divergence is a
-  mixed-lordship planet on the Neutral boundary; **no Benefic↔Malefic flips, no Yogakaraka
-  flips**. Expected and documented. `compare-functional-nature` prints the full set.
-- UI: `PlanetPositionsTable` shows the **computed** nature as `{B|M}{Rank?}-[{ruledHouses}]`
-  (e.g. Aries Lagna → Jupiter `B1-[9&12]`, Mercury `M2-[3&6]`).
+- **Sole source of the functional-nature verdict** — the Raman per-Lagna mirror table
+  `tbl_Dim_LagnaFunctionalNature` (migration 031) was **removed 2026-08-31**; the classifier
+  now stands alone. Not persisted per chart — computed on demand.
+- UI: `PlanetPositionsTable` shows it as `{B|M|N}-[{ruledHouses}]` (e.g. Aries Lagna → Jupiter
+  `B-[9&12]`, Mercury `M-[3&6]`).
 - Verified: `verify-functional-nature` worked examples, e.g. `(Taurus, Saturn) → Yogakaraka
   {9,10}`, `(Aries, Mercury) → Malefic {3,6}`, `(Cancer, Moon) → Neutral {1}`.
+
+---
+
+## 10a. Avasthas — Baaladi & Jagradadi (star-schema, 2026-08-31)
+
+Planetary "states" — slice 1 of the avastha layer (`research_ikiastrro.md`). Star-schema
+(`STANDARDS.md` §D.1): `tbl_Dim_AvasthaState` (state vocabulary) + `tbl_Rule_BaaladiState` /
+`tbl_Rule_JagradadiState` (`RuleSetId`-scoped) → computed per planet per chart by
+`PlanetAvasthaComputer` (in `ChartGenerationService.PersistAnalytics`), stored on
+`tbl_Fact_PlanetAvastha`, surfaced on `vw_Chart_Consolidated`.
+
+- **Baaladi** (`BaaladiAvastha.cs`) — the planet's "age" from its within-sign degree. Odd
+  signs (Aries/Gemini/Leo/Libra/Sagittarius/Aquarius): 0–6 Baala, 6–12 Kumara, 12–18 Yuva,
+  18–24 Vriddha, 24–30 Mrita. Even signs: reversed. Effect fraction (`tbl_Rule_BaaladiState`,
+  RuleSetId 1 = BPHS convention): Baala .25 / Kumara .50 / Yuva 1.00 / Vriddha .125 / Mrita 0.
+  **D1 only** (needs a continuous within-sign degree).
+- **Jagradadi** (`JagradadiAvastha.cs`) — the planet's "waking state" from its `DignityStatus`:
+  Exalted / Moolatrikona / Own Sign → **Jagrat**; Great Friend / Friend / Neutral → **Swapna**;
+  Enemy / Great Enemy / Debilitated → **Sushupti**. Populated for **every chart type**.
+- Ascendant is excluded. A different classical convention is a new `RuleSetId`, never an edit.
+- Verified: `verify-avastha` worked examples, e.g. `Baaladi(Aries, 3°) → Baala`,
+  `Baaladi(Taurus, 3°) → Mrita`, `Jagradadi("Exalted") → Jagrat`, `Jagradadi("Enemy") → Sushupti`.
+- **Not built:** Deeptadi, Lajjitadi (need a shared benefic/malefic classifier), Sayanadi
+  (needs janma-ghatis persisted) — follow-on slices.
 
 ---
 

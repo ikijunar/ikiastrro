@@ -19,6 +19,8 @@ builder.Services.AddScoped<ChartConjunctionsRepository>();
 builder.Services.AddScoped<ChartAspectsRepository>();
 builder.Services.AddScoped<DashaPeriodsRepository>();
 builder.Services.AddScoped<SadeSatiRepository>();
+builder.Services.AddScoped<AvasthaRuleRepository>();
+builder.Services.AddScoped<PlanetAvasthaRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();
 builder.Services.AddScoped<ChartGenerationService>();
 builder.Services.AddScoped<BirthDetailDeletionService>();
