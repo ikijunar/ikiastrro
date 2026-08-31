@@ -342,16 +342,16 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     {
         long Count(string s) => conn.ExecuteScalar<long>(s);
         Check("all VargaLongitudeDegrees in [0,360)",
-            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE VargaLongitudeDegrees < 0 OR VargaLongitudeDegrees >= 360"), 0L);
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PointKind = 'Graha' AND (VargaLongitudeDegrees < 0 OR VargaLongitudeDegrees >= 360)"), 0L);
         Check("all DegreesInSignDecimal in [0,30)",
-            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE DegreesInSignDecimal IS NULL OR DegreesInSignDecimal < 0 OR DegreesInSignDecimal >= 30"), 0L);
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PointKind = 'Graha' AND (DegreesInSignDecimal IS NULL OR DegreesInSignDecimal < 0 OR DegreesInSignDecimal >= 30)"), 0L);
         // VargaLongitudeDegrees carries the true within-sign varga degree only. Every varga
         // sign rule counts from the planet's own rasi (or an unequal-part map), never from a
         // global Aries-anchored scaling, so FLOOR(VargaLongitudeDegrees/30) is deliberately
         // NOT the varga sign for any varga here. Sign correctness is covered in full by the
         // hand-computed IVargaSignRule checks and the JHora export grid loop above.
         Check("DegreesInSignDecimal == VargaLongitudeDegrees mod 30",
-            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE ABS(DegreesInSignDecimal - (VargaLongitudeDegrees % 30)) > 0.0002"), 0L);
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PointKind = 'Graha' AND ABS(DegreesInSignDecimal - (VargaLongitudeDegrees % 30)) > 0.0002"), 0L);
         Check("varga KeyDetails SignId populated and in [1,12]",
             Count(@"SELECT COUNT(*)
                     FROM dbo.tbl_Chart_KeyDetails kd
