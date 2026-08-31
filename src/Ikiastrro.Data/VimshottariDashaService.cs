@@ -49,6 +49,9 @@ public class VimshottariDashaService
         {
             BirthDetailId = birthDetails.Id,
             ChartType = VimshottariDashaCalculator.ChartType,
+            CalculationKind = "VimshottariDasha",
+            ChartTypeId = null,
+            RuleSetId = 1,   // Dasha has no rule-set variation yet; pin the base set
             Ayanamsha = "Lahiri",
             HouseSystem = "N/A",   // no house-system concept applies to Dasha — explicit rather than silently reusing the "WholeSign" default, which would misleadingly imply houses were involved
             EngineVersion = "SwissEphNet 2.8.0.2 (Moshier, Lahiri sidereal) + classical Vimshottari (365.2425 days/year)",

@@ -92,7 +92,9 @@ var chartGenerationService = new ChartGenerationService(
     new ChartConjunctionsRepository(connectionFactory),
     new ChartAspectsRepository(connectionFactory),
     new AvasthaRuleRepository(connectionFactory),
-    new PlanetAvasthaRepository(connectionFactory));
+    new PlanetAvasthaRepository(connectionFactory),
+    new RuleSetRepository(connectionFactory),
+    new ChartTypeRepository(connectionFactory));
 
 // --- One-off backfill mode: `dotnet run -- backfill-analytics` ---
 // Unconditionally re-derives all four analytics tables (KeyDetails/HouseLords/Conjunctions/Aspects)
