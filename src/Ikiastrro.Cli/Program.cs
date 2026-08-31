@@ -340,8 +340,8 @@ if (args.Length > 0 && args[0] == "verify-schema")
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Aspects WHERE (AspectedTargetType = 'Ascendant' AND AspectedPlanetId IS NOT NULL) OR (AspectedTargetType = 'Planet' AND AspectedPlanetId IS NULL)"));
     Check("no dasha parent points cross-chart",
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods c JOIN dbo.tbl_Chart_DashaPeriods p ON p.Id = c.ParentDashaPeriodId WHERE p.ChartResultId <> c.ChartResultId"));
-    Check("all six D-chart types present in dim",
-        Count("SELECT ABS(COUNT(*) - 6) FROM dbo.tbl_Dim_ChartType"));
+    Check("every stored position chart type is a known Dim code",
+        Count("SELECT COUNT(*) FROM (SELECT DISTINCT ChartType FROM dbo.tbl_ChartResults WHERE CalculationKind = 'PositionChart') x WHERE NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType d WHERE d.Code = x.ChartType)"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
