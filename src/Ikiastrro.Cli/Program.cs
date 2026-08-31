@@ -337,6 +337,40 @@ if (args.Length > 0 && args[0] == "verify-vargas")
         }
     }
 
+    // --- Degree sanity (DB-backed, every person, every position chart type) ---
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        long Count(string s) => conn.ExecuteScalar<long>(s);
+        Check("all VargaLongitudeDegrees in [0,360)",
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE VargaLongitudeDegrees < 0 OR VargaLongitudeDegrees >= 360"), 0L);
+        Check("all DegreesInSignDecimal in [0,30)",
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE DegreesInSignDecimal IS NULL OR DegreesInSignDecimal < 0 OR DegreesInSignDecimal >= 30"), 0L);
+        // VargaLongitudeDegrees carries the true within-sign varga degree only. Every varga
+        // sign rule counts from the planet's own rasi (or an unequal-part map), never from a
+        // global Aries-anchored scaling, so FLOOR(VargaLongitudeDegrees/30) is deliberately
+        // NOT the varga sign for any varga here. Sign correctness is covered in full by the
+        // hand-computed IVargaSignRule checks and the JHora export grid loop above.
+        Check("DegreesInSignDecimal == VargaLongitudeDegrees mod 30",
+            Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE ABS(DegreesInSignDecimal - (VargaLongitudeDegrees % 30)) > 0.0002"), 0L);
+        Check("varga KeyDetails SignId populated and in [1,12]",
+            Count(@"SELECT COUNT(*)
+                    FROM dbo.tbl_Chart_KeyDetails kd
+                    JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+                    WHERE cr.CalculationKind = 'PositionChart' AND cr.ChartType <> 'D1'
+                      AND kd.Planet <> 'Ascendant'
+                      AND (kd.SignId IS NULL OR kd.SignId < 1 OR kd.SignId > 12)"), 0L);
+
+        var vargottama = conn.Query<(string Planet, string Sign)>(
+            @"SELECT d1.Planet, d1.Sign
+              FROM dbo.tbl_Chart_KeyDetails d1
+              JOIN dbo.tbl_ChartResults cr1 ON cr1.Id = d1.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd  ON bd.Id  = cr1.BirthDetailId
+              JOIN dbo.tbl_ChartResults cr9 ON cr9.BirthDetailId = bd.Id AND cr9.ChartType = 'D9'
+              JOIN dbo.tbl_Chart_KeyDetails d9 ON d9.ChartResultId = cr9.Id AND d9.Planet = d1.Planet
+              WHERE bd.Name = 'Ramakrishnan' AND cr1.ChartType = 'D1' AND d1.SignId = d9.SignId").ToList();
+        Console.WriteLine($"  [INFO] Ramakrishnan D1/D9 Vargottama: {(vargottama.Count == 0 ? "none" : string.Join(", ", vargottama.Select(v => $"{v.Planet}({v.Sign})")))}");
+    }
+
     Console.WriteLine(failures == 0 ? "\nverify-vargas: ALL PASS" : $"\nverify-vargas: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
