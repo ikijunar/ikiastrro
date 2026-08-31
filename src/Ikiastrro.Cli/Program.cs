@@ -217,6 +217,20 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("rule D30 Ta 15", new TrimsamsaD30SignRule().SignFor(45),  ZodiacName.Pisces);       // even [12,20)
     Check("rule D30 Ta 28", new TrimsamsaD30SignRule().SignFor(58),  ZodiacName.Scorpio);      // even [25,30]
 
+    // Wrapper rules must match the AstroMath methods they delegate to
+    Check("wrap D2 Ar 10",  new HoraD2ClassicSignRule().SignFor(10),   AstroMath.GetHoraSign(10));
+    Check("wrap D2 Ta 20",  new HoraD2ClassicSignRule().SignFor(50),   AstroMath.GetHoraSign(50));
+    Check("wrap D6 Ar 2",   new ShashtamsaD6SignRule().SignFor(2),     AstroMath.GetShashtamsaSign(2));
+    Check("wrap D6 Ta 27",  new ShashtamsaD6SignRule().SignFor(57),    AstroMath.GetShashtamsaSign(57));
+    Check("wrap D9 Ar 3",   new NavamsaD9SignRule().SignFor(3),        AstroMath.GetNavamsaSign(3));
+    Check("wrap D9 Sc 21",  new NavamsaD9SignRule().SignFor(231),      AstroMath.GetNavamsaSign(231));
+    Check("wrap D10 Ar 28", new DasamsaD10SignRule().SignFor(28),      AstroMath.GetDasamsaSign(28));
+    Check("wrap D11 Ta 29", new RudramsaD11SignRule().SignFor(59),     AstroMath.GetRudramsaSign(59));
+    // D2-US (Uma Shambu) - parivritti-cyclic D2 (confirmed vs D-2 (US) grid in Task 17)
+    Check("rule D2US Ar 5",  new HoraD2UmaShambuSignRule().SignFor(5),  ZodiacName.Aries);   // sign0 half0 -> 0
+    Check("rule D2US Ar 20", new HoraD2UmaShambuSignRule().SignFor(20), ZodiacName.Taurus);  // sign0 half1 -> 1
+    Check("rule D2US Ta 5",  new HoraD2UmaShambuSignRule().SignFor(35), ZodiacName.Gemini);  // sign1 half0 -> 2
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
