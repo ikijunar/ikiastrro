@@ -325,7 +325,7 @@ if (args.Length > 0 && args[0] == "verify-vargas")
                 "SELECT kd.Planet, kd.Sign FROM dbo.tbl_Chart_KeyDetails kd " +
                 "JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId " +
                 "JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId " +
-                "WHERE bd.Name = 'Ramakrishnan' AND cr.ChartType = @ct",
+                "WHERE bd.Name = 'Ramakrishnan' AND cr.ChartType = @ct AND kd.PointKind = 'Graha'",
                 new { ct = chartType })
                 .ToDictionary(r => r.Planet, r => r.Sign);
             for (var i = 0; i < planetOrder.Length; i++)
@@ -357,7 +357,7 @@ if (args.Length > 0 && args[0] == "verify-vargas")
                     FROM dbo.tbl_Chart_KeyDetails kd
                     JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
                     WHERE cr.CalculationKind = 'PositionChart' AND cr.ChartType <> 'D1'
-                      AND kd.Planet <> 'Ascendant'
+                      AND kd.Planet <> 'Ascendant' AND kd.PointKind = 'Graha'
                       AND (kd.SignId IS NULL OR kd.SignId < 1 OR kd.SignId > 12)"), 0L);
         // DB-completeness invariant (spec 2): every stored position chart carries its
         // numeric provenance, and every varga chart names its method.
@@ -500,7 +500,7 @@ if (args.Length > 0 && args[0] == "verify-schema")
 
     // -- backfill completeness (Phase 1) --
     Check("KeyDetails.PlanetId populated (non-Ascendant)",
-        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PlanetId IS NULL AND Planet <> 'Ascendant'"));
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PointKind = 'Graha' AND Planet <> 'Ascendant' AND PlanetId IS NULL"));
     Check("KeyDetails.SignId populated",
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE SignId IS NULL"));
     Check("HouseLords ids populated",
