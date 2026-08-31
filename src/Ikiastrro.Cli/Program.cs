@@ -231,6 +231,24 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("rule D2US Ar 20", new HoraD2UmaShambuSignRule().SignFor(20), ZodiacName.Taurus);  // sign0 half1 -> 1
     Check("rule D2US Ta 5",  new HoraD2UmaShambuSignRule().SignFor(35), ZodiacName.Gemini);  // sign1 half0 -> 2
 
+    // Every SignRuleKey seeded in tbl_Rule_VargaScheme must resolve through the factory
+    string[] seededKeys =
+    {
+        "HoraD2Classic","HoraD2UmaShambu","DrekkanaD3","ChaturthamsaD4","PanchamsaD5",
+        "ShashtamsaD6","SaptamsaD7","AshtamsaD8","NavamsaD9","DasamsaD10","RudramsaD11",
+        "DwadasamsaD12","ShodasamsaD16","VimsamsaD20","SiddhamsaD24","NakshatramsaD27",
+        "TrimsamsaD30","KhavedamsaD40","AkshavedamsaD45","ShashtyamsaD60"
+    };
+    int[] seededFactors = { 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60 };
+    var factoryFailures = 0;
+    for (var i = 0; i < seededKeys.Length; i++)
+    {
+        try { _ = VargaSignRuleFactory.For(seededKeys[i], seededFactors[i]).SignFor(15.0); }
+        catch (Exception ex) { Console.WriteLine($"  [FAIL] factory {seededKeys[i]}: {ex.Message}"); factoryFailures++; }
+    }
+    Console.WriteLine($"  [{(factoryFailures == 0 ? "PASS" : "FAIL")}] VargaSignRuleFactory resolves all 20 seeded keys");
+    if (factoryFailures > 0) failures += factoryFailures;
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
