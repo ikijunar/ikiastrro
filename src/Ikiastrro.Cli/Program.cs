@@ -333,6 +333,16 @@ if (args.Length > 0 && args[0] == "verify-schema")
     Check("exactly one active rule set",
         Count("SELECT ABS(COUNT(*) - 1) FROM dbo.tbl_Rule_Sets WHERE IsActive = 1"));
 
+    // -- Phase 2: constraint-backed invariants --
+    Check("every conjunction canonical (Planet1Id < Planet2Id)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Conjunctions WHERE Planet1Id >= Planet2Id"));
+    Check("aspect target shape consistent",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Aspects WHERE (AspectedTargetType = 'Ascendant' AND AspectedPlanetId IS NOT NULL) OR (AspectedTargetType = 'Planet' AND AspectedPlanetId IS NULL)"));
+    Check("no dasha parent points cross-chart",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods c JOIN dbo.tbl_Chart_DashaPeriods p ON p.Id = c.ParentDashaPeriodId WHERE p.ChartResultId <> c.ChartResultId"));
+    Check("all six D-chart types present in dim",
+        Count("SELECT ABS(COUNT(*) - 6) FROM dbo.tbl_Dim_ChartType"));
+
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
