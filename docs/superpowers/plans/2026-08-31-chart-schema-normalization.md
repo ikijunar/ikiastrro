@@ -1582,7 +1582,7 @@ git commit -m "$(printf 'feat(db): drop child-table parent duplication; finalize
 
 **PHASE 3 CHECKPOINT / DONE:** `dotnet build` green · all `verify-*` PASS · Web renders + delete works · baseline rebuilds clean · `SELECT * FROM dbo.SchemaMigrations` lists `01`–`09`. Review items 1–5 complete.
 
-> **PHASE 3 COMPLETE (2026-08-31).** `dotnet build` green (0 warnings) · `verify-schema` / `verify-avastha` / `verify-vargas` / `verify-functional-nature` ALL PASS · Web `/charts/{id}` + life-weeks render · fresh baseline build of `ikiastrro_scratch` clean · `SchemaMigrations` lists `01`–`09`. Commits: `68e85d0` (T17), `0e04a05` (T18 code), `<T19>` (migrations 08+09 + baseline fold).
+> **PHASE 3 COMPLETE (2026-08-31).** `dotnet build` green (0 warnings) · `verify-schema` / `verify-avastha` / `verify-vargas` / `verify-functional-nature` ALL PASS · Web `/charts/{id}` + life-weeks render · fresh baseline build of `ikiastrro_scratch` clean · `SchemaMigrations` lists `01`–`09`. Commits: `68e85d0` (T17), `0e04a05` (T18 code), `c1ba162` (T19: migrations 08+09 + baseline fold).
 
 ---
 
