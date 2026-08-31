@@ -11,6 +11,13 @@ public class ChartResult
 
     public int BirthDetailId { get; set; }
 
+    /// <summary>FK to tbl_Rule_Sets — the rule-set version this chart was computed under.</summary>
+    public int RuleSetId { get; set; } = 1;
+    /// <summary>FK to tbl_Dim_ChartType. Null when CalculationKind != "PositionChart" (e.g. VimshottariDasha).</summary>
+    public int? ChartTypeId { get; set; }
+    /// <summary>"PositionChart" | "VimshottariDasha" — separates divisional charts from the Dasha run.</summary>
+    public string CalculationKind { get; set; } = "PositionChart";
+
     /// <summary>e.g. "D1", "D9". Later: "D2", "VimshottariDasha", "Ashtakavarga", etc.</summary>
     public string ChartType { get; set; } = string.Empty;
 

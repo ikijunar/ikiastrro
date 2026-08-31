@@ -13,11 +13,14 @@ public class ChartHouseLord
     public string ChartType { get; set; } = string.Empty;
     public int HouseNumber { get; set; }
     public string HouseSign { get; set; } = string.Empty;
+    public int HouseSignId { get; set; }
     public string LordPlanet { get; set; } = string.Empty;
+    public int LordPlanetId { get; set; }
     public int LordPlacedInHouseFromLagna { get; set; }
     public int LordPlacedInHouseFromSun { get; set; }
     public int LordPlacedInHouseFromMoon { get; set; }
     public string LordPlacedInSign { get; set; } = string.Empty;
+    public int LordPlacedInSignId { get; set; }
     public string? LordDignityStatus { get; set; }
 
     public DateTime ComputedAt { get; set; } = DateTime.UtcNow;

@@ -12,8 +12,12 @@ public class ChartConjunction
     public int BirthDetailId { get; set; }
     public string ChartType { get; set; } = string.Empty;
     public string Planet1 { get; set; } = string.Empty;
+    /// <summary>FK to tbl_Planets. Canonically Planet1Id &lt; Planet2Id.</summary>
+    public int Planet1Id { get; set; }
     public string Planet2 { get; set; } = string.Empty;
+    public int Planet2Id { get; set; }
     public string Sign { get; set; } = string.Empty;
+    public int SignId { get; set; }
     public int HouseNumberFromLagna { get; set; }
 
     /// <summary>

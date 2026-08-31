@@ -14,6 +14,8 @@ public class DashaPeriodRecord
     public int LevelNumber { get; set; }
     public int SequenceInParent { get; set; }
     public string Lord { get; set; } = string.Empty;
+    /// <summary>FK to tbl_Planets for Lord.</summary>
+    public int LordId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public int StartDayOffset { get; set; }

@@ -37,6 +37,8 @@ public class PlanetAvasthaFact
     public int BirthDetailId { get; set; }
     public string ChartType { get; set; } = string.Empty;
     public string Planet { get; set; } = string.Empty;
+    /// <summary>FK to tbl_Planets for Planet.</summary>
+    public byte? PlanetId { get; set; }
     public byte RuleSetId { get; set; }
 
     /// <summary>FK to tbl_Dim_AvasthaState (AvasthaSystem = 'Baaladi'). D1 only — null otherwise.</summary>

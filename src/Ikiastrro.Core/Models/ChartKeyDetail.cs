@@ -15,7 +15,11 @@ public class ChartKeyDetail
     public string ChartType { get; set; } = string.Empty;
 
     public string Planet { get; set; } = string.Empty;
+    /// <summary>FK to tbl_Planets. Null for the Ascendant/Lagna row.</summary>
+    public int? PlanetId { get; set; }
     public string Sign { get; set; } = string.Empty;
+    /// <summary>FK to tbl_SignAttributes.</summary>
+    public int? SignId { get; set; }
 
     /// <summary>
     /// Degrees elapsed within <see cref="Sign"/>. Only meaningful for D1 — a varga sign is a discrete
@@ -53,6 +57,8 @@ public class ChartKeyDetail
     /// </summary>
     public string? NakshatraLordPlanet { get; set; }
 
+    public int? NakshatraLordPlanetId { get; set; }
+
     /// <summary>FK to tbl_Nakshatras — the nakshatra at NirayanaLongitudeDegrees. Populated for D1 and every varga (real-longitude fact), same as NakshatraLordPlanet.</summary>
     public byte? NakshatraId { get; set; }
 
@@ -61,6 +67,8 @@ public class ChartKeyDetail
 
     /// <summary>KP nakshatra sub-lord (Vimshottari level 2) planet name, e.g. "Venus". Populated for D1 and every varga, like NakshatraLordPlanet. Name string, not an FK (consistent with SignLordPlanet).</summary>
     public string? NakshatraSubLordPlanet { get; set; }
+
+    public int? NakshatraSubLordPlanetId { get; set; }
 
     /// <summary>True if retrograde (Vakri) at this moment — from Swiss Ephemeris's own motion speed. Null for the Ascendant (no retrograde concept). Same real value for D1 and D9 (2026-08-28).</summary>
     public bool? IsRetrograde { get; set; }
@@ -87,6 +95,7 @@ public class ChartKeyDetail
     public string? MoolatrikonaSign { get; set; }
     public string? MoolatrikonaRange { get; set; }
     public string? SignLordPlanet { get; set; }
+    public int? SignLordPlanetId { get; set; }
     public string? DignityStatus { get; set; }
 
     /// <summary>Which planet(s) cast a classical aspect (Drishti) onto this planet, e.g. "Mars (8th), Saturn (3rd)". Null if none.</summary>

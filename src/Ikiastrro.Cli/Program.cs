@@ -281,6 +281,10 @@ if (args.Length > 0 && args[0] == "verify-schema")
     }
     long Count(string sql) => conn.ExecuteScalar<long>(sql);
 
+    // -- AstroIds offset sanity (Phase 2) --
+    Check("PlanetId offset matches tbl_Planets",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Planets WHERE Id <> (CASE PlanetName WHEN 'Sun' THEN 1 WHEN 'Moon' THEN 2 WHEN 'Mars' THEN 3 WHEN 'Mercury' THEN 4 WHEN 'Jupiter' THEN 5 WHEN 'Venus' THEN 6 WHEN 'Saturn' THEN 7 WHEN 'Rahu' THEN 8 WHEN 'Ketu' THEN 9 END)"));
+
     // -- backfill completeness (Phase 1) --
     Check("KeyDetails.PlanetId populated (non-Ascendant)",
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails WHERE PlanetId IS NULL AND Planet <> 'Ascendant'"));
