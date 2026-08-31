@@ -194,7 +194,6 @@ BEGIN
 CREATE TABLE [dbo].[tbl_Chart_HouseLords](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[ChartResultId] [int] NOT NULL,
-	[BirthDetailId] [int] NOT NULL,
 	[HouseNumber] [tinyint] NOT NULL,
 	[HouseSign] [varchar](20) NOT NULL,
 	[LordPlanet] [varchar](20) NOT NULL,
@@ -203,8 +202,6 @@ CREATE TABLE [dbo].[tbl_Chart_HouseLords](
 	[LordPlacedInHouseFromMoon] [tinyint] NOT NULL,
 	[LordPlacedInSign] [varchar](20) NOT NULL,
 	[LordDignityStatus] [varchar](20) NULL,
-	[ComputedAt] [datetime2](7) NOT NULL,
-	[ChartType] [nvarchar](50) NOT NULL,
 	[HouseSignId] [tinyint] NOT NULL,
 	[LordPlanetId] [tinyint] NOT NULL,
 	[LordPlacedInSignId] [tinyint] NOT NULL,
@@ -220,36 +217,9 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 END
 GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_Chart_HouseNakshatraSpan]'))
-EXEC dbo.sp_executesql @statement = N'
-CREATE VIEW [dbo].[vw_Chart_HouseNakshatraSpan] AS
-SELECT
-    hl.ChartResultId,
-    hl.BirthDetailId,
-    hl.ChartType,
-    hl.HouseNumber,
-    hl.HouseSign,
-    sa.Id                      AS HouseSignId,
-    hl.LordPlanet,
-    n.Id                       AS NakshatraId,
-    n.NakshatraName,
-    p.PadaNumber,
-    p.StartDegree              AS PadaStartDegree,
-    p.EndDegree                AS PadaEndDegree,
-    lord.PlanetName            AS NakshatraLordName,
-    nav.SignName               AS NavamsaSignName
-FROM dbo.tbl_Chart_HouseLords hl
-JOIN dbo.tbl_SignAttributes  sa   ON sa.Id = hl.HouseSignId
-JOIN dbo.tbl_NakshatraPadas  p    ON p.StartDegree >= (sa.Id - 1) * 30.0
-                                 AND p.StartDegree <  sa.Id * 30.0
-JOIN dbo.tbl_Nakshatras      n    ON n.Id = p.NakshatraId
-JOIN dbo.tbl_Planets         lord ON lord.Id = n.RulingPlanetId
-JOIN dbo.tbl_SignAttributes  nav  ON nav.Id = p.NavamsaSignId;
-' 
+-- vw_Chart_HouseNakshatraSpan is defined near the end of this file (just
+-- before vw_Chart_Consolidated): after migration 09 it joins tbl_ChartResults
+-- and tbl_Dim_ChartType, both of which are created later in this script.
 GO
 SET ANSI_NULLS ON
 GO
@@ -260,7 +230,6 @@ BEGIN
 CREATE TABLE [dbo].[tbl_Chart_DashaPeriods](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[ChartResultId] [int] NOT NULL,
-	[BirthDetailId] [int] NOT NULL,
 	[ParentDashaPeriodId] [int] NULL,
 	[LevelNumber] [tinyint] NOT NULL,
 	[SequenceInParent] [tinyint] NOT NULL,
@@ -269,7 +238,6 @@ CREATE TABLE [dbo].[tbl_Chart_DashaPeriods](
 	[EndDate] [datetime2](0) NOT NULL,
 	[StartDayOffset] [int] NOT NULL,
 	[EndDayOffset] [int] NOT NULL,
-	[ComputedAt] [datetime2](7) NOT NULL,
 	[LordId] [tinyint] NOT NULL,
 	[ParentChartResultId] AS [ChartResultId] PERSISTED,
  CONSTRAINT [FK_DashaPeriods_Lord]    FOREIGN KEY ([LordId]) REFERENCES [dbo].[tbl_Planets] ([Id]),
@@ -374,8 +342,8 @@ SELECT
     dp.StartDayOffset,
     dp.EndDayOffset
 FROM dbo.tbl_Chart_DashaPeriods dp
-JOIN dbo.tbl_BirthDetails bd ON bd.Id = dp.BirthDetailId
 JOIN dbo.tbl_ChartResults cr ON cr.Id = dp.ChartResultId
+JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
 JOIN PeriodPath pp           ON pp.Id = dp.Id;
 ' 
 GO
@@ -461,8 +429,6 @@ BEGIN
 CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[ChartResultId] [int] NOT NULL,
-	[BirthDetailId] [int] NOT NULL,
-	[ChartType] [nvarchar](50) NOT NULL,
 	[Planet] [varchar](20) NOT NULL,
 	[NirayanaLongitudeDegrees] [float] NOT NULL,
 	[EclipticLatitudeDegrees] [float] NULL,
@@ -491,7 +457,6 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[DistanceFromSunDegrees] [decimal](7, 4) NULL,
 	[CombustionOrbUsedDegrees] [decimal](5, 2) NULL,
 	[AspectingPlanets] [varchar](200) NULL,
-	[ComputedAt] [datetime2](7) NOT NULL,
 	[PlanetId] [tinyint] NULL,
 	[SignId] [tinyint] NOT NULL,
 	[NakshatraLordPlanetId] [tinyint] NULL,
@@ -524,14 +489,11 @@ BEGIN
 CREATE TABLE [dbo].[tbl_Chart_Conjunctions](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[ChartResultId] [int] NOT NULL,
-	[BirthDetailId] [int] NOT NULL,
 	[Planet1] [varchar](20) NOT NULL,
 	[Planet2] [varchar](20) NOT NULL,
 	[Sign] [varchar](20) NOT NULL,
 	[HouseNumberFromLagna] [tinyint] NOT NULL,
 	[DegreeSeparation] [decimal](7, 4) NULL,
-	[ComputedAt] [datetime2](7) NOT NULL,
-	[ChartType] [nvarchar](50) NOT NULL,
 	[Planet1Id] [tinyint] NOT NULL,
 	[Planet2Id] [tinyint] NOT NULL,
 	[SignId] [tinyint] NOT NULL,
@@ -564,12 +526,9 @@ BEGIN
 CREATE TABLE [dbo].[tbl_Chart_Aspects](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[ChartResultId] [int] NOT NULL,
-	[BirthDetailId] [int] NOT NULL,
 	[AspectingPlanet] [varchar](20) NOT NULL,
 	[AspectedTarget] [varchar](20) NOT NULL,
 	[AspectType] [varchar](10) NOT NULL,
-	[ComputedAt] [datetime2](7) NOT NULL,
-	[ChartType] [nvarchar](50) NOT NULL,
 	[AspectingPlanetId] [tinyint] NOT NULL,
 	[AspectedTargetType] [varchar](10) NOT NULL,
 	[AspectedPlanetId] [tinyint] NULL,
@@ -695,8 +654,9 @@ RETURN
     WITH MoonSign AS (
         SELECT TOP (1) sa.Id AS MoonSignId
         FROM tbl_Chart_KeyDetails kd
+        JOIN tbl_ChartResults cr ON cr.Id = kd.ChartResultId
         JOIN tbl_SignAttributes sa ON sa.Id = kd.SignId
-        WHERE kd.BirthDetailId = @BirthDetailId AND kd.Planet = ''Moon'' AND kd.ChartType = ''D1''
+        WHERE cr.BirthDetailId = @BirthDetailId AND kd.Planet = ''Moon'' AND cr.ChartTypeId = 1
     ),
     TargetSigns AS (
         SELECT ''SadeSati_Dhaiya1_Rising'' AS PeriodType, 1 AS SortOrder, ((MoonSignId - 1 + 11) % 12) + 1 AS TargetSignId FROM MoonSign
@@ -896,12 +856,6 @@ CREATE NONCLUSTERED INDEX [IX_BirthDetails_Name] ON [dbo].[tbl_BirthDetails]
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]') AND name = N'IX_Chart_Aspects_BirthDetailId')
-CREATE NONCLUSTERED INDEX [IX_Chart_Aspects_BirthDetailId] ON [dbo].[tbl_Chart_Aspects]
-(
-	[BirthDetailId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]') AND name = N'IX_Chart_Aspects_ChartResultId')
 CREATE NONCLUSTERED INDEX [IX_Chart_Aspects_ChartResultId] ON [dbo].[tbl_Chart_Aspects]
 (
@@ -918,12 +872,6 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Chart_Aspects_ChartResultId_AspectingPlanet
 	[AspectingPlanet] ASC,
 	[AspectedTarget] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]') AND name = N'IX_Chart_Conjunctions_BirthDetailId')
-CREATE NONCLUSTERED INDEX [IX_Chart_Conjunctions_BirthDetailId] ON [dbo].[tbl_Chart_Conjunctions]
-(
-	[BirthDetailId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]') AND name = N'IX_Chart_Conjunctions_ChartResultId')
 CREATE NONCLUSTERED INDEX [IX_Chart_Conjunctions_ChartResultId] ON [dbo].[tbl_Chart_Conjunctions]
@@ -963,12 +911,6 @@ CREATE NONCLUSTERED INDEX [IX_Chart_DashaPeriods_ParentDashaPeriodId] ON [dbo].[
 	[ParentDashaPeriodId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_HouseLords]') AND name = N'IX_Chart_HouseLords_BirthDetailId')
-CREATE NONCLUSTERED INDEX [IX_Chart_HouseLords_BirthDetailId] ON [dbo].[tbl_Chart_HouseLords]
-(
-	[BirthDetailId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_HouseLords]') AND name = N'IX_Chart_HouseLords_ChartResultId')
 CREATE NONCLUSTERED INDEX [IX_Chart_HouseLords_ChartResultId] ON [dbo].[tbl_Chart_HouseLords]
 (
@@ -984,13 +926,6 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Chart_HouseLords_ChartResultId_HouseNumber]
 GO
 SET ANSI_PADDING ON
 
-GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]') AND name = N'IX_Chart_KeyDetails_BirthDetailId_Planet')
-CREATE NONCLUSTERED INDEX [IX_Chart_KeyDetails_BirthDetailId_Planet] ON [dbo].[tbl_Chart_KeyDetails]
-(
-	[BirthDetailId] ASC,
-	[Planet] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]') AND name = N'IX_Chart_KeyDetails_ChartResultId')
 CREATE NONCLUSTERED INDEX [IX_Chart_KeyDetails_ChartResultId] ON [dbo].[tbl_Chart_KeyDetails]
@@ -1061,60 +996,6 @@ ALTER TABLE [dbo].[tbl_BirthDetails] ADD  DEFAULT (sysutcdatetime()) FOR [Create
 END
 
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__tbl_D1Cha__Compu__778AC167]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_Aspects] ADD  DEFAULT (sysutcdatetime()) FOR [ComputedAt]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_ChartAspects_ChartType]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_Aspects] ADD  CONSTRAINT [DF_ChartAspects_ChartType]  DEFAULT ('D1') FOR [ChartType]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__tbl_D1Cha__Compu__72C60C4A]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_Conjunctions] ADD  DEFAULT (sysutcdatetime()) FOR [ComputedAt]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_ChartConjunctions_ChartType]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_Conjunctions] ADD  CONSTRAINT [DF_ChartConjunctions_ChartType]  DEFAULT ('D1') FOR [ChartType]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__tbl_Chart__Compu__1AD3FDA4]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_DashaPeriods] ADD  DEFAULT (sysutcdatetime()) FOR [ComputedAt]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__tbl_D1Cha__Compu__6E01572D]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_HouseLords] ADD  DEFAULT (sysutcdatetime()) FOR [ComputedAt]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_ChartHouseLords_ChartType]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_HouseLords] ADD  CONSTRAINT [DF_ChartHouseLords_ChartType]  DEFAULT ('D1') FOR [ChartType]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__tbl_D1Cha__Compu__693CA210]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_KeyDetails] ADD  DEFAULT (sysutcdatetime()) FOR [ComputedAt]
-END
-
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_ChartKeyDetails_ChartType]') AND type = 'D')
-BEGIN
-ALTER TABLE [dbo].[tbl_Chart_KeyDetails] ADD  CONSTRAINT [DF_ChartKeyDetails_ChartType]  DEFAULT ('D1') FOR [ChartType]
-END
-
-GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__ChartResu__Ayana__4E88ABD4]') AND type = 'D')
 BEGIN
 ALTER TABLE [dbo].[tbl_ChartResults] ADD  DEFAULT ('Lahiri') FOR [Ayanamsha]
@@ -1151,25 +1032,13 @@ ALTER TABLE [dbo].[tbl_Rule_Sets] ADD  DEFAULT ((0)) FOR [IsActive]
 END
 
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Birth__76969D2E]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]'))
-ALTER TABLE [dbo].[tbl_Chart_Aspects]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
-REFERENCES [dbo].[tbl_BirthDetails] ([Id])
-GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Chart__75A278F5]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]'))
 ALTER TABLE [dbo].[tbl_Chart_Aspects]  WITH CHECK ADD FOREIGN KEY([ChartResultId])
 REFERENCES [dbo].[tbl_ChartResults] ([Id])
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Birth__71D1E811]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]'))
-ALTER TABLE [dbo].[tbl_Chart_Conjunctions]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
-REFERENCES [dbo].[tbl_BirthDetails] ([Id])
-GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Chart__70DDC3D8]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]'))
 ALTER TABLE [dbo].[tbl_Chart_Conjunctions]  WITH CHECK ADD FOREIGN KEY([ChartResultId])
 REFERENCES [dbo].[tbl_ChartResults] ([Id])
-GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_Chart__Birth__18EBB532]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_DashaPeriods]'))
-ALTER TABLE [dbo].[tbl_Chart_DashaPeriods]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
-REFERENCES [dbo].[tbl_BirthDetails] ([Id])
 GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_Chart__Chart__17F790F9]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_DashaPeriods]'))
 ALTER TABLE [dbo].[tbl_Chart_DashaPeriods]  WITH CHECK ADD FOREIGN KEY([ChartResultId])
@@ -1179,17 +1048,9 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo
 ALTER TABLE [dbo].[tbl_Chart_DashaPeriods]  WITH CHECK ADD FOREIGN KEY([ParentDashaPeriodId])
 REFERENCES [dbo].[tbl_Chart_DashaPeriods] ([Id])
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Birth__6D0D32F4]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_HouseLords]'))
-ALTER TABLE [dbo].[tbl_Chart_HouseLords]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
-REFERENCES [dbo].[tbl_BirthDetails] ([Id])
-GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Chart__6C190EBB]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_HouseLords]'))
 ALTER TABLE [dbo].[tbl_Chart_HouseLords]  WITH CHECK ADD FOREIGN KEY([ChartResultId])
 REFERENCES [dbo].[tbl_ChartResults] ([Id])
-GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Birth__68487DD7]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]'))
-ALTER TABLE [dbo].[tbl_Chart_KeyDetails]  WITH CHECK ADD FOREIGN KEY([BirthDetailId])
-REFERENCES [dbo].[tbl_BirthDetails] ([Id])
 GO
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK__tbl_D1Cha__Chart__6754599E]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]'))
 ALTER TABLE [dbo].[tbl_Chart_KeyDetails]  WITH CHECK ADD FOREIGN KEY([ChartResultId])
@@ -2520,21 +2381,56 @@ BEGIN
     CREATE TABLE dbo.tbl_Fact_PlanetAvastha (
         Id                    INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Fact_PlanetAvastha PRIMARY KEY,
         ChartResultId         INT           NOT NULL CONSTRAINT FK_Fact_PlanetAvastha_ChartResult FOREIGN KEY REFERENCES dbo.tbl_ChartResults (Id),
-        BirthDetailId         INT           NOT NULL CONSTRAINT FK_Fact_PlanetAvastha_BirthDetail FOREIGN KEY REFERENCES dbo.tbl_BirthDetails (Id),
-        ChartType             NVARCHAR(50)  NOT NULL,
         Planet                VARCHAR(20)   NOT NULL,
         RuleSetId             TINYINT       NOT NULL CONSTRAINT FK_Fact_PlanetAvastha_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
         BaaladiStateId        TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Baaladi   FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
         BaaladiEffectFraction DECIMAL(4,3)  NULL,
         JagradadiStateId      TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Jagradadi FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
-        ComputedAt            DATETIME2(7)  NOT NULL CONSTRAINT DF_Fact_PlanetAvastha_ComputedAt DEFAULT sysutcdatetime(),
         PlanetId              TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
         ChartTypeId           TINYINT       NULL,
         CONSTRAINT UQ_Fact_PlanetAvastha UNIQUE (ChartResultId, Planet)
     );
-    CREATE NONCLUSTERED INDEX IX_Fact_PlanetAvastha_BirthDetailId ON dbo.tbl_Fact_PlanetAvastha (BirthDetailId);
     CREATE NONCLUSTERED INDEX IX_Fact_PlanetAvastha_ChartResultId ON dbo.tbl_Fact_PlanetAvastha (ChartResultId);
 END
+GO
+
+-- =====================================================================
+-- vw_Chart_HouseNakshatraSpan — defined here (not with the other views near
+-- the top): after migration 09 it joins tbl_ChartResults + tbl_Dim_ChartType,
+-- both created later than the original position.
+-- =====================================================================
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_Chart_HouseNakshatraSpan]'))
+EXEC dbo.sp_executesql @statement = N'
+CREATE VIEW [dbo].[vw_Chart_HouseNakshatraSpan] AS
+SELECT
+    hl.ChartResultId,
+    cr.BirthDetailId,
+    ct.Code                    AS ChartType,
+    hl.HouseNumber,
+    hl.HouseSign,
+    sa.Id                      AS HouseSignId,
+    hl.LordPlanet,
+    n.Id                       AS NakshatraId,
+    n.NakshatraName,
+    p.PadaNumber,
+    p.StartDegree              AS PadaStartDegree,
+    p.EndDegree                AS PadaEndDegree,
+    lord.PlanetName            AS NakshatraLordName,
+    nav.SignName               AS NavamsaSignName
+FROM dbo.tbl_Chart_HouseLords hl
+JOIN dbo.tbl_ChartResults    cr   ON cr.Id = hl.ChartResultId
+JOIN dbo.tbl_Dim_ChartType   ct   ON ct.Id = cr.ChartTypeId
+JOIN dbo.tbl_SignAttributes  sa   ON sa.Id = hl.HouseSignId
+JOIN dbo.tbl_NakshatraPadas  p    ON p.StartDegree >= (sa.Id - 1) * 30.0
+                                 AND p.StartDegree <  sa.Id * 30.0
+JOIN dbo.tbl_Nakshatras      n    ON n.Id = p.NakshatraId
+JOIN dbo.tbl_Planets         lord ON lord.Id = n.RulingPlanetId
+JOIN dbo.tbl_SignAttributes  nav  ON nav.Id = p.NavamsaSignId;
+'
 GO
 
 -- =====================================================================
@@ -2590,10 +2486,10 @@ SELECT
     Conjunct.PlanetList           AS ConjunctWith,
     AspectsCast.TargetList        AS Aspects,
     kd.AspectingPlanets          AS AspectedBy,
-    kd.ComputedAt
+    cr.ComputedAt
 FROM dbo.tbl_Chart_KeyDetails kd
-JOIN dbo.tbl_BirthDetails bd  ON bd.Id = kd.BirthDetailId
 JOIN dbo.tbl_ChartResults cr  ON cr.Id = kd.ChartResultId
+JOIN dbo.tbl_BirthDetails bd  ON bd.Id = cr.BirthDetailId
 LEFT JOIN dbo.tbl_Fact_PlanetAvastha av ON av.ChartResultId = kd.ChartResultId AND av.PlanetId = kd.PlanetId
 LEFT JOIN dbo.tbl_Dim_AvasthaState  baaladi   ON baaladi.Id   = av.BaaladiStateId
 LEFT JOIN dbo.tbl_Dim_AvasthaState  jagradadi ON jagradadi.Id = av.JagradadiStateId

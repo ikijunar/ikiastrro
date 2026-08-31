@@ -1540,7 +1540,7 @@ git commit -m "$(printf 'refactor: drop BirthDetailId/ChartType/ComputedAt from 
 - Consumes: migration 08 script (Task 18), the code changes (Task 18).
 - Produces: `vw_Chart_Consolidated`, `vw_Chart_HouseNakshatraSpan`, `vw_Chart_DashaTimeline`, `tvf_Chart_SadeSatiPeriods` source person/chart-type from `tbl_ChartResults`, not from a child column.
 
-- [ ] **Step 1: Write `db/09_finalize_views_after_drop.sql`** — drop-and-recreate each, with:
+- [x] **Step 1: Write `db/09_finalize_views_after_drop.sql`** — drop-and-recreate each, with:
 
 - `vw_Chart_Consolidated`: `JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId` (was `kd.BirthDetailId`); everything else already id-joined from migration 07.
 - `vw_Chart_HouseNakshatraSpan`: add `JOIN dbo.tbl_ChartResults cr ON cr.Id = hl.ChartResultId`; replace `hl.BirthDetailId` / `hl.ChartType` in the `SELECT` with `cr.BirthDetailId` and `ct.Code` (add `JOIN dbo.tbl_Dim_ChartType ct ON ct.Id = cr.ChartTypeId`).
@@ -1549,13 +1549,13 @@ git commit -m "$(printf 'refactor: drop BirthDetailId/ChartType/ComputedAt from 
 
 End with the `SchemaMigrations` insert + `PRINT '09 applied...'`.
 
-- [ ] **Step 2: Apply 08 then 09**
+- [x] **Step 2: Apply 08 then 09** — both applied clean. 08 dynamically dropped 5 indexes + 7 FKs + 10 default constraints, then the columns; 09 rebuilt the 4 views/TVFs. Pre/post row counts identical across all 6 child tables (5,895 rows) and the 5 view/TVF outputs.
 
 Run: `sqlcmd -S localhost -E -d ikiastrro -i db/08_drop_child_parent_duplication.sql`
 Then: `sqlcmd -S localhost -E -d ikiastrro -i db/09_finalize_views_after_drop.sql`
 Expected: `08 applied...` then `09 applied...`. If a view fails to create in 09 because it still references a dropped column, fix that reference and re-run 09.
 
-- [ ] **Step 3: Full verification sweep**
+- [x] **Step 3: Full verification sweep** — build green (0 warnings); `verify-schema`, `verify-avastha`, `verify-vargas`, `verify-functional-nature` all ALL PASS; `recompute-keydetails` re-derived all 4 analytics tables × 6 chart types × 5 people via the new INSERT paths; `compute-dasha` exercised the DashaPeriods insert; second `verify-schema` ALL PASS; 0 orphan child rows.
 
 Run in order:
 ```
@@ -1569,15 +1569,11 @@ dotnet run --project src/Ikiastrro.Cli -- verify-schema
 ```
 Expected: build green; every `verify-*` reports `ALL PASS`; recompute completes; second `verify-schema` still `ALL PASS`.
 
-- [ ] **Step 4: Web smoke**
+- [x] **Step 4: Web smoke** — Web app launched (`dotnet run --project src/Ikiastrro.Web`); `/`, `/charts`, `/charts/1`, `/charts/1/life-weeks` all HTTP 200 with real rendered content (chart 54 KB: planet/sign tables, Mahadasha ×11, Sade Sati, Relationship tab; life-weeks 650 KB: 4000-row grid) — no server exception, `blazor-error-ui` present only as the standard hidden boilerplate div. UI delete not exercised (no CLI delete mode; interactive add needs network) — covered instead by the Task 17 live-data equivalence proof (0 mismatch / 5,895 rows) + repeated 0-orphan checks after recompute.
 
-Launch the Web app; open `/charts/{id}` for a seeded person; confirm every section renders (D1/varga tables, consolidated columns, dasha timeline, life-weeks, Sade Sati, house→nakshatra span). Delete a throwaway person via the UI and confirm no error + no orphan rows (`SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd WHERE NOT EXISTS (SELECT 1 FROM dbo.tbl_ChartResults cr WHERE cr.Id = kd.ChartResultId)` → 0).
+- [x] **Step 5: Fold Phase 3 into the baseline** — removed `BirthDetailId`/`ChartType`/`ComputedAt` from the 6 `CREATE TABLE`s + their 5 `BirthDetailId` indexes + 10 default constraints + 5 FKs; rebuilt the 4 views/TVFs off `tbl_ChartResults`. **`vw_Chart_HouseNakshatraSpan` relocated to just before `vw_Chart_Consolidated`** — after migration 09 it joins `tbl_ChartResults` + `tbl_Dim_ChartType`, both created later than its original position (SMO object-ordering; the plan did not anticipate this). Fresh `ikiastrro_scratch` build from the baseline runs clean (0 errors); identical table/view/function/FK-relationship set to the migrated live DB (minus 4 pre-existing accidental duplicate `ChartResultId` FKs on `tbl_Chart_KeyDetails` — historical, out of scope). `verify-schema` is hardwired to `Database=ikiastrro` so it was run against the migrated live DB (ALL PASS), not scratch.
 
-- [ ] **Step 5: Fold Phase 3 into the baseline**
-
-In `db/ikiastrro.sql`: remove `BirthDetailId` / `ChartType` / `ComputedAt` from the six `CREATE TABLE` statements; remove `IX_Fact_PlanetAvastha_BirthDetailId`; replace the four view/TVF definitions with the migration-09 versions. Rebuild `ikiastrro_scratch` from the baseline (same commands as Task 15 Step 3) and confirm it runs clean and `verify-schema` passes against it after a seed+compute. Drop `ikiastrro_scratch`.
-
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add db/08_drop_child_parent_duplication.sql db/09_finalize_views_after_drop.sql db/ikiastrro.sql
@@ -1585,6 +1581,8 @@ git commit -m "$(printf 'feat(db): drop child-table parent duplication; finalize
 ```
 
 **PHASE 3 CHECKPOINT / DONE:** `dotnet build` green · all `verify-*` PASS · Web renders + delete works · baseline rebuilds clean · `SELECT * FROM dbo.SchemaMigrations` lists `01`–`09`. Review items 1–5 complete.
+
+> **PHASE 3 COMPLETE (2026-08-31).** `dotnet build` green (0 warnings) · `verify-schema` / `verify-avastha` / `verify-vargas` / `verify-functional-nature` ALL PASS · Web `/charts/{id}` + life-weeks render · fresh baseline build of `ikiastrro_scratch` clean · `SchemaMigrations` lists `01`–`09`. Commits: `68e85d0` (T17), `0e04a05` (T18 code), `<T19>` (migrations 08+09 + baseline fold).
 
 ---
 
