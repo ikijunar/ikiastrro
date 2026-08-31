@@ -58,6 +58,14 @@ public static class ChartAnalyzer
             var degreeInSign = (decimal)(nirayanaLongitude % 30);
             var dignity = ClassicalDignity.Evaluate(planet.Planet, sign, isRasiChart ? (double?)degreeInSign : null, allSigns);
 
+            // The planet's longitude in THIS chart's own 360-degree space. For D1 it IS the real
+            // longitude; for a varga it's the (real x N) mod 360 value the computer already stamped.
+            var vargaLongitude = isRasiChart
+                ? nirayanaLongitude
+                : planet.VargaLongitudeDegrees
+                    ?? throw new InvalidOperationException($"Chart data for {planet.Planet} is missing VargaLongitudeDegrees for chart type '{input.ChartType}'.");
+            var degreeInVargaSign = (decimal)(vargaLongitude % 30);
+
             // Nakshatra lord and retrograde status are derived purely from the real longitude every
             // chart type carries (NirayanaLongitudeDegrees) — populated for D1 and D9 alike, unlike
             // Nakshatra/NakshatraPada display fields above which stay D1-only (2026-08-28).
@@ -82,9 +90,12 @@ public static class ChartAnalyzer
                 PlanetId = AstroIds.PlanetIdOrNull(planet.Planet),
                 Sign = planet.Sign,
                 SignId = AstroIds.SignId(sign),
-                DegreesInSignDisplay = isRasiChart ? planet.DegreesInSign : null,
-                DegreesInSignDecimal = isRasiChart ? Math.Round(degreeInSign, 4) : null,
+                DegreesInSignDisplay = isRasiChart
+                    ? planet.DegreesInSign
+                    : AstroMath.FormatDegreesMinutesSeconds(vargaLongitude % 30),
+                DegreesInSignDecimal = Math.Round(degreeInVargaSign, 4),
                 NirayanaLongitudeDegrees = nirayanaLongitude,
+                VargaLongitudeDegrees = vargaLongitude,
                 EclipticLatitudeDegrees = planet.EclipticLatitudeDegrees,
                 SpeedLongitudeDegPerDay = planet.SpeedLongitudeDegPerDay,
                 Nakshatra = isRasiChart ? planet.Nakshatra : null,

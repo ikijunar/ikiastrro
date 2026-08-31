@@ -80,7 +80,8 @@ var birthDetailsRepo = new BirthDetailsRepository(connectionFactory);
 
 // --- Shared compute-and-store pipeline (Task 6/7): one instance, reused by every one-off mode
 //     below and by the interactive add flow near the bottom of this file. ---
-var orchestrator = ChartCalculationOrchestrator.CreateDefault();
+var vargaSchemes = new VargaSchemeRepository(connectionFactory).GetAll(1);
+var orchestrator = ChartCalculationOrchestrator.CreateDefault(vargaSchemes);
 var chartResultsRepo = new ChartResultsRepository(connectionFactory);
 var vimshottariDashaService = new VimshottariDashaService(
     chartResultsRepo, new DashaPeriodsRepository(connectionFactory));
@@ -250,7 +251,7 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     if (factoryFailures > 0) failures += factoryFailures;
 
     // VargaChartComputer's D9 sign rule must agree with AstroMath.GetNavamsaSign (spot longitudes).
-    // The full VargaChartComputer-vs-D9ChartComputer comparison is done live in Task 13.
+    // The full VargaChartComputer-vs-live-DB comparison is done in Task 13 (verify-vargas grid match).
     {
         var d9rule = new NavamsaD9SignRule();
         var mism = 0;

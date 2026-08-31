@@ -23,11 +23,16 @@ builder.Services.AddScoped<AvasthaRuleRepository>();
 builder.Services.AddScoped<PlanetAvasthaRepository>();
 builder.Services.AddScoped<RuleSetRepository>();
 builder.Services.AddScoped<ChartTypeRepository>();
+builder.Services.AddScoped<VargaSchemeRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();
 builder.Services.AddScoped<ChartGenerationService>();
 builder.Services.AddScoped<BirthDetailDeletionService>();
 builder.Services.AddScoped<IPlaceResolver, NominatimPlaceResolver>();
-builder.Services.AddScoped(_ => ChartCalculationOrchestrator.CreateDefault());
+builder.Services.AddScoped(sp =>
+{
+    var schemes = sp.GetRequiredService<VargaSchemeRepository>().GetAll(1);
+    return ChartCalculationOrchestrator.CreateDefault(schemes);
+});
 
 var app = builder.Build();
 

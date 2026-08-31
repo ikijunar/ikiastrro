@@ -18,7 +18,7 @@ public class ChartKeyDetailsRepository
         const string sql = """
             INSERT INTO dbo.tbl_Chart_KeyDetails
                 (ChartResultId, Planet, Sign, DegreesInSignDisplay, DegreesInSignDecimal,
-                 NirayanaLongitudeDegrees, EclipticLatitudeDegrees, SpeedLongitudeDegPerDay,
+                 NirayanaLongitudeDegrees, VargaLongitudeDegrees, EclipticLatitudeDegrees, SpeedLongitudeDegPerDay,
                  Nakshatra, NakshatraPada, NakshatraLordPlanet,
                  NakshatraId, NakshatraPadaId, NakshatraSubLordPlanet, IsRetrograde,
                  IsCombust, DistanceFromSunDegrees, CombustionOrbUsedDegrees,
@@ -28,7 +28,7 @@ public class ChartKeyDetailsRepository
                  PlanetId, SignId, NakshatraLordPlanetId, NakshatraSubLordPlanetId, SignLordPlanetId)
             VALUES
                 (@ChartResultId, @Planet, @Sign, @DegreesInSignDisplay, @DegreesInSignDecimal,
-                 @NirayanaLongitudeDegrees, @EclipticLatitudeDegrees, @SpeedLongitudeDegPerDay,
+                 @NirayanaLongitudeDegrees, @VargaLongitudeDegrees, @EclipticLatitudeDegrees, @SpeedLongitudeDegPerDay,
                  @Nakshatra, @NakshatraPada, @NakshatraLordPlanet,
                  @NakshatraId, @NakshatraPadaId, @NakshatraSubLordPlanet, @IsRetrograde,
                  @IsCombust, @DistanceFromSunDegrees, @CombustionOrbUsedDegrees,

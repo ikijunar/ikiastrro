@@ -30,7 +30,20 @@ public class ChartResult
     /// <summary>Calculation engine + version that produced this result, for reproducibility.</summary>
     public string EngineVersion { get; set; } = string.Empty;
 
-    /// <summary>Full computed result, serialized as JSON (planet positions, houses, etc. per ChartType).</summary>
+    /// <summary>tbl_Rule_VargaScheme.MethodCode for this chart type (e.g.
+    /// "ParasaraTraditional"). Null for D1 and non-position calculations.</summary>
+    public string? VargaMethod { get; set; }
+
+    /// <summary>Numeric Lahiri ayanamsha at the birth moment, degrees. One value
+    /// per person; the same across all of that person's chart rows.</summary>
+    public double? AyanamshaDegrees { get; set; }
+
+    /// <summary>Local apparent sidereal time at the birth moment, hours [0,24).</summary>
+    public double? SiderealTimeHours { get; set; }
+
+    /// <summary>Full computed result as JSON — a FROZEN AUDIT SNAPSHOT, never read
+    /// back as the source of truth. Every field it holds also has a typed column
+    /// (tbl_Chart_KeyDetails / tbl_ChartResults).</summary>
     public string ResultJson { get; set; } = string.Empty;
 
     public DateTime ComputedAt { get; set; } = DateTime.UtcNow;

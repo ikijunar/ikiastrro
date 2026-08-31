@@ -4,8 +4,9 @@ namespace Ikiastrro.Core.Calculators;
 
 /// <summary>
 /// Dispatches a BirthDetails record to every registered IChartCalculator.
-/// CreateDefault registers D1 + D2 + D6 + D9 + D10 + D11 (numeric order); later phases add
-/// calculators there (or via DI) without changing this class's logic.
+/// CreateDefault registers D1 (D1RasiCalculator) + one VargaCalculator per
+/// tbl_Rule_VargaScheme row (D2, D2-US, D3..D60). The scheme rows are loaded by
+/// the caller (Cli/Web) from VargaSchemeRepository and passed in.
 /// </summary>
 public class ChartCalculationOrchestrator
 {
@@ -19,13 +20,14 @@ public class ChartCalculationOrchestrator
     /// <summary>The registered calculators, in registration order — used by the CLI's backfill-charts / recompute-keydetails to enumerate every chart type that has an IChartCalculator (i.e. everything except VimshottariDasha).</summary>
     public IReadOnlyList<IChartCalculator> Calculators => _calculators;
 
-    /// <summary>Default orchestrator: D1 + D2 + D6 + D9 + D10 + D11 (numeric order). Register new calculators here.</summary>
-    public static ChartCalculationOrchestrator CreateDefault() =>
-        new(new IChartCalculator[]
-        {
-            new D1RasiCalculator(), new D2HoraCalculator(), new D6ShashtamsaCalculator(),
-            new D9NavamsaCalculator(), new D10DasamsaCalculator(), new D11RudramsaCalculator()
-        });
+    /// <summary>D1 + one VargaCalculator per varga scheme row (D2, D2-US, D3..D60).</summary>
+    public static ChartCalculationOrchestrator CreateDefault(IReadOnlyList<VargaScheme> schemes)
+    {
+        var calculators = new List<IChartCalculator> { new D1RasiCalculator() };
+        foreach (var s in schemes)
+            calculators.Add(new VargaCalculator(s.ChartType, s));
+        return new ChartCalculationOrchestrator(calculators);
+    }
 
     /// <summary>
     /// Runs every registered calculator, returning both the ChartResult to store (ResultJson) and the

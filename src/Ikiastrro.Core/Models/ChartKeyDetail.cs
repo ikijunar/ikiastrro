@@ -27,6 +27,12 @@ public class ChartKeyDetail
     public decimal? DegreesInSignDecimal { get; set; }
     public double NirayanaLongitudeDegrees { get; set; }
 
+    /// <summary>The planet's longitude in THIS chart's own 360-degree space:
+    /// (NirayanaLongitudeDegrees x N) mod 360. Equals NirayanaLongitudeDegrees
+    /// for D1. Persisted (migration 12) so Vargottama and varga conjunction
+    /// tightness are pure SQL. DegreesInSignDecimal = VargaLongitudeDegrees % 30.</summary>
+    public double VargaLongitudeDegrees { get; set; }
+
     /// <summary>
     /// Ecliptic latitude in degrees (Swiss Ephemeris xx[1]) — the real out-of-plane position.
     /// Populated for D1 and every varga (a real-body fact), like NirayanaLongitudeDegrees. Null for
