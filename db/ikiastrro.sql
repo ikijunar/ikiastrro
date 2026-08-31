@@ -205,9 +205,14 @@ CREATE TABLE [dbo].[tbl_Chart_HouseLords](
 	[LordDignityStatus] [varchar](20) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-	[HouseSignId] [tinyint] NULL,
-	[LordPlanetId] [tinyint] NULL,
-	[LordPlacedInSignId] [tinyint] NULL,
+	[HouseSignId] [tinyint] NOT NULL,
+	[LordPlanetId] [tinyint] NOT NULL,
+	[LordPlacedInSignId] [tinyint] NOT NULL,
+ CONSTRAINT [FK_HouseLords_HouseSign]  FOREIGN KEY ([HouseSignId])        REFERENCES [dbo].[tbl_SignAttributes] ([Id]),
+ CONSTRAINT [FK_HouseLords_Lord]       FOREIGN KEY ([LordPlanetId])       REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_HouseLords_LordInSign] FOREIGN KEY ([LordPlacedInSignId]) REFERENCES [dbo].[tbl_SignAttributes] ([Id]),
+ CONSTRAINT [CK_HouseLords_House]      CHECK ([HouseNumber] BETWEEN 1 AND 12),
+ CONSTRAINT [CK_HouseLords_LordHouses] CHECK ([LordPlacedInHouseFromLagna] BETWEEN 1 AND 12 AND [LordPlacedInHouseFromSun] BETWEEN 1 AND 12 AND [LordPlacedInHouseFromMoon] BETWEEN 1 AND 12),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -238,7 +243,7 @@ SELECT
     lord.PlanetName            AS NakshatraLordName,
     nav.SignName               AS NavamsaSignName
 FROM dbo.tbl_Chart_HouseLords hl
-JOIN dbo.tbl_SignAttributes  sa   ON sa.ZodiacEnumValue = hl.HouseSign
+JOIN dbo.tbl_SignAttributes  sa   ON sa.Id = hl.HouseSignId
 JOIN dbo.tbl_NakshatraPadas  p    ON p.StartDegree >= (sa.Id - 1) * 30.0
                                  AND p.StartDegree <  sa.Id * 30.0
 JOIN dbo.tbl_Nakshatras      n    ON n.Id = p.NakshatraId
@@ -265,7 +270,14 @@ CREATE TABLE [dbo].[tbl_Chart_DashaPeriods](
 	[StartDayOffset] [int] NOT NULL,
 	[EndDayOffset] [int] NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
-	[LordId] [tinyint] NULL,
+	[LordId] [tinyint] NOT NULL,
+	[ParentChartResultId] AS [ChartResultId] PERSISTED,
+ CONSTRAINT [FK_DashaPeriods_Lord]    FOREIGN KEY ([LordId]) REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [CK_DashaPeriods_Dates]   CHECK ([StartDate] < [EndDate]),
+ CONSTRAINT [CK_DashaPeriods_Offsets] CHECK ([StartDayOffset] <= [EndDayOffset]),
+ CONSTRAINT [CK_DashaPeriods_Level]   CHECK ([LevelNumber] BETWEEN 1 AND 3),
+ CONSTRAINT [UQ_DashaPeriods_Result_Id] UNIQUE ([ChartResultId], [Id]),
+ CONSTRAINT [FK_DashaPeriods_ParentSameChart] FOREIGN KEY ([ParentChartResultId], [ParentDashaPeriodId]) REFERENCES [dbo].[tbl_Chart_DashaPeriods] ([ChartResultId], [Id]),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -286,12 +298,13 @@ CREATE TABLE [dbo].[tbl_BirthDetails](
 	[TimeOfBirth] [time](0) NOT NULL,
 	[PlaceCity] [nvarchar](200) NOT NULL,
 	[PlaceCountry] [nvarchar](200) NOT NULL,
-	[Latitude] [float] NOT NULL,
-	[Longitude] [float] NOT NULL,
+	[Latitude] [decimal](9, 6) NOT NULL,
+	[Longitude] [decimal](9, 6) NOT NULL,
 	[UtcOffset] [varchar](10) NOT NULL,
 	[IanaTimeZoneId] [varchar](100) NULL,
 	[CreatedAt] [datetime2](7) NOT NULL,
-PRIMARY KEY CLUSTERED 
+ CONSTRAINT [CK_BirthDetails_LatLong] CHECK ([Latitude] BETWEEN -90 AND 90 AND [Longitude] BETWEEN -180 AND 180),
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -313,9 +326,12 @@ CREATE TABLE [dbo].[tbl_ChartResults](
 	[EngineVersion] [nvarchar](100) NOT NULL,
 	[ResultJson] [nvarchar](max) NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
-	[RuleSetId] [tinyint] NULL,
+	[RuleSetId] [tinyint] NOT NULL,
 	[ChartTypeId] [tinyint] NULL,
-	[CalculationKind] [varchar](20) NULL,
+	[CalculationKind] [varchar](20) NOT NULL CONSTRAINT [DF_ChartResults_CalcKind] DEFAULT ('PositionChart'),
+ CONSTRAINT [CK_ChartResults_KindType] CHECK (
+        ([CalculationKind] = 'PositionChart' AND [ChartTypeId] IS NOT NULL) OR
+        ([CalculationKind] <> 'PositionChart' AND [ChartTypeId] IS NULL)),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -415,7 +431,7 @@ RETURN
     OUTER APPLY (
         SELECT TOP 1 cr.Id
         FROM dbo.tbl_ChartResults cr
-        WHERE cr.BirthDetailId = bd.Id AND cr.ChartType = ''VimshottariDasha''
+        WHERE cr.BirthDetailId = bd.Id AND cr.CalculationKind = ''VimshottariDasha''
         ORDER BY cr.Id DESC
     ) dashaChart(ChartResultId)
     CROSS JOIN dbo.tbl_Dim_LifeCalendar lc
@@ -477,10 +493,21 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[AspectingPlanets] [varchar](200) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[PlanetId] [tinyint] NULL,
-	[SignId] [tinyint] NULL,
+	[SignId] [tinyint] NOT NULL,
 	[NakshatraLordPlanetId] [tinyint] NULL,
 	[NakshatraSubLordPlanetId] [tinyint] NULL,
 	[SignLordPlanetId] [tinyint] NULL,
+ CONSTRAINT [FK_KeyDetails_Planet]     FOREIGN KEY ([PlanetId])                 REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_KeyDetails_Sign]       FOREIGN KEY ([SignId])                   REFERENCES [dbo].[tbl_SignAttributes] ([Id]),
+ CONSTRAINT [FK_KeyDetails_NakLord]    FOREIGN KEY ([NakshatraLordPlanetId])    REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_KeyDetails_NakSubLord] FOREIGN KEY ([NakshatraSubLordPlanetId]) REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_KeyDetails_SignLord]   FOREIGN KEY ([SignLordPlanetId])         REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [CK_KeyDetails_Longitude]  CHECK ([NirayanaLongitudeDegrees] >= 0 AND [NirayanaLongitudeDegrees] < 360),
+ CONSTRAINT [CK_KeyDetails_DegInSign]  CHECK ([DegreesInSignDecimal] IS NULL OR ([DegreesInSignDecimal] >= 0 AND [DegreesInSignDecimal] < 30)),
+ CONSTRAINT [CK_KeyDetails_HouseLagna] CHECK ([HouseNumberFromLagna] BETWEEN 1 AND 12),
+ CONSTRAINT [CK_KeyDetails_HouseSun]   CHECK ([HouseNumberFromSun] BETWEEN 1 AND 12),
+ CONSTRAINT [CK_KeyDetails_HouseMoon]  CHECK ([HouseNumberFromMoon] BETWEEN 1 AND 12),
+ CONSTRAINT [CK_KeyDetails_Pada]       CHECK ([NakshatraPada] IS NULL OR [NakshatraPada] BETWEEN 1 AND 4),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -505,15 +532,28 @@ CREATE TABLE [dbo].[tbl_Chart_Conjunctions](
 	[DegreeSeparation] [decimal](7, 4) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-	[Planet1Id] [tinyint] NULL,
-	[Planet2Id] [tinyint] NULL,
-	[SignId] [tinyint] NULL,
+	[Planet1Id] [tinyint] NOT NULL,
+	[Planet2Id] [tinyint] NOT NULL,
+	[SignId] [tinyint] NOT NULL,
+ CONSTRAINT [FK_Conjunctions_Planet1] FOREIGN KEY ([Planet1Id]) REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_Conjunctions_Planet2] FOREIGN KEY ([Planet2Id]) REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_Conjunctions_Sign]    FOREIGN KEY ([SignId])    REFERENCES [dbo].[tbl_SignAttributes] ([Id]),
+ CONSTRAINT [CK_Conjunctions_Canonical] CHECK ([Planet1Id] < [Planet2Id]),
+ CONSTRAINT [CK_Conjunctions_House]     CHECK ([HouseNumberFromLagna] BETWEEN 1 AND 12),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 END
+GO
+-- Canonical-pair uniqueness (folded from db/06_add_chartfact_constraints.sql).
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_Conjunctions_Result_Pair')
+CREATE UNIQUE INDEX UX_Conjunctions_Result_Pair ON dbo.tbl_Chart_Conjunctions (ChartResultId, Planet1Id, Planet2Id);
 GO
 SET ANSI_NULLS ON
 GO
@@ -530,9 +570,15 @@ CREATE TABLE [dbo].[tbl_Chart_Aspects](
 	[AspectType] [varchar](10) NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-	[AspectingPlanetId] [tinyint] NULL,
-	[AspectedTargetType] [varchar](10) NULL,
+	[AspectingPlanetId] [tinyint] NOT NULL,
+	[AspectedTargetType] [varchar](10) NOT NULL,
 	[AspectedPlanetId] [tinyint] NULL,
+ CONSTRAINT [FK_Aspects_Aspecting] FOREIGN KEY ([AspectingPlanetId]) REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [FK_Aspects_Aspected]  FOREIGN KEY ([AspectedPlanetId])  REFERENCES [dbo].[tbl_Planets] ([Id]),
+ CONSTRAINT [CK_Aspects_TargetType]  CHECK ([AspectedTargetType] IN ('Planet','Ascendant')),
+ CONSTRAINT [CK_Aspects_TargetShape] CHECK (
+        ([AspectedTargetType] = 'Ascendant' AND [AspectedPlanetId] IS NULL) OR
+        ([AspectedTargetType] = 'Planet'    AND [AspectedPlanetId] IS NOT NULL)),
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -649,7 +695,7 @@ RETURN
     WITH MoonSign AS (
         SELECT TOP (1) sa.Id AS MoonSignId
         FROM tbl_Chart_KeyDetails kd
-        JOIN tbl_SignAttributes sa ON sa.ZodiacEnumValue = kd.Sign
+        JOIN tbl_SignAttributes sa ON sa.Id = kd.SignId
         WHERE kd.BirthDetailId = @BirthDetailId AND kd.Planet = ''Moon'' AND kd.ChartType = ''D1''
     ),
     TargetSigns AS (
@@ -844,11 +890,11 @@ GO
 SET ANSI_PADDING ON
 
 GO
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_BirthDetails]') AND name = N'UX_BirthDetails_Name')
-CREATE UNIQUE NONCLUSTERED INDEX [UX_BirthDetails_Name] ON [dbo].[tbl_BirthDetails]
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_BirthDetails]') AND name = N'IX_BirthDetails_Name')
+CREATE NONCLUSTERED INDEX [IX_BirthDetails_Name] ON [dbo].[tbl_BirthDetails]
 (
 	[Name] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]') AND name = N'IX_Chart_Aspects_BirthDetailId')
 CREATE NONCLUSTERED INDEX [IX_Chart_Aspects_BirthDetailId] ON [dbo].[tbl_Chart_Aspects]
@@ -2381,6 +2427,15 @@ INSERT dbo.tbl_Dim_ChartType (Id, Code, DisplayName, DivisionalFactor, Category,
     (5, 'D10', 'Dasamsa',    10, 'Varga', 5),
     (6, 'D11', 'Rudramsa',   11, 'Varga', 6);
 GO
+-- tbl_ChartResults -> tbl_Rule_Sets / tbl_Dim_ChartType foreign keys
+-- (folded from db/06_add_chartfact_constraints.sql). Declared here rather than inline in the
+-- tbl_ChartResults CREATE TABLE because both referenced tables are created later in this script.
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ChartResults_RuleSet')
+ALTER TABLE dbo.tbl_ChartResults ADD CONSTRAINT FK_ChartResults_RuleSet FOREIGN KEY (RuleSetId) REFERENCES dbo.tbl_Rule_Sets (Id);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ChartResults_ChartType')
+ALTER TABLE dbo.tbl_ChartResults ADD CONSTRAINT FK_ChartResults_ChartType FOREIGN KEY (ChartTypeId) REFERENCES dbo.tbl_Dim_ChartType (Id);
+GO
 
 -- =====================================================================
 -- Avastha layer, slice 1 (Baaladi + Jagradadi) — star-schema (STANDARDS.md §D.1)
@@ -2473,7 +2528,7 @@ BEGIN
         BaaladiEffectFraction DECIMAL(4,3)  NULL,
         JagradadiStateId      TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Jagradadi FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
         ComputedAt            DATETIME2(7)  NOT NULL CONSTRAINT DF_Fact_PlanetAvastha_ComputedAt DEFAULT sysutcdatetime(),
-        PlanetId              TINYINT       NULL,
+        PlanetId              TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
         ChartTypeId           TINYINT       NULL,
         CONSTRAINT UQ_Fact_PlanetAvastha UNIQUE (ChartResultId, Planet)
     );
@@ -2539,28 +2594,28 @@ SELECT
 FROM dbo.tbl_Chart_KeyDetails kd
 JOIN dbo.tbl_BirthDetails bd  ON bd.Id = kd.BirthDetailId
 JOIN dbo.tbl_ChartResults cr  ON cr.Id = kd.ChartResultId
-LEFT JOIN dbo.tbl_Fact_PlanetAvastha av ON av.ChartResultId = kd.ChartResultId AND av.Planet = kd.Planet
+LEFT JOIN dbo.tbl_Fact_PlanetAvastha av ON av.ChartResultId = kd.ChartResultId AND av.PlanetId = kd.PlanetId
 LEFT JOIN dbo.tbl_Dim_AvasthaState  baaladi   ON baaladi.Id   = av.BaaladiStateId
 LEFT JOIN dbo.tbl_Dim_AvasthaState  jagradadi ON jagradadi.Id = av.JagradadiStateId
 OUTER APPLY (
     SELECT STRING_AGG(CAST(hl.HouseNumber AS VARCHAR(2)), '','') WITHIN GROUP (ORDER BY hl.HouseNumber) AS HouseList
     FROM dbo.tbl_Chart_HouseLords hl
-    WHERE hl.ChartResultId = kd.ChartResultId AND hl.LordPlanet = kd.Planet
+    WHERE hl.ChartResultId = kd.ChartResultId AND hl.LordPlanetId = kd.PlanetId
 ) RulesHouses
 OUTER APPLY (
     SELECT STRING_AGG(other_planet, '', '') AS PlanetList
     FROM (
         SELECT Planet2 AS other_planet FROM dbo.tbl_Chart_Conjunctions
-            WHERE ChartResultId = kd.ChartResultId AND Planet1 = kd.Planet
+            WHERE ChartResultId = kd.ChartResultId AND Planet1Id = kd.PlanetId
         UNION ALL
         SELECT Planet1 FROM dbo.tbl_Chart_Conjunctions
-            WHERE ChartResultId = kd.ChartResultId AND Planet2 = kd.Planet
+            WHERE ChartResultId = kd.ChartResultId AND Planet2Id = kd.PlanetId
     ) x
 ) Conjunct
 OUTER APPLY (
     SELECT STRING_AGG(CONCAT(AspectedTarget, '' ('', AspectType, '')''), '', '') AS TargetList
     FROM dbo.tbl_Chart_Aspects
-    WHERE ChartResultId = kd.ChartResultId AND AspectingPlanet = kd.Planet
+    WHERE ChartResultId = kd.ChartResultId AND AspectingPlanetId = kd.PlanetId
 ) AspectsCast;
 ' 
 GO
