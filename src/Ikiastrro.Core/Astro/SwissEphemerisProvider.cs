@@ -1,3 +1,5 @@
+using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Models;
 using SwissEphNet;
 
 namespace Ikiastrro.Core.Astro;
@@ -13,7 +15,9 @@ public record SiderealPositions(
     double AscendantLongitude,
     IReadOnlyDictionary<PlanetName, double> PlanetLongitudes,
     IReadOnlyDictionary<PlanetName, double> PlanetLatitudes,
-    IReadOnlyDictionary<PlanetName, double> PlanetSpeeds);
+    IReadOnlyDictionary<PlanetName, double> PlanetSpeeds,
+    double AyanamshaDegrees,
+    double LocalSiderealTimeHours);
 
 /// <summary>
 /// Replaces VedAstro.Library as the raw astronomical engine. Wraps SwissEphNet — a direct managed C#
@@ -106,6 +110,22 @@ public static class SwissEphemerisProvider
         }
         var ascendantLongitude = ascmc[0];
 
-        return new SiderealPositions(ascendantLongitude, planetLongitudes, planetLatitudes, planetSpeeds);
+        // ascmc[2] = ARMC (Right Ascension of the MC) in degrees = the local apparent
+        // sidereal time; /15 -> hours, normalised to [0,24).
+        var lst = (ascmc[2] / 15.0) % 24.0;
+        if (lst < 0) lst += 24.0;
+        var ayanamsha = sweph.swe_get_ayanamsa_ut(jd);
+
+        return new SiderealPositions(
+            ascendantLongitude, planetLongitudes, planetLatitudes, planetSpeeds, ayanamsha, lst);
     }
+
+    /// <summary>Convenience overload for callers (e.g. ChartGenerationService in the
+    /// Data layer) that hold a BirthDetails but cannot reach the internal
+    /// BirthMomentFactory.</summary>
+    public static SiderealPositions GetSiderealPositions(BirthDetails birthDetails) =>
+        GetSiderealPositions(
+            BirthMomentFactory.Create(birthDetails),
+            birthDetails.Latitude,
+            birthDetails.Longitude);
 }

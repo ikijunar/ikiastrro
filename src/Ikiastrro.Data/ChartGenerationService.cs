@@ -1,3 +1,4 @@
+using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Dasha;
 using Ikiastrro.Core.Models;
@@ -84,6 +85,7 @@ public class ChartGenerationService
 
         var existing = _chartResultsRepo.GetByBirthDetailId(birthDetails.Id).Select(r => r.ChartType).ToHashSet();
         var toBuild = _orchestrator.Calculators.Where(c => !existing.Contains(c.ChartType)).Select(c => c.ChartType).ToList();
+        var ctx = SwissEphemerisProvider.GetSiderealPositions(birthDetails);
 
         var written = new List<string>();
         foreach (var chartType in toBuild)
@@ -94,6 +96,8 @@ public class ChartGenerationService
             result.RuleSetId = activeRuleSetId;
             result.CalculationKind = "PositionChart";
             result.ChartTypeId = codeToChartTypeId[result.ChartType];
+            result.AyanamshaDegrees = ctx.AyanamshaDegrees;
+            result.SiderealTimeHours = ctx.LocalSiderealTimeHours;
             _chartResultsRepo.InsertAll(new[] { result });   // populates result.Id
             PersistAnalytics(result.Id, input);
             written.Add(chartType);
@@ -117,6 +121,8 @@ public class ChartGenerationService
             .Where(r => chartTypeFilter is null || r.ChartType == chartTypeFilter)
             .ToList();
 
+        var ctx = SwissEphemerisProvider.GetSiderealPositions(birthDetails);
+
         var written = new List<string>();
         foreach (var result in results)
         {
@@ -126,6 +132,8 @@ public class ChartGenerationService
             result.RuleSetId = activeRuleSetId;
             result.CalculationKind = "PositionChart";
             result.ChartTypeId = codeToChartTypeId[result.ChartType];
+            result.AyanamshaDegrees = ctx.AyanamshaDegrees;
+            result.SiderealTimeHours = ctx.LocalSiderealTimeHours;
             var input = _orchestrator.ComputeAnalysisInput(result.ChartType, birthDetails);
             _keyDetailsRepo.DeleteByChartResultId(result.Id);
             _houseLordsRepo.DeleteByChartResultId(result.Id);
@@ -142,11 +150,16 @@ public class ChartGenerationService
         BirthDetails bd, IReadOnlyList<(ChartResult Result, ChartAnalysisInput Input)> computed,
         int activeRuleSetId, IReadOnlyDictionary<string, int> codeToChartTypeId)
     {
+        // Numeric ayanamsha + local sidereal time are one-per-person; compute once and
+        // stamp every chart row (denormalised, same as the ChartType string).
+        var ctx = SwissEphemerisProvider.GetSiderealPositions(bd);
         foreach (var (result, _) in computed)
         {
             result.RuleSetId = activeRuleSetId;
             result.CalculationKind = "PositionChart";
             result.ChartTypeId = codeToChartTypeId[result.ChartType];
+            result.AyanamshaDegrees = ctx.AyanamshaDegrees;
+            result.SiderealTimeHours = ctx.LocalSiderealTimeHours;
         }
         _chartResultsRepo.InsertAll(computed.Select(c => c.Result));   // populates each Result.Id
         foreach (var (result, input) in computed)

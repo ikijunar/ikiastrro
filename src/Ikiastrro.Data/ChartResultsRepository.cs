@@ -18,11 +18,11 @@ public class ChartResultsRepository
         const string sql = """
             INSERT INTO dbo.tbl_ChartResults
                 (BirthDetailId, ChartType, ChartTypeId, CalculationKind, RuleSetId,
-                 Ayanamsha, HouseSystem, EngineVersion, ResultJson, ComputedAt)
+                 Ayanamsha, HouseSystem, EngineVersion, VargaMethod, AyanamshaDegrees, SiderealTimeHours, ResultJson, ComputedAt)
             OUTPUT INSERTED.Id
             VALUES
                 (@BirthDetailId, @ChartType, @ChartTypeId, @CalculationKind, @RuleSetId,
-                 @Ayanamsha, @HouseSystem, @EngineVersion, @ResultJson, @ComputedAt)
+                 @Ayanamsha, @HouseSystem, @EngineVersion, @VargaMethod, @AyanamshaDegrees, @SiderealTimeHours, @ResultJson, @ComputedAt)
             """;
 
         using var connection = _connectionFactory.CreateOpenConnection();
