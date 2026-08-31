@@ -297,6 +297,9 @@ CREATE TABLE [dbo].[tbl_ChartResults](
 	[RuleSetId] [tinyint] NOT NULL,
 	[ChartTypeId] [tinyint] NULL,
 	[CalculationKind] [varchar](20) NOT NULL CONSTRAINT [DF_ChartResults_CalcKind] DEFAULT ('PositionChart'),
+	[VargaMethod] [varchar](40) NULL,
+	[AyanamshaDegrees] [decimal](9, 6) NULL,
+	[SiderealTimeHours] [decimal](9, 6) NULL,
  CONSTRAINT [CK_ChartResults_KindType] CHECK (
         ([CalculationKind] = 'PositionChart' AND [ChartTypeId] IS NOT NULL) OR
         ([CalculationKind] <> 'PositionChart' AND [ChartTypeId] IS NULL)),
@@ -431,6 +434,7 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[ChartResultId] [int] NOT NULL,
 	[Planet] [varchar](20) NOT NULL,
 	[NirayanaLongitudeDegrees] [float] NOT NULL,
+	[VargaLongitudeDegrees] [decimal](9, 6) NOT NULL,
 	[EclipticLatitudeDegrees] [float] NULL,
 	[SpeedLongitudeDegPerDay] [float] NULL,
 	[IsRetrograde] [bit] NULL,
@@ -468,6 +472,7 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
  CONSTRAINT [FK_KeyDetails_NakSubLord] FOREIGN KEY ([NakshatraSubLordPlanetId]) REFERENCES [dbo].[tbl_Planets] ([Id]),
  CONSTRAINT [FK_KeyDetails_SignLord]   FOREIGN KEY ([SignLordPlanetId])         REFERENCES [dbo].[tbl_Planets] ([Id]),
  CONSTRAINT [CK_KeyDetails_Longitude]  CHECK ([NirayanaLongitudeDegrees] >= 0 AND [NirayanaLongitudeDegrees] < 360),
+ CONSTRAINT [CK_KeyDetails_VargaLongitude] CHECK ([VargaLongitudeDegrees] >= 0 AND [VargaLongitudeDegrees] < 360),
  CONSTRAINT [CK_KeyDetails_DegInSign]  CHECK ([DegreesInSignDecimal] IS NULL OR ([DegreesInSignDecimal] >= 0 AND [DegreesInSignDecimal] < 30)),
  CONSTRAINT [CK_KeyDetails_HouseLagna] CHECK ([HouseNumberFromLagna] BETWEEN 1 AND 12),
  CONSTRAINT [CK_KeyDetails_HouseSun]   CHECK ([HouseNumberFromSun] BETWEEN 1 AND 12),
@@ -2261,8 +2266,10 @@ GO
 
 -- =====================================================================
 -- tbl_Dim_ChartType — controlled vocabulary for ChartResults.ChartTypeId
--- (folded from db/02_create_dim_charttype.sql). Seeds the six registered
--- position charts; Vimshottari Dasha is not a chart type (see CalculationKind).
+-- (folded from db/02_create_dim_charttype.sql + db/10_seed_varga_charttypes.sql).
+-- Seeds the 21 registered position charts (D1, D2, D2-US, D3..D60);
+-- Vimshottari Dasha is not a chart type (see CalculationKind).
+-- Ids 22..24 are reserved for Plan B (D81/D108/D144).
 -- =====================================================================
 SET ANSI_NULLS ON
 GO
@@ -2281,12 +2288,27 @@ CREATE TABLE dbo.tbl_Dim_ChartType (
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType)
 INSERT dbo.tbl_Dim_ChartType (Id, Code, DisplayName, DivisionalFactor, Category, DisplayOrder) VALUES
-    (1, 'D1',  'Rasi',       1,  'Varga', 1),
-    (2, 'D2',  'Hora',       2,  'Varga', 2),
-    (3, 'D6',  'Shashtamsa', 6,  'Varga', 3),
-    (4, 'D9',  'Navamsa',    9,  'Varga', 4),
-    (5, 'D10', 'Dasamsa',    10, 'Varga', 5),
-    (6, 'D11', 'Rudramsa',   11, 'Varga', 6);
+    ( 1, 'D1',    'Rasi',              1,  'Varga',  1),
+    ( 2, 'D2',    'Hora',              2,  'Varga',  2),
+    ( 3, 'D6',    'Shashtamsa',        6,  'Varga',  3),
+    ( 4, 'D9',    'Navamsa',           9,  'Varga',  4),
+    ( 5, 'D10',   'Dasamsa',           10, 'Varga',  5),
+    ( 6, 'D11',   'Rudramsa',          11, 'Varga',  6),
+    ( 7, 'D2-US', 'Hora (Uma Shambu)', 2,  'Varga',  7),
+    ( 8, 'D3',    'Drekkana',          3,  'Varga',  8),
+    ( 9, 'D4',    'Chaturthamsa',      4,  'Varga',  9),
+    (10, 'D5',    'Panchamsa',         5,  'Varga', 10),
+    (11, 'D7',    'Saptamsa',          7,  'Varga', 11),
+    (12, 'D8',    'Ashtamsa',          8,  'Varga', 12),
+    (13, 'D12',   'Dwadasamsa',        12, 'Varga', 13),
+    (14, 'D16',   'Shodasamsa',        16, 'Varga', 14),
+    (15, 'D20',   'Vimsamsa',          20, 'Varga', 15),
+    (16, 'D24',   'Siddhamsa',         24, 'Varga', 16),
+    (17, 'D27',   'Nakshatramsa',      27, 'Varga', 17),
+    (18, 'D30',   'Trimsamsa',         30, 'Varga', 18),
+    (19, 'D40',   'Khavedamsa',        40, 'Varga', 19),
+    (20, 'D45',   'Akshavedamsa',      45, 'Varga', 20),
+    (21, 'D60',   'Shashtyamsa',       60, 'Varga', 21);
 GO
 -- tbl_ChartResults -> tbl_Rule_Sets / tbl_Dim_ChartType foreign keys
 -- (folded from db/06_add_chartfact_constraints.sql). Declared here rather than inline in the
@@ -2296,6 +2318,58 @@ ALTER TABLE dbo.tbl_ChartResults ADD CONSTRAINT FK_ChartResults_RuleSet FOREIGN 
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ChartResults_ChartType')
 ALTER TABLE dbo.tbl_ChartResults ADD CONSTRAINT FK_ChartResults_ChartType FOREIGN KEY (ChartTypeId) REFERENCES dbo.tbl_Dim_ChartType (Id);
+GO
+
+-- =====================================================================
+-- tbl_Rule_VargaScheme — how each varga chart type derives a planet's
+-- varga sign, per rule-set (folded from db/11_create_rule_vargascheme.sql).
+-- Read by C# (VargaSignRuleFactory) and, later, by the Python comparison
+-- layer. D1 is the identity rasi and is NOT here. SignRuleKey names the
+-- C# IVargaSignRule; the l-part formulae are in the Plan-A spec 3.2
+-- (traced to PyJHora horoscope/chart/charts.py). Placed after the
+-- tbl_Dim_ChartType and tbl_Rule_Sets seeds because the seed JOINs the
+-- former and FKs the latter. Idempotent.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Rule_VargaScheme', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_VargaScheme (
+    Id             TINYINT      NOT NULL CONSTRAINT PK_Rule_VargaScheme PRIMARY KEY,
+    RuleSetId      TINYINT      NOT NULL CONSTRAINT FK_Rule_VargaScheme_RuleSet   FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+    ChartTypeId    TINYINT      NOT NULL CONSTRAINT FK_Rule_VargaScheme_ChartType FOREIGN KEY REFERENCES dbo.tbl_Dim_ChartType (Id),
+    DivisionFactor TINYINT      NOT NULL,
+    MethodCode     VARCHAR(40)  NOT NULL,
+    MethodSource   VARCHAR(200) NOT NULL,
+    SignRuleKind   VARCHAR(10)  NOT NULL,
+    SignRuleKey    VARCHAR(40)  NOT NULL,
+    CONSTRAINT UQ_Rule_VargaScheme UNIQUE (RuleSetId, ChartTypeId)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_VargaScheme)
+INSERT dbo.tbl_Rule_VargaScheme
+    (Id, RuleSetId, ChartTypeId, DivisionFactor, MethodCode, MethodSource, SignRuleKind, SignRuleKey)
+SELECT v.Id, 1, ct.Id, v.N, v.MethodCode, v.MethodSource, v.Kind, v.SignRuleKey
+FROM (VALUES
+    ( 1, 'D2',    2,  'ClassicalTwoSign',    'BPHS two-sign Cn/Le; AstroMath.GetHoraSign',                       'Special', 'HoraD2Classic'),
+    ( 2, 'D2-US', 2,  'UmaShambu',           'Parasara Uma Shambu; PyJHora hora_chart method 1 = __parivritti_even_reverse(dvf=2)',     'Special', 'HoraD2UmaShambu'),
+    ( 3, 'D3',    3,  'ParasaraTraditional', 'BPHS Drekkana 1/5/9; PyJHora _drekkana_chart_parasara',            'Linear',  'DrekkanaD3'),
+    ( 4, 'D4',    4,  'ParasaraTraditional', 'BPHS Chaturthamsa; PyJHora _chaturthamsa_parasara',                'Linear',  'ChaturthamsaD4'),
+    ( 5, 'D5',    5,  'ParasaraTraditional', 'BPHS Panchamsa; PyJHora panchamsa_chart method 1',                 'Special', 'PanchamsaD5'),
+    ( 6, 'D6',    6,  'ParasaraTraditional', 'BPHS Shashtamsa; AstroMath.GetShashtamsaSign',                     'Special', 'ShashtamsaD6'),
+    ( 7, 'D7',    7,  'ParasaraTraditional', 'BPHS Saptamsa odd-self/even-7th; PyJHora saptamsa_chart method 1', 'Special', 'SaptamsaD7'),
+    ( 8, 'D8',    8,  'ParasaraTraditional', 'BPHS Ashtamsa; PyJHora ashtamsa_chart method 1',                   'Special', 'AshtamsaD8'),
+    ( 9, 'D9',    9,  'ParasaraTraditional', 'BPHS Navamsa; AstroMath.GetNavamsaSign',                           'Special', 'NavamsaD9'),
+    (10, 'D10',   10, 'ParasaraTraditional', 'BPHS Dasamsa odd-self/even-9th; AstroMath.GetDasamsaSign',         'Special', 'DasamsaD10'),
+    (11, 'D11',   11, 'SanjayRath',          'Sanjay Rath Rudramsa; AstroMath.GetRudramsaSign',                  'Special', 'RudramsaD11'),
+    (12, 'D12',   12, 'ParasaraTraditional', 'BPHS Dwadasamsa 12-from-self; PyJHora dwadasamsa_chart method 1',  'Linear',  'DwadasamsaD12'),
+    (13, 'D16',   16, 'ParasaraTraditional', 'BPHS Shodasamsa; PyJHora shodasamsa_chart method 1',               'Special', 'ShodasamsaD16'),
+    (14, 'D20',   20, 'ParasaraTraditional', 'BPHS Vimsamsa; PyJHora vimsamsa_chart method 1',                   'Special', 'VimsamsaD20'),
+    (15, 'D24',   24, 'ParasaraTraditional', 'BPHS Siddhamsa odd-Le/even-Cn; PyJHora chaturvimsamsa_chart m1',   'Special', 'SiddhamsaD24'),
+    (16, 'D27',   27, 'ParasaraTraditional', 'BPHS Nakshatramsa by element; PyJHora nakshatramsa_chart m1',      'Special', 'NakshatramsaD27'),
+    (17, 'D30',   30, 'ParasaraTraditional', 'BPHS Trimsamsa unequal 5-part; PyJHora trimsamsa_chart method 1',  'Special', 'TrimsamsaD30'),
+    (18, 'D40',   40, 'ParasaraTraditional', 'BPHS Khavedamsa odd-Ar/even-Li; PyJHora khavedamsa_chart m1',      'Special', 'KhavedamsaD40'),
+    (19, 'D45',   45, 'ParasaraTraditional', 'BPHS Akshavedamsa; PyJHora akshavedamsa_chart method 1',           'Special', 'AkshavedamsaD45'),
+    (20, 'D60',   60, 'ParasaraTraditional', 'BPHS Shashtyamsa from-sign; PyJHora shashtyamsa_chart method 1',   'Linear',  'ShashtyamsaD60')
+) AS v(Id, Code, N, MethodCode, MethodSource, Kind, SignRuleKey)
+JOIN dbo.tbl_Dim_ChartType ct ON ct.Code = v.Code;
 GO
 
 -- =====================================================================
@@ -2457,6 +2531,7 @@ SELECT
     cr.EngineVersion,
     kd.Planet,
     kd.NirayanaLongitudeDegrees,
+    kd.VargaLongitudeDegrees,
     kd.EclipticLatitudeDegrees,
     kd.SpeedLongitudeDegPerDay,
     kd.IsRetrograde,
