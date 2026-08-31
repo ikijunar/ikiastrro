@@ -259,6 +259,17 @@ if (args.Length > 0 && args[0] == "verify-vargas")
         Check("VargaChartComputer D9-rule vs AstroMath (spot longitudes)", mism, 0);
     }
 
+    // VargaSchemeRepository: 20 rows for RuleSetId 1, every SignRuleKey resolves
+    {
+        var schemes = new VargaSchemeRepository(connectionFactory).GetAll(1);
+        Check("VargaSchemeRepository row count", schemes.Count, 20);
+        var bad = 0;
+        foreach (var s in schemes)
+            try { _ = VargaSignRuleFactory.For(s.SignRuleKey, s.DivisionFactor); }
+            catch { bad++; }
+        Check("every scheme SignRuleKey resolves", bad, 0);
+    }
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
