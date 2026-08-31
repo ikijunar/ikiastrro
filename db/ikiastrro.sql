@@ -14,6 +14,18 @@ GO
 USE [ikiastrro];
 GO
 
+-- Schema-migration ledger (folded from db/01_create_schema_migrations.sql).
+-- The baseline creates the table only; numbered migration scripts record
+-- themselves via INSERT when applied to an existing database.
+IF OBJECT_ID('dbo.SchemaMigrations', 'U') IS NULL
+CREATE TABLE dbo.SchemaMigrations (
+    ScriptName    VARCHAR(120)  NOT NULL CONSTRAINT PK_SchemaMigrations PRIMARY KEY,
+    AppliedAtUtc  DATETIME2(0)  NOT NULL CONSTRAINT DF_SchemaMigrations_AppliedAtUtc DEFAULT sysutcdatetime(),
+    ScriptHash    CHAR(64)      NULL,
+    Note          VARCHAR(200)  NULL
+);
+GO
+
 -- ------------------------- SCHEMA -------------------------
 SET ANSI_NULLS ON
 GO
@@ -193,7 +205,10 @@ CREATE TABLE [dbo].[tbl_Chart_HouseLords](
 	[LordDignityStatus] [varchar](20) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[HouseSignId] [tinyint] NULL,
+	[LordPlanetId] [tinyint] NULL,
+	[LordPlacedInSignId] [tinyint] NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -250,7 +265,8 @@ CREATE TABLE [dbo].[tbl_Chart_DashaPeriods](
 	[StartDayOffset] [int] NOT NULL,
 	[EndDayOffset] [int] NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[LordId] [tinyint] NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -297,7 +313,10 @@ CREATE TABLE [dbo].[tbl_ChartResults](
 	[EngineVersion] [nvarchar](100) NOT NULL,
 	[ResultJson] [nvarchar](max) NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[RuleSetId] [tinyint] NULL,
+	[ChartTypeId] [tinyint] NULL,
+	[CalculationKind] [varchar](20) NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -457,6 +476,11 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[CombustionOrbUsedDegrees] [decimal](5, 2) NULL,
 	[AspectingPlanets] [varchar](200) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
+	[PlanetId] [tinyint] NULL,
+	[SignId] [tinyint] NULL,
+	[NakshatraLordPlanetId] [tinyint] NULL,
+	[NakshatraSubLordPlanetId] [tinyint] NULL,
+	[SignLordPlanetId] [tinyint] NULL,
 PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -481,7 +505,10 @@ CREATE TABLE [dbo].[tbl_Chart_Conjunctions](
 	[DegreeSeparation] [decimal](7, 4) NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[Planet1Id] [tinyint] NULL,
+	[Planet2Id] [tinyint] NULL,
+	[SignId] [tinyint] NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -503,7 +530,10 @@ CREATE TABLE [dbo].[tbl_Chart_Aspects](
 	[AspectType] [varchar](10) NOT NULL,
 	[ComputedAt] [datetime2](7) NOT NULL,
 	[ChartType] [nvarchar](50) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[AspectingPlanetId] [tinyint] NULL,
+	[AspectedTargetType] [varchar](10) NULL,
+	[AspectedPlanetId] [tinyint] NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -530,6 +560,14 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 END
+GO
+-- transit-event uniqueness (folded from db/04_add_chartfact_id_columns.sql).
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_TransitEvent_Planet_At')
+CREATE UNIQUE INDEX UX_TransitEvent_Planet_At ON dbo.tbl_PlanetSignTransitEvents (PlanetId, EventDateTimeUtc);
 GO
 SET ANSI_NULLS ON
 GO
@@ -754,16 +792,36 @@ CREATE TABLE [dbo].[tbl_Rule_Sets](
 	[RuleSetName] [varchar](40) NOT NULL,
 	[Description] [varchar](200) NULL,
 	[IsActive] [bit] NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[VersionNumber] [int] NOT NULL CONSTRAINT DF_RuleSets_Version DEFAULT (1),
+	[EffectiveFromUtc] [datetime2](0) NOT NULL CONSTRAINT DF_RuleSets_EffFrom DEFAULT ('2000-01-01T00:00:00'),
+	[EffectiveToUtc] [datetime2](0) NULL,
+	[CreatedAtUtc] [datetime2](0) NOT NULL CONSTRAINT DF_RuleSets_CreatedAt DEFAULT sysutcdatetime(),
+	[SupersedesRuleSetId] [tinyint] NULL CONSTRAINT FK_RuleSets_Supersedes FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+	[SourceReference] [varchar](500) NULL,
+	[IsPublished] [bit] NOT NULL CONSTRAINT DF_RuleSets_IsPublished DEFAULT (1),
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
-UNIQUE NONCLUSTERED 
+UNIQUE NONCLUSTERED
 (
 	[RuleSetName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 END
+GO
+-- Rule-set version indexes (folded from db/03_extend_rule_sets_version.sql).
+-- UX_RuleSets_OneActive is a FILTERED index; it must be built with
+-- QUOTED_IDENTIFIER ON and ANSI_NULLS ON in effect.
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_RuleSets_Name_Version')
+CREATE UNIQUE INDEX UX_RuleSets_Name_Version ON dbo.tbl_Rule_Sets (RuleSetName, VersionNumber);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_RuleSets_OneActive')
+CREATE UNIQUE INDEX UX_RuleSets_OneActive ON dbo.tbl_Rule_Sets (IsActive) WHERE IsActive = 1;
 GO
 SET ANSI_NULLS ON
 GO
@@ -2295,6 +2353,36 @@ END
 GO
 
 -- =====================================================================
+-- tbl_Dim_ChartType — controlled vocabulary for ChartResults.ChartTypeId
+-- (folded from db/02_create_dim_charttype.sql). Seeds the six registered
+-- position charts; Vimshottari Dasha is not a chart type (see CalculationKind).
+-- =====================================================================
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF OBJECT_ID('dbo.tbl_Dim_ChartType', 'U') IS NULL
+CREATE TABLE dbo.tbl_Dim_ChartType (
+    Id               TINYINT      NOT NULL CONSTRAINT PK_Dim_ChartType PRIMARY KEY,
+    Code             VARCHAR(20)  NOT NULL CONSTRAINT UQ_Dim_ChartType_Code UNIQUE,
+    DisplayName      VARCHAR(40)  NOT NULL,
+    DivisionalFactor TINYINT      NULL,
+    Category         VARCHAR(20)  NOT NULL,
+    DisplayOrder     TINYINT      NOT NULL,
+    CONSTRAINT CK_Dim_ChartType_Factor CHECK (DivisionalFactor IS NULL OR DivisionalFactor BETWEEN 1 AND 60)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType)
+INSERT dbo.tbl_Dim_ChartType (Id, Code, DisplayName, DivisionalFactor, Category, DisplayOrder) VALUES
+    (1, 'D1',  'Rasi',       1,  'Varga', 1),
+    (2, 'D2',  'Hora',       2,  'Varga', 2),
+    (3, 'D6',  'Shashtamsa', 6,  'Varga', 3),
+    (4, 'D9',  'Navamsa',    9,  'Varga', 4),
+    (5, 'D10', 'Dasamsa',    10, 'Varga', 5),
+    (6, 'D11', 'Rudramsa',   11, 'Varga', 6);
+GO
+
+-- =====================================================================
 -- Avastha layer, slice 1 (Baaladi + Jagradadi) — star-schema (STANDARDS.md §D.1)
 --   tbl_Dim_AvasthaState / tbl_Rule_BaaladiState / tbl_Rule_JagradadiState / tbl_Fact_PlanetAvastha
 -- Written by ChartGenerationService via PlanetAvasthaComputer; read via vw_Chart_Consolidated
@@ -2385,6 +2473,8 @@ BEGIN
         BaaladiEffectFraction DECIMAL(4,3)  NULL,
         JagradadiStateId      TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Jagradadi FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
         ComputedAt            DATETIME2(7)  NOT NULL CONSTRAINT DF_Fact_PlanetAvastha_ComputedAt DEFAULT sysutcdatetime(),
+        PlanetId              TINYINT       NULL,
+        ChartTypeId           TINYINT       NULL,
         CONSTRAINT UQ_Fact_PlanetAvastha UNIQUE (ChartResultId, Planet)
     );
     CREATE NONCLUSTERED INDEX IX_Fact_PlanetAvastha_BirthDetailId ON dbo.tbl_Fact_PlanetAvastha (BirthDetailId);
