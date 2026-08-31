@@ -44,31 +44,76 @@ data stays compatible.
 
 ## 2. Divisional charts (vargas)
 
-Registered in `ChartCalculationOrchestrator.CreateDefault()` in numeric order:
-**D1, D2, D6, D9, D10, D11.** Each is an `IChartCalculator` split into
-`ComputeAnalysisInput` + `BuildResult`, so a new varga registered here gets the full
-analytics treatment (dignity / house-lordship / conjunctions / aspects) for free via the
-shared `ChartAnalyzer`.
+**21 position chart types** are computed and stored per person: **D1** (the identity
+rasi) plus **20 vargas** — D2, D2-US, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D16,
+D20, D24, D27, D30, D40, D45, D60.
 
-| Chart | Name | Signification | Formula source |
+### Architecture (data-driven — Approach C)
+
+- `D1` is `D1RasiCalculator`. Every varga is one shared `VargaCalculator`
+  (`IChartCalculator`, split `ComputeAnalysisInput` + `BuildResult`) parameterised by a
+  **`VargaScheme`** row, so every varga gets the full analytics treatment (dignity /
+  house-lordship / conjunctions / aspects / avasthas) via the shared `ChartAnalyzer`.
+- **`tbl_Rule_VargaScheme` is the source of truth.** One row per varga per rule-set:
+  `DivisionFactor` (N), `MethodCode` (e.g. `ParasaraTraditional`), `MethodSource`
+  (BPHS + PyJHora trace), `SignRuleKind` (`Special` / `Linear`), and `SignRuleKey`.
+  `ChartCalculationOrchestrator.CreateDefault(IReadOnlyList<VargaScheme>)` builds one
+  `VargaCalculator` per row; `VargaSchemeRepository.GetAll(ruleSetId)` loads them. The
+  Python personality-comparison layer reads the same table.
+- `SignRuleKey` → C# `IVargaSignRule` via `VargaSignRuleFactory.For(key, N)`. Rules:
+  `LinearVargaSignRule(factor, stride)` covers D3 (3,4) / D4 (4,3) / D12 (12,1) /
+  D60 (60,1); the rest are bespoke `Special` rules (`HoraD2UmaShambu`, `PanchamsaD5`,
+  `SaptamsaD7`, `AshtamsaD8`, `ShodasamsaD16`, `VimsamsaD20`, `SiddhamsaD24`,
+  `NakshatramsaD27`, `TrimsamsaD30`, `KhavedamsaD40`, `AkshavedamsaD45`), and D2/D6/
+  D9/D10/D11 wrap the existing `AstroMath.Get*Sign` helpers.
+
+| Chart | N | Signification | Method / sign rule |
 |---|---|---|---|
-| **D1** | Rasi | the birth chart; everything is read against it | real sidereal longitude |
-| **D2** | Hora | wealth | **classical two-sign Leo/Cancer** split (not PyJHora's 12-sign default) |
-| **D6** | Shashtamsa | health, affliction | PyJHora `chart_method=1`, transcribed verbatim |
-| **D9** | Navamsa | marriage, dharma, inner strength | PyJHora `chart_method=1` |
-| **D10** | Dasamsa | career, status | PyJHora `chart_method=1` |
-| **D11** | Rudramsa | gains, income | Sanjay Rath method (the one method-ambiguous varga — a one-line switch to Raman's if needed) |
+| **D1** | 1 | birth chart; everything is read against it | real sidereal longitude |
+| **D2** | 2 | wealth | classical two-sign Leo/Cancer split (`HoraD2Classic`) |
+| **D2-US** | 2 | wealth (JHora default D2) | Parasara Uma Shambu — PyJHora `hora_chart` m1 `__parivritti_even_reverse` (`HoraD2UmaShambu`) |
+| **D3** | 3 | siblings, courage | Drekkana 1/5/9 trine stride (`DrekkanaD3`) |
+| **D4** | 4 | fortune, property | Chaturthamsa kendra stride (`ChaturthamsaD4`) |
+| **D5** | 5 | fame, authority, power | Panchamsa odd/even 5-part lookup (`PanchamsaD5`) |
+| **D6** | 6 | health, affliction | Shashtamsa (`ShashtamsaD6`) |
+| **D7** | 7 | children, progeny | Saptamsa odd-self / even-7th (`SaptamsaD7`) |
+| **D8** | 8 | sudden events, longevity | Ashtamsa movable/fixed/dual → Ar/Sg/Le (`AshtamsaD8`) |
+| **D9** | 9 | marriage, dharma, inner strength | Navamsa (`NavamsaD9`) |
+| **D10** | 10 | career, status | Dasamsa odd-self / even-9th (`DasamsaD10`) |
+| **D11** | 11 | gains, income | Sanjay Rath Rudramsa (`RudramsaD11`) — one-line switch to Raman's if needed |
+| **D12** | 12 | parents, lineage | Dwadasamsa 12-from-self (`DwadasamsaD12`) |
+| **D16** | 16 | vehicles, comforts, happiness | Shodasamsa movable/fixed/dual → Ar/Le/Sg (`ShodasamsaD16`) |
+| **D20** | 20 | spiritual practice | Vimsamsa movable/dual/fixed → Ar/Le/Sg (`VimsamsaD20`) |
+| **D24** | 24 | education, learning | Siddhamsa odd-Leo / even-Cancer (`SiddhamsaD24`) |
+| **D27** | 27 | strengths & weaknesses (bhamsa) | Nakshatramsa by element fire/earth/air/water (`NakshatramsaD27`) |
+| **D30** | 30 | misfortunes, evils | Trimsamsa unequal 5-part Ma/Sa/Ju/Me/Ve bands (`TrimsamsaD30`) |
+| **D40** | 40 | maternal legacy, auspicious/inauspicious | Khavedamsa odd-Aries / even-Libra (`KhavedamsaD40`) |
+| **D45** | 45 | paternal legacy, character | Akshavedamsa movable/fixed/dual → Ar/Le/Sg (`AkshavedamsaD45`) |
+| **D60** | 60 | past-life karma; overrides all | Shashtyamsa 60-part from own sign (`ShashtyamsaD60`) |
 
-- A varga cell is a **discrete bucket**, not a 30° span: `DegreesInSignDisplay`,
-  `Nakshatra`, `NakshatraPada` are **D1-only** (null for every other chart). The grid keys
-  off that (no fabricated `0°00'`).
-- `NakshatraLordPlanet`, `IsRetrograde`, `IsCombust`, `DistanceFromSunDegrees`,
-  `CombustionOrbUsedDegrees`, `NakshatraSubLordPlanet` (KP L2) **are populated for every
-  chart type** — all derived from the shared real longitude, so a planet's D9 value equals
-  its D1 value.
-- Verification: `verify-vargas` (26 worked-example checks), plus historical cross-checks —
-  40/40 hand-check vs. D1 longitudes, external D2 10/10 and D6 10/10 vs. astro-seek.
-- Out of scope: D3/D7/D12/D30/D60 and the rest of the Shodashavarga (see `docs/scope-jhora-coverage.md`).
+### Stored values & the DB-completeness invariant
+
+- Every `tbl_Chart_KeyDetails` row now stores **`VargaLongitudeDegrees`**
+  (`Normalize(realLon × N)`, PyJHora `d_long`). `DegreesInSignDecimal` /
+  `DegreesInSignDisplay` are **populated for every chart type** (no longer D1-only) and
+  equal `VargaLongitudeDegrees mod 30` — the true within-sign varga degree.
+  `VargaLongitudeDegrees` is authoritative for the *degree only*: every sign rule counts
+  from the planet's own rasi (or an unequal-part map), so `FLOOR(VargaLongitudeDegrees/30)`
+  is deliberately **not** the varga sign for any varga.
+- `tbl_ChartResults` carries **`VargaMethod`** (the `MethodCode`), **`AyanamshaDegrees`**,
+  and **`SiderealTimeHours`** (both one-per-person, denormalised onto every row).
+- `ResultJson` is a **frozen audit snapshot**, not authoritative — every computed value has
+  a typed column.
+- `Nakshatra` / `NakshatraPada` remain **D1-only** (a varga cell is a discrete bucket).
+  `NakshatraLordPlanet`, `IsRetrograde`, `IsCombust`, `DistanceFromSunDegrees`,
+  `CombustionOrbUsedDegrees`, `NakshatraSubLordPlanet` are populated for every chart type
+  (derived from the shared real longitude, so a planet's D9 value equals its D1 value).
+- Verification: `verify-vargas` — hand-computed check per `IVargaSignRule`, a
+  `VargaSignRuleFactory` resolve check for all 20 keys, a row-count check on
+  `tbl_Rule_VargaScheme`, **every planet's sign for all 18 varga grids matched against the
+  Ramakrishnan Jagannatha Hora export** (180 cell assertions), plus a DB-backed degree-
+  sanity block and a Vargottama info line. 281 checks, all green.
+- Out of scope → **Plan B**: D81 / D108 / D144 (chart-composition mechanism) and D150.
 
 ---
 
@@ -286,13 +331,16 @@ their own hard-coded lookups (cross-checked to match, not reading these tables).
 
 `tbl_Rule_Sets` version dimension (1 row: `'Parashari-Classical'`, active) + `tbl_Rule_*`
 tables (`AspectOffset` 19, `CombustionOrb` 6, `NaturalRelationship` 42,
-`TemporaryFriendshipDistance` 12), each row carrying a `RuleSetId` FK. Transcribes
-`ClassicalRelationships.cs` / `ClassicalCombustion.cs` / `ClassicalDignity.cs` verbatim,
-hand-diffed to match.
+`TemporaryFriendshipDistance` 12, **`VargaScheme` 20**), each row carrying a `RuleSetId` FK.
+The four classical-rule tables transcribe `ClassicalRelationships.cs` / `ClassicalCombustion.cs`
+/ `ClassicalDignity.cs` verbatim, hand-diffed to match.
 
 **Immutability rule:** never edit a `RuleSetId`'s rows once any fact references them — ship a
-new `RuleSetId` instead. **Phase 2 (calculators reading these tables) is not started** —
-today the app still runs on the hard-coded C#; the tables are a cross-check mirror.
+new `RuleSetId` instead. **Phase 2 for the classical-rule tables (calculators reading them) is
+not started** — today the app still runs on the hard-coded C#; those tables are a cross-check
+mirror. **`tbl_Rule_VargaScheme` is the exception — it is live**: `ChartCalculationOrchestrator`
+builds one `VargaCalculator` per row (via `VargaSchemeRepository`), and the Python
+personality-comparison layer reads the same table (see §2).
 
 ---
 
@@ -303,8 +351,9 @@ today the app still runs on the hard-coded C#; the tables are a cross-check mirr
   detection (point 4) has usable material, needs its own design pass.
 - **vs. a full JHora natal export** (`docs/scope-jhora-coverage.md`): ~7 of ~35 blocks covered. Absent:
   panchanga, Jaimini chara karakas + rasi dashas, upagrahas, special lagnas, ~14 sphutas,
-  Ashtakavarga, Shadbala, Vimsopaka, Avasthas, 12 of the 16 Shodashavarga charts, 5 other
-  dasha systems. The vendored MIT `_research/jyotishganit/` unblocks Ashtakavarga / Shadbala /
+  Ashtakavarga, Shadbala, Vimsopaka, Avasthas, 5 other dasha systems. **The full
+  Shodashavarga (D1–D60) plus D2-US is now built** (Plan A, 2026-09-01); D81/D108/D144/D150
+  remain for Plan B. The vendored MIT `_research/jyotishganit/` unblocks Ashtakavarga / Shadbala /
   Panchanga; Avasthas / Ashtottari / Yogini and the descriptive nakshatra fields remain
   source-blocked.
 

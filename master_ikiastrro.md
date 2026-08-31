@@ -94,7 +94,7 @@ maintained · `superseded` = replaced, kept for history.
 |---|---|---|---|
 | [`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`](docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md) | Web UI rebuild around 5 life-area tabs — Plan 1 groundwork merged; Plan 2 (UI) not started | 2026-08-30 | snapshot (partial) |
 | [`docs/superpowers/specs/2026-08-31-chart-schema-normalization-design.md`](docs/superpowers/specs/2026-08-31-chart-schema-normalization-design.md) | Chart-fact schema normalization (see DB design above) | 2026-08-31 | snapshot (implemented) |
-| [`docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md`](docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md) | Complete the divisional-chart set (17 vargas + D2-US), DB-driven varga rules, DB-completeness invariant | 2026-08-31 | draft (for plan) |
+| [`docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md`](docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md) | Complete the divisional-chart set (17 vargas + D2-US), DB-driven varga rules, DB-completeness invariant. Plan A scope; D81/D108/D144/D150 → Plan B (not yet written) | 2026-08-31 | snapshot (Plan A implemented) |
 
 ## Plans — dated per-feature implementation (writing-plans output)
 
@@ -104,6 +104,8 @@ maintained · `superseded` = replaced, kept for history.
 | [`docs/superpowers/plans/groundwork-outcomes-for-plan-2.md`](docs/superpowers/plans/groundwork-outcomes-for-plan-2.md) | Carry-forward notes from Plan 1 into the not-yet-started Plan 2 (UI phases) | 2026-08-30 | living (until Plan 2 starts) |
 | [`docs/superpowers/plans/2026-08-30-nakshatra-linkage-vargas.md`](docs/superpowers/plans/2026-08-30-nakshatra-linkage-vargas.md) | Nakshatra linkage + D2/D6/D10/D11 — **implemented 2026-08-30** (relocated from workspace root 2026-08-31) | 2026-08-30 | snapshot (done) |
 | [`docs/superpowers/plans/2026-08-31-chart-schema-normalization.md`](docs/superpowers/plans/2026-08-31-chart-schema-normalization.md) | 19-task chart-fact normalization plan — **done + merged 2026-08-31** | 2026-08-31 | snapshot (done) |
+| [`docs/superpowers/plans/2026-08-31-divisional-charts-plan-a.md`](docs/superpowers/plans/2026-08-31-divisional-charts-plan-a.md) | 20-task divisional-chart completion (Plan A) — D2-US + D3–D60, `tbl_Rule_VargaScheme`, `VargaLongitudeDegrees`, one `VargaChartComputer` — **implemented 2026-09-01** | 2026-08-31 | snapshot (done) |
+| Plan B (D81/D108/D144 chart-composition + D150) | Not yet written — see spec §1/§6 | — | not started |
 
 ## Decision records (ADRs)
 

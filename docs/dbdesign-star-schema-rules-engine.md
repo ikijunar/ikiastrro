@@ -100,6 +100,7 @@ ikiastrro/
 | **Rule (new, Phase 1)** | `tbl_Rule_NaturalRelationship` | **this plan** |
 | **Rule (new, Phase 1)** | `tbl_Rule_TemporaryFriendshipDistance` | **this plan** |
 | Rule | `tbl_Rule_BaaladiState` / `tbl_Rule_JagradadiState` | **2026-08-31** — avastha slice 1 (`RuleSetId` 1); born §D.1-compliant |
+| Rule | `tbl_Rule_VargaScheme` | **2026-09-01** — divisional-chart completion (Plan A); born §D.1-compliant, `RuleSetId` FK, `UQ(RuleSetId, ChartTypeId)` |
 | Fact | `tbl_Fact_PlanetAvastha` | **2026-08-31** — avastha slice 1; born as a real `tbl_Fact_*`, carries `RuleSetId` |
 | Fact | `tbl_ChartResults` | exists (→ `tbl_Fact_ChartResults` in Phase 2, gains `RuleSetId`) |
 | Fact | `tbl_Chart_KeyDetails` | exists (→ `tbl_Fact_ChartKeyDetails` in Phase 2) |
@@ -118,6 +119,35 @@ other `tbl_Rule_*` table carries a `RuleSetId` FK. In Phase 2, `tbl_ChartResults
 different Rahu/Ketu aspect convention) is a **new set of rows**, never an edit to existing
 ones — old computed charts stay interpretable exactly as they were, and switching a person's
 active scheme is an explicit recompute (`recompute-keydetails`-style), never silent.
+
+### `tbl_Rule_VargaScheme` (2026-09-01, divisional-chart completion — Plan A)
+
+One row per varga chart type per rule-set: how that varga derives a planet's varga sign.
+D1 is the identity rasi and is **not** in the table.
+
+| Column | Type | Meaning |
+|---|---|---|
+| `Id` | TINYINT PK | stable row id (1–20 for RuleSetId 1) |
+| `RuleSetId` | TINYINT FK → `tbl_Rule_Sets` | versioning; immutable once referenced |
+| `ChartTypeId` | TINYINT FK → `tbl_Dim_ChartType` | the varga (D2…D60); `UQ(RuleSetId, ChartTypeId)` |
+| `DivisionFactor` | TINYINT | N (2, 3, …, 60) |
+| `MethodCode` | VARCHAR(40) | `ParasaraTraditional` / `ClassicalTwoSign` / `UmaShambu` / `SanjayRath` — copied to `tbl_ChartResults.VargaMethod` |
+| `MethodSource` | VARCHAR(200) | BPHS citation + PyJHora function trace |
+| `SignRuleKind` | VARCHAR(10) | `Linear` (stride form) or `Special` (bespoke / lookup) — advisory grouping |
+| `SignRuleKey` | VARCHAR(40) | names the C# `IVargaSignRule` (see contract below) |
+
+**`SignRuleKey` → C# class contract.** `VargaSignRuleFactory.For(signRuleKey, divisionFactor)`
+is the only resolver: it maps each key to an `IVargaSignRule` (`ZodiacName SignFor(double
+siderealLongitude)`). `Linear` keys resolve to `LinearVargaSignRule(factor, stride)`
+(D3→(3,4), D4→(4,3), D12→(12,1), D60→(60,1)); `Special` keys resolve to a dedicated class
+(`HoraD2UmaShambu`, `PanchamsaD5`, `TrimsamsaD30`, …) or a thin wrapper over an existing
+`AstroMath.Get*Sign` helper (D2/D6/D9/D10/D11). Adding a varga = one `tbl_Dim_ChartType`
+row + one `tbl_Rule_VargaScheme` row + one factory case + the rule class. `verify-vargas`
+asserts the factory resolves all 20 keys and that the row count matches.
+
+**Python reads this table too.** The personality-comparison layer resolves varga rules from
+`tbl_Rule_VargaScheme` rather than re-encoding them, so C# and Python stay in lock-step on
+which method each varga uses.
 
 ---
 
