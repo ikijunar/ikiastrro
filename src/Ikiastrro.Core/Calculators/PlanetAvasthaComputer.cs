@@ -31,6 +31,7 @@ public static class PlanetAvasthaComputer
             {
                 ChartType = input.ChartType,
                 Planet = kd.Planet,
+                PlanetId = (byte?)Ikiastrro.Core.Astro.AstroIds.PlanetIdOrNull(kd.Planet),
                 RuleSetId = rules.RuleSetId,
             };
 

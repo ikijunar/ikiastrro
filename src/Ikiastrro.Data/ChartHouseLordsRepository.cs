@@ -19,11 +19,13 @@ public class ChartHouseLordsRepository
             INSERT INTO dbo.tbl_Chart_HouseLords
                 (ChartResultId, BirthDetailId, ChartType, HouseNumber, HouseSign, LordPlanet,
                  LordPlacedInHouseFromLagna, LordPlacedInHouseFromSun, LordPlacedInHouseFromMoon,
-                 LordPlacedInSign, LordDignityStatus, ComputedAt)
+                 LordPlacedInSign, LordDignityStatus, ComputedAt,
+                 HouseSignId, LordPlanetId, LordPlacedInSignId)
             VALUES
                 (@ChartResultId, @BirthDetailId, @ChartType, @HouseNumber, @HouseSign, @LordPlanet,
                  @LordPlacedInHouseFromLagna, @LordPlacedInHouseFromSun, @LordPlacedInHouseFromMoon,
-                 @LordPlacedInSign, @LordDignityStatus, @ComputedAt)
+                 @LordPlacedInSign, @LordDignityStatus, @ComputedAt,
+                 @HouseSignId, @LordPlanetId, @LordPlacedInSignId)
             """;
 
         using var connection = _connectionFactory.CreateOpenConnection();

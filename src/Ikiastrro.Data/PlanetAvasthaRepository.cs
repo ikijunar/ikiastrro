@@ -17,10 +17,12 @@ public class PlanetAvasthaRepository
         const string sql = """
             INSERT INTO dbo.tbl_Fact_PlanetAvastha
                 (ChartResultId, BirthDetailId, ChartType, Planet, RuleSetId,
-                 BaaladiStateId, BaaladiEffectFraction, JagradadiStateId, ComputedAt)
+                 BaaladiStateId, BaaladiEffectFraction, JagradadiStateId, ComputedAt,
+                 PlanetId)
             VALUES
                 (@ChartResultId, @BirthDetailId, @ChartType, @Planet, @RuleSetId,
-                 @BaaladiStateId, @BaaladiEffectFraction, @JagradadiStateId, @ComputedAt)
+                 @BaaladiStateId, @BaaladiEffectFraction, @JagradadiStateId, @ComputedAt,
+                 @PlanetId)
             """;
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, rows);

@@ -34,11 +34,11 @@ public class DashaPeriodsRepository
         const string insertSql = """
             INSERT INTO dbo.tbl_Chart_DashaPeriods
                 (ChartResultId, BirthDetailId, ParentDashaPeriodId, LevelNumber, SequenceInParent,
-                 Lord, StartDate, EndDate, StartDayOffset, EndDayOffset)
+                 Lord, LordId, StartDate, EndDate, StartDayOffset, EndDayOffset)
             OUTPUT INSERTED.Id
             VALUES
                 (@ChartResultId, @BirthDetailId, @ParentDashaPeriodId, @LevelNumber, @SequenceInParent,
-                 @Lord, @StartDate, @EndDate, @StartDayOffset, @EndDayOffset)
+                 @Lord, @LordId, @StartDate, @EndDate, @StartDayOffset, @EndDayOffset)
             """;
 
         void InsertRecursive(DashaPeriod period, int? parentId)
@@ -51,6 +51,7 @@ public class DashaPeriodsRepository
                 period.LevelNumber,
                 period.SequenceInParent,
                 Lord = period.Lord.ToString(),
+                LordId = (int)period.Lord + Ikiastrro.Core.Astro.AstroIds.PlanetIdOffset,
                 StartDate = period.StartDate.DateTime,   // local wall-clock, DATETIME2 column has no offset — matches how BirthDetails stores local time-of-day
                 EndDate = period.EndDate.DateTime,
                 period.StartDayOffset,

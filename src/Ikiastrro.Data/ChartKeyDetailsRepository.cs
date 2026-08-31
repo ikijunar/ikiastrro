@@ -24,7 +24,8 @@ public class ChartKeyDetailsRepository
                  IsCombust, DistanceFromSunDegrees, CombustionOrbUsedDegrees,
                  HouseNumberFromLagna, HouseNumberFromSun, HouseNumberFromMoon,
                  OwnSigns, ExaltationSign, DebilitationSign, MoolatrikonaSign, MoolatrikonaRange,
-                 SignLordPlanet, DignityStatus, AspectingPlanets, ComputedAt)
+                 SignLordPlanet, DignityStatus, AspectingPlanets, ComputedAt,
+                 PlanetId, SignId, NakshatraLordPlanetId, NakshatraSubLordPlanetId, SignLordPlanetId)
             VALUES
                 (@ChartResultId, @BirthDetailId, @ChartType, @Planet, @Sign, @DegreesInSignDisplay, @DegreesInSignDecimal,
                  @NirayanaLongitudeDegrees, @EclipticLatitudeDegrees, @SpeedLongitudeDegPerDay,
@@ -33,7 +34,8 @@ public class ChartKeyDetailsRepository
                  @IsCombust, @DistanceFromSunDegrees, @CombustionOrbUsedDegrees,
                  @HouseNumberFromLagna, @HouseNumberFromSun, @HouseNumberFromMoon,
                  @OwnSigns, @ExaltationSign, @DebilitationSign, @MoolatrikonaSign, @MoolatrikonaRange,
-                 @SignLordPlanet, @DignityStatus, @AspectingPlanets, @ComputedAt)
+                 @SignLordPlanet, @DignityStatus, @AspectingPlanets, @ComputedAt,
+                 @PlanetId, @SignId, @NakshatraLordPlanetId, @NakshatraSubLordPlanetId, @SignLordPlanetId)
             """;
 
         using var connection = _connectionFactory.CreateOpenConnection();

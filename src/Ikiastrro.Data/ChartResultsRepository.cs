@@ -17,10 +17,12 @@ public class ChartResultsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_ChartResults
-                (BirthDetailId, ChartType, Ayanamsha, HouseSystem, EngineVersion, ResultJson, ComputedAt)
+                (BirthDetailId, ChartType, ChartTypeId, CalculationKind, RuleSetId,
+                 Ayanamsha, HouseSystem, EngineVersion, ResultJson, ComputedAt)
             OUTPUT INSERTED.Id
             VALUES
-                (@BirthDetailId, @ChartType, @Ayanamsha, @HouseSystem, @EngineVersion, @ResultJson, @ComputedAt)
+                (@BirthDetailId, @ChartType, @ChartTypeId, @CalculationKind, @RuleSetId,
+                 @Ayanamsha, @HouseSystem, @EngineVersion, @ResultJson, @ComputedAt)
             """;
 
         using var connection = _connectionFactory.CreateOpenConnection();
