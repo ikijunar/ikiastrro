@@ -249,6 +249,16 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Console.WriteLine($"  [{(factoryFailures == 0 ? "PASS" : "FAIL")}] VargaSignRuleFactory resolves all 20 seeded keys");
     if (factoryFailures > 0) failures += factoryFailures;
 
+    // VargaChartComputer's D9 sign rule must agree with AstroMath.GetNavamsaSign (spot longitudes).
+    // The full VargaChartComputer-vs-D9ChartComputer comparison is done live in Task 13.
+    {
+        var d9rule = new NavamsaD9SignRule();
+        var mism = 0;
+        foreach (var lon in new[] { 8.2, 217.3, 3.95, 1.84, 173.7, 191.96, 41.99, 190.96, 103.06 })
+            if (d9rule.SignFor(lon) != AstroMath.GetNavamsaSign(lon)) mism++;
+        Check("VargaChartComputer D9-rule vs AstroMath (spot longitudes)", mism, 0);
+    }
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
