@@ -79,7 +79,9 @@ public static class ChartAnalyzer
             {
                 ChartType = input.ChartType,
                 Planet = planet.Planet,
+                PlanetId = AstroIds.PlanetIdOrNull(planet.Planet),
                 Sign = planet.Sign,
+                SignId = AstroIds.SignId(sign),
                 DegreesInSignDisplay = isRasiChart ? planet.DegreesInSign : null,
                 DegreesInSignDecimal = isRasiChart ? Math.Round(degreeInSign, 4) : null,
                 NirayanaLongitudeDegrees = nirayanaLongitude,
@@ -88,9 +90,11 @@ public static class ChartAnalyzer
                 Nakshatra = isRasiChart ? planet.Nakshatra : null,
                 NakshatraPada = isRasiChart ? planet.NakshatraPada : null,
                 NakshatraLordPlanet = nakshatraLordPlanet,
+                NakshatraLordPlanetId = AstroIds.PlanetIdOrNull(nakshatraLordPlanet),
                 NakshatraId = (byte)(nakshatraIndex + 1),
                 NakshatraPadaId = isRasiChart ? AstroMath.GetOverallPadaIndex(nirayanaLongitude) + 1 : null,
                 NakshatraSubLordPlanet = nakshatraSubLordPlanet,
+                NakshatraSubLordPlanetId = AstroIds.PlanetIdOrNull(nakshatraSubLordPlanet),
                 IsRetrograde = planet.IsRetrograde,
                 IsCombust = combustion?.IsCombust,
                 DistanceFromSunDegrees = combustion?.DistanceFromSunDegrees,
@@ -104,6 +108,7 @@ public static class ChartAnalyzer
                 MoolatrikonaSign = dignity.MoolatrikonaSign,
                 MoolatrikonaRange = dignity.MoolatrikonaRange,
                 SignLordPlanet = dignity.SignLordPlanet,
+                SignLordPlanetId = AstroIds.PlanetIdOrNull(dignity.SignLordPlanet),
                 DignityStatus = dignity.DignityStatus,
                 AspectingPlanets = aspectingPlanetsByTarget.GetValueOrDefault(planet.Planet)
             });
@@ -124,24 +129,39 @@ public static class ChartAnalyzer
                 ChartType = input.ChartType,
                 HouseNumber = houseNumber,
                 HouseSign = houseSign.ToString(),
+                HouseSignId = AstroIds.SignId(houseSign),
                 LordPlanet = lordPlanet,
+                LordPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(lordPlanet)),
                 LordPlacedInHouseFromLagna = lordPlacement.HouseNumberFromLagna,
                 LordPlacedInHouseFromSun = lordPlacement.HouseNumberFromSun,
                 LordPlacedInHouseFromMoon = lordPlacement.HouseNumberFromMoon,
                 LordPlacedInSign = lordPlacement.Sign,
+                LordPlacedInSignId = AstroIds.SignId(Enum.Parse<ZodiacName>(lordPlacement.Sign)),
                 LordDignityStatus = lordPlacement.DignityStatus
             });
         }
 
         var conjunctions = ClassicalRelationships.FindConjunctions(input)
-            .Select(c => new ChartConjunction
+            .Select(c =>
             {
-                ChartType = input.ChartType,
-                Planet1 = c.Planet1,
-                Planet2 = c.Planet2,
-                Sign = c.Sign,
-                HouseNumberFromLagna = c.HouseNumberFromLagna,
-                DegreeSeparation = c.DegreeSeparation
+                // Canonicalize the pair so Planet1Id < Planet2Id, keeping the name pair aligned to the id pair.
+                var idA = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet1));
+                var idB = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet2));
+                var (lowName, lowId, highName, highId) = idA <= idB
+                    ? (c.Planet1, idA, c.Planet2, idB)
+                    : (c.Planet2, idB, c.Planet1, idA);
+                return new ChartConjunction
+                {
+                    ChartType = input.ChartType,
+                    Planet1 = lowName,
+                    Planet1Id = lowId,
+                    Planet2 = highName,
+                    Planet2Id = highId,
+                    Sign = c.Sign,
+                    SignId = AstroIds.SignId(Enum.Parse<ZodiacName>(c.Sign)),
+                    HouseNumberFromLagna = c.HouseNumberFromLagna,
+                    DegreeSeparation = c.DegreeSeparation
+                };
             })
             .ToList();
 
@@ -150,7 +170,10 @@ public static class ChartAnalyzer
             {
                 ChartType = input.ChartType,
                 AspectingPlanet = a.AspectingPlanet,
+                AspectingPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(a.AspectingPlanet)),
                 AspectedTarget = a.AspectedTarget,
+                AspectedTargetType = a.AspectedTarget == "Ascendant" ? "Ascendant" : "Planet",
+                AspectedPlanetId = AstroIds.PlanetIdOrNull(a.AspectedTarget),
                 AspectType = a.AspectType
             })
             .ToList();
