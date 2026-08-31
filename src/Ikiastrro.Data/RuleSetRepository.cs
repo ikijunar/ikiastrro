@@ -2,7 +2,9 @@ using Dapper;
 
 namespace Ikiastrro.Data;
 
-public record RuleSet(int Id, string RuleSetName, string? Description);
+public record RuleSet(
+    int Id, string RuleSetName, string? Description,
+    int VersionNumber, DateTime EffectiveFromUtc, DateTime? EffectiveToUtc, bool IsPublished);
 
 /// <summary>tbl_Rule_Sets -- the version dimension every other tbl_Rule_* table hangs off.</summary>
 public class RuleSetRepository
@@ -17,7 +19,7 @@ public class RuleSetRepository
     // Id is TINYINT (maps to byte) but the RuleSet record uses int for idiomatic C# -- Dapper's
     // constructor-matching for records requires an exact type match with no parameterless
     // constructor available, so cast in SQL rather than declare Id as byte in the public API.
-    private const string SelectColumns = "CAST(Id AS INT) AS Id, RuleSetName, Description";
+    private const string SelectColumns = "CAST(Id AS INT) AS Id, RuleSetName, Description, VersionNumber, EffectiveFromUtc, EffectiveToUtc, IsPublished";
 
     /// <summary>The one rule set flagged IsActive=1 -- what calculators use unless told otherwise.</summary>
     public RuleSet GetActive()
