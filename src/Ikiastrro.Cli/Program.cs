@@ -154,6 +154,21 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("D11 Taurus 1",  AstroMath.GetRudramsaSign(31),  ZodiacName.Pisces);
     Check("D11 Taurus 29", AstroMath.GetRudramsaSign(59),  ZodiacName.Capricornus);
 
+    // --- IVargaSignRule unit checks (hand-computed) ---
+    // D3 Drekkana: (sign + l*4)%12, l = deg/10
+    Check("rule D3 Ar 12",  new LinearVargaSignRule(3, 4).SignFor(12),  ZodiacName.Leo);          // l1 -> 0+4
+    Check("rule D3 Ar 25",  new LinearVargaSignRule(3, 4).SignFor(25),  ZodiacName.Sagittarius);  // l2 -> 0+8
+    Check("rule D3 Ta 2",   new LinearVargaSignRule(3, 4).SignFor(32),  ZodiacName.Taurus);       // sign1 l0
+    // D4 Chaturthamsa: (sign + l*3)%12, l = deg/7.5
+    Check("rule D4 Ar 20",  new LinearVargaSignRule(4, 3).SignFor(20),  ZodiacName.Libra);        // l2 -> 0+6
+    Check("rule D4 Ar 3",   new LinearVargaSignRule(4, 3).SignFor(3),   ZodiacName.Aries);        // l0
+    // D12 Dwadasamsa: (sign + l)%12, l = deg/2.5
+    Check("rule D12 Ar 12", new LinearVargaSignRule(12, 1).SignFor(12), ZodiacName.Leo);          // l4
+    Check("rule D12 Ta 29", new LinearVargaSignRule(12, 1).SignFor(59), ZodiacName.Aries);        // sign1 l11 -> 12%12
+    // D60 Shashtyamsa: (sign + l)%12, l = deg/0.5
+    Check("rule D60 Ar 12", new LinearVargaSignRule(60, 1).SignFor(12), ZodiacName.Aries);        // l24 -> 24%12
+    Check("rule D60 Ar 1",  new LinearVargaSignRule(60, 1).SignFor(1),  ZodiacName.Gemini);       // l2 -> 0+2
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
