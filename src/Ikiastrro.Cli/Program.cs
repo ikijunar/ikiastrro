@@ -227,10 +227,12 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("wrap D9 Sc 21",  new NavamsaD9SignRule().SignFor(231),      AstroMath.GetNavamsaSign(231));
     Check("wrap D10 Ar 28", new DasamsaD10SignRule().SignFor(28),      AstroMath.GetDasamsaSign(28));
     Check("wrap D11 Ta 29", new RudramsaD11SignRule().SignFor(59),     AstroMath.GetRudramsaSign(59));
-    // D2-US (Uma Shambu) - parivritti-cyclic D2 (confirmed vs D-2 (US) grid in Task 17)
-    Check("rule D2US Ar 5",  new HoraD2UmaShambuSignRule().SignFor(5),  ZodiacName.Aries);   // sign0 half0 -> 0
-    Check("rule D2US Ar 20", new HoraD2UmaShambuSignRule().SignFor(20), ZodiacName.Taurus);  // sign0 half1 -> 1
-    Check("rule D2US Ta 5",  new HoraD2UmaShambuSignRule().SignFor(35), ZodiacName.Gemini);  // sign1 half0 -> 2
+    // D2-US (Uma Shambu) - parivritti even-reverse D2 (confirmed vs D-2 (US) export grid)
+    Check("rule D2US Ar 5",  new HoraD2UmaShambuSignRule().SignFor(5),   ZodiacName.Aries);   // r0 even h0 -> 0
+    Check("rule D2US Ar 20", new HoraD2UmaShambuSignRule().SignFor(20),  ZodiacName.Taurus);  // r0 even h1 -> 1
+    Check("rule D2US Ta 5",  new HoraD2UmaShambuSignRule().SignFor(35),  ZodiacName.Cancer);  // r1 odd  h0 -> 2r+1
+    Check("rule D2US Ta 20", new HoraD2UmaShambuSignRule().SignFor(50),  ZodiacName.Gemini);  // r1 odd  h1 -> 2r+1-1
+    Check("rule D2US Sc 7",  new HoraD2UmaShambuSignRule().SignFor(217), ZodiacName.Cancer);  // r7 odd  h0 -> 15%12 (export Moon)
 
     // Every SignRuleKey seeded in tbl_Rule_VargaScheme must resolve through the factory
     string[] seededKeys =
@@ -286,6 +288,54 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     // Sub-lord — Anuradha (idx 16, lord Saturn), 5.389° into nakshatra -> Venus slot
     Check("Sub@218.72", AstroMath.GetNakshatraSubLord(218.72), PlanetName.Venus);
     Check("Sub@0",      AstroMath.GetNakshatraSubLord(0),      PlanetName.Ketu);   // Ashwini's own lord first
+
+    // --- JHora export grid match (Ramakrishnan, 22 Apr 1981, Chennai) ---
+    // Transcribed from D:\@ClaudeSpace\Scratchpad\Rammy_Jagannatha.txt. Planet order:
+    // Ascendant, Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu.
+    // Classical D2 has no export grid (JHora's D-2 is Uma Shambu) - covered by the
+    // AstroMath.GetHoraSign checks above instead.
+    var jhoraGrid = new Dictionary<string, ZodiacName[]>
+    {
+        ["D2-US"] = new[] { ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Cancer, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Pisces, ZodiacName.Aries, ZodiacName.Pisces, ZodiacName.Scorpio, ZodiacName.Scorpio },
+        ["D3"]  = new[] { ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Scorpio, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Virgo, ZodiacName.Leo, ZodiacName.Capricornus, ZodiacName.Scorpio, ZodiacName.Taurus },
+        ["D4"]  = new[] { ZodiacName.Aries, ZodiacName.Cancer, ZodiacName.Scorpio, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Sagittarius, ZodiacName.Cancer, ZodiacName.Sagittarius, ZodiacName.Libra, ZodiacName.Aries },
+        ["D5"]  = new[] { ZodiacName.Aries, ZodiacName.Aquarius, ZodiacName.Virgo, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Virgo, ZodiacName.Aquarius, ZodiacName.Virgo, ZodiacName.Pisces, ZodiacName.Pisces },
+        ["D6"]  = new[] { ZodiacName.Aries, ZodiacName.Taurus, ZodiacName.Scorpio, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Scorpio, ZodiacName.Gemini, ZodiacName.Sagittarius, ZodiacName.Sagittarius, ZodiacName.Sagittarius },
+        ["D7"]  = new[] { ZodiacName.Aries, ZodiacName.Taurus, ZodiacName.Gemini, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Taurus, ZodiacName.Gemini, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Libra },
+        ["D8"]  = new[] { ZodiacName.Aries, ZodiacName.Gemini, ZodiacName.Capricornus, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Libra, ZodiacName.Cancer, ZodiacName.Libra, ZodiacName.Cancer, ZodiacName.Cancer },
+        ["D9"]  = new[] { ZodiacName.Aries, ZodiacName.Gemini, ZodiacName.Virgo, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Pisces, ZodiacName.Cancer, ZodiacName.Aries, ZodiacName.Libra, ZodiacName.Aries },
+        ["D10"] = new[] { ZodiacName.Aries, ZodiacName.Gemini, ZodiacName.Virgo, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Cancer, ZodiacName.Cancer, ZodiacName.Leo, ZodiacName.Cancer, ZodiacName.Capricornus },
+        ["D11"] = new[] { ZodiacName.Aries, ZodiacName.Cancer, ZodiacName.Scorpio, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Aquarius, ZodiacName.Leo, ZodiacName.Pisces, ZodiacName.Taurus, ZodiacName.Scorpio },
+        ["D12"] = new[] { ZodiacName.Aries, ZodiacName.Cancer, ZodiacName.Capricornus, ZodiacName.Taurus, ZodiacName.Aries, ZodiacName.Sagittarius, ZodiacName.Leo, ZodiacName.Capricornus, ZodiacName.Sagittarius, ZodiacName.Gemini },
+        ["D16"] = new[] { ZodiacName.Aries, ZodiacName.Leo, ZodiacName.Scorpio, ZodiacName.Gemini, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Libra, ZodiacName.Taurus, ZodiacName.Libra, ZodiacName.Libra },
+        ["D20"] = new[] { ZodiacName.Aries, ZodiacName.Virgo, ZodiacName.Aries, ZodiacName.Gemini, ZodiacName.Taurus, ZodiacName.Capricornus, ZodiacName.Scorpio, ZodiacName.Pisces, ZodiacName.Sagittarius, ZodiacName.Sagittarius },
+        ["D24"] = new[] { ZodiacName.Leo, ZodiacName.Aquarius, ZodiacName.Sagittarius, ZodiacName.Scorpio, ZodiacName.Virgo, ZodiacName.Capricornus, ZodiacName.Taurus, ZodiacName.Pisces, ZodiacName.Taurus, ZodiacName.Taurus },
+        ["D27"] = new[] { ZodiacName.Aries, ZodiacName.Scorpio, ZodiacName.Cancer, ZodiacName.Cancer, ZodiacName.Taurus, ZodiacName.Aquarius, ZodiacName.Aquarius, ZodiacName.Aries, ZodiacName.Sagittarius, ZodiacName.Gemini },
+        ["D30"] = new[] { ZodiacName.Aries, ZodiacName.Aquarius, ZodiacName.Virgo, ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Virgo, ZodiacName.Sagittarius, ZodiacName.Virgo, ZodiacName.Pisces, ZodiacName.Pisces },
+        ["D40"] = new[] { ZodiacName.Aries, ZodiacName.Aquarius, ZodiacName.Cancer, ZodiacName.Virgo, ZodiacName.Gemini, ZodiacName.Virgo, ZodiacName.Cancer, ZodiacName.Sagittarius, ZodiacName.Pisces, ZodiacName.Pisces },
+        ["D45"] = new[] { ZodiacName.Aries, ZodiacName.Aries, ZodiacName.Gemini, ZodiacName.Virgo, ZodiacName.Gemini, ZodiacName.Capricornus, ZodiacName.Virgo, ZodiacName.Aries, ZodiacName.Scorpio, ZodiacName.Scorpio },
+        ["D60"] = new[] { ZodiacName.Taurus, ZodiacName.Leo, ZodiacName.Capricornus, ZodiacName.Scorpio, ZodiacName.Cancer, ZodiacName.Aquarius, ZodiacName.Pisces, ZodiacName.Gemini, ZodiacName.Virgo, ZodiacName.Pisces },
+    };
+    var planetOrder = new[] { "Ascendant", "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu" };
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        foreach (var (chartType, expectedSigns) in jhoraGrid)
+        {
+            var rows = conn.Query<(string Planet, string Sign)>(
+                "SELECT kd.Planet, kd.Sign FROM dbo.tbl_Chart_KeyDetails kd " +
+                "JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId " +
+                "JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId " +
+                "WHERE bd.Name = 'Ramakrishnan' AND cr.ChartType = @ct",
+                new { ct = chartType })
+                .ToDictionary(r => r.Planet, r => r.Sign);
+            for (var i = 0; i < planetOrder.Length; i++)
+            {
+                if (!rows.TryGetValue(planetOrder[i], out var actual))
+                { Console.WriteLine($"  [FAIL] JHora {chartType} {planetOrder[i]}: no row"); failures++; continue; }
+                Check($"JHora {chartType} {planetOrder[i]}", actual, expectedSigns[i].ToString());
+            }
+        }
+    }
 
     Console.WriteLine(failures == 0 ? "\nverify-vargas: ALL PASS" : $"\nverify-vargas: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
