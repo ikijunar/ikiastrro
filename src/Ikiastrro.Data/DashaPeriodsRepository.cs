@@ -72,7 +72,7 @@ public class DashaPeriodsRepository
         const string sql = """
             SELECT Id, ParentDashaPeriodId, LevelNumber, SequenceInParent, Lord, StartDate, EndDate, StartDayOffset, EndDayOffset
             FROM dbo.tbl_Chart_DashaPeriods
-            WHERE BirthDetailId = @BirthDetailId
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
             ORDER BY StartDayOffset
             """;
         using var connection = _connectionFactory.CreateOpenConnection();
@@ -98,7 +98,10 @@ public class DashaPeriodsRepository
     /// <summary>Deletes every Dasha period row for one person — used by BirthDetailDeletionService.</summary>
     public void DeleteByBirthDetailId(int birthDetailId)
     {
-        const string sql = "DELETE FROM dbo.tbl_Chart_DashaPeriods WHERE BirthDetailId = @BirthDetailId";
+        const string sql = """
+            DELETE FROM dbo.tbl_Chart_DashaPeriods
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, new { BirthDetailId = birthDetailId });
     }

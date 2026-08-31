@@ -1360,17 +1360,22 @@ git commit -m "$(printf 'chore(db): fold Phase 2 (constraints + id-joined views)
 
 **Files:** none (investigation task; its output shapes Tasks 17–19)
 
-- [ ] **Step 1: Find every read of a child-table `ChartType`**
+- [x] **Step 1: Find every read of a child-table `ChartType`**
 
 Run: `grep -rn "\.ChartType\b" src/Ikiastrro.Web/ src/Ikiastrro.Cli/` and `grep -rn "ChartType" src/Ikiastrro.Data/*Repository.cs`
 Record which reads are on `ChartResult` (fine — stays) vs on `ChartKeyDetail` / `ChartHouseLord` / `ChartConjunction` / `ChartAspect` / `DashaPeriodRecord` / `PlanetAvasthaFact` (must move to reading it from the parent `ChartResult` or the consolidated view).
 
-- [ ] **Step 2: Find every read of a child-table `ComputedAt`**
+- [x] **Step 2: Find every read of a child-table `ComputedAt`**
 
 Run: `grep -rn "ComputedAt" src/Ikiastrro.Web/ src/Ikiastrro.Cli/`
 Per spec §11: if any consumer uses a child `ComputedAt` as "when analytics were last recomputed", add `AnalyticsComputedAtUtc DATETIME2(0)` to `tbl_ChartResults` (updated by `RecomputeAnalytics`) instead of dropping the signal. If nothing reads it, drop it.
 
-- [ ] **Step 3: Write findings into this task's checkbox as a comment and proceed.** No commit.
+- [x] **Step 3: Write findings into this task's checkbox as a comment and proceed.** No commit.
+
+> **FINDINGS (2026-08-31):**
+> - **`.ChartType` reads:** all on `ChartResult`, none on a child model. `ChartWorkspace.razor:183` (`results.FirstOrDefault(r => r.ChartType == type)`), `Program.cs:521/664/666` (all `ChartResult` / `IEnumerable<ChartResult>`). Data repos: `ChartType` appears only in INSERT column lists (writes) + `ChartResultsRepository` parent queries. **No repointing needed.**
+> - **`ComputedAt` reads:** zero source reads in Web/Cli (only compiled-DLL matches). In Data, `ComputedAt` is write-only (INSERT lists) except `VimshottariDashaService.cs:59` which sets it on a *parent* `ChartResult`. **Nothing reads a child `ComputedAt`.**
+> - **Decision:** take the plain drop path. **Do NOT add `AnalyticsComputedAtUtc`** (Task 18 Step 1 is skipped).
 
 ---
 
@@ -1382,7 +1387,7 @@ Per spec §11: if any consumer uses a child `ComputedAt` as "when analytics were
 **Interfaces:**
 - Produces: each `DeleteByBirthDetailId(int)` deletes via a subquery through `tbl_ChartResults` — no dependency on a child `BirthDetailId` column. Signatures unchanged, so `BirthDetailDeletionService` and `ChartGenerationService` are untouched.
 
-- [ ] **Step 1: In each of the six repos, change the `DeleteByBirthDetailId` SQL** from `DELETE FROM dbo.tbl_Chart_X WHERE BirthDetailId = @BirthDetailId` to:
+- [x] **Step 1: In each of the six repos, change the `DeleteByBirthDetailId` SQL** from `DELETE FROM dbo.tbl_Chart_X WHERE BirthDetailId = @BirthDetailId` to:
 ```csharp
         const string sql = """
             DELETE FROM dbo.tbl_Chart_KeyDetails
@@ -1391,7 +1396,7 @@ Per spec §11: if any consumer uses a child `ComputedAt` as "when analytics were
 ```
 (substitute the correct table name per repo: `tbl_Chart_HouseLords`, `tbl_Chart_Conjunctions`, `tbl_Chart_Aspects`, `tbl_Chart_DashaPeriods`, `tbl_Fact_PlanetAvastha`).
 
-- [ ] **Step 2: In each repo, also change `GetByBirthDetailId`** from `WHERE BirthDetailId = @BirthDetailId` to the same subquery form (the Web workspace one-shot load uses these):
+- [x] **Step 2: In each repo, also change `GetByBirthDetailId`** from `WHERE BirthDetailId = @BirthDetailId` to the same subquery form (the Web workspace one-shot load uses these):
 ```csharp
         const string sql = """
             SELECT * FROM dbo.tbl_Chart_KeyDetails
@@ -1400,18 +1405,16 @@ Per spec §11: if any consumer uses a child `ComputedAt` as "when analytics were
             """;
 ```
 
-- [ ] **Step 3: Build**
+- [x] **Step 3: Build**
 
 Run: `dotnet build Ikiastrro.slnx`
-Expected: succeeds (the `BirthDetailId` column still exists at this point, so `SELECT *` still maps).
+Expected: succeeds (the `BirthDetailId` column still exists at this point, so `SELECT *` still maps). — **Build succeeded, 0 warnings.**
 
-- [ ] **Step 4: Verify delete still cascades**
+- [x] **Step 4: Verify delete still cascades**
 
-Run: `dotnet run --project src/Ikiastrro.Cli -- compute-all <SeededPersonName>` then use the CLI's delete path (grep `DeleteBirthDetail` / a `delete` mode) on a throwaway person, then:
-`sqlcmd -S localhost -E -d ikiastrro -Q "SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd WHERE NOT EXISTS (SELECT 1 FROM dbo.tbl_ChartResults cr WHERE cr.Id = kd.ChartResultId)"`
-Expected: `0` orphans.
+No CLI delete mode exists and the interactive add path needs network (Nominatim); verified instead by **equivalence on live data**: for all 6 child tables (5,895 rows), rows where old path (`BirthDetailId = X`) and new path (`ChartResultId IN (SELECT Id FROM tbl_ChartResults WHERE BirthDetailId = X)`) disagree = **0**; child rows with an unresolvable `ChartResultId` = **0**. `verify-schema` + `verify-avastha` both ALL PASS. The new subquery deletes/selects exactly the old row set.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/Ikiastrro.Data/

@@ -42,7 +42,11 @@ public class ChartHouseLordsRepository
     /// <summary>Every HouseLord row for one person, all chart types — for the Web workspace's one-shot load.</summary>
     public IReadOnlyList<ChartHouseLord> GetByBirthDetailId(int birthDetailId)
     {
-        const string sql = "SELECT * FROM dbo.tbl_Chart_HouseLords WHERE BirthDetailId = @BirthDetailId ORDER BY Id";
+        const string sql = """
+            SELECT * FROM dbo.tbl_Chart_HouseLords
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            ORDER BY Id
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         return connection.Query<ChartHouseLord>(sql, new { BirthDetailId = birthDetailId }).ToList();
     }
@@ -50,7 +54,10 @@ public class ChartHouseLordsRepository
     /// <summary>Deletes every row (every chart type) for one person — used by BirthDetailDeletionService.</summary>
     public void DeleteByBirthDetailId(int birthDetailId)
     {
-        const string sql = "DELETE FROM dbo.tbl_Chart_HouseLords WHERE BirthDetailId = @BirthDetailId";
+        const string sql = """
+            DELETE FROM dbo.tbl_Chart_HouseLords
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, new { BirthDetailId = birthDetailId });
     }

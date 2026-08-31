@@ -38,7 +38,11 @@ public class ChartConjunctionsRepository
     /// <summary>Every Conjunction row for one person, all chart types — for the Web workspace's one-shot load.</summary>
     public IReadOnlyList<ChartConjunction> GetByBirthDetailId(int birthDetailId)
     {
-        const string sql = "SELECT * FROM dbo.tbl_Chart_Conjunctions WHERE BirthDetailId = @BirthDetailId ORDER BY Id";
+        const string sql = """
+            SELECT * FROM dbo.tbl_Chart_Conjunctions
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            ORDER BY Id
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         return connection.Query<ChartConjunction>(sql, new { BirthDetailId = birthDetailId }).ToList();
     }
@@ -46,7 +50,10 @@ public class ChartConjunctionsRepository
     /// <summary>Deletes every row (every chart type) for one person — used by BirthDetailDeletionService.</summary>
     public void DeleteByBirthDetailId(int birthDetailId)
     {
-        const string sql = "DELETE FROM dbo.tbl_Chart_Conjunctions WHERE BirthDetailId = @BirthDetailId";
+        const string sql = """
+            DELETE FROM dbo.tbl_Chart_Conjunctions
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, new { BirthDetailId = birthDetailId });
     }

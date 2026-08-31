@@ -52,7 +52,11 @@ public class ChartKeyDetailsRepository
     /// <summary>Every KeyDetails row for one person, all chart types — for the Web workspace's one-shot load.</summary>
     public IReadOnlyList<ChartKeyDetail> GetByBirthDetailId(int birthDetailId)
     {
-        const string sql = "SELECT * FROM dbo.tbl_Chart_KeyDetails WHERE BirthDetailId = @BirthDetailId ORDER BY Id";
+        const string sql = """
+            SELECT * FROM dbo.tbl_Chart_KeyDetails
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            ORDER BY Id
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         return connection.Query<ChartKeyDetail>(sql, new { BirthDetailId = birthDetailId }).ToList();
     }
@@ -60,7 +64,10 @@ public class ChartKeyDetailsRepository
     /// <summary>Deletes every row (every chart type) for one person — used by BirthDetailDeletionService.</summary>
     public void DeleteByBirthDetailId(int birthDetailId)
     {
-        const string sql = "DELETE FROM dbo.tbl_Chart_KeyDetails WHERE BirthDetailId = @BirthDetailId";
+        const string sql = """
+            DELETE FROM dbo.tbl_Chart_KeyDetails
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            """;
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute(sql, new { BirthDetailId = birthDetailId });
     }
