@@ -359,6 +359,16 @@ if (args.Length > 0 && args[0] == "verify-vargas")
                     WHERE cr.CalculationKind = 'PositionChart' AND cr.ChartType <> 'D1'
                       AND kd.Planet <> 'Ascendant'
                       AND (kd.SignId IS NULL OR kd.SignId < 1 OR kd.SignId > 12)"), 0L);
+        // DB-completeness invariant (spec 2): every stored position chart carries its
+        // numeric provenance, and every varga chart names its method.
+        Check("every position chart has AyanamshaDegrees + SiderealTimeHours",
+            Count(@"SELECT COUNT(*) FROM dbo.tbl_ChartResults
+                    WHERE CalculationKind = 'PositionChart'
+                      AND (AyanamshaDegrees IS NULL OR SiderealTimeHours IS NULL)"), 0L);
+        Check("every varga position chart (non-D1) has VargaMethod",
+            Count(@"SELECT COUNT(*) FROM dbo.tbl_ChartResults
+                    WHERE CalculationKind = 'PositionChart' AND ChartType <> 'D1'
+                      AND VargaMethod IS NULL"), 0L);
 
         var vargottama = conn.Query<(string Planet, string Sign)>(
             @"SELECT d1.Planet, d1.Sign
