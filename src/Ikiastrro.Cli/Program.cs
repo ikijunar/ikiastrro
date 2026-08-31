@@ -202,6 +202,21 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("rule D45 Ar 2",  new AkshavedamsaD45SignRule().SignFor(2),    ZodiacName.Cancer);   // movable l3
     Check("rule D45 Ta .3", new AkshavedamsaD45SignRule().SignFor(30.3), ZodiacName.Leo);      // fixed l0 -> 4
 
+    // D5 Panchamsa: odd -> [Ar,Aq,Sg,Ge,Li][l] ; even -> [Ta,Vi,Pi,Cp,Sc][l] ; l = deg/6
+    Check("rule D5 Ar 3",   new PanchamsaD5SignRule().SignFor(3),   ZodiacName.Aries);         // odd l0
+    Check("rule D5 Ar 9",   new PanchamsaD5SignRule().SignFor(9),   ZodiacName.Aquarius);      // odd l1
+    Check("rule D5 Ta 3",   new PanchamsaD5SignRule().SignFor(33),  ZodiacName.Taurus);        // even l0
+    Check("rule D5 Ta 27",  new PanchamsaD5SignRule().SignFor(57),  ZodiacName.Scorpio);       // even l4
+    // D30 Trimsamsa: bands on degrees-in-sign (not l-parts)
+    Check("rule D30 Ar 3",  new TrimsamsaD30SignRule().SignFor(3),   ZodiacName.Aries);        // odd [0,5)
+    Check("rule D30 Ar 7",  new TrimsamsaD30SignRule().SignFor(7),   ZodiacName.Aquarius);     // odd [5,10)
+    Check("rule D30 Ar 15", new TrimsamsaD30SignRule().SignFor(15),  ZodiacName.Sagittarius);  // odd [10,18)
+    Check("rule D30 Ar 22", new TrimsamsaD30SignRule().SignFor(22),  ZodiacName.Gemini);       // odd [18,25)
+    Check("rule D30 Ar 28", new TrimsamsaD30SignRule().SignFor(28),  ZodiacName.Libra);        // odd [25,30]
+    Check("rule D30 Ta 3",  new TrimsamsaD30SignRule().SignFor(33),  ZodiacName.Taurus);       // even [0,5)
+    Check("rule D30 Ta 15", new TrimsamsaD30SignRule().SignFor(45),  ZodiacName.Pisces);       // even [12,20)
+    Check("rule D30 Ta 28", new TrimsamsaD30SignRule().SignFor(58),  ZodiacName.Scorpio);      // even [25,30]
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
