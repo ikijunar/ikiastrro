@@ -169,6 +169,22 @@ if (args.Length > 0 && args[0] == "verify-vargas")
     Check("rule D60 Ar 12", new LinearVargaSignRule(60, 1).SignFor(12), ZodiacName.Aries);        // l24 -> 24%12
     Check("rule D60 Ar 1",  new LinearVargaSignRule(60, 1).SignFor(1),  ZodiacName.Gemini);       // l2 -> 0+2
 
+    // D7 Saptamsa: odd -> (sign+l)%12 ; even -> (sign+l+6)%12 ; l = deg/(30/7)
+    Check("rule D7 Ar 2",   new SaptamsaD7SignRule().SignFor(2),   ZodiacName.Aries);       // sign0 odd, l0
+    Check("rule D7 Ta 2",   new SaptamsaD7SignRule().SignFor(32),  ZodiacName.Scorpio);     // sign1 even, l0 -> 1+0+6
+    // D8 Ashtamsa: movable->l ; fixed->l+8 ; dual->l+4 ; l = deg/3.75
+    Check("rule D8 Ar 2",   new AshtamsaD8SignRule().SignFor(2),   ZodiacName.Aries);       // sign0 movable l0
+    Check("rule D8 Ta 2",   new AshtamsaD8SignRule().SignFor(32),  ZodiacName.Sagittarius); // sign1 fixed l0 -> 8
+    Check("rule D8 Ge 2",   new AshtamsaD8SignRule().SignFor(62),  ZodiacName.Leo);         // sign2 dual l0 -> 4
+    // D24 Siddhamsa: odd -> 4+l ; even -> 3+l ; l = deg/1.25
+    Check("rule D24 Ar 1",  new SiddhamsaD24SignRule().SignFor(1),  ZodiacName.Leo);        // sign0 odd l0 -> 4
+    Check("rule D24 Ta 1",  new SiddhamsaD24SignRule().SignFor(31), ZodiacName.Cancer);     // sign1 even l0 -> 3
+    // D27 Nakshatramsa: fire->l ; earth->l+3 ; air->l+6 ; water->l+9 ; l = deg/(30/27)
+    Check("rule D27 Ar 1",  new NakshatramsaD27SignRule().SignFor(1),  ZodiacName.Aries);       // fire l0
+    Check("rule D27 Ta 1",  new NakshatramsaD27SignRule().SignFor(31), ZodiacName.Cancer);      // earth l0 -> 3
+    Check("rule D27 Ge 1",  new NakshatramsaD27SignRule().SignFor(61), ZodiacName.Libra);       // air l0 -> 6
+    Check("rule D27 Cn 1",  new NakshatramsaD27SignRule().SignFor(91), ZodiacName.Capricornus); // water l0 -> 9
+
     // Nakshatra name canon — must match tbl_Nakshatras.NakshatraName exactly
     Check("Name idx0",  AstroMath.GetNakshatraName(ConstellationName.Aswini),   "Ashwini");
     Check("Name idx7",  AstroMath.GetNakshatraName(ConstellationName.Pushyami), "Pushya");
