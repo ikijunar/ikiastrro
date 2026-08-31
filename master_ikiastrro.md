@@ -92,9 +92,11 @@ maintained · `superseded` = replaced, kept for history.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
-| [`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`](docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md) | Web UI rebuild around 5 life-area tabs — Plan 1 groundwork merged; Plan 2 (UI) not started | 2026-08-30 | snapshot (partial) |
+| [`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`](docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md) | Web UI rebuild around 5 life-area tabs. **SUPERSEDED 2026-09-01** by the varga-centric spec; Phase-0 groundwork was built + is reused | 2026-08-30 | superseded |
 | [`docs/superpowers/specs/2026-08-31-chart-schema-normalization-design.md`](docs/superpowers/specs/2026-08-31-chart-schema-normalization-design.md) | Chart-fact schema normalization (see DB design above) | 2026-08-31 | snapshot (implemented) |
 | [`docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md`](docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md) | Complete the divisional-chart set (17 vargas + D2-US), DB-driven varga rules, DB-completeness invariant. Plan A scope; D81/D108/D144/D150 → Plan B (not yet written) | 2026-08-31 | snapshot (Plan A implemented) |
+| [`docs/superpowers/specs/2026-09-01-jaimini-chara-karaka-special-points-design.md`](docs/superpowers/specs/2026-09-01-jaimini-chara-karaka-special-points-design.md) | Chara Karakas (Ashta) + special points (AL, 12 Bhava Arudhas, HL, Gulika, Maandi) through all 21 vargas; `PointKind` column; static combined D1+D9 chart. Migration 14. Sequenced before the UI rebuild | 2026-09-01 | draft (for plan) |
+| [`docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md`](docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md) | Whole-app Web rebuild: varga-centric (D1 hero + grouped varga rail), enriched South-Indian grid + Syncfusion polar-wheel toggle, dedicated Timing route, dark parchment kept, yellow Home/Charts nav. Consumes the Jaimini spec | 2026-09-01 | draft (for plan) |
 
 ## Plans — dated per-feature implementation (writing-plans output)
 

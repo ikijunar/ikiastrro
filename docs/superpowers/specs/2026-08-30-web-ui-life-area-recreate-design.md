@@ -1,6 +1,12 @@
 # Design Spec — Web UI recreate around life-area groups
 
-**Status:** Approved design, pre-implementation
+**Status:** SUPERSEDED (2026-09-01) by `2026-09-01-varga-centric-web-ui-design.md` — the UI
+rebuild is now varga-centric, not life-area. Phase 0 (groundwork) of this spec WAS built and
+merged (`ChartViewModel`/`PlanetRow` rename, `LagnaFunctionalNature`, `LifeAreaMap`,
+`ChartGenerationService`, batch `GetByBirthDetailId` reads, migration 031) and is reused by
+the new spec — see its §9. The life-area tabs, `LifeAreaTab` component family, and the
+reference browser here are not being built as designed; kept for reference / a possible later
+pass.
 **Owner:** rammyps
 **Created:** 2026-08-30
 **Approach:** A — in-place incremental rebuild of `Ikiastrro.Web` (see "Approaches considered")
