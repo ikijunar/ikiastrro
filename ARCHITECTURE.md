@@ -12,13 +12,20 @@ Blazor Server web workspace. (Renamed from `vedic_horo_gen` / `VedicHoroGen` on 
 
 ## Reference specs
 
+> **Full doc index:** [`master_ikiastrro.md`](master_ikiastrro.md) — every project `.md`, grouped by category, with purpose / path / date / status. The naming convention is STANDARDS §M.1.
+
 | Doc | What it's for |
 |---|---|
-| `ikiastrro_techspecs.md` | Architecture, stack, projects, data layer, DB, build/run, verification |
-| `ikiastrro_uidesignspecs.md` | Web workspace design — layout, design tokens, every component, the decisions behind them |
-| `ikiastrro_datavizspecs.md` | Charting stack — Syncfusion Blazor pick + rationale, screen-by-screen chart mapping, `tokens.css` palette reconciliation, NuGet list |
-| `ikiastrro_calculations.md` | Every astrological calculation: ayanamsha, houses, dignity, vargas, Dasha, combustion, retrograde, Sade Sati, functional nature — with sources |
-| *(product specs — to be added)* | |
+| `docs/rationale-techstack.md` | **Why** the stack is what it is — .NET/C#, SwissEphNet, SQL Server, Blazor, star-schema, Python-for-comparison, why-not-just-JHora. The reasoning behind the choices `techstack-*` describes factually |
+| `docs/techstack-overview.md` | Verified stack snapshot — pinned package versions, per-project dependency lists, checked against the `.csproj` files |
+| `docs/techstack-details.md` | Architecture, projects, data layer, DB, build/run, verification |
+| `docs/dbdesign-star-schema-rules-engine.md` | Database design — the versioned `tbl_Dim_*` / `tbl_Rule_*` / `tbl_Fact_*` layer (Phase 1) and its open Phase 2 |
+| `docs/uidesign-specs.md` | Web workspace design — layout, design tokens, every component, the decisions behind them |
+| `docs/uidesign-dataviz.md` | Charting stack — Syncfusion Blazor pick + rationale, screen-by-screen chart mapping, palette reconciliation, NuGet list |
+| `docs/reference-calculations.md` | Every astrological calculation: ayanamsha, houses, dignity, vargas, Dasha, combustion, retrograde, Sade Sati, functional nature — with sources |
+| `docs/scope-requirements-gap.md` | Current requirements gap vs. a full JHora natal export — what's still to compute/store/present |
+| `docs/scope-jhora-coverage.md` | Block-by-block coverage of a JHora export (~7 of ~35 blocks) with build tiers |
+| `docs/scope-nakshatra-linkage-divisional-charts.md` | Product scope for the nakshatra-linkage + divisional-chart work |
 
 ## Related documents
 
@@ -31,14 +38,14 @@ that matches what you need rather than re-deriving it:
 |---|---|
 | `ikiastrro.md` | Full running build/decision history, dated sections, every session's "what changed and why" |
 | `methods_prodmag.md` | Product-management process (Vision → JTBD → Opportunity Backlog → ICE scoring → Now/Next/Later roadmap) — read before picking the next feature |
-| `docs/bhava-coverage.md` | Scorecard of what's built vs. missing against the classical 8-point Bhava-analysis checklist — the framework behind several current backlog items |
-| `docs/vedic-reference-tables.md` | Design doc for the classical reference/master-data tables (`tbl_Planets`, `tbl_SignAttributes`, `tbl_Nakshatras`/Padas/SubLords, `tbl_PlanetSignTransitEvents`) |
-| `docs/star-schema-rules-engine.md` | Design doc for the versioned `tbl_Rule_*` rules-engine layer (Phase 1) and its still-open Phase 2 (wiring calculators to read from it) |
+| `docs/scope-bhava-coverage.md` | Scorecard of what's built vs. missing against the classical 8-point Bhava-analysis checklist — the framework behind several current backlog items |
+| `docs/reference-vedic-data-tables.md` | Design doc for the classical reference/master-data tables (`tbl_Planets`, `tbl_SignAttributes`, `tbl_Nakshatras`/Padas/SubLords, `tbl_PlanetSignTransitEvents`) |
+| `docs/dbdesign-star-schema-rules-engine.md` | Design doc for the versioned `tbl_Rule_*` rules-engine layer (Phase 1) and its still-open Phase 2 (wiring calculators to read from it) |
 | `decisions/001-star-schema-rules-engine.md` | ADR / decision record behind the above — the context, the star-schema decision, and its consequences in one page (the `docs/` file is the implementation plan) |
-| `docs/house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migration 030 (031's Raman mirror table was removed 2026-08-31) |
-| `docs/horoscope_compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `Ikiastrro.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
-| `docs/techstack.md` | Verified stack snapshot — pinned package versions and per-project (`Core`/`Data`/`Cli`/`Web`) dependency lists, checked against the `.csproj` files. The `## Stack` section below is the short version |
-| `research_ikiastrro.md` | Topic-research master — is a classical technique's raw data captured, and where are the gaps. Topic 1: planetary roles (Naisargika/Chara Karaka, Functional/House/Nakshatra Lord) + Avastha states (Baaladi/Jagradadi/Deeptadi/Lajjitadi/Sayanadi). D2 diagrams under `docs/research/` |
+| `docs/reference-house-lagna-significations.md` | Design/action-plan doc for house+planet significations, Sthira Karaka mapping, and Lagna functional benefic/malefic — sourced from `BookExtracts\how-to-judge-a-horoscope-1.md`, migration 030 (031's Raman mirror table was removed 2026-08-31) |
+| `docs/research-horoscope-software-compare.md` | UI/UX & feature comparison of existing Vedic-astrology software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow / avoid for `Ikiastrro.Web`, mapped to our components. Reference repos + screenshots under `_research/` (git-ignored) |
+| `docs/techstack-overview.md` | Verified stack snapshot — pinned package versions and per-project (`Core`/`Data`/`Cli`/`Web`) dependency lists, checked against the `.csproj` files. The `## Stack` section below is the short version |
+| `docs/research-topic-coverage.md` | Topic-research master — is a classical technique's raw data captured, and where are the gaps. Topic 1: planetary roles (Naisargika/Chara Karaka, Functional/House/Nakshatra Lord) + Avastha states (Baaladi/Jagradadi/Deeptadi/Lajjitadi/Sayanadi). D2 diagrams under `docs/research/` |
 | `STANDARDS.md` | Workspace-wide naming/structure conventions (DB/table/view/proc naming, migration numbering) this project follows |
 
 ## Stack
@@ -46,7 +53,7 @@ that matches what you need rather than re-deriving it:
 - Calculation engine: [SwissEphNet](https://www.nuget.org/packages/SwissEphNet) — a managed C# port of Astrodienst's Swiss Ephemeris, Moshier analytical mode (no ephemeris data files to bundle), embedded NuGet package
 - Database: MS SQL Server, Windows Auth, `localhost` default instance
 - Ayanamsha: Lahiri (Swiss Ephemeris's own `SE_SIDM_LAHIRI` sidereal mode, applied directly — no correction layer needed) · House system: Whole Sign
-- Data visualization: **Syncfusion Blazor** (Charts / Gauge, Community License) — the one sanctioned component library, for strength bars / heatmaps / Dasha timelines / polar longitude wheel only; chart *diagrams* (South/North Indian grids, LifeWeeks) stay hand-rolled SVG. Decision 2026-08-31, `ikiastrro_datavizspecs.md`; not yet wired into `src/`.
+- Data visualization: **Syncfusion Blazor** (Charts / Gauge, Community License) — the one sanctioned component library, for strength bars / heatmaps / Dasha timelines / polar longitude wheel only; chart *diagrams* (South/North Indian grids, LifeWeeks) stay hand-rolled SVG. Decision 2026-08-31, `docs/uidesign-dataviz.md`; not yet wired into `src/`.
 
 ## Place resolution
 
@@ -116,7 +123,7 @@ Four tables, populated automatically alongside **every** chart type this project
 tables above. Vocabulary in `tbl_Dim_AvasthaState`; the degree bands / dignity map are
 `RuleSetId`-scoped `tbl_Rule_BaaladiState` / `tbl_Rule_JagradadiState`. Surfaced on
 `vw_Chart_Consolidated` (`BaaladiState`, `BaaladiEffectFraction`, `JagradadiState`). Deeptadi /
-Lajjitadi / Sayanadi are follow-on slices — see `research_ikiastrro.md`.
+Lajjitadi / Sayanadi are follow-on slices — see `docs/research-topic-coverage.md`.
 
 All 4 tables carry a `ChartType` column (`"D1"`, `"D9"`, ...) alongside `ChartResultId`/`BirthDetailId`, so any of them read standalone without a join to `tbl_ChartResults`. (They also used to carry a denormalized `Name` copy of `tbl_BirthDetails.Name` the same way; dropped 2026-08-28 — schema-review finding, nothing read it and nothing kept it in sync, see the dated history for the full list of that day's fixes.)
 
@@ -238,7 +245,7 @@ Rashi rows), `tbl_PlanetSignTransitEvents` (Saturn/Jupiter/Rahu sign-boundary cr
 **table only, 0 rows yet**, backfill needs a new CLI mode), `tbl_Nakshatras` (27),
 `tbl_NakshatraPadas` (108, with verified 1:1 Pada↔Navamsa mapping), `tbl_NakshatraSubLords`
 (243, KP sub-lord levels 1-2 only). Full design rationale, classical cross-references, and
-what's still NULL pending a sourced reference: `D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md`.
+what's still NULL pending a sourced reference: `D:\@ClaudeSpace\ikiastrro\docs\reference-vedic-data-tables.md`.
 
 Not yet wired into the calculation engine — `ClassicalDignity.cs`/`AstroMath.cs` still hold
 their own hardcoded lookups, cross-checked to match these tables' seed data but not reading
@@ -270,7 +277,7 @@ can be ported to `Ikiastrro.Core` with attribution, the same way the varga formu
 transcribed from PyJHora. Shadbala is in the same position (`.../components/strengths.py`, MIT,
 all six balas). Only the Sodhya/Rasi/Graha Pinda *reduction* step (Trikona + Ekadhipatya
 Shodhana) still needs BPHS/PyJHora as a reference — jyotishganit stops at the BAV/SAV grids.
-Full gap analysis and build tiers: `key_comp_astro.md`.
+Full gap analysis and build tiers: `docs/scope-jhora-coverage.md`.
 
 **Star-schema rules engine (Phase 1)**: classical rules previously only hardcoded in
 `ClassicalRelationships.cs`/`ClassicalCombustion.cs`/`ClassicalDignity.cs` are now also
@@ -284,12 +291,12 @@ each scoped by a `RuleSetId` so a future rule change is a new row set, never an 
 C# dictionaries are still what actually runs; the rule tables are a verified-matching mirror,
 not yet the source of truth. Full design + Phase 2 scope (renaming `tbl_Chart_*` into
 `tbl_Fact_*`/`tbl_Dim_*` and wiring the calculators to read live):
-`D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md`. New tables from 2026-08-30 onward
+`D:\@ClaudeSpace\ikiastrro\docs\dbdesign-star-schema-rules-engine.md`. New tables from 2026-08-30 onward
 must use the `tbl_Dim_`/`tbl_Rule_`/`tbl_Fact_` infix — see `STANDARDS.md` §D.1.
 
 ## House + Lagna significations
 
-Design doc + full sourcing: `D:\@ClaudeSpace\ikiastrro\docs\house-lagna-significations.md`.
+Design doc + full sourcing: `D:\@ClaudeSpace\ikiastrro\docs\reference-house-lagna-significations.md`.
 Sourced from `BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman).
 
 - **`tbl_Dim_LagnaFunctionalNature` — built 2026-08-30 (migration `031`), removed 2026-08-31.**

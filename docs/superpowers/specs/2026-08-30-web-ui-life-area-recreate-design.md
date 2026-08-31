@@ -6,11 +6,11 @@
 **Approach:** A — in-place incremental rebuild of `Ikiastrro.Web` (see "Approaches considered")
 **Related:**
 - `ikiastrro/README.md` (current Web state + the "hardcoded to D1+D9" known limitation this closes)
-- `ikiastrro/docs/horoscope_compare.md` (UI research; cross-cutting decisions 1–7)
+- `ikiastrro/docs/research-horoscope-software-compare.md` (UI research; cross-cutting decisions 1–7)
 - `ikiastrro/src/Ikiastrro.Web/Components/DESIGN.md` (design-language rule)
-- `ikiastrro/docs/house-lagna-significations.md` (migration 031 design — functional nature)
+- `ikiastrro/docs/reference-house-lagna-significations.md` (migration 031 design — functional nature)
 - `D:\@ClaudeSpace\BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman — functional benefic/malefic per Lagna, p.16–18; house significations p.12–13)
-- `key_comp_astro.md` (feature-coverage gap analysis — the "computed but invisible" list this surfaces)
+- `docs/scope-jhora-coverage.md` (feature-coverage gap analysis — the "computed but invisible" list this surfaces)
 - `D:\@ClaudeSpace\methods_prodmag.md` (PM backlog — mark the life-area UI on ship)
 
 ---
@@ -44,7 +44,7 @@ Recreate `Ikiastrro.Web`'s read/display layer so it (a) **surfaces data already 
 ## 3. Scope
 
 **In:** everything in §4–§13 below.
-**Out:** interpretation/prediction text; ICE-scoring the result; North Indian grid; light theme; auth; any new divisional chart beyond the existing D1/D2/D6/D9/D10/D11; Ashtakavarga/Shadbala UI (those need Core work first — see `key_comp_astro.md`).
+**Out:** interpretation/prediction text; ICE-scoring the result; North Indian grid; light theme; auth; any new divisional chart beyond the existing D1/D2/D6/D9/D10/D11; Ashtakavarga/Shadbala UI (those need Core work first — see `docs/scope-jhora-coverage.md`).
 **Touches Core:** two renames + two new pure classes (`LagnaFunctionalNature`, `LifeAreaMap`). **Touches Data:** one new service + ~9 new repo read methods + 3 reference repos. **Touches CLI:** `Program.cs` cutover to the shared service + two new modes. **Touches DB:** migration 031 only (no chart-schema change).
 
 ---
@@ -177,7 +177,7 @@ Follows the project's existing "table mirrors classical text; engine doesn't rea
 
 **Three rows seeded `FunctionalNature = NULL, Notes = 'Not classified in source (How to Judge a Horoscope, Raman, p.16–18)'`** — the book never classifies them: **Aries → Moon**, **Gemini → Saturn**, **Aquarius → Saturn**. Do not guess.
 
-Column shape (aligns with `house-lagna-significations.md` migration 031 sketch):
+Column shape (aligns with `reference-house-lagna-significations.md` migration 031 sketch):
 `Id TINYINT PK`, `LagnaSignId TINYINT FK tbl_SignAttributes`, `PlanetId TINYINT FK tbl_Planets`, `FunctionalNature VARCHAR(12) NULL CHECK (Benefic|Malefic|Neutral|Yogakaraka)`, `Rank TINYINT NULL` (1 = best/worst within its class, per the book's "best benefic"/"worst malefic" phrasing), `Notes VARCHAR(120) NULL`. Migration number **031** (030 reserved for house significations, per that doc). Base-DDL sync + a `SourceCitation` comment in the migration.
 
 `LagnaFunctionalNatureRepository` (Data): `GetForLagna(byte lagnaSignId) → IReadOnlyList<LagnaFunctionalNatureRow>`.
@@ -385,8 +385,8 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 
 - North Indian grid (`NorthIndianGrid.razor`) — research doc plan stands; a later pass.
 - Interpretation / prediction text and life-area scoring — the core Python engine.
-- Ashtakavarga / Shadbala / Avastha panels — need Core computation first (`key_comp_astro.md` Tiers 3).
-- Additional vargas (D3/D7/D12/D30/D60 …) — `key_comp_astro.md` §2.
+- Ashtakavarga / Shadbala / Avastha panels — need Core computation first (`docs/scope-jhora-coverage.md` Tiers 3).
+- Additional vargas (D3/D7/D12/D30/D60 …) — `docs/scope-jhora-coverage.md` §2.
 - Compare-two-people (synastry) view.
 - Light theme / theme toggle.
 - Switching `LifeAreaMap` / `LagnaFunctionalNature` to read `tbl_Dim_*` instead of hardcoded C# (blocked on migration 030 shipping and the project's open "engine reads reference tables" decision).

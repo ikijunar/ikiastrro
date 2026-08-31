@@ -78,7 +78,7 @@ AI-chat-first; `/Calculator` 404s). Source still matches for chart rendering
   score, "Good/Low Result"), then Top-3-strong / Top-3-weak callouts.
 - **Adopt:** the **house → life-area framing** ("Career & Fame", "Marriage & Partnerships"…) as
   the human-readable skin over house analysis — directly relevant to
-  `docs/house-lagna-significations.md` and `docs/bhava-coverage.md`. The Top-3 / Bottom-3 summary
+  `docs/reference-house-lagna-significations.md` and `docs/scope-bhava-coverage.md`. The Top-3 / Bottom-3 summary
   is a good `ChartDetail` header.
 - **Reject:** reducing a house to a single red/green number — too lossy; keep it as an entry
   point that expands to the factors.
@@ -278,7 +278,7 @@ multi-varga layout to copy.
   a returning visitor"). An 8th dashed "About" cell explains the section and links to the full
   panel.
   - **Adopt:** this whole IA for our Bhava-analysis surface — it's the concrete shape for
-    `docs/house-lagna-significations.md` + `docs/bhava-coverage.md` output. Also the principle:
+    `docs/reference-house-lagna-significations.md` + `docs/scope-bhava-coverage.md` output. Also the principle:
     slow analytics render a pending state immediately and compute off the paint path.
   - **Maps to:** a future `Components/Pages/LifeDomain.razor` + a `LifeAtlas.razor` section on
     `ChartDetail.razor`.

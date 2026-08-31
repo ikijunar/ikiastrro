@@ -3,8 +3,8 @@
 Reference doc for charts, gauges, and infographic surfaces in the **ikiastrro web
 workspace** (`Ikiastrro.Web`, Blazor Server, `net8.0`). Living document — update it when
 the charting stack or a screen's visualization changes. Companions:
-`ikiastrro_uidesignspecs.md` (design language, tokens), `ikiastrro_techspecs.md`
-(project layout, `ChartGenerationService`), `ikiastrro_calculations.md` (the math behind
+`docs/uidesign-specs.md` (design language, tokens), `docs/techstack-details.md`
+(project layout, `ChartGenerationService`), `docs/reference-calculations.md` (the math behind
 the numbers being plotted).
 
 Decision recorded 2026-08-31 with rammyps: adopt one charting library across the project
@@ -36,7 +36,7 @@ screen mapping in §3 stays the same except the "Polar" rows.
 
 **Unchanged — stay hand-rolled SVG/CSS:**
 
-- `SouthIndianGrid.razor`, North Indian chart style (geometry in `docs/horoscope_compare.md`)
+- `SouthIndianGrid.razor`, North Indian chart style (geometry in `docs/research-horoscope-software-compare.md`)
 - `LifeWeeks.razor` — 4000-week grid, Dasha-lord coloured
 - `PlanetPositionsTable.razor`, `SadeSatiTable.razor` — tables, not charts
 
@@ -91,7 +91,7 @@ only binds. Keeps the charting library out of Core.
 ## 4. Palette + theme reconciliation
 
 Syncfusion ships its own theme CSS, which collides with the "one design language,
-everything from `tokens.css`, dark-only" rule in `ikiastrro_uidesignspecs.md`. Mitigation:
+everything from `tokens.css`, dark-only" rule in `docs/uidesign-specs.md`. Mitigation:
 
 1. **Theme base:** load `Syncfusion.Blazor.Themes` `fluent2-dark` (closest to the indigo
    dark ground). Reference it once in `App.razor`.

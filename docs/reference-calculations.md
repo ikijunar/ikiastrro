@@ -1,9 +1,9 @@
 # ikiastrro — Calculations Reference
 
 Every astrological calculation ikiastrro performs, its convention, and its source. Living
-document. Companions: `ikiastrro_techspecs.md`, `ikiastrro_uidesignspecs.md`,
-`docs/vedic-reference-tables.md`, `docs/star-schema-rules-engine.md`,
-`docs/house-lagna-significations.md`, `docs/bhava-coverage.md`, `key_comp_astro.md` (feature
+document. Companions: `docs/techstack-details.md`, `docs/uidesign-specs.md`,
+`docs/reference-vedic-data-tables.md`, `docs/dbdesign-star-schema-rules-engine.md`,
+`docs/reference-house-lagna-significations.md`, `docs/scope-bhava-coverage.md`, `docs/scope-jhora-coverage.md` (feature
 gap vs. Jagannatha Hora).
 
 All calculation code is in **`Ikiastrro.Core`** and takes no dependency on any external
@@ -68,7 +68,7 @@ shared `ChartAnalyzer`.
   its D1 value.
 - Verification: `verify-vargas` (26 worked-example checks), plus historical cross-checks —
   40/40 hand-check vs. D1 longitudes, external D2 10/10 and D6 10/10 vs. astro-seek.
-- Out of scope: D3/D7/D12/D30/D60 and the rest of the Shodashavarga (see `key_comp_astro.md`).
+- Out of scope: D3/D7/D12/D30/D60 and the rest of the Shodashavarga (see `docs/scope-jhora-coverage.md`).
 
 ---
 
@@ -242,7 +242,7 @@ IsMaraka, KendradhipatiDosha, Rationale)`. Rahu/Ketu out of scope (no sign ruler
 
 ## 10a. Avasthas — Baaladi & Jagradadi (star-schema, 2026-08-31)
 
-Planetary "states" — slice 1 of the avastha layer (`research_ikiastrro.md`). Star-schema
+Planetary "states" — slice 1 of the avastha layer (`docs/research-topic-coverage.md`). Star-schema
 (`STANDARDS.md` §D.1): `tbl_Dim_AvasthaState` (state vocabulary) + `tbl_Rule_BaaladiState` /
 `tbl_Rule_JagradadiState` (`RuleSetId`-scoped) → computed per planet per chart by
 `PlanetAvasthaComputer` (in `ChartGenerationService.PersistAnalytics`), stored on
@@ -264,7 +264,7 @@ Planetary "states" — slice 1 of the avastha layer (`research_ikiastrro.md`). S
 
 ---
 
-## 11. Reference / master data (`docs/vedic-reference-tables.md`)
+## 11. Reference / master data (`docs/reference-vedic-data-tables.md`)
 
 Parallel dimension layer, distinct from the chart-specific `tbl_Chart_*`:
 
@@ -282,7 +282,7 @@ their own hard-coded lookups (cross-checked to match, not reading these tables).
 
 ---
 
-## 12. Rules engine (`docs/star-schema-rules-engine.md`, `decisions/001-*`)
+## 12. Rules engine (`docs/dbdesign-star-schema-rules-engine.md`, `decisions/001-*`)
 
 `tbl_Rule_Sets` version dimension (1 row: `'Parashari-Classical'`, active) + `tbl_Rule_*`
 tables (`AspectOffset` 19, `CombustionOrb` 6, `NaturalRelationship` 42,
@@ -298,10 +298,10 @@ today the app still runs on the hard-coded C#; the tables are a cross-check mirr
 
 ## 13. Coverage vs. classical / vs. Jagannatha Hora
 
-- **Bhava-analysis 8-point checklist** (`docs/bhava-coverage.md`): 1 fully covered, 5 partial,
+- **Bhava-analysis 8-point checklist** (`docs/scope-bhava-coverage.md`): 1 fully covered, 5 partial,
   2 not covered. Bhava Bala (point 2) confirmed blocked — not in Raman's Vol. 1. Yoga
   detection (point 4) has usable material, needs its own design pass.
-- **vs. a full JHora natal export** (`key_comp_astro.md`): ~7 of ~35 blocks covered. Absent:
+- **vs. a full JHora natal export** (`docs/scope-jhora-coverage.md`): ~7 of ~35 blocks covered. Absent:
   panchanga, Jaimini chara karakas + rasi dashas, upagrahas, special lagnas, ~14 sphutas,
   Ashtakavarga, Shadbala, Vimsopaka, Avasthas, 12 of the 16 Shodashavarga charts, 5 other
   dasha systems. The vendored MIT `_research/jyotishganit/` unblocks Ashtakavarga / Shadbala /

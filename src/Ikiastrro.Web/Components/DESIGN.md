@@ -24,7 +24,7 @@ things this design language never covered. Its theme CSS must be scoped (wrap in
 `.sf-scope`, keep the Syncfusion sheet out of hand-rolled components) and its chart
 `Palettes` fed the same hex values `tokens.css` defines. Layout, tables, and the
 North/South Indian chart *diagrams* stay hand-rolled. Full rules:
-`../../ikiastrro_datavizspecs.md`.
+`../../docs/uidesign-dataviz.md`.
 
 **Tooling**: no new dependency is needed to enforce this — run `dotnet format` before
 committing. If a new page's styling can't be expressed with the existing tokens, extend

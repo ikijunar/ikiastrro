@@ -2,9 +2,9 @@
 
 Reference doc for the technical shape of **ikiastrro** (Vedic astrology app; renamed from
 `VedicHoroGen` / `vedic_horo_gen` on 2026-08-30). Living document — update it when the
-architecture changes. Companions: `ikiastrro_uidesignspecs.md` (web UI),
-`ikiastrro_datavizspecs.md` (charting stack), `ikiastrro_calculations.md` (astrology math),
-`ikiastrro.md` (dated history), `docs/techstack.md` (pinned package versions).
+architecture changes. Companions: `docs/uidesign-specs.md` (web UI),
+`docs/uidesign-dataviz.md` (charting stack), `docs/reference-calculations.md` (astrology math),
+`ikiastrro.md` (dated history), `docs/techstack-overview.md` (pinned package versions).
 
 ---
 
@@ -39,7 +39,7 @@ Solution file: **`Ikiastrro.slnx`** (XML slnx format). Namespaces are `Ikiastrro
 
 ---
 
-## 3. Key dependencies (pinned — see `docs/techstack.md` for the full list)
+## 3. Key dependencies (pinned — see `docs/techstack-overview.md` for the full list)
 
 - **`SwissEphNet` 2.8.0.2** — managed C# port of Astrodienst's Swiss Ephemeris, **Moshier
   analytical mode** (no ephemeris data files to ship). The calculation engine. Replaced
@@ -57,7 +57,7 @@ Solution file: **`Ikiastrro.slnx`** (XML slnx format). Namespaces are `Ikiastrro
   timelines, and the polar longitude wheel. Native Blazor Server components (no JS
   framework). Everything else — layout, tables, the North/South Indian chart diagrams,
   the LifeWeeks grid — stays hand-rolled SVG/CSS. Rationale + screen-by-screen mapping:
-  `ikiastrro_datavizspecs.md`. Decision 2026-08-31; not yet wired into `src/`.
+  `docs/uidesign-dataviz.md`. Decision 2026-08-31; not yet wired into `src/`.
 - Blazor Server only — no client-side JS framework. Razor components use CSS isolation
   (`Component.razor.css`); Syncfusion is the single sanctioned component-library exception,
   scoped so its theme CSS can't leak.

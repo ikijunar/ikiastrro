@@ -1,4 +1,4 @@
-# research_ikiastrro.md — topic research & coverage master
+# Topic Research & Coverage Master
 
 Master index for **research spikes** on ikiastrro: what a classical technique is, whether
 the raw facts it needs are already captured, and where the gaps are. Each topic gets a
@@ -8,10 +8,10 @@ section here plus, where a picture helps, a **D2 diagram** under `docs/research/
 
 | Kind | Location | Pattern | Example |
 |---|---|---|---|
-| This master index | repo root | `research_ikiastrro.md` | — |
+| This master index | `docs/` | `docs/research-topic-coverage.md` | — |
 | Diagram source (D2 language) | `docs/research/` | `<topic-kebab>.d2` | `docs/research/planetary-roles.d2` |
 | Rendered diagram (optional) | `docs/research/` | `<topic-kebab>.svg` | `d2 planetary-roles.d2 planetary-roles.svg` |
-| Deep-dive design (if a topic graduates to a build) | `docs/` | `<topic-kebab>.md` | `docs/house-lagna-significations.md` |
+| Deep-dive design (if a topic graduates to a build) | `docs/` | `<topic-kebab>.md` | `docs/reference-house-lagna-significations.md` |
 
 > `d2` CLI is **not installed** on this machine — the `.d2` files are the deliverable; render
 > later with `d2` or paste into <https://play.d2lang.com>.
@@ -35,8 +35,8 @@ Diagrams:
 | **House Lord** | ✅ | ✅ | `tbl_Chart_HouseLords` (house 1-12 per chart type: `HouseSign`, `LordPlanet`, `LordPlacedInHouseFrom{Lagna,Sun,Moon}`, `LordPlacedInSign`, `LordDignityStatus`); `vw_Chart_Consolidated.RulesHouseNumbers`; `ClassicalDignity.GetSignLord` | ✅ | **FULLY CAPTURED** |
 | **Nakshatra Lord** | ✅ | ✅ | `tbl_Chart_KeyDetails.NakshatraLordPlanet` (+ `NakshatraSubLordPlanet`, KP L2) — every chart type; `AstroMath.GetNakshatraLord` / `GetNakshatraSubLord`; ref `tbl_Nakshatras` (27), `tbl_NakshatraSubLords` (243) | ✅ | **FULLY CAPTURED** |
 | **Functional Lordship** | ✅ | ❌ | `Core/Calculators/LagnaFunctionalNature.For(lagnaSign, planet)` → `FunctionalNatureResult { Nature (Benefic/Malefic/Neutral/Yogakaraka), RuledHouses, IsMaraka, KendradhipatiDosha, Rationale }`. Web D1 planet table only. CLI `verify-functional-nature`. **No persisted column** — the Raman mirror `tbl_Dim_LagnaFunctionalNature` was removed 2026-08-31. | ✅ | **COMPUTED, NOT STORED** |
-| **Naisargika Karaka** | partial | ❌ | Hardcoded subset in `Core/LifeAreas/LifeAreaMap.cs` (`Karakas` per life-area). Migration 030 (`tbl_Dim_PlanetHouseKaraka` / `tbl_Dim_PlanetSignification`) is **designed but not applied** (`docs/house-lagna-significations.md`). Sapta (7) vs Ashta (8) convention undecided. | n/a (reference data) | **PARTIAL — no data table** |
-| **Chara Karaka** | ❌ | ❌ | Not built. Jaimini 8-fold (AK/AmK/BK/MK/PK/GK/DK + variant 8th), rank planets by degrees-within-sign (Rahu reversed). Input ready: `DegreesInSignDecimal`. `key_comp_astro.md` Tier-1 #3. Feeds Karakamsa + Jaimini rasi dashas. | ✅ (input only) | **MISSING** |
+| **Naisargika Karaka** | partial | ❌ | Hardcoded subset in `Core/LifeAreas/LifeAreaMap.cs` (`Karakas` per life-area). Migration 030 (`tbl_Dim_PlanetHouseKaraka` / `tbl_Dim_PlanetSignification`) is **designed but not applied** (`docs/reference-house-lagna-significations.md`). Sapta (7) vs Ashta (8) convention undecided. | n/a (reference data) | **PARTIAL — no data table** |
+| **Chara Karaka** | ❌ | ❌ | Not built. Jaimini 8-fold (AK/AmK/BK/MK/PK/GK/DK + variant 8th), rank planets by degrees-within-sign (Rahu reversed). Input ready: `DegreesInSignDecimal`. `docs/scope-jhora-coverage.md` Tier-1 #3. Feeds Karakamsa + Jaimini rasi dashas. | ✅ (input only) | **MISSING** |
 
 ### 1b. Avastha states — coverage
 
@@ -83,7 +83,7 @@ D9 sign); Parashari avasthas still apply to the Chara AK unchanged.
    queryable, not on `vw_Chart_Consolidated`.
 5. **No natural benefic/malefic classifier as a reusable unit** — needed by Deeptadi,
    Lajjitadi, and (already) some functional-nature logic; today it's inline.
-6. **Janma ghatis not persisted** — blocks Sayanadi and several `key_comp_astro.md`
+6. **Janma ghatis not persisted** — blocks Sayanadi and several `docs/scope-jhora-coverage.md`
    upagraha / special-lagna items.
 7. **Degree-in-sign is D1-only** — Baaladi (and Vargottama, and Chara Karaka on vargas)
    need per-varga within-sign degree (the standing ICE-7.7 item).
@@ -110,10 +110,10 @@ D9 sign); Parashari avasthas still apply to the Chara AK unchanged.
 
 ## References
 
-- `docs/house-lagna-significations.md` — migration 030 design (Naisargika Karaka / Sthira
+- `docs/reference-house-lagna-significations.md` — migration 030 design (Naisargika Karaka / Sthira
   Karaka roles), migration 031 record (removed 2026-08-31)
-- `docs/bhava-coverage.md` — 8-point Bhava-analysis scorecard
-- `key_comp_astro.md` — JHora feature-gap tiers (Chara Karaka = Tier-1 #3; Avasthas = Tier-3 #10)
-- `ikiastrro_calculations.md` — dignity, combustion, nakshatra-lord, functional-nature engines
+- `docs/scope-bhava-coverage.md` — 8-point Bhava-analysis scorecard
+- `docs/scope-jhora-coverage.md` — JHora feature-gap tiers (Chara Karaka = Tier-1 #3; Avasthas = Tier-3 #10)
+- `docs/reference-calculations.md` — dignity, combustion, nakshatra-lord, functional-nature engines
 - `ARCHITECTURE.md` — `tbl_Chart_KeyDetails` / `tbl_Chart_HouseLords` / `tbl_Chart_Conjunctions` column detail
 - BPHS ch. "Graha Avastha"; B.V. Raman, *Graha and Bhava Balas*; *How to Judge a Horoscope* Vol. 1

@@ -2,7 +2,7 @@
 
 **Purpose:** Consolidates what B.V. Raman's *How to Judge a Horoscope* (complete Volume 1 extract)
 actually contains for each of the 8 classical Bhava-analysis points, cross-referenced against
-`vedic_horo_gen`'s current coverage (`bhava-coverage.md`), and lays out concrete next steps per point.
+`vedic_horo_gen`'s current coverage (`scope-bhava-coverage.md`), and lays out concrete next steps per point.
 
 > **Source file:** `D:\@ClaudeSpace\BookExtracts\how-to-judge-a-horoscope-1.md` — the finalised
 > Volume 1 extract (produced via the [[book_to_md]] pipeline). This work drew on the book's

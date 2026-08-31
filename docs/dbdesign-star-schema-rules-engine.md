@@ -22,7 +22,7 @@ exists yet in this solution; see Task 6).
 **Spec:** This document is both spec and plan — there is no separate upstream spec file. The
 one-page decision record behind it (context / decision / consequences) is
 `..\decisions\001-star-schema-rules-engine.md`. Prior related design docs:
-`D:\@ClaudeSpace\ikiastrro\docs\vedic-reference-tables.md` (the
+`D:\@ClaudeSpace\ikiastrro\docs\reference-vedic-data-tables.md` (the
 Planets/SignAttributes/Nakshatras dimension tables this plan builds on).
 
 ## Global Constraints
@@ -79,7 +79,7 @@ ikiastrro/
     Ikiastrro.Cli/
       Program.cs                                   — modify: add `list-rule-sets`, `show-rules <name>`
   D:\@ClaudeSpace\
-    star-schema-rules-engine.md      — this file
+    dbdesign-star-schema-rules-engine.md      — this file
 ```
 
 ---
@@ -693,7 +693,7 @@ git commit -m "cli: add list-rule-sets/show-rules for inspecting the new rules t
 ## Task 8: Document Phase 2 scope (no code — a decision record)
 
 **Files:**
-- Modify: `D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md` (this file — append the
+- Modify: `D:\@ClaudeSpace\ikiastrro\docs\dbdesign-star-schema-rules-engine.md` (this file — append the
   section below)
 - Modify: `D:\@ClaudeSpace\STANDARDS.md` §D (only if/when Phase 2 is approved — flag the need,
   don't edit yet)
@@ -711,7 +711,7 @@ git commit -m "cli: add list-rule-sets/show-rules for inspecting the new rules t
 - [ ] **Step 2: Commit**
 
 ```bash
-git add "D:\@ClaudeSpace\ikiastrro\docs\star-schema-rules-engine.md"
+git add "D:\@ClaudeSpace\ikiastrro\docs\dbdesign-star-schema-rules-engine.md"
 git commit -m "docs: record Phase 2 (fact/dim table rename) scope, not started"
 ```
 

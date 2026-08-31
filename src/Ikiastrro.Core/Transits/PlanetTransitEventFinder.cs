@@ -8,7 +8,7 @@ public record PlanetTransitEvent(PlanetName Planet, DateTime EventDateTimeUtc, Z
 /// <summary>
 /// Finds every sign-boundary crossing for the slow planets (Saturn, Jupiter, Rahu) over an arbitrary
 /// UTC date range, by walking day-by-day and bisecting each detected crossing down to within 1 minute.
-/// Backs tbl_PlanetSignTransitEvents (see docs/vedic-reference-tables.md, point 2).
+/// Backs tbl_PlanetSignTransitEvents (see docs/reference-vedic-data-tables.md, point 2).
 ///
 /// Daily stepping is safe here specifically because these three are the slowest-moving bodies — none
 /// of them can cross more than one 30° sign boundary within a single day (Rahu's fastest daily motion

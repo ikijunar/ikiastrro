@@ -8,7 +8,7 @@ export is a feature-parity checklist, not the numeric source of truth. Longitude
 already independently verified against Swiss Ephemeris-compatible tools. This document
 therefore identifies computations, data, configuration, and presentation still required
 after the current implementation described in `ARCHITECTURE.md` and
-`ikiastrro_calculations.md` (reviewed 2026-08-31).
+`docs/reference-calculations.md` (reviewed 2026-08-31).
 
 ## Current baseline — already delivered
 

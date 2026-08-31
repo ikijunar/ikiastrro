@@ -302,7 +302,7 @@ correctly from memory without one cited source risked exactly the kind of subtle
 data this project has caught before (VedAstro's ayanamsha/Ketu bugs). Structure is ready;
 populate via an `UPDATE` once a specific source is picked and cross-checked.
 
-> **Sourcing status (reviewed 2026-08-30, `key_comp_astro.md`):** the vendored computation
+> **Sourcing status (reviewed 2026-08-30, `docs/scope-jhora-coverage.md`):** the vendored computation
 > libraries under `_research/` do **not** close this gap — these are *descriptive /
 > compatibility* attributes (Gana, Nadi, Yoni, Varna, RisingType…), not computed quantities,
 > and `jyotishganit`'s `panchanga.py` carries only nakshatra *deities*, nothing else from this
@@ -328,7 +328,7 @@ exist and are queryable.
    (replacing the hardcoded C# lookups) versus leaving them as a parallel, cross-checked
    reference layer — not decided either way yet.
 4. Ashtakavarga + Shadbala reference tables — no longer source-blocked (jyotishganit, MIT).
-   Tracked in `key_comp_astro.md` (Tier 3), not in this doc's table scope.
+   Tracked in `docs/scope-jhora-coverage.md` (Tier 3), not in this doc's table scope.
 
 ---
 

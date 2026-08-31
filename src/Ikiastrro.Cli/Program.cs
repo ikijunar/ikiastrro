@@ -459,7 +459,7 @@ if (args.Length > 0 && args[0] == "precheck-planet-transits")
 
 // --- One-off backfill mode: `dotnet run -- backfill-planet-transits` ---
 // Full 1930-2060 sign-boundary-crossing backfill for Saturn/Jupiter/Rahu into
-// tbl_PlanetSignTransitEvents (point 2, docs/vedic-reference-tables.md). Ketu is never
+// tbl_PlanetSignTransitEvents (point 2, docs/reference-vedic-data-tables.md). Ketu is never
 // stored -- always derived from Rahu via vw_KetuSignTransitEvents. Idempotent per planet: skips
 // any tracked planet that already has rows, so it's safe to re-run (e.g. after adding Mars later).
 if (args.Length > 0 && args[0] == "backfill-planet-transits")

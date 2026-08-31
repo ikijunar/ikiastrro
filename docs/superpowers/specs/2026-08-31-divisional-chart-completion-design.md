@@ -4,7 +4,7 @@
 **Date:** 2026-08-31
 **Author:** Claude (Sonnet 5) with rammyps
 **Predecessors:** `2026-08-30-web-ui-life-area-recreate-design.md`, `2026-08-31-chart-schema-normalization-design.md`
-**Source gap list:** `requirements_gap_ikiastrro.md` §4 (Shodashavarga set) + §1 (varga within-sign degree, provenance)
+**Source gap list:** `docs/scope-requirements-gap.md` §4 (Shodashavarga set) + §1 (varga within-sign degree, provenance)
 
 ---
 
@@ -155,7 +155,7 @@ Add:
 the `SwissEphemerisProvider` call already made — no extra ephemeris work.
 
 Full panchanga (Tithi / Karana / Yoga / Nakshatra-% / Vedic weekday / sunrise /
-sunset / Janma Ghatis / lunar month — `requirements_gap_ikiastrro.md` §2) is
+sunset / Janma Ghatis / lunar month — `docs/scope-requirements-gap.md` §2) is
 **out of scope here**, but these three columns establish the "computation
 context" shape it will extend (a future `tbl_Fact_BirthPanchanga` keyed by
 `BirthDetailId`, or additional `tbl_ChartResults` columns).

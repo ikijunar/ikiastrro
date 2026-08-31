@@ -1,8 +1,8 @@
 # ikiastrro — UI / Design Specifications
 
 Reference doc for the **ikiastrro web workspace** (`Ikiastrro.Web`, Blazor Server). Living
-document — update it when the UI changes. Companions: `ikiastrro_techspecs.md`,
-`ikiastrro_calculations.md`, `docs/horoscope_compare.md` (competitor UI research),
+document — update it when the UI changes. Companions: `docs/techstack-details.md`,
+`docs/reference-calculations.md`, `docs/research-horoscope-software-compare.md` (competitor UI research),
 `src/Ikiastrro.Web/Components/DESIGN.md` (the one-design-language rule).
 
 The workspace was designed over ~6 mockup iterations with rammyps (Aug 2026); this doc
@@ -28,7 +28,7 @@ Originally built for the D1 chart view; every page matches it, nothing invents i
   visualization** (charts, gauges; Community License). Layout, tables, the North/South
   Indian chart diagrams, and the LifeWeeks grid remain hand-rolled SVG/CSS. Syncfusion's
   own theme CSS is scoped and its chart palette is driven from `tokens.css`. Rationale,
-  screen-by-screen chart mapping, and NuGet list: `ikiastrro_datavizspecs.md`.
+  screen-by-screen chart mapping, and NuGet list: `docs/uidesign-dataviz.md`.
 - `dotnet format` before committing.
 
 ### Token set (`tokens.css`)
@@ -168,7 +168,7 @@ Nav shows **`ikiastrro`** (brass, larger) + "dedicated to my guru Sundari Hemach
   graduations). Built through several mockup rounds, then removed in favour of the plain
   3-level Dasha column + the date-ordered Sade Sati list. If revived, it belongs where the
   left+right columns are, not as a per-tab element.
-- **North Indian chart style** — geometry researched (`docs/horoscope_compare.md`, almamesh
+- **North Indian chart style** — geometry researched (`docs/research-horoscope-software-compare.md`, almamesh
   `NorthIndianChartSVG.tsx`), not built.
 - **Malefic/Benefic toggle** (computed heuristic ⇄ Raman book) — prototyped, then simplified
   to computed-only.

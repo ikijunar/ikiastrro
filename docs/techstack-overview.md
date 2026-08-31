@@ -47,7 +47,7 @@ current architecture.
 - `Syncfusion.Blazor.Charts` / `Syncfusion.Blazor.Gauge` / `Syncfusion.Blazor.Themes`
   — Community License; the sole data-visualization library (strength bars, heatmaps,
   Dasha timelines, polar longitude wheel). Native Blazor Server, no JS framework.
-  Decision recorded 2026-08-31 in `ikiastrro_datavizspecs.md`; **not yet added to the
+  Decision recorded 2026-08-31 in `docs/uidesign-dataviz.md`; **not yet added to the
   `.csproj`** — version pin to follow when wired in.
 
 ## Database
@@ -78,4 +78,4 @@ current architecture.
   components — no client-side JS framework (React/Vue/etc.) in the stack
 - No component library for layout/tables/chart diagrams (hand-rolled SVG/CSS from
   `tokens.css`); **Syncfusion Blazor** is the one sanctioned exception, for data
-  visualization only (see `ikiastrro_datavizspecs.md`)
+  visualization only (see `docs/uidesign-dataviz.md`)

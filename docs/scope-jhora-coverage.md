@@ -9,8 +9,8 @@ computations still need to be added and in what order.
 working session; an identical copy is saved at `D:\@ClaudeSpace\Scratchpad\Rammy_Jagannatha.txt`
 (same person/data, includes all 23 divisional-chart grids D1–D144 and all six dasha listings —
 byte-for-byte the same source analysed here, not a second chart).
-**Sources:** `README.md`, `ikiastrro.md`, `docs/bhava-coverage.md`,
-`docs/vedic-reference-tables.md`, `methods_prodmag.md` (Opportunity Backlog), live grep of
+**Sources:** `README.md`, `ikiastrro.md`, `docs/scope-bhava-coverage.md`,
+`docs/reference-vedic-data-tables.md`, `methods_prodmag.md` (Opportunity Backlog), live grep of
 `src/`.
 
 > The JHora export is being used as a **feature-coverage checklist**, not as a numeric
@@ -37,7 +37,7 @@ byte-for-byte the same source analysed here, not a second chart).
 | Karana (`Vanija`, % left) | ❌ Missing | Half-tithi, 11-karana cycle. |
 | Hora Lord / Mahakala Hora / Kaala Lord (`Venus`) | ❌ Missing | Planetary-hour rulers from weekday + time since sunrise. |
 | **Body table — Longitude / Nakshatra / Pada / Rasi / Navamsa** | ✅ Covered | 10 points (Asc + 7 grahas + Rahu + Ketu): sidereal longitude, D1 degree-in-sign, nakshatra, pada, Rasi sign, Navamsa sign, retrograde. |
-| **Body table — Chara-karaka suffixes** (`- PiK`, `- AK`, `- AmK`, …) | ❌ Missing | Jaimini **Chara Karakas** (8-karaka scheme). *Not* the project's planned Sthira Karaka (`house-lagna-significations.md`) — that's the fixed/natural karaka, a different construct. |
+| **Body table — Chara-karaka suffixes** (`- PiK`, `- AK`, `- AmK`, …) | ❌ Missing | Jaimini **Chara Karakas** (8-karaka scheme). *Not* the project's planned Sthira Karaka (`reference-house-lagna-significations.md`) — that's the fixed/natural karaka, a different construct. |
 | Special / Upa Lagnas — Bhava, Hora, Ghati, Vighati, Varnada, Sree, Pranapada, Indu Lagna | ❌ Missing | Arithmetic off the Lagna + time-since-sunrise. PyJHora has each. |
 | `V2`–`V12` (Varnada Lagna per house) | ❌ Missing | Extension of Varnada Lagna. |
 | Bhrigu Bindu (`10 Vi 10′`) | ❌ Missing | Rahu–Moon midpoint. One line. |
@@ -152,7 +152,7 @@ source-blocked. **Avasthas and the extra dashas are *not* covered by jyotishgani
 files); they still depend on PyJHora (AGPL, port-with-attribution) or a classical text.
 
 **Recommendation:** reword the README's Ashtakavarga "needs a cited source" line and add a
-sourcing note to `vedic-reference-tables.md` — see the exact edits applied 2026-08-30 below.
+sourcing note to `reference-vedic-data-tables.md` — see the exact edits applied 2026-08-30 below.
 
 ---
 
@@ -252,7 +252,7 @@ needing reference tables. Framed for ICE scoring in `methods_prodmag.md` — not
 Two concrete, low-risk moves that don't need a prioritisation pass first:
 
 1. **Correct the "pending a cited source" language** in `README.md` and
-   `docs/vedic-reference-tables.md` — jyotishganit (MIT, vendored, tested) is that source for
+   `docs/reference-vedic-data-tables.md` — jyotishganit (MIT, vendored, tested) is that source for
    **Ashtakavarga (Bhinna + Sarva), Shadbala, and Panchanga**. (Avasthas and the extra dasha
    systems remain PyJHora-only — jyotishganit ships stub files for those.) *Applied 2026-08-30
    — see the edit records in both files.*
