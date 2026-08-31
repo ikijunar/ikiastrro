@@ -33,11 +33,11 @@ public class DashaPeriodsRepository
 
         const string insertSql = """
             INSERT INTO dbo.tbl_Chart_DashaPeriods
-                (ChartResultId, BirthDetailId, ParentDashaPeriodId, LevelNumber, SequenceInParent,
+                (ChartResultId, ParentDashaPeriodId, LevelNumber, SequenceInParent,
                  Lord, LordId, StartDate, EndDate, StartDayOffset, EndDayOffset)
             OUTPUT INSERTED.Id
             VALUES
-                (@ChartResultId, @BirthDetailId, @ParentDashaPeriodId, @LevelNumber, @SequenceInParent,
+                (@ChartResultId, @ParentDashaPeriodId, @LevelNumber, @SequenceInParent,
                  @Lord, @LordId, @StartDate, @EndDate, @StartDayOffset, @EndDayOffset)
             """;
 
@@ -46,7 +46,6 @@ public class DashaPeriodsRepository
             var newId = connection.ExecuteScalar<int>(insertSql, new
             {
                 ChartResultId = chartResultId,
-                BirthDetailId = birthDetailId,
                 ParentDashaPeriodId = parentId,
                 period.LevelNumber,
                 period.SequenceInParent,

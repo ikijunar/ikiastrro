@@ -10,8 +10,6 @@ public class ChartAspect
 {
     public int Id { get; set; }
     public int ChartResultId { get; set; }
-    public int BirthDetailId { get; set; }
-    public string ChartType { get; set; } = string.Empty;
     public string AspectingPlanet { get; set; } = string.Empty;
     public int AspectingPlanetId { get; set; }
     /// <summary>A graha name, or "Ascendant".</summary>
@@ -22,5 +20,4 @@ public class ChartAspect
     public int? AspectedPlanetId { get; set; }
     /// <summary>e.g. "7th", "4th", "8th", "5th", "9th", "3rd", "10th" — which classical drishti rule fired.</summary>
     public string AspectType { get; set; } = string.Empty;
-    public DateTime ComputedAt { get; set; } = DateTime.UtcNow;
 }

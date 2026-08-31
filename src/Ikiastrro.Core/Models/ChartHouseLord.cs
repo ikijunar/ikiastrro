@@ -9,8 +9,6 @@ public class ChartHouseLord
 {
     public int Id { get; set; }
     public int ChartResultId { get; set; }
-    public int BirthDetailId { get; set; }
-    public string ChartType { get; set; } = string.Empty;
     public int HouseNumber { get; set; }
     public string HouseSign { get; set; } = string.Empty;
     public int HouseSignId { get; set; }
@@ -22,6 +20,4 @@ public class ChartHouseLord
     public string LordPlacedInSign { get; set; } = string.Empty;
     public int LordPlacedInSignId { get; set; }
     public string? LordDignityStatus { get; set; }
-
-    public DateTime ComputedAt { get; set; } = DateTime.UtcNow;
 }

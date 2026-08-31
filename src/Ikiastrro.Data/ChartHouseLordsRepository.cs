@@ -17,14 +17,14 @@ public class ChartHouseLordsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_Chart_HouseLords
-                (ChartResultId, BirthDetailId, ChartType, HouseNumber, HouseSign, LordPlanet,
+                (ChartResultId, HouseNumber, HouseSign, LordPlanet,
                  LordPlacedInHouseFromLagna, LordPlacedInHouseFromSun, LordPlacedInHouseFromMoon,
-                 LordPlacedInSign, LordDignityStatus, ComputedAt,
+                 LordPlacedInSign, LordDignityStatus,
                  HouseSignId, LordPlanetId, LordPlacedInSignId)
             VALUES
-                (@ChartResultId, @BirthDetailId, @ChartType, @HouseNumber, @HouseSign, @LordPlanet,
+                (@ChartResultId, @HouseNumber, @HouseSign, @LordPlanet,
                  @LordPlacedInHouseFromLagna, @LordPlacedInHouseFromSun, @LordPlacedInHouseFromMoon,
-                 @LordPlacedInSign, @LordDignityStatus, @ComputedAt,
+                 @LordPlacedInSign, @LordDignityStatus,
                  @HouseSignId, @LordPlanetId, @LordPlacedInSignId)
             """;
 

@@ -95,7 +95,7 @@ public class ChartGenerationService
             result.CalculationKind = "PositionChart";
             result.ChartTypeId = codeToChartTypeId[result.ChartType];
             _chartResultsRepo.InsertAll(new[] { result });   // populates result.Id
-            PersistAnalytics(birthDetails.Id, result.Id, input);
+            PersistAnalytics(result.Id, input);
             written.Add(chartType);
         }
 
@@ -132,7 +132,7 @@ public class ChartGenerationService
             _conjunctionsRepo.DeleteByChartResultId(result.Id);
             _aspectsRepo.DeleteByChartResultId(result.Id);
             _planetAvasthaRepo.DeleteByChartResultId(result.Id);
-            PersistAnalytics(birthDetails.Id, result.Id, input);
+            PersistAnalytics(result.Id, input);
             written.Add(result.ChartType);
         }
         return new GenerationReport(written, DashaWritten: false, Skipped: Array.Empty<string>());
@@ -150,19 +150,19 @@ public class ChartGenerationService
         }
         _chartResultsRepo.InsertAll(computed.Select(c => c.Result));   // populates each Result.Id
         foreach (var (result, input) in computed)
-            PersistAnalytics(bd.Id, result.Id, input);
+            PersistAnalytics(result.Id, input);
         return computed.Select(c => c.Result.ChartType).ToList();
     }
 
-    private void PersistAnalytics(int birthDetailId, int chartResultId, ChartAnalysisInput input)
+    private void PersistAnalytics(int chartResultId, ChartAnalysisInput input)
     {
         var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
         var avasthas = PlanetAvasthaComputer.Compute(input, keyDetails, AvasthaRules);
-        foreach (var r in keyDetails)    { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
-        foreach (var r in houseLords)    { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
-        foreach (var r in conjunctions)  { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
-        foreach (var r in aspects)       { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
-        foreach (var r in avasthas)      { r.ChartResultId = chartResultId; r.BirthDetailId = birthDetailId; }
+        foreach (var r in keyDetails)    r.ChartResultId = chartResultId;
+        foreach (var r in houseLords)    r.ChartResultId = chartResultId;
+        foreach (var r in conjunctions)  r.ChartResultId = chartResultId;
+        foreach (var r in aspects)       r.ChartResultId = chartResultId;
+        foreach (var r in avasthas)      r.ChartResultId = chartResultId;
         _keyDetailsRepo.InsertAll(keyDetails);
         _houseLordsRepo.InsertAll(houseLords);
         if (conjunctions.Count > 0) _conjunctionsRepo.InsertAll(conjunctions);

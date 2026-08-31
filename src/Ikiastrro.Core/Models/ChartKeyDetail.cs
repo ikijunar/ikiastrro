@@ -9,10 +9,6 @@ public class ChartKeyDetail
 {
     public int Id { get; set; }
     public int ChartResultId { get; set; }
-    public int BirthDetailId { get; set; }
-
-    /// <summary>e.g. "D1", "D9" — denormalized from ChartResults, same rationale as Name (reads standalone).</summary>
-    public string ChartType { get; set; } = string.Empty;
 
     public string Planet { get; set; } = string.Empty;
     /// <summary>FK to tbl_Planets. Null for the Ascendant/Lagna row.</summary>
@@ -100,6 +96,4 @@ public class ChartKeyDetail
 
     /// <summary>Which planet(s) cast a classical aspect (Drishti) onto this planet, e.g. "Mars (8th), Saturn (3rd)". Null if none.</summary>
     public string? AspectingPlanets { get; set; }
-
-    public DateTime ComputedAt { get; set; } = DateTime.UtcNow;
 }

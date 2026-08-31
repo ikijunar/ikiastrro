@@ -9,8 +9,6 @@ public class ChartConjunction
 {
     public int Id { get; set; }
     public int ChartResultId { get; set; }
-    public int BirthDetailId { get; set; }
-    public string ChartType { get; set; } = string.Empty;
     public string Planet1 { get; set; } = string.Empty;
     /// <summary>FK to tbl_Planets. Canonically Planet1Id &lt; Planet2Id.</summary>
     public int Planet1Id { get; set; }
@@ -27,5 +25,4 @@ public class ChartConjunction
     /// in real longitude; that number wouldn't mean "tightness" there, so it's left null.
     /// </summary>
     public decimal? DegreeSeparation { get; set; }
-    public DateTime ComputedAt { get; set; } = DateTime.UtcNow;
 }

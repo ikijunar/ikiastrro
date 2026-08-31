@@ -16,12 +16,12 @@ public class PlanetAvasthaRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_Fact_PlanetAvastha
-                (ChartResultId, BirthDetailId, ChartType, Planet, RuleSetId,
-                 BaaladiStateId, BaaladiEffectFraction, JagradadiStateId, ComputedAt,
+                (ChartResultId, Planet, RuleSetId,
+                 BaaladiStateId, BaaladiEffectFraction, JagradadiStateId,
                  PlanetId)
             VALUES
-                (@ChartResultId, @BirthDetailId, @ChartType, @Planet, @RuleSetId,
-                 @BaaladiStateId, @BaaladiEffectFraction, @JagradadiStateId, @ComputedAt,
+                (@ChartResultId, @Planet, @RuleSetId,
+                 @BaaladiStateId, @BaaladiEffectFraction, @JagradadiStateId,
                  @PlanetId)
             """;
         using var connection = _connectionFactory.CreateOpenConnection();

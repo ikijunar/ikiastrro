@@ -1438,9 +1438,11 @@ git commit -m "$(printf 'refactor(data): reach person through ChartResults in de
 IF COL_LENGTH('dbo.tbl_ChartResults', 'AnalyticsComputedAtUtc') IS NULL
     ALTER TABLE dbo.tbl_ChartResults ADD AnalyticsComputedAtUtc DATETIME2(0) NULL;
 ```
-and set it in `ChartGenerationService.RecomputeAnalytics` / `PersistAnalytics`. Skip if Task 16 found no consumer.
+and set it in `ChartGenerationService.RecomputeAnalytics` / `PersistAnalytics`. Skip if Task 16 found no consumer. — **SKIPPED** (Task 16: no consumer reads a child `ComputedAt`).
 
-- [ ] **Step 2: Write `db/08_drop_child_parent_duplication.sql`**
+- [x] **Step 2: Write `db/08_drop_child_parent_duplication.sql`**
+
+> **DEVIATION FROM THE SCRIPT BELOW (2026-08-31):** the live `ikiastrro` DB has **7 auto-named FKs** (`FK__tbl_Chart__Birth__*`, incl. a duplicate pair on `tbl_Chart_KeyDetails`) and **5 indexes** (`IX_Chart_Aspects_BirthDetailId`, `IX_Chart_Conjunctions_BirthDetailId`, `IX_Chart_HouseLords_BirthDetailId`, `IX_Chart_KeyDetails_BirthDetailId_Planet`, `IX_Fact_PlanetAvastha_BirthDetailId`) on the target columns — not the single FK + single index the illustrative script drops. Each blocks `DROP COLUMN`. The script as written was extended to discover **all** blocking indexes / FKs / default constraints dynamically (same `sys.*` + `sp_executesql` pattern the script already uses for defaults) before dropping the columns. Intent unchanged. No schema-bound objects, so the four views/TVFs break until migration 09 recreates them (as planned). See the committed `db/08_drop_child_parent_duplication.sql` for the final form.
 
 ```sql
 -- =====================================================================
@@ -1498,28 +1500,28 @@ GO
 ```
 (Note: `tbl_Chart_DashaPeriods` has no `ChartType` column — only `BirthDetailId` + `ComputedAt`.)
 
-- [ ] **Step 3: Do NOT apply 08 yet** — apply it together with migration 09 (Task 19), because dropping `kd.BirthDetailId` breaks `vw_Chart_Consolidated` until 09 repoints it. Continue to the code changes.
+- [x] **Step 3: Do NOT apply 08 yet** — apply it together with migration 09 (Task 19), because dropping `kd.BirthDetailId` breaks `vw_Chart_Consolidated` until 09 repoints it. Continue to the code changes.
 
-- [ ] **Step 4: Remove the properties from the Core models**
+- [x] **Step 4: Remove the properties from the Core models**
 
 From `ChartKeyDetail.cs`, `ChartHouseLord.cs`, `ChartConjunction.cs`, `ChartAspect.cs`: delete `public int BirthDetailId { get; set; }`, `public string ChartType { get; set; } = string.Empty;`, `public DateTime ComputedAt { get; set; } = DateTime.UtcNow;`.
 From `DashaPeriodRecord.cs`: (no `BirthDetailId`/`ChartType`/`ComputedAt` — it never had them; skip.)
 From `AvasthaModels.cs` `PlanetAvasthaFact`: delete `BirthDetailId`, `ChartType`, `ComputedAt`.
 
-- [ ] **Step 5: Remove the columns from the repo INSERT lists**
+- [x] **Step 5: Remove the columns from the repo INSERT lists**
 
 In `ChartKeyDetailsRepository`, `ChartHouseLordsRepository`, `ChartConjunctionsRepository`, `ChartAspectsRepository`, `PlanetAvasthaRepository`: delete `BirthDetailId, ChartType, ComputedAt` (and `@BirthDetailId, @ChartType, @ComputedAt`) from the `INSERT` column/value lists. In `DashaPeriodsRepository.InsertTree`: delete `BirthDetailId` + `ComputedAt` from the `INSERT` and the anonymous param object (keep the `birthDetailId` method parameter — it is still used by nothing now; remove it too and update the one caller `ChartGenerationService`/`VimshottariDashaService` if the signature changes — simplest: keep the parameter, stop passing it into SQL).
 
-- [ ] **Step 6: Simplify `ChartGenerationService.PersistAnalytics`**
+- [x] **Step 6: Simplify `ChartGenerationService.PersistAnalytics`**
 
 Delete the fan-out lines that set `r.BirthDetailId` / `r.ChartType` on `keyDetails`, `houseLords`, `conjunctions`, `aspects`, `avasthas`. Keep the `r.ChartResultId = chartResultId` lines. The `birthDetailId` parameter of `PersistAnalytics` may become unused — remove it and update the three call sites in the same file.
 
-- [ ] **Step 7: Build**
+- [x] **Step 7: Build**
 
 Run: `dotnet build Ikiastrro.slnx`
-Expected: succeeds. Fix any remaining compile error from a consumer that read `.ChartType` / `.BirthDetailId` off a child model (Task 16 listed them) — repoint to the `ChartResult` / consolidated view.
+Expected: succeeds. Fix any remaining compile error from a consumer that read `.ChartType` / `.BirthDetailId` off a child model (Task 16 listed them) — repoint to the `ChartResult` / consolidated view. — **`ChartAnalyzer.Compute` + `PlanetAvasthaComputer.Compute` set `ChartType = input.ChartType` in 5 object initializers; those lines removed. Build succeeds, 0 warnings.**
 
-- [ ] **Step 8: Commit (code only, migration not yet applied)**
+- [x] **Step 8: Commit (code only, migration not yet applied)**
 
 ```bash
 git add src/

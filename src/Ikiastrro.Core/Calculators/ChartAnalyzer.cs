@@ -5,8 +5,9 @@ namespace Ikiastrro.Core.Calculators;
 
 /// <summary>
 /// Builds every chart type's derived table rows (key-details, house-lordship, conjunctions, aspects)
-/// from an already-computed ChartAnalysisInput. ChartResultId/BirthDetailId/Name are left unset here —
-/// the caller stamps them after the parent ChartResult row exists (needs its identity value).
+/// from an already-computed ChartAnalysisInput. ChartResultId is left unset here — the caller stamps
+/// it after the parent ChartResult row exists (needs its identity value). Person + chart type live
+/// only on that parent row now (schema normalization, migration 08).
 ///
 /// Chart-type-agnostic by design: dignity, house-lordship, conjunctions, and aspects only depend on
 /// "which sign is each planet in" + "which sign is the Ascendant in" — not which divisional chart
@@ -77,7 +78,6 @@ public static class ChartAnalyzer
 
             keyDetails.Add(new ChartKeyDetail
             {
-                ChartType = input.ChartType,
                 Planet = planet.Planet,
                 PlanetId = AstroIds.PlanetIdOrNull(planet.Planet),
                 Sign = planet.Sign,
@@ -126,7 +126,6 @@ public static class ChartAnalyzer
 
             houseLords.Add(new ChartHouseLord
             {
-                ChartType = input.ChartType,
                 HouseNumber = houseNumber,
                 HouseSign = houseSign.ToString(),
                 HouseSignId = AstroIds.SignId(houseSign),
@@ -152,7 +151,6 @@ public static class ChartAnalyzer
                     : (c.Planet2, idB, c.Planet1, idA);
                 return new ChartConjunction
                 {
-                    ChartType = input.ChartType,
                     Planet1 = lowName,
                     Planet1Id = lowId,
                     Planet2 = highName,
@@ -168,7 +166,6 @@ public static class ChartAnalyzer
         var aspects = aspectResults
             .Select(a => new ChartAspect
             {
-                ChartType = input.ChartType,
                 AspectingPlanet = a.AspectingPlanet,
                 AspectingPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(a.AspectingPlanet)),
                 AspectedTarget = a.AspectedTarget,

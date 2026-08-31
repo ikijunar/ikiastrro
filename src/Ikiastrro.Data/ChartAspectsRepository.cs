@@ -17,10 +17,10 @@ public class ChartAspectsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_Chart_Aspects
-                (ChartResultId, BirthDetailId, ChartType, AspectingPlanet, AspectedTarget, AspectType, ComputedAt,
+                (ChartResultId, AspectingPlanet, AspectedTarget, AspectType,
                  AspectingPlanetId, AspectedTargetType, AspectedPlanetId)
             VALUES
-                (@ChartResultId, @BirthDetailId, @ChartType, @AspectingPlanet, @AspectedTarget, @AspectType, @ComputedAt,
+                (@ChartResultId, @AspectingPlanet, @AspectedTarget, @AspectType,
                  @AspectingPlanetId, @AspectedTargetType, @AspectedPlanetId)
             """;
 

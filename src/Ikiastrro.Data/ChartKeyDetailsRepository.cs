@@ -17,24 +17,24 @@ public class ChartKeyDetailsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_Chart_KeyDetails
-                (ChartResultId, BirthDetailId, ChartType, Planet, Sign, DegreesInSignDisplay, DegreesInSignDecimal,
+                (ChartResultId, Planet, Sign, DegreesInSignDisplay, DegreesInSignDecimal,
                  NirayanaLongitudeDegrees, EclipticLatitudeDegrees, SpeedLongitudeDegPerDay,
                  Nakshatra, NakshatraPada, NakshatraLordPlanet,
                  NakshatraId, NakshatraPadaId, NakshatraSubLordPlanet, IsRetrograde,
                  IsCombust, DistanceFromSunDegrees, CombustionOrbUsedDegrees,
                  HouseNumberFromLagna, HouseNumberFromSun, HouseNumberFromMoon,
                  OwnSigns, ExaltationSign, DebilitationSign, MoolatrikonaSign, MoolatrikonaRange,
-                 SignLordPlanet, DignityStatus, AspectingPlanets, ComputedAt,
+                 SignLordPlanet, DignityStatus, AspectingPlanets,
                  PlanetId, SignId, NakshatraLordPlanetId, NakshatraSubLordPlanetId, SignLordPlanetId)
             VALUES
-                (@ChartResultId, @BirthDetailId, @ChartType, @Planet, @Sign, @DegreesInSignDisplay, @DegreesInSignDecimal,
+                (@ChartResultId, @Planet, @Sign, @DegreesInSignDisplay, @DegreesInSignDecimal,
                  @NirayanaLongitudeDegrees, @EclipticLatitudeDegrees, @SpeedLongitudeDegPerDay,
                  @Nakshatra, @NakshatraPada, @NakshatraLordPlanet,
                  @NakshatraId, @NakshatraPadaId, @NakshatraSubLordPlanet, @IsRetrograde,
                  @IsCombust, @DistanceFromSunDegrees, @CombustionOrbUsedDegrees,
                  @HouseNumberFromLagna, @HouseNumberFromSun, @HouseNumberFromMoon,
                  @OwnSigns, @ExaltationSign, @DebilitationSign, @MoolatrikonaSign, @MoolatrikonaRange,
-                 @SignLordPlanet, @DignityStatus, @AspectingPlanets, @ComputedAt,
+                 @SignLordPlanet, @DignityStatus, @AspectingPlanets,
                  @PlanetId, @SignId, @NakshatraLordPlanetId, @NakshatraSubLordPlanetId, @SignLordPlanetId)
             """;
 

@@ -34,8 +34,6 @@ public class PlanetAvasthaFact
 {
     public int Id { get; set; }
     public int ChartResultId { get; set; }
-    public int BirthDetailId { get; set; }
-    public string ChartType { get; set; } = string.Empty;
     public string Planet { get; set; } = string.Empty;
     /// <summary>FK to tbl_Planets for Planet.</summary>
     public byte? PlanetId { get; set; }
@@ -48,6 +46,4 @@ public class PlanetAvasthaFact
 
     /// <summary>FK to tbl_Dim_AvasthaState (AvasthaSystem = 'Jagradadi'). Populated for every chart type. Null only if DignityStatus was absent.</summary>
     public byte? JagradadiStateId { get; set; }
-
-    public DateTime ComputedAt { get; set; } = DateTime.UtcNow;
 }

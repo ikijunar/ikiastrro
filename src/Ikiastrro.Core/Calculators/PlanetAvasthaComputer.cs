@@ -6,8 +6,8 @@ namespace Ikiastrro.Core.Calculators;
 /// <summary>
 /// Builds the tbl_Fact_PlanetAvastha rows for one chart from the ChartKeyDetail list that
 /// ChartAnalyzer.Compute already produced (it carries Sign / DegreesInSignDecimal /
-/// DignityStatus per planet). ChartResultId / BirthDetailId are stamped by the caller after the
-/// parent ChartResult row exists — same contract as ChartAnalyzer.
+/// DignityStatus per planet). ChartResultId is stamped by the caller after the parent ChartResult
+/// row exists — same contract as ChartAnalyzer.
 ///
 /// Ascendant is excluded (no avastha for a house-circle point). Baaladi is emitted only for D1
 /// (needs a continuous within-sign degree); Jagradadi is emitted for every chart type.
@@ -29,7 +29,6 @@ public static class PlanetAvasthaComputer
 
             var fact = new PlanetAvasthaFact
             {
-                ChartType = input.ChartType,
                 Planet = kd.Planet,
                 PlanetId = (byte?)Ikiastrro.Core.Astro.AstroIds.PlanetIdOrNull(kd.Planet),
                 RuleSetId = rules.RuleSetId,

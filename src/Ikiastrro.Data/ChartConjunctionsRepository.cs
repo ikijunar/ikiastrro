@@ -17,10 +17,10 @@ public class ChartConjunctionsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_Chart_Conjunctions
-                (ChartResultId, BirthDetailId, ChartType, Planet1, Planet2, Sign, HouseNumberFromLagna, DegreeSeparation, ComputedAt,
+                (ChartResultId, Planet1, Planet2, Sign, HouseNumberFromLagna, DegreeSeparation,
                  Planet1Id, Planet2Id, SignId)
             VALUES
-                (@ChartResultId, @BirthDetailId, @ChartType, @Planet1, @Planet2, @Sign, @HouseNumberFromLagna, @DegreeSeparation, @ComputedAt,
+                (@ChartResultId, @Planet1, @Planet2, @Sign, @HouseNumberFromLagna, @DegreeSeparation,
                  @Planet1Id, @Planet2Id, @SignId)
             """;
 
