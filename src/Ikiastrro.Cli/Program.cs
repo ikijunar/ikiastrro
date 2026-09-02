@@ -563,7 +563,7 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     // --- Phase 3: Arudha Lagna + 12 Bhava Arudhas ---
     using (var conn = connectionFactory.CreateOpenConnection())
     {
-        string SpSign(string chart, string code) => conn.ExecuteScalar<string>(
+        string? SpSign(string chart, string code) => conn.ExecuteScalar<string>(
             @"SELECT kd.Sign FROM dbo.tbl_Chart_KeyDetails kd
               JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
               JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
@@ -589,7 +589,7 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     // --- Phase 4: Hora Lagna + Gulika + Maandi (JHora golden record) ---
     using (var conn = connectionFactory.CreateOpenConnection())
     {
-        string SpSign(string chart, string code) => conn.ExecuteScalar<string>(
+        string? SpSign(string chart, string code) => conn.ExecuteScalar<string>(
             @"SELECT kd.Sign FROM dbo.tbl_Chart_KeyDetails kd
               JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
               JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
@@ -622,6 +622,45 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     }
 
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- `dotnet run -- verify-sources` : tbl_Dim_Source well-formedness (STANDARDS §M.4) ---
+if (args.Length > 0 && args[0] == "verify-sources")
+{
+    using var conn = connectionFactory.CreateOpenConnection();
+    var failures = 0;
+    void Check(string label, long violations)
+    {
+        var ok = violations == 0;
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: {violations} violation(s)");
+        if (!ok) failures++;
+    }
+    long Count(string sql) => conn.ExecuteScalar<long>(sql);
+
+    Check("tbl_Dim_Source is seeded (>= 10 rows)",
+        Count("SELECT CASE WHEN COUNT(*) >= 10 THEN 0 ELSE 1 END FROM dbo.tbl_Dim_Source"));
+    Check("every Code matches SRC_<UPPER_SNAKE>",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Dim_Source
+                WHERE Code NOT LIKE 'SRC[_]%' OR Code COLLATE Latin1_General_BIN LIKE '%[^A-Z0-9_]%'"));
+    Check("every source has a Title",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Dim_Source WHERE Title IS NULL OR LTRIM(RTRIM(Title)) = ''"));
+    Check("Code is unique",
+        Count("SELECT COUNT(*) - COUNT(DISTINCT Code) FROM dbo.tbl_Dim_Source"));
+
+    // Forward-looking: every SourceRefCode used by a rule/terminology table must resolve.
+    // No such columns exist yet (Plan 1) — this loop is a no-op today, a tripwire later.
+    var refColumns = conn.Query<(string TableName, string ColumnName)>(@"
+        SELECT t.name, c.name
+        FROM sys.columns c JOIN sys.tables t ON t.object_id = c.object_id
+        WHERE c.name = 'SourceRefCode'").ToList();
+    foreach (var (tbl, col) in refColumns)
+        Check($"{tbl}.{col} all resolve in tbl_Dim_Source",
+            Count($@"SELECT COUNT(*) FROM dbo.[{tbl}] x
+                     WHERE x.[{col}] IS NOT NULL
+                       AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_Source s WHERE s.Code = x.[{col}])"));
+
+    Console.WriteLine(failures == 0 ? "\nverify-sources: ALL PASS" : $"\nverify-sources: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
