@@ -9,9 +9,14 @@
 -- are schema-only - the app fills them.
 -- =====================================================================
 
-IF DB_ID(N'ikiastrro') IS NULL CREATE DATABASE [ikiastrro];
+-- Catalog name is a sqlcmd scripting variable so this one file builds any environment
+-- (dev = ikiastrro, a scratch check = ikiastrro_scratch). REQUIRES SQLCMD MODE: the `sqlcmd`
+-- CLI has it on by default; in SSMS, Query > SQLCMD Mode. Override:  sqlcmd -v DbName=<name>
+:setvar DbName "ikiastrro"
 GO
-USE [ikiastrro];
+IF DB_ID(N'$(DbName)') IS NULL CREATE DATABASE [$(DbName)];
+GO
+USE [$(DbName)];
 GO
 
 -- Schema-migration ledger (folded from db/01_create_schema_migrations.sql).
