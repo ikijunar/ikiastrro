@@ -1,7 +1,9 @@
 using Ikiastrro.Core.Engines.Astronomy;
-using Ikiastrro.Core.Engines.Dignity;
+using Ikiastrro.Core.Engines.Houses;
+using Ikiastrro.Core.Models;
+using Ikiastrro.Core.Pipeline;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Relationships;
 
 public record ConjunctionResult(string Planet1, string Planet2, string Sign, int HouseNumberFromLagna, decimal? DegreeSeparation);
 public record AspectResult(string AspectingPlanet, string AspectedTarget, string AspectType);
@@ -13,7 +15,7 @@ public record AspectResult(string AspectingPlanet, string AspectedTarget, string
 /// relationship helpers. Chart-type-agnostic: works identically for D1, D9, and any future divisional
 /// chart, since "same sign" and "house offset" only need Sign/HouseNumber, not which chart produced them.
 /// </summary>
-public static class ClassicalRelationships
+public static class RelationshipEngine
 {
     /// <summary>
     /// House-offsets (1 = same sign) each graha casts a full aspect on, counted from its own position.
@@ -86,7 +88,7 @@ public static class ClassicalRelationships
 
             foreach (var offset in AspectOffsets[aspecting.Planet])
             {
-                var aspectedSign = DignityEngine.GetHouseSign(aspectingSign, offset);
+                var aspectedSign = HouseEngine.GetHouseSign(aspectingSign, offset);
 
                 foreach (var target in input.Planets)
                 {
@@ -100,4 +102,50 @@ public static class ClassicalRelationships
 
         return results;
     }
+
+    /// <summary>
+    /// tbl_Chart_Conjunctions rows for this chart. Lifted verbatim from ChartAnalyzer
+    /// (2026-09-02 engine reorg) — the pair is canonicalized so Planet1Id &lt; Planet2Id.
+    /// </summary>
+    public static List<ChartConjunction> BuildConjunctionRows(ChartAnalysisInput input) =>
+        FindConjunctions(input)
+            .Select(c =>
+            {
+                // Canonicalize the pair so Planet1Id < Planet2Id, keeping the name pair aligned to the id pair.
+                var idA = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet1));
+                var idB = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet2));
+                var (lowName, lowId, highName, highId) = idA <= idB
+                    ? (c.Planet1, idA, c.Planet2, idB)
+                    : (c.Planet2, idB, c.Planet1, idA);
+                return new ChartConjunction
+                {
+                    Planet1 = lowName,
+                    Planet1Id = lowId,
+                    Planet2 = highName,
+                    Planet2Id = highId,
+                    Sign = c.Sign,
+                    SignId = AstroIds.SignId(Enum.Parse<ZodiacName>(c.Sign)),
+                    HouseNumberFromLagna = c.HouseNumberFromLagna,
+                    DegreeSeparation = c.DegreeSeparation
+                };
+            })
+            .ToList();
+
+    /// <summary>
+    /// tbl_Chart_Aspects rows for an already-computed FindAspects result. Lifted verbatim from
+    /// ChartAnalyzer (2026-09-02 engine reorg) — the composer computes aspectResults once and
+    /// reuses it for both the per-planet AspectingPlanets summary and these rows.
+    /// </summary>
+    public static List<ChartAspect> BuildAspectRows(IReadOnlyList<AspectResult> aspectResults) =>
+        aspectResults
+            .Select(a => new ChartAspect
+            {
+                AspectingPlanet = a.AspectingPlanet,
+                AspectingPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(a.AspectingPlanet)),
+                AspectedTarget = a.AspectedTarget,
+                AspectedTargetType = a.AspectedTarget == "Ascendant" ? "Ascendant" : "Planet",
+                AspectedPlanetId = AstroIds.PlanetIdOrNull(a.AspectedTarget),
+                AspectType = a.AspectType
+            })
+            .ToList();
 }

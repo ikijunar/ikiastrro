@@ -1,5 +1,4 @@
 using Ikiastrro.Core.Engines.Astronomy;
-using Ikiastrro.Core.Engines.Dignity;
 
 namespace Ikiastrro.Core.Engines.Houses;
 
@@ -26,14 +25,14 @@ public static class LagnaFunctionalNature
 
         var ruledHouses = Enumerable.Range(0, 12)
             .Select(i => (ZodiacName)i)
-            .Where(sign => DignityEngine.GetSignLord(sign) == planet.ToString())
+            .Where(sign => HouseEngine.GetSignLord(sign) == planet.ToString())
             .Select(sign => AstroMath.CountFromSignToSign(lagnaSign, sign))
             .OrderBy(h => h)
             .ToArray();
 
         if (ruledHouses.Length == 0)
             throw new InvalidOperationException(
-                $"No sign rulership found for {planet} — DignityEngine.GetSignLord contract drift?");
+                $"No sign rulership found for {planet} — HouseEngine.GetSignLord contract drift?");
 
         var isMaraka = ruledHouses.Contains(2) || ruledHouses.Contains(7);
         var hasKendra  = ruledHouses.Intersect(Kendras).Any();

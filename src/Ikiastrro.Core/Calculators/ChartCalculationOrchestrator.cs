@@ -3,6 +3,8 @@ using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Engines.Position;
 using Ikiastrro.Core.Models;
 
+using Ikiastrro.Core.Pipeline;
+
 namespace Ikiastrro.Core.Calculators;
 
 /// <summary>

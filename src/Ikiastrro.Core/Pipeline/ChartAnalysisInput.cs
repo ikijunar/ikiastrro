@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Pipeline;
 
 /// <summary>
 /// Raw computed chart data for ANY chart type — Ascendant sign + every chart point (planets, plus

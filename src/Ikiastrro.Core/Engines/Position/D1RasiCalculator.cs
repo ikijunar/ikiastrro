@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
 

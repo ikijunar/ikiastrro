@@ -1,6 +1,8 @@
 using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
 
+using Ikiastrro.Core.Pipeline;
+
 namespace Ikiastrro.Core.Calculators;
 
 /// <summary>

@@ -1,6 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
-using Ikiastrro.Core.Engines.Dignity;
-using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Engines.Houses;
+using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Engines.Karakas;
@@ -32,7 +32,7 @@ public static class ArudhaCalculator
         for (var house = 1; house <= 12; house++)
         {
             var houseSign = Add(lagnaSign, house - 1);
-            var lord = Enum.Parse<PlanetName>(DignityEngine.GetSignLord(houseSign));
+            var lord = Enum.Parse<PlanetName>(HouseEngine.GetSignLord(houseSign));
             var lordSign = planetSign[lord];
             var n = CountInclusive(houseSign, lordSign);
             var pada = Add(lordSign, n - 1);

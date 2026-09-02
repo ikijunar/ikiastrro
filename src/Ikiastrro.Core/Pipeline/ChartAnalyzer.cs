@@ -1,9 +1,11 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.Dignity;
+using Ikiastrro.Core.Engines.Houses;
+using Ikiastrro.Core.Engines.Nakshatras;
 using Ikiastrro.Core.Engines.Relationships;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Pipeline;
 
 /// <summary>
 /// Builds every chart type's derived table rows (key-details, house-lordship, conjunctions, aspects)
@@ -17,6 +19,11 @@ namespace Ikiastrro.Core.Calculators;
 /// (and any future D2/D10/...) reuses this same logic instead of a bespoke copy — see ChartKeyDetail's
 /// isRasiChart-gated fields for the one place D1 genuinely differs (continuous degree vs. discrete
 /// varga sign bucket).
+///
+/// Thin composer since the 2026-09-02 engine reorg: house-lordship, conjunction/aspect row mapping,
+/// and the nakshatra derivation moved verbatim to HouseEngine / RelationshipEngine / NakshatraEngine.
+/// Only the interwoven keyDetails + special-points loops stay here — they read from several engines
+/// at once and have no single owner.
 /// </summary>
 public static class ChartAnalyzer
 {
@@ -46,7 +53,7 @@ public static class ChartAnalyzer
             .ToDictionary(p => p.Planet, p => Enum.Parse<ZodiacName>(p.Sign));
 
         // Computed up front so each keyDetail row below can carry its own AspectingPlanets summary.
-        var aspectResults = ClassicalRelationships.FindAspects(input);
+        var aspectResults = RelationshipEngine.FindAspects(input);
         var aspectingPlanetsByTarget = aspectResults
             .GroupBy(a => a.AspectedTarget)
             .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(a => $"{a.AspectingPlanet} ({a.AspectType})")));
@@ -71,9 +78,10 @@ public static class ChartAnalyzer
             // Nakshatra lord and retrograde status are derived purely from the real longitude every
             // chart type carries (NirayanaLongitudeDegrees) — populated for D1 and D9 alike, unlike
             // Nakshatra/NakshatraPada display fields above which stay D1-only (2026-08-28).
-            var nakshatraLordPlanet = AstroMath.GetNakshatraLord(nirayanaLongitude).ToString();
-            var nakshatraIndex = AstroMath.GetNakshatraIndexAndFractionElapsed(nirayanaLongitude).NakshatraIndex;
-            var nakshatraSubLordPlanet = AstroMath.GetNakshatraSubLord(nirayanaLongitude).ToString();
+            var nak = NakshatraEngine.ForLongitude(nirayanaLongitude);
+            var nakshatraLordPlanet = nak.LordPlanet;
+            var nakshatraIndex = nak.NakshatraIndex;
+            var nakshatraSubLordPlanet = nak.SubLordPlanet;
 
             // Combustion only applies to 6 of the 9 planets (not Sun/Rahu/Ketu) and not the Ascendant.
             // Same chart-type-relative longitude choice as sunCombustionLongitude above — D1 uses the
@@ -105,7 +113,7 @@ public static class ChartAnalyzer
                 NakshatraLordPlanet = nakshatraLordPlanet,
                 NakshatraLordPlanetId = AstroIds.PlanetIdOrNull(nakshatraLordPlanet),
                 NakshatraId = (byte)(nakshatraIndex + 1),
-                NakshatraPadaId = isRasiChart ? AstroMath.GetOverallPadaIndex(nirayanaLongitude) + 1 : null,
+                NakshatraPadaId = isRasiChart ? nak.OverallPadaIndex + 1 : null,
                 NakshatraSubLordPlanet = nakshatraSubLordPlanet,
                 NakshatraSubLordPlanetId = AstroIds.PlanetIdOrNull(nakshatraSubLordPlanet),
                 IsRetrograde = planet.IsRetrograde,
@@ -156,63 +164,9 @@ public static class ChartAnalyzer
             .Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
             .ToDictionary(k => k.Planet);
 
-        var houseLords = new List<ChartHouseLord>();
-        for (var houseNumber = 1; houseNumber <= 12; houseNumber++)
-        {
-            var houseSign = DignityEngine.GetHouseSign(input.AscendantSign, houseNumber);
-            var lordPlanet = DignityEngine.GetSignLord(houseSign);
-            var lordPlacement = placementByPlanet[lordPlanet];
-
-            houseLords.Add(new ChartHouseLord
-            {
-                HouseNumber = houseNumber,
-                HouseSign = houseSign.ToString(),
-                HouseSignId = AstroIds.SignId(houseSign),
-                LordPlanet = lordPlanet,
-                LordPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(lordPlanet)),
-                LordPlacedInHouseFromLagna = lordPlacement.HouseNumberFromLagna,
-                LordPlacedInHouseFromSun = lordPlacement.HouseNumberFromSun,
-                LordPlacedInHouseFromMoon = lordPlacement.HouseNumberFromMoon,
-                LordPlacedInSign = lordPlacement.Sign,
-                LordPlacedInSignId = AstroIds.SignId(Enum.Parse<ZodiacName>(lordPlacement.Sign)),
-                LordDignityStatus = lordPlacement.DignityStatus
-            });
-        }
-
-        var conjunctions = ClassicalRelationships.FindConjunctions(input)
-            .Select(c =>
-            {
-                // Canonicalize the pair so Planet1Id < Planet2Id, keeping the name pair aligned to the id pair.
-                var idA = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet1));
-                var idB = AstroIds.PlanetId(Enum.Parse<PlanetName>(c.Planet2));
-                var (lowName, lowId, highName, highId) = idA <= idB
-                    ? (c.Planet1, idA, c.Planet2, idB)
-                    : (c.Planet2, idB, c.Planet1, idA);
-                return new ChartConjunction
-                {
-                    Planet1 = lowName,
-                    Planet1Id = lowId,
-                    Planet2 = highName,
-                    Planet2Id = highId,
-                    Sign = c.Sign,
-                    SignId = AstroIds.SignId(Enum.Parse<ZodiacName>(c.Sign)),
-                    HouseNumberFromLagna = c.HouseNumberFromLagna,
-                    DegreeSeparation = c.DegreeSeparation
-                };
-            })
-            .ToList();
-
-        var aspects = aspectResults
-            .Select(a => new ChartAspect
-            {
-                AspectingPlanet = a.AspectingPlanet,
-                AspectingPlanetId = AstroIds.PlanetId(Enum.Parse<PlanetName>(a.AspectingPlanet)),
-                AspectedTarget = a.AspectedTarget,
-                AspectedTargetType = a.AspectedTarget == "Ascendant" ? "Ascendant" : "Planet",
-                AspectedPlanetId = AstroIds.PlanetIdOrNull(a.AspectedTarget),
-                AspectType = a.AspectType
-            })
-            .ToList();
+        var houseLords   = HouseEngine.BuildHouseLords(input, placementByPlanet);
+        var conjunctions = RelationshipEngine.BuildConjunctionRows(input);
+        var aspects      = RelationshipEngine.BuildAspectRows(aspectResults);
 
         return (keyDetails, houseLords, conjunctions, aspects);
     }

@@ -1,4 +1,4 @@
-using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Engines.Karakas;

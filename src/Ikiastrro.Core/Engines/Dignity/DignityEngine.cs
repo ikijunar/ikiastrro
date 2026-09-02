@@ -1,4 +1,5 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Houses;
 
 namespace Ikiastrro.Core.Engines.Dignity;
 
@@ -29,16 +30,9 @@ public record DignityResult(
 /// </summary>
 public static class DignityEngine
 {
-    private static readonly Dictionary<string, ZodiacName[]> OwnSigns = new()
-    {
-        ["Sun"] = new[] { ZodiacName.Leo },
-        ["Moon"] = new[] { ZodiacName.Cancer },
-        ["Mars"] = new[] { ZodiacName.Aries, ZodiacName.Scorpio },
-        ["Mercury"] = new[] { ZodiacName.Gemini, ZodiacName.Virgo },
-        ["Jupiter"] = new[] { ZodiacName.Sagittarius, ZodiacName.Pisces },
-        ["Venus"] = new[] { ZodiacName.Taurus, ZodiacName.Libra },
-        ["Saturn"] = new[] { ZodiacName.Capricornus, ZodiacName.Aquarius }
-    };
+    // Sign rulership (OwnSigns) and the zodiacal SignOrder moved to Engines.Houses.HouseEngine in the
+    // 2026-09-02 engine reorg — house geometry is the lower layer and owns "who lords this sign".
+    // Dignity still reads the same tables from there; they are not duplicated.
 
     private static readonly Dictionary<string, ZodiacName> ExaltationSign = new()
     {
@@ -90,29 +84,11 @@ public static class DignityEngine
         ["Saturn"] = (new[] { "Mercury", "Venus" }, new[] { "Jupiter" }, new[] { "Sun", "Moon", "Mars" })
     };
 
-    private static readonly ZodiacName[] SignOrder =
-    {
-        ZodiacName.Aries, ZodiacName.Taurus, ZodiacName.Gemini, ZodiacName.Cancer,
-        ZodiacName.Leo, ZodiacName.Virgo, ZodiacName.Libra, ZodiacName.Scorpio,
-        ZodiacName.Sagittarius, ZodiacName.Capricornus, ZodiacName.Aquarius, ZodiacName.Pisces
-    };
-
-    /// <summary>Ruler of a sign — reverse lookup of OwnSigns.</summary>
-    public static string GetSignLord(ZodiacName sign) =>
-        OwnSigns.First(kv => kv.Value.Contains(sign)).Key;
-
-    /// <summary>The sign occupying a given house (1-12), Whole Sign counted from the Ascendant sign.</summary>
-    public static ZodiacName GetHouseSign(ZodiacName ascendantSign, int houseNumber)
-    {
-        var ascendantIndex = Array.IndexOf(SignOrder, ascendantSign);
-        return SignOrder[(ascendantIndex + houseNumber - 1) % 12];
-    }
-
     /// <summary>1-12 distance counting from sign A to sign B, same convention as CountFromSignToSign (same sign = 1).</summary>
     private static int SignDistance(ZodiacName from, ZodiacName to)
     {
-        var fromIndex = Array.IndexOf(SignOrder, from);
-        var toIndex = Array.IndexOf(SignOrder, to);
+        var fromIndex = Array.IndexOf(HouseEngine.SignOrder, from);
+        var toIndex = Array.IndexOf(HouseEngine.SignOrder, to);
         return ((toIndex - fromIndex + 12) % 12) + 1;
     }
 
@@ -145,15 +121,15 @@ public static class DignityEngine
     {
         if (planet == "Ascendant")
         {
-            return new DignityResult(null, null, null, null, null, GetSignLord(sign), null);
+            return new DignityResult(null, null, null, null, null, HouseEngine.GetSignLord(sign), null);
         }
 
         var isShadowPlanet = planet is "Rahu" or "Ketu";
         var exaltation = ExaltationSign[planet];
         var debilitation = DebilitationSign[planet];
-        var signLord = GetSignLord(sign);
+        var signLord = HouseEngine.GetSignLord(sign);
 
-        string ownSignsDisplay = isShadowPlanet ? "" : string.Join(", ", OwnSigns[planet].Select(s => s.ToString()));
+        string ownSignsDisplay = isShadowPlanet ? "" : string.Join(", ", HouseEngine.OwnSigns[planet].Select(s => s.ToString()));
         string? moolatrikonaSign = null;
         string? moolatrikonaRange = null;
         if (!isShadowPlanet && Moolatrikona.TryGetValue(planet, out var moola))
@@ -176,7 +152,7 @@ public static class DignityEngine
         {
             dignityStatus = "Moolatrikona";
         }
-        else if (!isShadowPlanet && OwnSigns[planet].Contains(sign))
+        else if (!isShadowPlanet && HouseEngine.OwnSigns[planet].Contains(sign))
         {
             dignityStatus = "Own Sign";
         }
