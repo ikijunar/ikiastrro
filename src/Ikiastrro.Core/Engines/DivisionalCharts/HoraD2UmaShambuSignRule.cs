@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>
 /// D2 Uma Shambu Hora - Jagannatha Hora's default D2 (tagged "D-2 (US)" in its

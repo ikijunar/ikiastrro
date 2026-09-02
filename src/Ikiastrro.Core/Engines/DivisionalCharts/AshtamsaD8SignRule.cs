@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D8 Ashtamsa - movable/fixed/dual signs count the l-th part from
 /// Aries / Sagittarius / Leo. PyJHora ashtamsa_chart method 1.</summary>

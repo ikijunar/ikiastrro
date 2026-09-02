@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D6 Shashtamsa - wraps AstroMath.GetShashtamsaSign (odd -> Aries..Virgo,
 /// even -> Libra..Pisces).</summary>

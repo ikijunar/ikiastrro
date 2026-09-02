@@ -1,9 +1,9 @@
-using Ikiastrro.Core.Astro;
+using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.SpecialPoints;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>
 /// Computes ANY divisional chart from an injected division factor + IVargaSignRule.

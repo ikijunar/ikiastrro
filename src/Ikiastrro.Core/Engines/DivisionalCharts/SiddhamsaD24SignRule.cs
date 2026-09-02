@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D24 Siddhamsa (Chaturvimsamsa) - odd signs count the l-th part from
 /// Leo, even signs from Cancer. PyJHora chaturvimsamsa_chart method 1.</summary>

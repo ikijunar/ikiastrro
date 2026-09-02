@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>
 /// Builds the IVargaSignRule for a tbl_Rule_VargaScheme.SignRuleKey. Pure - no

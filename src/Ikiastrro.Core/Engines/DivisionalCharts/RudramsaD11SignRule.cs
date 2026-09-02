@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D11 Rudramsa - wraps AstroMath.GetRudramsaSign (Sanjay Rath method).</summary>
 public sealed class RudramsaD11SignRule : IVargaSignRule

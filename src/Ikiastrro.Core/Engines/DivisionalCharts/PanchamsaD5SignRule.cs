@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D5 Panchamsa - five equal 6 deg parts. Odd signs map the l-th part to
 /// Aries/Aquarius/Sagittarius/Gemini/Libra; even signs to

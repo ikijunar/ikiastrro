@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D40 Khavedamsa (Chatvarimsamsa) - odd signs count the l-th part from
 /// Aries, even signs from Libra. PyJHora khavedamsa_chart method 1.</summary>

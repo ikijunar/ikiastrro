@@ -1,10 +1,9 @@
 using System.Text.Json;
-using Ikiastrro.Core.Astro;
-using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.SpecialPoints;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>
 /// The one IChartCalculator for every divisional chart. Constructed once per

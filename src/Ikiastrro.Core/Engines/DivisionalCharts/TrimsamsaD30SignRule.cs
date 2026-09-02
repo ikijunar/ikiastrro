@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D30 Trimsamsa - the classical unequal five-part scheme. The sign is
 /// chosen by which degree band of the rasi sign the planet falls in (odd vs

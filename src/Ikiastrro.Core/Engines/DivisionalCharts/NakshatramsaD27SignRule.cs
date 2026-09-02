@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D27 Nakshatramsa (Bhamsa) - fire/earth/air/water signs count the
 /// l-th part from Aries / Cancer / Libra / Capricorn. PyJHora

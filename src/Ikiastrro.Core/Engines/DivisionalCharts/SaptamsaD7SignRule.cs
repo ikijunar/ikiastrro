@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D7 Saptamsa - odd signs count the l-th part from the sign itself,
 /// even signs from the 7th from it. PyJHora saptamsa_chart method 1

@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
 /// <summary>D20 Vimsamsa - movable/dual/fixed signs count the l-th part from
 /// Aries / Leo / Sagittarius (dual and fixed offsets are swapped relative to
