@@ -1,5 +1,5 @@
 /*
- * Shared design tokens for vedic_horo_gen's web UI.
+ * Shared design tokens for ikiastrro's web UI.
  *
  * These are the exact custom properties D1ChartView.razor.css defines (scoped to its own
  * `.page` element, since Blazor CSS isolation means `:root` never carries a component's scope
