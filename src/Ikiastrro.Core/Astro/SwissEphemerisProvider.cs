@@ -20,23 +20,27 @@ public record SiderealPositions(
     double LocalSiderealTimeHours);
 
 /// <summary>
-/// Sunrise / sunset that bound the Vedic day the birth falls in, plus the sunrise
-/// immediately BEFORE the birth moment and a night-birth flag. All three timestamps are
-/// local-offset <see cref="DateTimeOffset"/>s built from <c>BirthDetails.UtcOffset</c>.
+/// The three sunrise/sunset instants that frame the Vedic day the birth falls in, plus a
+/// night-birth flag. All are local-offset <see cref="DateTimeOffset"/>s built from
+/// <c>BirthDetails.UtcOffset</c>.
+///
+/// <see cref="Sunrise"/> opens that Vedic day, <see cref="Sunset"/> splits it from its
+/// night, <see cref="NextSunrise"/> closes it. So the <b>day arc</b> is
+/// [<see cref="Sunrise"/>, <see cref="Sunset"/>] and the <b>night arc</b> is
+/// [<see cref="Sunset"/>, <see cref="NextSunrise"/>] — Gulika / Maandi (Task 5) divide
+/// whichever arc the birth is in into eight.
 ///
 /// For a "night birth" — birth after midnight but before that calendar day's sunrise, as
 /// 1_Ramakrishnan's 05:30 vs 05:56 sunrise is — the Vedic day began at the PREVIOUS
 /// calendar day's sunrise, so <see cref="Sunrise"/> / <see cref="Sunset"/> are that prior
-/// day's pair. This matches JHora, which prints "Sunrise: 5:56:39 (April 21)" for this
-/// 22-Apr-1981 birth. <see cref="PriorSunrise"/> is the sunrise strictly before the birth
-/// moment (equal to <see cref="Sunrise"/> for a night birth; the birth-date sunrise for a
-/// day birth) — kept as its own field so day-count callers (Hora Lagna, Gulika, Maandi in
-/// Task 5) don't re-derive it.
+/// day's pair and <see cref="NextSunrise"/> is the birth calendar date's sunrise. This
+/// matches JHora, which prints "Sunrise: 5:56:39 (April 21)" for this 22-Apr-1981 birth.
+/// Hora Lagna's reference sunrise is always <see cref="Sunrise"/>.
 /// </summary>
 public record SunTimes(
     DateTimeOffset Sunrise,
     DateTimeOffset Sunset,
-    DateTimeOffset PriorSunrise,
+    DateTimeOffset NextSunrise,
     bool IsNightBirth);
 
 /// <summary>
@@ -225,13 +229,13 @@ public static class SwissEphemerisProvider
         // splits that day from its night). For a night birth that day opened at the
         // PREVIOUS calendar day's sunrise — exactly what JHora prints as "(April 21)".
         var arcSunriseJd = isNight ? NextEvent(midnightJd - 1.0, riseFlag) : birthDateSunriseJd;
+        var arcSunsetJd = NextEvent(arcSunriseJd, setFlag);
         var sunrise = LocalOf(arcSunriseJd);
-        var sunset = LocalOf(NextEvent(arcSunriseJd, setFlag));
+        var sunset = LocalOf(arcSunsetJd);
+        // The sunrise that closes this Vedic day / opens the next. For a night birth that is
+        // the birth calendar date's own sunrise; for a day birth it is the following day's.
+        var nextSunrise = LocalOf(NextEvent(arcSunsetJd, riseFlag));
 
-        // Sunrise strictly before the birth moment: the arc sunrise for a night birth,
-        // the birth-date sunrise for a day birth (same JD in the latter case).
-        var priorSunrise = isNight ? sunrise : birthDateSunrise;
-
-        return new SunTimes(sunrise, sunset, priorSunrise, isNight);
+        return new SunTimes(sunrise, sunset, nextSunrise, isNight);
     }
 }

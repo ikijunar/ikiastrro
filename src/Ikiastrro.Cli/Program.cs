@@ -519,8 +519,9 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     CheckSeconds("sunrise (local)", sun.Sunrise, "05:56:39", 5.0);
     CheckSeconds("sunset (local)",  sun.Sunset,  "18:18:53", 5.0);
     Check("night birth (05:30 < sunrise)", sun.IsNightBirth, true);
-    Check("prior sunrise == arc sunrise (night birth)",
-        sun.PriorSunrise.ToString("MM-dd HH:mm:ss"), sun.Sunrise.ToString("MM-dd HH:mm:ss"));
+    Check("Vedic-day arc sunrise is 21 Apr", sun.Sunrise.ToString("MM-dd"), "04-21");
+    Check("next sunrise (closes the night arc) is 22 Apr ~dawn", sun.NextSunrise.ToString("MM-dd HH:mm"), "04-22 05:56");
+    Check("night arc is ~11.6h", Math.Round((sun.NextSunrise - sun.Sunset).TotalHours, 1), 11.6);
 
     // --- Phase 2: Chara Karakas (8-karaka Ashta) ---
     // hand-computed ranking check (independent of the DB)
@@ -583,6 +584,41 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
               WHERE bd.Name='Ramakrishnan' AND cr.ChartType='D1' AND kd.Planet='AL'");
         var expectedD9 = VargaSignRuleFactory.For("NavamsaD9", 9).SignFor(alD1Lon).ToString();
         Check("AL D9 channel integrity", SpSign("D9", "AL"), expectedD9);
+    }
+
+    // --- Phase 4: Hora Lagna + Gulika + Maandi (JHora golden record) ---
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        string SpSign(string chart, string code) => conn.ExecuteScalar<string>(
+            @"SELECT kd.Sign FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
+              WHERE bd.Name='Ramakrishnan' AND cr.ChartType=@c AND kd.Planet=@p AND kd.PointKind<>'Graha'",
+            new { c = chart, p = code });
+        double SpLon(string code) => conn.ExecuteScalar<double>(
+            @"SELECT kd.NirayanaLongitudeDegrees FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
+              WHERE bd.Name='Ramakrishnan' AND cr.ChartType='D1' AND kd.Planet=@p",
+            new { p = code });
+        void CheckLon(string label, double actual, double expected, double tolDeg)
+        {
+            var d = Math.Abs(((actual - expected + 540) % 360) - 180);
+            var ok = d <= tolDeg;
+            Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual:F4}, expected {expected:F4} (Δ {d:F3}°, tol {tolDeg}°)");
+            if (!ok) failures++;
+        }
+
+        // JHora export: HL 23 Pi 55'08" (Reva, Pi/Aq) · Gulika 7 Li 44'38" (Swat, Li/Sg) · Maandi 18 Li 07'01" (Swat, Li/Pi)
+        Check("HL (D1) -> Pisces",     SpSign("D1", "HL"),     "Pisces");
+        Check("HL (D9) -> Aquarius",   SpSign("D9", "HL"),     "Aquarius");
+        Check("Gulika (D1) -> Libra",  SpSign("D1", "Gulika"), "Libra");
+        Check("Gulika (D9) -> Sagittarius", SpSign("D9", "Gulika"), "Sagittarius");
+        Check("Maandi (D1) -> Libra",  SpSign("D1", "Maandi"), "Libra");
+        Check("Maandi (D9) -> Pisces", SpSign("D9", "Maandi"), "Pisces");
+        CheckLon("HL longitude",     SpLon("HL"),     353.9189, 0.5);
+        CheckLon("Gulika longitude", SpLon("Gulika"), 187.7439, 0.5);
+        CheckLon("Maandi longitude", SpLon("Maandi"), 198.1169, 0.5);
     }
 
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
