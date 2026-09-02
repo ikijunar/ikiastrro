@@ -1,7 +1,7 @@
 # Horoscope software comparison — UI/UX & feature reference
 
 **Purpose:** what to borrow (and what to avoid) from existing Vedic-astrology products when
-building `vedic_horo_gen`'s web UI (`src/Ikiastrro.Web`) and its later feature surface.
+building `ikiastrro`'s web UI (`src/Ikiastrro.Web`) and its later feature surface.
 A working log — updated as more sources are reviewed.
 
 **Inputs behind this doc**

@@ -17,7 +17,7 @@ free ChatGPT account) is used only as an **outside reviewer**.
    text and replies. (On native Windows the Codex sandbox blocks all shell
    commands anyway, so bundling is also the only thing that works here. Use WSL2
    if you later want interactive repo exploration.)
-3. Output is written to **`D:\@ChatGPT\vedic_horo_gen\`** (the global default
+3. Output is written to **`D:\@ChatGPT\ikiastrro\`** (the global default
    ChatGPT folder, per `~/.claude/CLAUDE.md`):
    - no `-Focus`  -> `codex-review.md`
    - with `-Focus "x y"` -> `codex-review-x-y.md`

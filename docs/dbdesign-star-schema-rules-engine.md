@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restructure `vedic_horo_gen` around a star schema (dimensions / facts / rules) so the
+**Goal:** Restructure `ikiastrro` around a star schema (dimensions / facts / rules) so the
 classical rules currently hardcoded in C# (aspect offsets, combustion orbs, planetary
 friendship) become data — versioned via a `RuleSetId`, so changing a rule never silently
 alters already-computed chart facts, and never requires a code deployment.
@@ -15,7 +15,7 @@ per-chart computed results, each row recording which `RuleSetId` produced it. C#
 (`ClassicalRelationships`, `ClassicalCombustion`, `ClassicalDignity`) stop hardcoding
 dictionaries and instead read from `tbl_Rule_*` via new Dapper repositories.
 
-**Tech Stack:** SQL Server (existing `vedic_horo_gen` DB), Dapper (existing pattern in
+**Tech Stack:** SQL Server (existing `ikiastrro` DB), Dapper (existing pattern in
 `Ikiastrro.Data`), .NET 8 / C#, xUnit for the calculator refactor (new — no test project
 exists yet in this solution; see Task 6).
 
@@ -194,8 +194,8 @@ GO
 
 - [ ] **Step 2: Apply and verify**
 
-Run: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db/024_create_rule_sets_table.sql`
-Then: `sqlcmd -S localhost -E -C -d vedic_horo_gen -Q "SELECT * FROM tbl_Rule_Sets"`
+Run: `sqlcmd -S localhost -E -C -d ikiastrro -i db/024_create_rule_sets_table.sql`
+Then: `sqlcmd -S localhost -E -C -d ikiastrro -Q "SELECT * FROM tbl_Rule_Sets"`
 Expected: one row, `Id=1`, `RuleSetName='Parashari-Classical'`, `IsActive=1`.
 
 - [ ] **Step 3: Commit**
@@ -259,8 +259,8 @@ GO
 
 - [ ] **Step 2: Apply and verify row count**
 
-Run: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db/025_create_aspect_offset_rules.sql`
-Then: `sqlcmd -S localhost -E -C -d vedic_horo_gen -Q "SELECT COUNT(*) FROM tbl_Rule_AspectOffset"`
+Run: `sqlcmd -S localhost -E -C -d ikiastrro -i db/025_create_aspect_offset_rules.sql`
+Then: `sqlcmd -S localhost -E -C -d ikiastrro -Q "SELECT COUNT(*) FROM tbl_Rule_AspectOffset"`
 Expected: 19 rows (1+1+3+1+3+1+3+3+3).
 
 - [ ] **Step 3: Commit**
@@ -323,7 +323,7 @@ GO
 
 - [ ] **Step 2: Apply and verify against the C# source side by side**
 
-Run: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db/026_create_combustion_orb_rules.sql`
+Run: `sqlcmd -S localhost -E -C -d ikiastrro -i db/026_create_combustion_orb_rules.sql`
 Then diff by eye against `ClassicalCombustion.cs`'s two dictionaries (lines 30-46) — every
 value must match exactly; this is the same cross-check discipline as migration `019`.
 
@@ -398,8 +398,8 @@ GO
 
 - [ ] **Step 2: Apply and verify row count + asymmetry spot-check**
 
-Run: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db/027_create_natural_relationship_rules.sql`
-Then: `sqlcmd -S localhost -E -C -d vedic_horo_gen -Q "SELECT COUNT(*) FROM tbl_Rule_NaturalRelationship"`
+Run: `sqlcmd -S localhost -E -C -d ikiastrro -i db/027_create_natural_relationship_rules.sql`
+Then: `sqlcmd -S localhost -E -C -d ikiastrro -Q "SELECT COUNT(*) FROM tbl_Rule_NaturalRelationship"`
 Expected: 42 rows. Then spot-check one genuinely asymmetric pair against the C# source directly
 (e.g. Sun→Mercury is `'Neutral'` per `Sun`'s tuple, Mercury→Sun is `'Friend'` per `Mercury`'s
 tuple — confirms the table isn't accidentally storing a symmetrized version).
@@ -453,8 +453,8 @@ GO
 
 - [ ] **Step 2: Apply and verify**
 
-Run: `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db/028_create_temporary_friendship_rules.sql`
-Then: `sqlcmd -S localhost -E -C -d vedic_horo_gen -Q "SELECT SignDistance, IsFriend FROM tbl_Rule_TemporaryFriendshipDistance ORDER BY SignDistance"`
+Run: `sqlcmd -S localhost -E -C -d ikiastrro -i db/028_create_temporary_friendship_rules.sql`
+Then: `sqlcmd -S localhost -E -C -d ikiastrro -Q "SELECT SignDistance, IsFriend FROM tbl_Rule_TemporaryFriendshipDistance ORDER BY SignDistance"`
 Expected: `IsFriend=1` for exactly {2,3,4,10,11,12}, `0` for {1,5,6,7,8,9}.
 
 - [ ] **Step 3: Commit**

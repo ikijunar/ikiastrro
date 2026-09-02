@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// --- vedic_horo_gen services (same components the CLI uses directly) ---
+// --- ikiastrro services (same components the CLI uses directly) ---
 builder.Services.AddSingleton(
     SqlConnectionFactory.Create(builder.Configuration.GetConnectionString("Ikiastrro")));
 builder.Services.AddScoped<BirthDetailsRepository>();

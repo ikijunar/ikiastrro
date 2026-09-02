@@ -1,7 +1,7 @@
-# Key Computations — JHora Export vs. vedic_horo_gen Coverage
+# Key Computations — JHora Export vs. ikiastrro Coverage
 
 **Purpose:** Line-by-line comparison of a full Jagannatha Hora (JHora) "Natal Chart" text
-export against what `vedic_horo_gen` computes and stores today, to isolate exactly which
+export against what `ikiastrro` computes and stores today, to isolate exactly which
 computations still need to be added and in what order.
 **As of:** 2026-08-30
 **Reference export:** JHora natal chart for `1_Ramakrishnan` — 22 Apr 1981, 05:30, Chennai
@@ -22,7 +22,7 @@ byte-for-byte the same source analysed here, not a second chart).
 
 ## 1. Scorecard — every block in the export
 
-| JHora export block | Status in `vedic_horo_gen` | Notes |
+| JHora export block | Status in `ikiastrro` | Notes |
 |---|---|---|
 | Birth data (date/time/TZ/lat-long/place) | ✅ Covered | `tbl_BirthDetails`. **Altitude** is the one field not captured (export shows `0.00 m`). |
 | Ayanamsa value (`23-34-49.57`) | 🟡 Used, not surfaced | Lahiri comes straight from `SE_SIDM_LAHIRI`; the numeric value is never written to `tbl_ChartResults` or shown. |

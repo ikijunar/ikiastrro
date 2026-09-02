@@ -93,7 +93,7 @@ Across all 5, this is what a credible Vedic astrology tool is expected to suppor
   yet cross-checked against the other 4 tools, so not scored as a universal differentiator, but a
   real breadth axis this research hadn't captured before
 
-## Relevance to `vedic_horo_gen` v1 Scope
+## Relevance to `ikiastrro` v1 Scope
 
 Cross-checked against current project decisions (see
 [`ikiastrro.md`](ikiastrro.md)):
@@ -140,7 +140,7 @@ in this table.
 
 - 2026-08-24 — Initial version. Researched and compared top 5 Vedic astrology software
   (Parashara's Light, Jagannatha Hora, Shri Jyoti Star/Kala, LeoStar Expert, AstroSage Kundli) on
-  features, chart types, and configuration options; cross-referenced against `vedic_horo_gen` v1
+  features, chart types, and configuration options; cross-referenced against `ikiastrro` v1
   scope decisions.
 - 2026-08-28 — Deepened the Jagannatha Hora entry: added author bio (P.V.R. Narasimha Rao),
   precise varga count (23, not "20+"), the actual 8 named house systems (previously conflated

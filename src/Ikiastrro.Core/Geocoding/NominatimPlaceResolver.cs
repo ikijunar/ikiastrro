@@ -26,7 +26,7 @@ public class NominatimPlaceResolver : IPlaceResolver
     private static HttpClient CreateHttpClient()
     {
         var client = new HttpClient { BaseAddress = new Uri("https://nominatim.openstreetmap.org/") };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("vedic_horo_gen/1.0 (local development tool)");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("ikiastrro/1.0 (local development tool)");
         return client;
     }
 

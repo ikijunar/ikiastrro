@@ -1,6 +1,6 @@
 # Product scope: Nakshatra reference linkage + D2/D6/D10/D11 divisional charts
 
-**Project:** vedic_horo_gen
+**Project:** ikiastrro
 **Date:** 2026-08-30
 **Status:** Design approved in chat; spec pending user review before implementation plan.
 **Scope discipline:** DB + CLI only. A completely new Web UI is a later, separate batch — no
@@ -396,7 +396,7 @@ Numbering: 030/031 remain reserved (unapplied) for the house/Lagna signification
 takes 032–034. `STANDARDS.md` §D.1 infix rule: no new base tables here, so no `tbl_Dim_`/`tbl_Rule_`
 /`tbl_Fact_` decision; the new view follows the existing `vw_Chart_*` convention.
 
-Applied live via `sqlcmd -S localhost -E -C -d vedic_horo_gen -i db\03x_*.sql`.
+Applied live via `sqlcmd -S localhost -E -C -d ikiastrro -i db\03x_*.sql`.
 
 ---
 

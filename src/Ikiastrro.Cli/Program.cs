@@ -39,7 +39,7 @@ void PrintDashaTreeFromComputed(IReadOnlyList<DashaPeriod> roots, int maxLevel =
     PrintLevel(roots, 0);
 }
 
-Console.WriteLine("=== vedic_horo_gen ===");
+Console.WriteLine("=== ikiastrro ===");
 Console.WriteLine("Enter birth details to generate and store D1 (Rasi) + D9 (Navamsa) charts.\n");
 
 string ReadRequired(string prompt)

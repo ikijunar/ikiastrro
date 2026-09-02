@@ -1,16 +1,16 @@
 # Product Scope — Vedic Astrology Reference/Master Data Tables
 
-**Status:** Implemented (migrations 019-021, applied to `vedic_horo_gen` 2026-08-30) — points
+**Status:** Implemented (migrations 019-021, applied to `ikiastrro` 2026-08-30) — points
 1-3 live. See "Implementation record" at the end for what shipped vs. what's still open.
 **Owner:** rammyps
 **Created:** 2026-08-29
 **Purpose:** Classical Vedic astrology reference (master) data, modeled as its own set of
 tables — static domain knowledge (sign/planet attributes) as distinct from
-`vedic_horo_gen`'s existing chart-specific tables (`tbl_BirthDetails`, `tbl_ChartResults`,
+`ikiastrro`'s existing chart-specific tables (`tbl_BirthDetails`, `tbl_ChartResults`,
 `tbl_Chart_*`), which store *computed results for a specific person's chart*, not the
 underlying classical rules those computations draw on.
 
-**Open question:** should these tables live inside the `vedic_horo_gen` database, or a
+**Open question:** should these tables live inside the `ikiastrro` database, or a
 separate reference DB? Noting for now — decide once the full table list is gathered.
 
 ---
@@ -49,7 +49,7 @@ One row per sign, 12 rows total.
 | `MooltrikonaPlanet` | `VARCHAR(20)` NULL | Planet whose Mooltrikona range falls in this sign |
 | `MooltrikonaRangeStart` / `MooltrikonaRangeEnd` | `DECIMAL(5,2)` NULL | Degree range within the sign |
 
-**Cross-check against existing code:** `vedic_horo_gen` already encodes ruling-planet,
+**Cross-check against existing code:** `ikiastrro` already encodes ruling-planet,
 exaltation/debilitation, and Rahu/Ketu convention choices in `ClassicalDignity.cs` — if
 these tables are meant to feed that engine (rather than just document it), the values here
 need to match that file exactly, not be independently re-derived. Worth confirming before
@@ -270,12 +270,12 @@ numbered table section above, following the same shape.
 
 ## Implementation record (2026-08-30)
 
-Migrations `019`-`021` applied to `vedic_horo_gen` (`ikiastrro\db\`). Resolved on
+Migrations `019`-`021` applied to `ikiastrro` (`ikiastrro\db\`). Resolved on
 the way to implementation:
 
 - **Column casing:** kept `tbl_PascalCase` throughout, except `type_house_element` /
   `type_house_keyattri` (literal snake_case as originally requested).
-- **Database:** same `vedic_horo_gen` DB, alongside the existing `tbl_Chart_*` tables.
+- **Database:** same `ikiastrro` DB, alongside the existing `tbl_Chart_*` tables.
 - **Documentation vs. engine-feeding:** cross-checked live against the actual C# source before
   seeding — `ZodiacName.cs`, `ClassicalDignity.cs`, `AstroMath.cs`
   (`NakshatraLordOrder`/`GetNavamsaSign`), `VimshottariDashaCalculator.cs`

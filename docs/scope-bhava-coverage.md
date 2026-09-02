@@ -1,8 +1,8 @@
-# Bhava (House) Analysis Coverage — vedic_horo_gen
+# Bhava (House) Analysis Coverage — ikiastrro
 
 **Purpose:** Maps the classical 8-point Bhava-analysis checklist (strength/aspects/conjunctions of
 the house lord, house strength, natural qualities, yogas, exaltation/debilitation, Navamsa
-placement, subject context, sign-specific lord relations) against what `vedic_horo_gen` actually
+placement, subject context, sign-specific lord relations) against what `ikiastrro` actually
 computes and stores today, so future feature work can target the real gaps instead of re-deriving
 them.
 **As of:** 2026-08-30
