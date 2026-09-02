@@ -2,7 +2,7 @@ using System.Globalization;
 using Dapper;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
-using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.PlanetaryStates;
 using Ikiastrro.Core.Engines.Dasha;
 using Ikiastrro.Core.Engines.Houses;
@@ -644,6 +644,56 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     }
 
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- One-off check: `dotnet run -- verify-pipeline` ---
+// The DB-free ChartPipeline.Run façade must reproduce, for person 1 (Ramakrishnan), the same D1
+// KeyDetails the stored rows hold — proving the compute half of ChartGenerationService is faithfully
+// captured with no repository/connection. Solution has no unit-test project; this is the guard.
+if (args.Length > 0 && args[0] == "verify-pipeline")
+{
+    var failures = 0;
+    void Check(string label, object? actual, object? expected)
+    {
+        var ok = $"{actual}" == $"{expected}";
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual}, expected {expected}");
+        if (!ok) failures++;
+    }
+
+    var psRules = new PlanetaryStateRuleRepository(connectionFactory).GetActiveRuleSet();
+    var pipeline = new ChartPipeline(orchestrator, psRules);
+
+    var ram = birthDetailsRepo.GetAll().First(p => p.Name == "Ramakrishnan");
+    var bundle = pipeline.Run(ram);
+
+    // Recompute D1 KeyDetails from the bundle and compare to the stored rows for person 1.
+    var d1Input = bundle.Charts.Single(c => c.ChartType == "D1");
+    var (computed, _, _, _) = ChartAnalyzer.Compute(d1Input);
+
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        var stored = conn.Query<(string Planet, string PointKind, string Sign, string? DignityStatus, int HouseNumberFromLagna)>(
+            @"SELECT kd.Planet, kd.PointKind, kd.Sign, kd.DignityStatus, kd.HouseNumberFromLagna
+              FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              WHERE cr.BirthDetailId = @bid AND cr.ChartType = 'D1'
+              ORDER BY kd.Id", new { bid = ram.Id }).ToList();
+
+        Check("D1 row count", computed.Count, stored.Count);
+        foreach (var s in stored)
+        {
+            var c = computed.FirstOrDefault(x => x.Planet == s.Planet && x.PointKind == s.PointKind);
+            Check($"{s.Planet}/{s.PointKind} Sign", c?.Sign, s.Sign);
+            Check($"{s.Planet}/{s.PointKind} DignityStatus", c?.DignityStatus, s.DignityStatus);
+            Check($"{s.Planet}/{s.PointKind} HouseFromLagna", c?.HouseNumberFromLagna, s.HouseNumberFromLagna);
+        }
+    }
+
+    Check("CharaKaraka count", bundle.CharaKarakaByPlanet.Count, 8);
+    Check("State rows non-empty", bundle.States.Count > 0, true);
+
+    Console.WriteLine(failures == 0 ? "\nverify-pipeline: ALL PASS" : $"\nverify-pipeline: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 

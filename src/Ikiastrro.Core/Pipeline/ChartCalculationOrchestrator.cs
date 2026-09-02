@@ -3,9 +3,7 @@ using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Engines.Position;
 using Ikiastrro.Core.Models;
 
-using Ikiastrro.Core.Pipeline;
-
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Pipeline;
 
 /// <summary>
 /// Dispatches a BirthDetails record to every registered IChartCalculator.

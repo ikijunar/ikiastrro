@@ -1,9 +1,7 @@
 using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
 
-using Ikiastrro.Core.Pipeline;
-
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Pipeline;
 
 /// <summary>
 /// One computable chart/analysis type. Each future addition (D2, D10, Vimshottari Dasha,
