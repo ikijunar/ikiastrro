@@ -1,6 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Jaimini;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>
 /// Jaimini 8-karaka (Ashta) assignment from the D1 chart. Ranks the 8 grahas

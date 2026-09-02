@@ -2,7 +2,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.SpecialPoints;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>
 /// Hora Lagna. Classical rule (PyJHora <c>special_ascendant</c>, lagna_rate_factor 0.5):

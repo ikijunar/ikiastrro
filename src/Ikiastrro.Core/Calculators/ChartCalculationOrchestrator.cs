@@ -1,6 +1,7 @@
 using Ikiastrro.Core.Engines.DivisionalCharts;
+using Ikiastrro.Core.Engines.Karakas;
+using Ikiastrro.Core.Engines.Position;
 using Ikiastrro.Core.Models;
-using Ikiastrro.Core.SpecialPoints;
 
 namespace Ikiastrro.Core.Calculators;
 

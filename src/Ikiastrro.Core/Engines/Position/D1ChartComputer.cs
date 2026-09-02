@@ -1,9 +1,10 @@
+using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
+using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
-using Ikiastrro.Core.SpecialPoints;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Position;
 
 /// <summary>
 /// The actual D1 (Rasi) computation, extracted from D1RasiCalculator so other consumers (e.g. the

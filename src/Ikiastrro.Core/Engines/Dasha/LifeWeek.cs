@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Dasha;
+namespace Ikiastrro.Core.Engines.Dasha;
 
 /// <summary>
 /// One row of dbo.tvf_Chart_LifeWeeks — a single week (1-4000, rammyps's "assume every person has

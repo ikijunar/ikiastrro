@@ -1,8 +1,9 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Position;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.SpecialPoints;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>Computes every special point's D1 longitude for a person: AL + the 12 Bhava
 /// Arudhas (A2–A12), Hora Lagna, Gulika, Maandi. Each is then projected into every varga

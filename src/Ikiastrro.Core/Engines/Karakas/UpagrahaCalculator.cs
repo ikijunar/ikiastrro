@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.SpecialPoints;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>
 /// Gulika and Maandi — the two Saturn upagrahas. The arc the birth falls in (day arc

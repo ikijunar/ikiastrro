@@ -2,7 +2,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.Dasha;
+namespace Ikiastrro.Core.Engines.Dasha;
 
 /// <summary>
 /// Computes the classical Vimshottari Mahadasha/Antardasha/Pratyantardasha sequence from a birth

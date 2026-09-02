@@ -1,6 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Dasha;
+namespace Ikiastrro.Core.Engines.Dasha;
 
 /// <summary>
 /// One Vimshottari Dasha period at any level (1=Mahadasha, 2=Antardasha, 3=Pratyantardasha).

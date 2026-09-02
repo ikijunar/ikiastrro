@@ -1,8 +1,9 @@
 using System.Text.Json;
+using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
-using Ikiastrro.Core.SpecialPoints;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Position;
 
 /// <summary>
 /// Computes the D1 (Rasi) chart: Ascendant + all 9 planets' sign, exact degree, nakshatra/pada, and

@@ -2,7 +2,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.SpecialPoints;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>
 /// The Arudha pada of each of the 12 houses (Parashara). For house H with whole-sign lord L:

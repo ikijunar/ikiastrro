@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Dasha;
+namespace Ikiastrro.Core.Engines.Dasha;
 
 /// <summary>
 /// A Dasha period as read back from tbl_Chart_DashaPeriods — flat (Dapper-friendly), with

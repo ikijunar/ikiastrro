@@ -2,7 +2,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.SpecialPoints;
+namespace Ikiastrro.Core.Engines.Karakas;
 
 /// <summary>Turns D1 SpecialPointSeeds into per-chart PlanetPositions using the chart's own
 /// IVargaSignRule + division factor — the exact transform VargaChartComputer applies to a

@@ -1,7 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
-using Ikiastrro.Core.Dasha;
-using Ikiastrro.Core.Jaimini;
+using Ikiastrro.Core.Engines.Dasha;
+using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Data;
