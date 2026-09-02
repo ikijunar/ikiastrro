@@ -10,7 +10,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // --- vedic_horo_gen services (same components the CLI uses directly) ---
-builder.Services.AddSingleton(SqlConnectionFactory.CreateDefault());
+builder.Services.AddSingleton(
+    SqlConnectionFactory.Create(builder.Configuration.GetConnectionString("Ikiastrro")));
 builder.Services.AddScoped<BirthDetailsRepository>();
 builder.Services.AddScoped<ChartResultsRepository>();
 builder.Services.AddScoped<ChartKeyDetailsRepository>();
