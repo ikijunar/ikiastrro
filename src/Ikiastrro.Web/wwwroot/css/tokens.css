@@ -79,6 +79,26 @@
     --dasha-jupiter: #e66767;
     --dasha-saturn: #3987e5;
     --dasha-mercury: #c17f2e;
+
+    /* Planet identity palette (9 grahas), for PlanetChip / CombinedD1D9Grid. Traditional-leaning
+       hues: Sun copper, Moon silver, Mars red, Mercury green, Jupiter gold, Venus rose, Saturn
+       blue, Rahu smoke-grey, Ketu earth-brown. Each -bg is 20% of the solid mixed into --paper.
+       Same caveat as --dasha-* above: a fixed 9-member domain can't fold to "Other", so the
+       dataviz skill's validate_palette.js FAILs the 9-slot battery (dark surface #14132a):
+       lightness band, chroma floor (Moon/Rahu read grey — deliberate, those planets ARE grey),
+       CVD/normal-vision separation on the closest pairs (worst all-pairs ΔE ~10 normal). This is
+       expected past 3 categorical hues — color here is a scan aid ONLY. Identity is always
+       carried by the 2-letter glyph ("Su", "Mo", …) plus PlanetChip's border-left accent, never
+       colour alone. Contrast vs surface PASSes for all 9 (>= 3:1). */
+    --planet-sun:     #e08a2e;  --planet-sun-bg:     #3d2b2b;
+    --planet-moon:    #c8ccd6;  --planet-moon-bg:    #38384c;
+    --planet-mars:    #d64c42;  --planet-mars-bg:    #3b1e2f;
+    --planet-mercury: #4aa95c;  --planet-mercury-bg: #1f3134;
+    --planet-jupiter: #e3c045;  --planet-jupiter-bg: #3d362f;
+    --planet-venus:   #de86b6;  --planet-venus-bg:   #3c2a46;
+    --planet-saturn:  #4f79d8;  --planet-saturn-bg:  #20274d;
+    --planet-rahu:    #8b8fa0;  --planet-rahu-bg:    #2c2c42;
+    --planet-ketu:    #a9713f;  --planet-ketu-bg:    #32262e;
 }
 
 /* App-wide base look, shared by every page (D1ChartView keeps its own copy of these rules

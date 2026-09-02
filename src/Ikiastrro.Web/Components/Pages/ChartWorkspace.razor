@@ -40,6 +40,14 @@ else if (birthDetails is not null && charts.TryGetValue("D1", out var d1))
         <PlanetPositionsTable Rows="d1PlanetRows" LagnaSign="@d1.AscSign" />
     </section>
 
+    @if (d9KeyDetailsRaw.Count > 0)
+    {
+        <section class="combined-section">
+            <h2>D1 &oplus; D9 &mdash; combined</h2>
+            <CombinedD1D9Grid D1KeyDetails="d1KeyDetailsRaw" D9KeyDetails="d9KeyDetailsRaw" LagnaSign="@d1.AscSign" />
+        </section>
+    }
+
     <div class="cols3">
         <aside class="side">
             <h3>Vimshottari Dasha</h3>
@@ -159,6 +167,8 @@ else if (birthDetails is not null)
     private bool isDeleting;
 
     private readonly Dictionary<string, LoadedChart> charts = new();
+    private IReadOnlyList<ChartKeyDetail> d1KeyDetailsRaw = Array.Empty<ChartKeyDetail>();
+    private IReadOnlyList<ChartKeyDetail> d9KeyDetailsRaw = Array.Empty<ChartKeyDetail>();
     private IReadOnlyList<PlanetRow> d1PlanetRows = Array.Empty<PlanetRow>();
     private IReadOnlyList<DashaPeriodRecord> dashaRoots = Array.Empty<DashaPeriodRecord>();
     private IReadOnlyList<SadeSatiPeriod> sadeSati = Array.Empty<SadeSatiPeriod>();
@@ -168,6 +178,8 @@ else if (birthDetails is not null)
         notFound = false;
         confirmingDelete = false;
         charts.Clear();
+        d1KeyDetailsRaw = Array.Empty<ChartKeyDetail>();
+        d9KeyDetailsRaw = Array.Empty<ChartKeyDetail>();
 
         birthDetails = BirthDetailsRepo.GetById(Id);
         if (birthDetails is null)
@@ -203,7 +215,14 @@ else if (birthDetails is not null)
                 moonRow?.Nakshatra);
 
             if (type == "D1")
+            {
                 d1PlanetRows = ChartViewModel.BuildPlanetRows(keyDetails, houseLords, aspects);
+                d1KeyDetailsRaw = keyDetails;
+            }
+            else if (type == "D9")
+            {
+                d9KeyDetailsRaw = keyDetails;
+            }
         }
 
         dashaRoots = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);

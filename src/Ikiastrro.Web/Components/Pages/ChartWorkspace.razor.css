@@ -50,6 +50,17 @@
     margin: 0 0 8px;
 }
 
+.combined-section {
+    margin-bottom: 22px;
+}
+
+.combined-section h2 {
+    font-family: Georgia, 'Iowan Old Style', serif;
+    font-weight: 400;
+    font-size: 18px;
+    margin: 0 0 8px;
+}
+
 /* three columns: 25% dasha · 50% charts · 25% sade sati */
 .cols3 {
     display: grid;
