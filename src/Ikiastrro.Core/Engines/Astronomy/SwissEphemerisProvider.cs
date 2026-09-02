@@ -1,8 +1,7 @@
-using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 using SwissEphNet;
 
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 /// <summary>
 /// Sidereal (nirayana, Lahiri) longitudes for the Ascendant and all 9 planets at one moment/place,

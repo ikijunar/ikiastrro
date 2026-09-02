@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 /// <summary>
 /// The 12 rasis (zodiac signs), Aries-first ordering matching sidereal (nirayana) longitude order.

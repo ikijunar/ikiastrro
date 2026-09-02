@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 using Ikiastrro.Core.Models;
 

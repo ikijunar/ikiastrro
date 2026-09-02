@@ -50,7 +50,7 @@ public class DashaPeriodsRepository
                 period.LevelNumber,
                 period.SequenceInParent,
                 Lord = period.Lord.ToString(),
-                LordId = (int)period.Lord + Ikiastrro.Core.Astro.AstroIds.PlanetIdOffset,
+                LordId = (int)period.Lord + Ikiastrro.Core.Engines.Astronomy.AstroIds.PlanetIdOffset,
                 StartDate = period.StartDate.DateTime,   // local wall-clock, DATETIME2 column has no offset — matches how BirthDetails stores local time-of-day
                 EndDate = period.EndDate.DateTime,
                 period.StartDayOffset,

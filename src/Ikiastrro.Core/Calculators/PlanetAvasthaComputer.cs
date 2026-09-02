@@ -1,4 +1,4 @@
-using Ikiastrro.Core.Astro;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Calculators;
@@ -32,7 +32,7 @@ public static class PlanetAvasthaComputer
             var fact = new PlanetAvasthaFact
             {
                 Planet = kd.Planet,
-                PlanetId = (byte?)Ikiastrro.Core.Astro.AstroIds.PlanetIdOrNull(kd.Planet),
+                PlanetId = (byte?)Ikiastrro.Core.Engines.Astronomy.AstroIds.PlanetIdOrNull(kd.Planet),
                 RuleSetId = rules.RuleSetId,
             };
 

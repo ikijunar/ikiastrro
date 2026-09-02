@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 /// <summary>
 /// Pure, deterministic classical-astrology math on a sidereal (nirayana) longitude — sign, degree

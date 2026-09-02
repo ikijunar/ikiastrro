@@ -1,5 +1,5 @@
 using Dapper;
-using Ikiastrro.Core.Astro;
+using Ikiastrro.Core.Engines.Astronomy;
 
 namespace Ikiastrro.Data;
 

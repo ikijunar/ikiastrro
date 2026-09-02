@@ -1,5 +1,5 @@
 using Dapper;
-using Ikiastrro.Core.Astro;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Transits;
 

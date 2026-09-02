@@ -1,4 +1,4 @@
-using Ikiastrro.Core.Astro;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Models;
 

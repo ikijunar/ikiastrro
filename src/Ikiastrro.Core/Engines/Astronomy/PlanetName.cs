@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 /// <summary>The 7 classical grahas plus the two lunar nodes. Names match VedAstro.Library's own enum.</summary>
 public enum PlanetName

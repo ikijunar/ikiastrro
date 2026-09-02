@@ -1,4 +1,4 @@
-namespace Ikiastrro.Core.Astro;
+namespace Ikiastrro.Core.Engines.Astronomy;
 
 /// <summary>
 /// The 27 nakshatras, Aswini-first, in sidereal longitude order (each spans 360/27 = 13°20').
