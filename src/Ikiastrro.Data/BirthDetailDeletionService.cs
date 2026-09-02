@@ -17,7 +17,7 @@ public class BirthDetailDeletionService
     private readonly ChartAspectsRepository _aspectsRepo;
     private readonly ChartKeyDetailsRepository _keyDetailsRepo;
     private readonly ChartHouseLordsRepository _houseLordsRepo;
-    private readonly PlanetAvasthaRepository _planetAvasthaRepo;
+    private readonly PlanetaryStateRepository _planetaryStateRepo;
     private readonly DashaPeriodsRepository _dashaPeriodsRepo;
     private readonly ChartResultsRepository _chartResultsRepo;
     private readonly BirthDetailsRepository _birthDetailsRepo;
@@ -27,7 +27,7 @@ public class BirthDetailDeletionService
         ChartAspectsRepository aspectsRepo,
         ChartKeyDetailsRepository keyDetailsRepo,
         ChartHouseLordsRepository houseLordsRepo,
-        PlanetAvasthaRepository planetAvasthaRepo,
+        PlanetaryStateRepository planetaryStateRepo,
         DashaPeriodsRepository dashaPeriodsRepo,
         ChartResultsRepository chartResultsRepo,
         BirthDetailsRepository birthDetailsRepo)
@@ -36,7 +36,7 @@ public class BirthDetailDeletionService
         _aspectsRepo = aspectsRepo;
         _keyDetailsRepo = keyDetailsRepo;
         _houseLordsRepo = houseLordsRepo;
-        _planetAvasthaRepo = planetAvasthaRepo;
+        _planetaryStateRepo = planetaryStateRepo;
         _dashaPeriodsRepo = dashaPeriodsRepo;
         _chartResultsRepo = chartResultsRepo;
         _birthDetailsRepo = birthDetailsRepo;
@@ -48,7 +48,7 @@ public class BirthDetailDeletionService
         _aspectsRepo.DeleteByBirthDetailId(birthDetailId);
         _keyDetailsRepo.DeleteByBirthDetailId(birthDetailId);
         _houseLordsRepo.DeleteByBirthDetailId(birthDetailId);
-        _planetAvasthaRepo.DeleteByBirthDetailId(birthDetailId);
+        _planetaryStateRepo.DeleteByBirthDetailId(birthDetailId);
         _dashaPeriodsRepo.DeleteByBirthDetailId(birthDetailId);
         _chartResultsRepo.DeleteByBirthDetailId(birthDetailId);
         _birthDetailsRepo.Delete(birthDetailId);

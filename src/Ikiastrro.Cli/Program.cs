@@ -3,6 +3,7 @@ using Dapper;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Engines.PlanetaryStates;
 using Ikiastrro.Core.Engines.Dasha;
 using Ikiastrro.Core.Engines.Houses;
 using Ikiastrro.Core.Engines.Karakas;
@@ -114,8 +115,8 @@ var chartGenerationService = new ChartGenerationService(
     new ChartHouseLordsRepository(connectionFactory),
     new ChartConjunctionsRepository(connectionFactory),
     new ChartAspectsRepository(connectionFactory),
-    new AvasthaRuleRepository(connectionFactory),
-    new PlanetAvasthaRepository(connectionFactory),
+    new PlanetaryStateRuleRepository(connectionFactory),
+    new PlanetaryStateRepository(connectionFactory),
     new RuleSetRepository(connectionFactory),
     new ChartTypeRepository(connectionFactory));
 
@@ -457,10 +458,10 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
 
 // --- One-off check: `dotnet run -- verify-avastha` ---
 // Worked-example assertions for the Baaladi + Jagradadi avastha calculators against the seeded
-// tbl_Rule_BaaladiState / tbl_Rule_JagradadiState rows (active rule set). Solution has no unit-test project.
+// tbl_Rule_AgeState / tbl_Rule_WakefulnessState rows (active rule set). Solution has no unit-test project.
 if (args.Length > 0 && args[0] == "verify-avastha")
 {
-    var rules = new AvasthaRuleRepository(connectionFactory).GetActiveRuleSet();
+    var rules = new PlanetaryStateRuleRepository(connectionFactory).GetActiveRuleSet();
     var failures = 0;
     void Check(string label, object? actual, object? expected)
     {
@@ -469,9 +470,9 @@ if (args.Length > 0 && args[0] == "verify-avastha")
         if (!ok) failures++;
     }
 
-    string Baaladi(ZodiacName sign, decimal deg) => BaaladiAvastha.For(sign, deg, rules.Baaladi).StateName;
-    decimal Fraction(ZodiacName sign, decimal deg) => BaaladiAvastha.For(sign, deg, rules.Baaladi).EffectFraction;
-    string? Jagradadi(string dignity) => JagradadiAvastha.For(dignity, rules.JagradadiByDignity)?.StateName;
+    string Baaladi(ZodiacName sign, decimal deg) => AgeStateCalculator.For(sign, deg, rules.AgeBands).StateName;
+    decimal Fraction(ZodiacName sign, decimal deg) => AgeStateCalculator.For(sign, deg, rules.AgeBands).EffectFraction;
+    string? Jagradadi(string dignity) => WakefulnessStateCalculator.For(dignity, rules.WakefulnessByDignity)?.StateName;
 
     // Baaladi — odd sign (Aries) bands run forward 0-6-12-18-24-30
     Check("Baaladi(Aries, 3)",   Baaladi(ZodiacName.Aries, 3m),   "Baala");
@@ -718,8 +719,8 @@ if (args.Length > 0 && args[0] == "verify-schema")
         Count("SELECT COUNT(*) FROM dbo.tbl_ChartResults WHERE RuleSetId IS NULL"));
     Check("ChartResults position charts have ChartTypeId",
         Count("SELECT COUNT(*) FROM dbo.tbl_ChartResults WHERE CalculationKind = 'PositionChart' AND ChartTypeId IS NULL"));
-    Check("PlanetAvastha.PlanetId populated",
-        Count("SELECT COUNT(*) FROM dbo.tbl_Fact_PlanetAvastha WHERE PlanetId IS NULL"));
+    Check("PlanetaryState.PlanetId populated",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Fact_PlanetaryState WHERE PlanetId IS NULL"));
 
     // -- orphan-id checks --
     Check("KeyDetails.PlanetId resolves",

@@ -2435,24 +2435,24 @@ JOIN dbo.tbl_Dim_ChartType ct ON ct.Code = v.Code;
 GO
 
 -- =====================================================================
--- Avastha layer, slice 1 (Baaladi + Jagradadi) — star-schema (STANDARDS.md §D.1)
---   tbl_Dim_AvasthaState / tbl_Rule_BaaladiState / tbl_Rule_JagradadiState / tbl_Fact_PlanetAvastha
--- Written by ChartGenerationService via PlanetAvasthaComputer; read via vw_Chart_Consolidated
--- (BaaladiState / BaaladiEffectFraction / JagradadiState). Idempotent; also shipped as the
+-- Planetary-state layer, slice 1 (Baaladi + Jagradadi avasthas) — star-schema (STANDARDS.md §D.1)
+--   tbl_Dim_PlanetaryState / tbl_Rule_AgeState / tbl_Rule_WakefulnessState / tbl_Fact_PlanetaryState
+-- Written by ChartGenerationService via PlanetaryStateComputer; read via vw_Chart_Consolidated
+-- (AgeState / AgeEffectFraction / WakefulnessState). Idempotent; also shipped as the
 -- one-off db/00_add_avastha_star_schema.sql for existing databases.
 -- =====================================================================
-IF OBJECT_ID('dbo.tbl_Dim_AvasthaState', 'U') IS NULL
-CREATE TABLE dbo.tbl_Dim_AvasthaState (
-    Id            TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Dim_AvasthaState PRIMARY KEY,
+IF OBJECT_ID('dbo.tbl_Dim_PlanetaryState', 'U') IS NULL
+CREATE TABLE dbo.tbl_Dim_PlanetaryState (
+    Id            TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Dim_PlanetaryState PRIMARY KEY,
     AvasthaSystem VARCHAR(12)  NOT NULL,
     StateName     VARCHAR(20)  NOT NULL,
     SequenceOrder TINYINT      NOT NULL,
     Meaning       VARCHAR(200) NULL,
-    CONSTRAINT UQ_Dim_AvasthaState UNIQUE (AvasthaSystem, StateName)
+    CONSTRAINT UQ_Dim_PlanetaryState UNIQUE (AvasthaSystem, StateName)
 );
 GO
-IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_AvasthaState)
-INSERT dbo.tbl_Dim_AvasthaState (AvasthaSystem, StateName, SequenceOrder, Meaning) VALUES
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_PlanetaryState)
+INSERT dbo.tbl_Dim_PlanetaryState (AvasthaSystem, StateName, SequenceOrder, Meaning) VALUES
     ('Baaladi',   'Baala',    1, 'Infant — quarter effect'),
     ('Baaladi',   'Kumara',   2, 'Child — half effect'),
     ('Baaladi',   'Yuva',     3, 'Youth — full effect'),
@@ -2462,21 +2462,21 @@ INSERT dbo.tbl_Dim_AvasthaState (AvasthaSystem, StateName, SequenceOrder, Meanin
     ('Jagradadi', 'Swapna',   2, 'Dreaming — middling result (friendly / neutral sign)'),
     ('Jagradadi', 'Sushupti', 3, 'Sleeping — weak result (enemy sign / debilitation)');
 GO
-IF OBJECT_ID('dbo.tbl_Rule_BaaladiState', 'U') IS NULL
-CREATE TABLE dbo.tbl_Rule_BaaladiState (
-    Id                 TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Rule_BaaladiState PRIMARY KEY,
-    RuleSetId          TINYINT      NOT NULL CONSTRAINT FK_Rule_BaaladiState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
-    AvasthaStateId     TINYINT      NOT NULL CONSTRAINT FK_Rule_BaaladiState_State   FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
+IF OBJECT_ID('dbo.tbl_Rule_AgeState', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_AgeState (
+    Id                 TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Rule_AgeState PRIMARY KEY,
+    RuleSetId          TINYINT      NOT NULL CONSTRAINT FK_Rule_AgeState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+    AvasthaStateId     TINYINT      NOT NULL CONSTRAINT FK_Rule_AgeState_State   FOREIGN KEY REFERENCES dbo.tbl_Dim_PlanetaryState (Id),
     OddSignFromDegree  DECIMAL(4,1) NOT NULL,
     OddSignToDegree    DECIMAL(4,1) NOT NULL,
     EvenSignFromDegree DECIMAL(4,1) NOT NULL,
     EvenSignToDegree   DECIMAL(4,1) NOT NULL,
     EffectFraction     DECIMAL(4,3) NOT NULL,
-    CONSTRAINT UQ_Rule_BaaladiState UNIQUE (RuleSetId, AvasthaStateId)
+    CONSTRAINT UQ_Rule_AgeState UNIQUE (RuleSetId, AvasthaStateId)
 );
 GO
-IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_BaaladiState)
-INSERT dbo.tbl_Rule_BaaladiState (RuleSetId, AvasthaStateId, OddSignFromDegree, OddSignToDegree, EvenSignFromDegree, EvenSignToDegree, EffectFraction)
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_AgeState)
+INSERT dbo.tbl_Rule_AgeState (RuleSetId, AvasthaStateId, OddSignFromDegree, OddSignToDegree, EvenSignFromDegree, EvenSignToDegree, EffectFraction)
 SELECT 1, s.Id, v.OddFrom, v.OddTo, v.EvenFrom, v.EvenTo, v.Frac
 FROM (VALUES
     ('Baala',    0.0,  6.0, 24.0, 30.0, 0.250),
@@ -2485,19 +2485,19 @@ FROM (VALUES
     ('Vriddha', 18.0, 24.0,  6.0, 12.0, 0.125),
     ('Mrita',   24.0, 30.0,  0.0,  6.0, 0.000)
 ) v (StateName, OddFrom, OddTo, EvenFrom, EvenTo, Frac)
-JOIN dbo.tbl_Dim_AvasthaState s ON s.AvasthaSystem = 'Baaladi' AND s.StateName = v.StateName;
+JOIN dbo.tbl_Dim_PlanetaryState s ON s.AvasthaSystem = 'Baaladi' AND s.StateName = v.StateName;
 GO
-IF OBJECT_ID('dbo.tbl_Rule_JagradadiState', 'U') IS NULL
-CREATE TABLE dbo.tbl_Rule_JagradadiState (
-    Id             TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Rule_JagradadiState PRIMARY KEY,
-    RuleSetId      TINYINT     NOT NULL CONSTRAINT FK_Rule_JagradadiState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+IF OBJECT_ID('dbo.tbl_Rule_WakefulnessState', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_WakefulnessState (
+    Id             TINYINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Rule_WakefulnessState PRIMARY KEY,
+    RuleSetId      TINYINT     NOT NULL CONSTRAINT FK_Rule_WakefulnessState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
     DignityStatus  VARCHAR(20) NOT NULL,
-    AvasthaStateId TINYINT     NOT NULL CONSTRAINT FK_Rule_JagradadiState_State   FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
-    CONSTRAINT UQ_Rule_JagradadiState UNIQUE (RuleSetId, DignityStatus)
+    AvasthaStateId TINYINT     NOT NULL CONSTRAINT FK_Rule_WakefulnessState_State   FOREIGN KEY REFERENCES dbo.tbl_Dim_PlanetaryState (Id),
+    CONSTRAINT UQ_Rule_WakefulnessState UNIQUE (RuleSetId, DignityStatus)
 );
 GO
-IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_JagradadiState)
-INSERT dbo.tbl_Rule_JagradadiState (RuleSetId, DignityStatus, AvasthaStateId)
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_WakefulnessState)
+INSERT dbo.tbl_Rule_WakefulnessState (RuleSetId, DignityStatus, AvasthaStateId)
 SELECT 1, v.DignityStatus, s.Id
 FROM (VALUES
     ('Exalted',      'Jagrat'),
@@ -2510,23 +2510,23 @@ FROM (VALUES
     ('Great Enemy',  'Sushupti'),
     ('Debilitated',  'Sushupti')
 ) v (DignityStatus, StateName)
-JOIN dbo.tbl_Dim_AvasthaState s ON s.AvasthaSystem = 'Jagradadi' AND s.StateName = v.StateName;
+JOIN dbo.tbl_Dim_PlanetaryState s ON s.AvasthaSystem = 'Jagradadi' AND s.StateName = v.StateName;
 GO
-IF OBJECT_ID('dbo.tbl_Fact_PlanetAvastha', 'U') IS NULL
+IF OBJECT_ID('dbo.tbl_Fact_PlanetaryState', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.tbl_Fact_PlanetAvastha (
-        Id                    INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Fact_PlanetAvastha PRIMARY KEY,
-        ChartResultId         INT           NOT NULL CONSTRAINT FK_Fact_PlanetAvastha_ChartResult FOREIGN KEY REFERENCES dbo.tbl_ChartResults (Id),
+    CREATE TABLE dbo.tbl_Fact_PlanetaryState (
+        Id                    INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Fact_PlanetaryState PRIMARY KEY,
+        ChartResultId         INT           NOT NULL CONSTRAINT FK_Fact_PlanetaryState_ChartResult FOREIGN KEY REFERENCES dbo.tbl_ChartResults (Id),
         Planet                VARCHAR(20)   NOT NULL,
-        RuleSetId             TINYINT       NOT NULL CONSTRAINT FK_Fact_PlanetAvastha_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
-        BaaladiStateId        TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Baaladi   FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
-        BaaladiEffectFraction DECIMAL(4,3)  NULL,
-        JagradadiStateId      TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Jagradadi FOREIGN KEY REFERENCES dbo.tbl_Dim_AvasthaState (Id),
-        PlanetId              TINYINT       NULL CONSTRAINT FK_Fact_PlanetAvastha_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        RuleSetId             TINYINT       NOT NULL CONSTRAINT FK_Fact_PlanetaryState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        AgeStateId            TINYINT       NULL CONSTRAINT FK_Fact_PlanetaryState_Age   FOREIGN KEY REFERENCES dbo.tbl_Dim_PlanetaryState (Id),
+        AgeEffectFraction     DECIMAL(4,3)  NULL,
+        WakefulnessStateId    TINYINT       NULL CONSTRAINT FK_Fact_PlanetaryState_Wakefulness FOREIGN KEY REFERENCES dbo.tbl_Dim_PlanetaryState (Id),
+        PlanetId              TINYINT       NULL CONSTRAINT FK_Fact_PlanetaryState_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
         ChartTypeId           TINYINT       NULL,
-        CONSTRAINT UQ_Fact_PlanetAvastha UNIQUE (ChartResultId, Planet)
+        CONSTRAINT UQ_Fact_PlanetaryState UNIQUE (ChartResultId, Planet)
     );
-    CREATE NONCLUSTERED INDEX IX_Fact_PlanetAvastha_ChartResultId ON dbo.tbl_Fact_PlanetAvastha (ChartResultId);
+    CREATE NONCLUSTERED INDEX IX_Fact_PlanetaryState_ChartResultId ON dbo.tbl_Fact_PlanetaryState (ChartResultId);
 END
 GO
 
@@ -2570,8 +2570,8 @@ JOIN dbo.tbl_SignAttributes  nav  ON nav.Id = p.NavamsaSignId;
 GO
 
 -- =====================================================================
--- vw_Chart_Consolidated — defined last: it reads tbl_Fact_PlanetAvastha /
--- tbl_Dim_AvasthaState (created just above) as well as the tbl_Chart_* tables.
+-- vw_Chart_Consolidated — defined last: it reads tbl_Fact_PlanetaryState /
+-- tbl_Dim_PlanetaryState (created just above) as well as the tbl_Chart_* tables.
 -- =====================================================================
 SET ANSI_NULLS ON
 GO
@@ -2618,9 +2618,9 @@ SELECT
     kd.MoolatrikonaRange,
     kd.SignLordPlanet,
     kd.DignityStatus,
-    baaladi.StateName            AS BaaladiState,
-    av.BaaladiEffectFraction,
-    jagradadi.StateName          AS JagradadiState,
+    ageState.StateName           AS AgeState,
+    av.AgeEffectFraction,
+    wakeState.StateName          AS WakefulnessState,
     RulesHouses.HouseList        AS RulesHouseNumbers,
     Conjunct.PlanetList           AS ConjunctWith,
     AspectsCast.TargetList        AS Aspects,
@@ -2629,9 +2629,9 @@ SELECT
 FROM dbo.tbl_Chart_KeyDetails kd
 JOIN dbo.tbl_ChartResults cr  ON cr.Id = kd.ChartResultId
 JOIN dbo.tbl_BirthDetails bd  ON bd.Id = cr.BirthDetailId
-LEFT JOIN dbo.tbl_Fact_PlanetAvastha av ON av.ChartResultId = kd.ChartResultId AND av.PlanetId = kd.PlanetId
-LEFT JOIN dbo.tbl_Dim_AvasthaState  baaladi   ON baaladi.Id   = av.BaaladiStateId
-LEFT JOIN dbo.tbl_Dim_AvasthaState  jagradadi ON jagradadi.Id = av.JagradadiStateId
+LEFT JOIN dbo.tbl_Fact_PlanetaryState av ON av.ChartResultId = kd.ChartResultId AND av.PlanetId = kd.PlanetId
+LEFT JOIN dbo.tbl_Dim_PlanetaryState  ageState  ON ageState.Id  = av.AgeStateId
+LEFT JOIN dbo.tbl_Dim_PlanetaryState  wakeState ON wakeState.Id = av.WakefulnessStateId
 OUTER APPLY (
     SELECT STRING_AGG(CAST(hl.HouseNumber AS VARCHAR(2)), '','') WITHIN GROUP (ORDER BY hl.HouseNumber) AS HouseList
     FROM dbo.tbl_Chart_HouseLords hl

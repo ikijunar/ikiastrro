@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Calculators;
+using Ikiastrro.Core.Engines.PlanetaryStates;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.Dasha;
 using Ikiastrro.Core.Engines.Karakas;
@@ -26,21 +27,21 @@ public class ChartGenerationService
     private readonly ChartHouseLordsRepository _houseLordsRepo;
     private readonly ChartConjunctionsRepository _conjunctionsRepo;
     private readonly ChartAspectsRepository _aspectsRepo;
-    private readonly AvasthaRuleRepository _avasthaRuleRepo;
-    private readonly PlanetAvasthaRepository _planetAvasthaRepo;
+    private readonly PlanetaryStateRuleRepository _planetaryStateRuleRepo;
+    private readonly PlanetaryStateRepository _planetaryStateRepo;
     private readonly RuleSetRepository _ruleSetRepo;
     private readonly ChartTypeRepository _chartTypeRepo;
 
     // The avastha rule/dim rows are the same for the whole GenerateAll/Recompute call — load once.
-    private AvasthaRuleSet? _avasthaRules;
-    private AvasthaRuleSet AvasthaRules => _avasthaRules ??= _avasthaRuleRepo.GetActiveRuleSet();
+    private PlanetaryStateRuleSet? _planetaryStateRules;
+    private PlanetaryStateRuleSet PlanetaryStateRules => _planetaryStateRules ??= _planetaryStateRuleRepo.GetActiveRuleSet();
 
     public ChartGenerationService(
         ChartCalculationOrchestrator orchestrator, VimshottariDashaService dashaService,
         ChartResultsRepository chartResultsRepo, ChartKeyDetailsRepository keyDetailsRepo,
         ChartHouseLordsRepository houseLordsRepo, ChartConjunctionsRepository conjunctionsRepo,
         ChartAspectsRepository aspectsRepo,
-        AvasthaRuleRepository avasthaRuleRepo, PlanetAvasthaRepository planetAvasthaRepo,
+        PlanetaryStateRuleRepository planetaryStateRuleRepo, PlanetaryStateRepository planetaryStateRepo,
         RuleSetRepository ruleSetRepo, ChartTypeRepository chartTypeRepo)
     {
         _orchestrator = orchestrator;
@@ -50,8 +51,8 @@ public class ChartGenerationService
         _houseLordsRepo = houseLordsRepo;
         _conjunctionsRepo = conjunctionsRepo;
         _aspectsRepo = aspectsRepo;
-        _avasthaRuleRepo = avasthaRuleRepo;
-        _planetAvasthaRepo = planetAvasthaRepo;
+        _planetaryStateRuleRepo = planetaryStateRuleRepo;
+        _planetaryStateRepo = planetaryStateRepo;
         _ruleSetRepo = ruleSetRepo;
         _chartTypeRepo = chartTypeRepo;
     }
@@ -69,7 +70,7 @@ public class ChartGenerationService
         _houseLordsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _conjunctionsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _aspectsRepo.DeleteByBirthDetailId(birthDetails.Id);
-        _planetAvasthaRepo.DeleteByBirthDetailId(birthDetails.Id);
+        _planetaryStateRepo.DeleteByBirthDetailId(birthDetails.Id);
         foreach (var calc in _orchestrator.Calculators)
             _chartResultsRepo.DeleteByBirthDetailIdAndChartType(birthDetails.Id, calc.ChartType);
 
@@ -141,7 +142,7 @@ public class ChartGenerationService
             _houseLordsRepo.DeleteByChartResultId(result.Id);
             _conjunctionsRepo.DeleteByChartResultId(result.Id);
             _aspectsRepo.DeleteByChartResultId(result.Id);
-            _planetAvasthaRepo.DeleteByChartResultId(result.Id);
+            _planetaryStateRepo.DeleteByChartResultId(result.Id);
             PersistAnalytics(result.Id, input, CharaKarakaByPlanet(ctx));
             written.Add(result.ChartType);
         }
@@ -193,16 +194,16 @@ public class ChartGenerationService
         foreach (var r in keyDetails)
             if (r.PointKind == "Graha" && charaKarakaByPlanet.TryGetValue(r.Planet, out var ck))
                 r.CharaKaraka = ck;
-        var avasthas = PlanetAvasthaComputer.Compute(input, keyDetails, AvasthaRules);
+        var planetaryStates = PlanetaryStateComputer.Compute(input, keyDetails, PlanetaryStateRules);
         foreach (var r in keyDetails)    r.ChartResultId = chartResultId;
         foreach (var r in houseLords)    r.ChartResultId = chartResultId;
         foreach (var r in conjunctions)  r.ChartResultId = chartResultId;
         foreach (var r in aspects)       r.ChartResultId = chartResultId;
-        foreach (var r in avasthas)      r.ChartResultId = chartResultId;
+        foreach (var r in planetaryStates) r.ChartResultId = chartResultId;
         _keyDetailsRepo.InsertAll(keyDetails);
         _houseLordsRepo.InsertAll(houseLords);
         if (conjunctions.Count > 0) _conjunctionsRepo.InsertAll(conjunctions);
         if (aspects.Count > 0) _aspectsRepo.InsertAll(aspects);
-        if (avasthas.Count > 0) _planetAvasthaRepo.InsertAll(avasthas);
+        if (planetaryStates.Count > 0) _planetaryStateRepo.InsertAll(planetaryStates);
     }
 }
