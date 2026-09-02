@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 using Dapper;
 using Ikiastrro.Cli;
 using Ikiastrro.Core.Engines.Astronomy;
@@ -959,6 +961,217 @@ if (args.Length > 0 && args[0] == "verify-terminology")
     }
 
     Console.WriteLine(failures == 0 ? "\nverify-terminology: ALL PASS" : $"\nverify-terminology: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- One-off seed mode: `dotnet run -- seed-rule-params [--emit-sql]` ---
+// Backfills tbl_Rule_VargaScheme.RuleParametersJson + .CalculationNarrative by *sampling* the
+// C# IVargaSignRule classes — the JSON is derived from the code, never hand-typed, so it cannot
+// drift from it silently (verify-rules then proves the round-trip). MethodCode / MethodSource /
+// SignRuleKind / SignRuleKey / SourceRefCode are NOT touched: MethodCode carries the classical
+// *scheme* name (ParasaraTraditional / UmaShambu / SanjayRath / ClassicalTwoSign); the interpreter
+// family lives inside the JSON as its top-level "method" key. Idempotent — a re-run recomputes the
+// same values. --emit-sql also writes db/varga-rule-params.generated.sql, the block folded into
+// db/ikiastrro.sql so a from-empty baseline install ships the params already populated.
+if (args.Length > 0 && args[0] == "seed-rule-params")
+{
+    var emitSql = args.Contains("--emit-sql");
+    using var conn = connectionFactory.CreateOpenConnection();
+
+    // The two closed-form families that stay closed-form. Everything else is sampled into a table.
+    var linearParams = new Dictionary<string, (int Factor, int Stride)>(StringComparer.Ordinal)
+    {
+        ["DrekkanaD3"] = (3, 4),
+        ["ChaturthamsaD4"] = (4, 3),
+        ["DwadasamsaD12"] = (12, 1),
+        ["ShashtyamsaD60"] = (60, 1),
+    };
+    const string bandKey = "TrimsamsaD30";
+
+    // Unequal-band edges, discovered rather than assumed: walk each rasi sign in 0.001° steps,
+    // binary-search every sign change down to the exact degree, and union the 12 signs' break
+    // points into one shared ascending edge list.
+    static double[] DeriveBandEdges(IVargaSignRule rule)
+    {
+        var edges = new SortedSet<double>();
+        for (var rasi = 0; rasi < 12; rasi++)
+        {
+            var baseLon = rasi * 30.0;
+            var prev = rule.SignFor(baseLon);
+            for (var step = 1; step < 30000; step++)
+            {
+                var d = step * 0.001;
+                var cur = rule.SignFor(baseLon + d);
+                if (cur == prev) continue;
+                double lo = d - 0.001, hi = d;
+                for (var k = 0; k < 60; k++)
+                {
+                    var mid = (lo + hi) / 2;
+                    if (rule.SignFor(baseLon + mid) == prev) lo = mid; else hi = mid;
+                }
+                edges.Add(Math.Round(hi, 6));
+                prev = cur;
+            }
+        }
+        edges.Add(30.0);
+        return edges.ToArray();
+    }
+
+    var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
+    var emitted = new List<(int Id, string Key, string Json, string Narrative)>();
+
+    var schemes = conn.Query<(int Id, string SignRuleKey, int DivisionFactor)>(
+        "SELECT CAST(Id AS INT), SignRuleKey, CAST(DivisionFactor AS INT) " +
+        "FROM dbo.tbl_Rule_VargaScheme ORDER BY Id").ToList();
+
+    foreach (var (id, key, factor) in schemes)
+    {
+        var rule = VargaSignRuleFactory.For(key, factor);
+        var className = rule.GetType().Name;
+        string json, narrative, method;
+
+        if (linearParams.TryGetValue(key, out var lin))
+        {
+            method = "LINEAR_VARGA";
+            json = JsonSerializer.Serialize(
+                new { method = "LINEAR_VARGA", factor = lin.Factor, stride = lin.Stride }, jsonOptions);
+            narrative =
+                $"LINEAR_VARGA factor={lin.Factor} stride={lin.Stride}: l = floor(degreesInRasiSign / (30/{lin.Factor})); "
+                + $"varga sign = (rasiSign + l*{lin.Stride}) mod 12. Closed form of {className} (SignRuleKey={key}).";
+        }
+        else if (key == bandKey)
+        {
+            method = "BAND_VARGA";
+            var edges = DeriveBandEdges(rule);
+            var map = new int[edges.Length][];
+            for (var j = 0; j < edges.Length; j++)
+            {
+                var low = j == 0 ? 0.0 : edges[j - 1];
+                var probe = (low + edges[j]) / 2;
+                map[j] = new int[12];
+                for (var rasi = 0; rasi < 12; rasi++)
+                    map[j][rasi] = (int)rule.SignFor(rasi * 30.0 + probe);
+            }
+            json = JsonSerializer.Serialize(new { method = "BAND_VARGA", edges, map }, jsonOptions);
+            narrative =
+                $"BAND_VARGA with {edges.Length} unequal degree bands (upper edges "
+                + string.Join("/", edges.Select(e => e.ToString("0.###", CultureInfo.InvariantCulture)))
+                + " deg, the union of the odd- and even-sign break points): band j covers "
+                + $"[edges[j-1], edges[j]) and map[j][rasiSign] is the 0-based varga sign. Sampled from {className} (SignRuleKey={key}).";
+        }
+        else
+        {
+            method = "GRID_VARGA";
+            var parts = factor;
+            var map = new int[parts][];
+            for (var i = 0; i < parts; i++)
+            {
+                map[i] = new int[12];
+                for (var rasi = 0; rasi < 12; rasi++)
+                    map[i][rasi] = (int)rule.SignFor(rasi * 30.0 + (i + 0.5) * (30.0 / parts));
+            }
+            json = JsonSerializer.Serialize(new { method = "GRID_VARGA", parts, map }, jsonOptions);
+            narrative =
+                $"GRID_VARGA parts={parts}: each rasi sign splits into {parts} equal "
+                + (30.0 / parts).ToString("0.####", CultureInfo.InvariantCulture) + " deg parts; "
+                + $"map[part][rasiSign] is the 0-based varga sign. Sampled from {className} (SignRuleKey={key}).";
+        }
+
+        conn.Execute(
+            "UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = @Json, CalculationNarrative = @Narrative WHERE Id = @Id;",
+            new { Id = id, Json = json, Narrative = narrative });
+
+        Console.WriteLine($"  Id {id,2}  {key,-17} {method,-13} {json.Length,6} chars");
+        emitted.Add((id, key, json, narrative));
+    }
+
+    Console.WriteLine($"seed-rule-params: {emitted.Count} rows updated");
+
+    if (emitSql)
+    {
+        static string Esc(string s) => s.Replace("'", "''");
+        var sql = new StringBuilder();
+        sql.AppendLine("-- tbl_Rule_VargaScheme portability params (Task 12).");
+        sql.AppendLine("-- regenerate via: dotnet run --project src/Ikiastrro.Cli -- seed-rule-params --emit-sql");
+        foreach (var (id, key, json, narrative) in emitted)
+            sql.AppendLine($"UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = N'{Esc(json)}', CalculationNarrative = N'{Esc(narrative)}' WHERE Id = {id};  -- {key}");
+        sql.AppendLine("GO");
+        var outPath = Path.Combine(TerminologySeedData.FindRepoRoot(), "db", "varga-rule-params.generated.sql");
+        File.WriteAllText(outPath, sql.ToString());
+        Console.WriteLine($"seed-rule-params: wrote {outPath}");
+    }
+    return;
+}
+
+// --- One-off check: `dotnet run -- verify-rules` ---
+// The portability gate for the rule layer. (1) tbl_Rule_Catalog indexes every tbl_Rule_* table, so
+// the "what a port must reimplement" page can't silently fall behind a new rule table. (2) every
+// tbl_Rule_VargaScheme row's RuleParametersJson parses, names a known interpreter, and — driven
+// through that interpreter — yields the *identical* sign to its C# IVargaSignRule class at every
+// 0.5° of the zodiac. That equality is the whole point: it proves the JSON, not the C#, is the
+// specification, so a port needs only the 3 interpreters plus the table.
+if (args.Length > 0 && args[0] == "verify-rules")
+{
+    using var conn = connectionFactory.CreateOpenConnection();
+    var failures = 0;
+    void Fail(string m) { Console.WriteLine($"  [FAIL] {m}"); failures++; }
+
+    // 1. tbl_Rule_Catalog covers every tbl_Rule_* table.
+    var ruleTables = conn.Query<string>(
+        "SELECT name FROM sys.tables WHERE name LIKE 'tbl_Rule[_]%' " +
+        "AND name NOT IN ('tbl_Rule_Sets', 'tbl_Rule_Catalog') ORDER BY name").ToList();
+    var cataloged = conn.Query<string>("SELECT RuleTableName FROM dbo.tbl_Rule_Catalog")
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var missing = ruleTables.Where(t => !cataloged.Contains(t)).ToList();
+    foreach (var t in missing) Fail($"tbl_Rule_Catalog missing row for {t}");
+    Console.WriteLine($"  [{(missing.Count == 0 ? "PASS" : "FAIL")}] tbl_Rule_Catalog covers "
+                      + $"{ruleTables.Count - missing.Count}/{ruleTables.Count} tbl_Rule_* tables");
+
+    // 2. every scheme's JSON round-trips through its interpreter to the C# class's exact output.
+    var schemes = conn.Query<(int Id, string SignRuleKey, int DivisionFactor, string? Json)>(
+        "SELECT CAST(Id AS INT), SignRuleKey, CAST(DivisionFactor AS INT), RuleParametersJson " +
+        "FROM dbo.tbl_Rule_VargaScheme ORDER BY Id").ToList();
+
+    foreach (var (id, key, factor, rawJson) in schemes)
+    {
+        if (string.IsNullOrWhiteSpace(rawJson)) { Fail($"Id {id} ({key}): RuleParametersJson is NULL/empty"); continue; }
+
+        JsonDocument doc;
+        try { doc = JsonDocument.Parse(rawJson); }
+        catch (JsonException ex) { Fail($"Id {id} ({key}): RuleParametersJson is not valid JSON — {ex.Message}"); continue; }
+
+        using (doc)
+        {
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("method", out var methodEl) || methodEl.ValueKind != JsonValueKind.String)
+            { Fail($"Id {id} ({key}): RuleParametersJson has no top-level string \"method\""); continue; }
+
+            var method = methodEl.GetString()!;
+            IVargaMethodInterpreter interp;
+            try { interp = VargaMethodInterpreterFactory.For(method); }
+            catch (InvalidOperationException ex) { Fail($"Id {id} ({key}): {ex.Message}"); continue; }
+
+            var cls = VargaSignRuleFactory.For(key, factor);
+            var compared = 0;
+            var mismatch = false;
+            for (double lon = 0; lon < 360; lon += 0.5)
+            {
+                var a = interp.SignFor(root, lon);
+                var b = cls.SignFor(lon);
+                if (a != b)
+                {
+                    Fail($"{key} @ {lon:0.0}°: interpreter {a} != class {b}");
+                    mismatch = true;
+                    break;
+                }
+                compared++;
+            }
+            if (!mismatch)
+                Console.WriteLine($"  [PASS] Id {id,2} {key,-17} {method,-13} {compared} longitudes identical to {cls.GetType().Name}");
+        }
+    }
+
+    Console.WriteLine(failures == 0 ? "\nverify-rules: ALL PASS" : $"\nverify-rules: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
