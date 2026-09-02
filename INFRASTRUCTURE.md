@@ -74,3 +74,66 @@ dotnet run --project src/Ikiastrro.Web                              # https://lo
 > `ikiastrro_scratch`. With **go-sqlcmd**: `sqlcmd -v DbName=ikiastrro_scratch -i db/ikiastrro.sql`.
 > With the **ODBC `sqlcmd`** (`-v` is outranked by the in-file `:setvar`): substitute the
 > `:setvar` line — `sed 's/:setvar DbName "ikiastrro"/:setvar DbName "ikiastrro_scratch"/' db/ikiastrro.sql > db/_scratch_tmp.sql` then `sqlcmd -b -i db/_scratch_tmp.sql`.
+
+## Version control & repository hygiene
+
+Two remotes, both with `master` + `feat/*` branches: **`origin`**
+(`github.com/rammyps/ikiastrro`) and **`ikijunar`** (`github.com/ikijunar/ikiastrro`).
+`master` is the shared, published line; feature work happens on `feat/<topic>` and is
+**not pushed** until it FF-merges to `master`.
+
+### What is tracked vs. ignored
+
+| Tracked (belongs in git) | Ignored (`.gitignore`) |
+|---|---|
+| `src/**` (all C#, `.csproj`, `.slnx`), `appsettings.json` (dev default, **no secrets**) | `bin/`, `obj/`, `.vs/`, `*.user`, `/publish/` — build output |
+| `db/ikiastrro.sql` (baseline), `db/NN_*.sql` (numbered), `db/_archive/**` (frozen pre-consolidation chain), `db/README.md` | `/db/*.ipynb` — ad-hoc DDL notebooks |
+| `docs/**` — every `.md`, **and `docs/artifacts/**`** (DB diagrams, rendered `.d2` + source, `reference-charts/` = the JHora golden-record exports + images, UI mockups) | `/scratch/` — pure throwaway; anything a run needs long-term is promoted into `docs/artifacts/` first |
+| root docs (`README.md`, `ARCHITECTURE.md`, `PRODUCT.md`, `INFRASTRUCTURE.md`, `master_ikiastrro.md`), `scripts/**`, `decisions/**` | `/build_output.txt`, `/verify_*_output.txt` — CLI stdout redirects |
+| `.gitignore` itself | `/_research/` — vendored OSS reference repos; `/.superpowers/` — SDD scratch; `/.claude/worktrees/` |
+
+Rule: a file that a future clone needs to **build, verify, or understand** the project is
+tracked; everything a run *produces* or a session *scratches* is ignored. When a scratch file
+turns out to be a lasting reference (a vendor export, a diagram, a mockup), it moves into the
+matching `docs/artifacts/` subfolder and is committed there — `docs/artifacts/` is the only
+sanctioned home for non-prose project inputs/outputs (`STANDARDS.md §M.1`).
+
+### How artifacts reach `master`
+
+`docs/artifacts/**` is ordinary tracked content — it rides the same branch → `master` merge as
+the code. No separate mechanism.
+
+- **Binaries** (`.svg`, `.png`) are committed inline. Current sizes are small (largest is a
+  ~100 KB reference chart); **git-lfs is not used** and is not needed below a few MB per file.
+  If a future artifact is large or churns often (e.g. a regenerated multi-MB render), add a
+  `.gitattributes` LFS rule for that path *before* the first commit of it.
+- Rendered outputs (`.d2` → `.svg`) are committed **alongside** their source so the image is
+  regenerable: `d2 --theme 0 --pad 20 diagrams/<x>.d2 diagrams/<x>.svg`. Re-run and re-commit
+  when the source changes; never hand-edit the `.svg`.
+
+### Promoting a feature branch to `master`
+
+```
+git checkout master
+git merge --ff-only feat/<topic>          # FF only — no merge commits on master
+git push origin master && git push ikijunar master
+git checkout feat/<topic>                 # continue, or delete if the topic is done
+```
+
+If `--ff-only` fails, `master` moved — rebase `feat/<topic>` onto `master` first. Never
+`git push --force` a shared branch.
+
+### Before any push to a public remote
+
+1. `git status` clean; `git log --stat origin/master..HEAD` reviewed — no stray files.
+2. No secrets: `git grep -nE "password|pwd=|Integrated Security=False|AccountKey=|api[_-]?key" -- ':!*.md'`
+   returns nothing; `appsettings.json` carries only the dev Windows-Auth string; real
+   credentials live only in `appsettings.{Environment}.json` (untracked) or host env vars.
+3. `dotnet build` 0/0 and the `verify-*` sweep green on the tip commit.
+
+### Pending
+
+- **`db/` history scrub** (approved 2026-08-31, not executed): strip every `db/**` SQL from
+  both branches' history (`git filter-branch` — no `git filter-repo`/Python here), force-push
+  both remotes, `git bundle` backup first. After it runs, `db/ikiastrro.sql` + the `db/00_*.sql`
+  become local-only (untracked); the C# is unaffected. Track this in `../ikiastrro.md`.

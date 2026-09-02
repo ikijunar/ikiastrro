@@ -608,3 +608,20 @@ closed or explicitly accepted as in-scope for that plan.
   higher environment. A release = the set of `NN_*.sql` since the last deployed number.
 - Baseline `db/ikiastrro.sql` stays the "fresh install / dev" artifact and the folding target;
   the numbered chain is the "promote a change" artifact.
+
+### Version control & repository hygiene (Plan 0 addendum, 2026-09-02)
+
+`INFRASTRUCTURE.md` also carries a **Version control & repository hygiene** section: the
+tracked-vs-`.gitignore` rule (build output / `_research/` / `.superpowers/` / `/scratch/` /
+CLI stdout redirects / `db/*.ipynb` ignored; `src/`, `db/` baseline+numbered+`_archive/`,
+`docs/**` incl. `docs/artifacts/**` tracked), how `docs/artifacts/**` reaches `master` (ordinary
+tracked content, binaries committed inline, git-lfs only above a few MB), the FF-only
+`feat/* → master` promotion runbook for the two remotes (`origin`, `ikijunar`), a pre-public-push
+secret/clean-tree checklist, and the still-pending `db/` history scrub.
+
+Also landed in Plan 0's cleanup: the `vedic_horo_gen` / `VedicHoroGen` project name (renamed
+2026-08-30) was retired from the last live code spots (CLI banner, Nominatim User-Agent, a Web
+comment) and 9 living docs; the JHora golden-record exports moved `scratch/` →
+`docs/artifacts/reference-charts/` and are now tracked; the 6 `docs/reference-chart-*.md`
+guides (indexed as living, never committed) were added; `db/15_create_dim_source.sql`'s
+`PRINT` (an inline scalar subquery, rejected by SQL Server) was fixed.
