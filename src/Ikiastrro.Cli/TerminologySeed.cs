@@ -168,33 +168,48 @@ internal sealed class TerminologySeedData
             ["Vriddha"] = "Old", ["Mrita"] = "Dead",
             ["Jagrat"] = "Awake", ["Swapna"] = "Dreaming", ["Sushupti"] = "Sleeping"
         };
-        var states = conn.Query<(int Id, string AvasthaSystem, string StateName, string? Meaning)>(
-            "SELECT Id, AvasthaSystem, StateName, Meaning FROM dbo.tbl_Dim_PlanetaryState ORDER BY Id").ToList();
+        // Hardcoded ASCII glosses — NOT taken from tbl_Dim_PlanetaryState.Meaning: that VARCHAR
+        // column stores raw UTF-8 bytes under a CP1252 collation, so its em-dash reads back mojibaked.
+        var avasthaDesc = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Baala"] = "Infant stage - one quarter of the normal effect.",
+            ["Kumara"] = "Child stage - one half of the normal effect.",
+            ["Yuva"] = "Youth stage - full effect.",
+            ["Vriddha"] = "Old stage - feeble effect.",
+            ["Mrita"] = "Dead stage - no effect.",
+            ["Jagrat"] = "Awake - full result (own sign, exaltation or moolatrikona).",
+            ["Swapna"] = "Dreaming - middling result (friendly or neutral sign).",
+            ["Sushupti"] = "Sleeping - weak result (enemy sign or debilitation)."
+        };
+        var states = conn.Query<(int Id, string AvasthaSystem, string StateName)>(
+            "SELECT Id, AvasthaSystem, StateName FROM dbo.tbl_Dim_PlanetaryState ORDER BY Id").ToList();
         foreach (var s in states)
             d.Add("AvasthaState",
                 $"AVASTHA_{s.AvasthaSystem.ToUpperInvariant()}_{s.StateName.ToUpperInvariant()}",
                 null, "AVASTHA", s.Id,
-                s.StateName, avasthaEn.GetValueOrDefault(s.StateName, s.StateName), s.Meaning);
+                s.StateName, avasthaEn.GetValueOrDefault(s.StateName, s.StateName),
+                avasthaDesc.GetValueOrDefault(s.StateName));
 
-        // ---- DignityState (9): distinct tbl_Chart_KeyDetails.DignityStatus ----
-        var dignityRank = new Dictionary<string, int>(StringComparer.Ordinal)
+        // ---- DignityState (9): a fixed canonical list, NOT DB-derived — it must total 9 even on a
+        //      DB with no computed charts. NumericKey = 1-based strength rank in this order. ----
+        (string En, string Sa)[] dignities =
         {
-            ["Exalted"] = 1, ["Moolatrikona"] = 2, ["Own Sign"] = 3, ["Great Friend"] = 4,
-            ["Friend"] = 5, ["Neutral"] = 6, ["Enemy"] = 7, ["Great Enemy"] = 8, ["Debilitated"] = 9
+            ("Exalted", "Uccha"),
+            ("Own Sign", "Svakshetra"),
+            ("Moolatrikona", "Moolatrikona"),
+            ("Great Friend", "Adhimitra"),
+            ("Friend", "Mitra"),
+            ("Neutral", "Sama"),
+            ("Enemy", "Shatru"),
+            ("Great Enemy", "Adhishatru"),
+            ("Debilitated", "Neecha")
         };
-        var dignitySa = new Dictionary<string, string>(StringComparer.Ordinal)
+        for (var i = 0; i < dignities.Length; i++)
         {
-            ["Exalted"] = "Uccha", ["Moolatrikona"] = "Moolatrikona", ["Own Sign"] = "Swakshetra",
-            ["Great Friend"] = "Adhimitra", ["Friend"] = "Mitra", ["Neutral"] = "Sama",
-            ["Enemy"] = "Shatru", ["Great Enemy"] = "Adhishatru", ["Debilitated"] = "Neecha"
-        };
-        var dignities = conn.Query<string>(
-                "SELECT DISTINCT DignityStatus FROM dbo.tbl_Chart_KeyDetails WHERE DignityStatus IS NOT NULL")
-            .OrderBy(x => dignityRank.GetValueOrDefault(x, 99)).ToList();
-        foreach (var dg in dignities)
-            d.Add("DignityState", $"DIGNITY_{dg.ToUpperInvariant().Replace(" ", "_")}", null, "DIGNITY",
-                dignityRank.GetValueOrDefault(dg, 99), dignitySa.GetValueOrDefault(dg, dg), dg,
-                $"Planetary dignity: {dg}.");
+            var (en, sa) = dignities[i];
+            d.Add("DignityState", $"DIGNITY_{en.ToUpperInvariant().Replace(" ", "_")}", null, "DIGNITY",
+                i + 1, sa, en, $"Planetary dignity: {en}.");
+        }
 
         // ---- Relationship (6) ----
         (string Code, string Sa, string En, string Desc)[] rels =

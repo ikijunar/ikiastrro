@@ -895,7 +895,7 @@ WHEN NOT MATCHED THEN INSERT (TerminologyId, LanguageCode, Script, Name, Traditi
     if (emitSql)
     {
         var outPath = Path.Combine(TerminologySeedData.FindRepoRoot(), "db", "terminology-seed.generated.sql");
-        var note = $"dumped {DateTime.UtcNow:yyyy-MM-dd} from db '{dbOverride ?? "ikiastrro"}' — "
+        var note = $"dumped {DateTime.UtcNow:yyyy-MM-dd} from db '{dbOverride ?? "ikiastrro"}' - "
                    + $"{seed.Terms.Count} concept rows / {seed.Texts.Count} text rows (sa+en, Latn).";
         File.WriteAllText(outPath, seed.ToBaselineSql(note));
         Console.WriteLine($"seed-terminology: wrote {outPath}");
@@ -927,6 +927,9 @@ if (args.Length > 0 && args[0] == "verify-terminology")
     }
     foreach (var k in Enum.GetNames<Ikiastrro.Core.Engines.Karakas.CharaKaraka>())
         if (!codes.Contains($"KARAKA_{k.ToUpperInvariant()}")) Fail($"no Code for karaka {k}");
+
+    var dignityCount = rows.Count(r => r.Category == "DignityState");
+    if (dignityCount != 9) Fail($"expected 9 DignityState codes, found {dignityCount}");
 
     var textByCodeLang = text
         .Join(rows, t => t.TerminologyId, r => r.TerminologyId, (t, r) => (r.Code, t.LanguageCode))
