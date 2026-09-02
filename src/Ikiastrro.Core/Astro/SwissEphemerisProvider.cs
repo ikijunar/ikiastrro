@@ -20,6 +20,26 @@ public record SiderealPositions(
     double LocalSiderealTimeHours);
 
 /// <summary>
+/// Sunrise / sunset that bound the Vedic day the birth falls in, plus the sunrise
+/// immediately BEFORE the birth moment and a night-birth flag. All three timestamps are
+/// local-offset <see cref="DateTimeOffset"/>s built from <c>BirthDetails.UtcOffset</c>.
+///
+/// For a "night birth" — birth after midnight but before that calendar day's sunrise, as
+/// 1_Ramakrishnan's 05:30 vs 05:56 sunrise is — the Vedic day began at the PREVIOUS
+/// calendar day's sunrise, so <see cref="Sunrise"/> / <see cref="Sunset"/> are that prior
+/// day's pair. This matches JHora, which prints "Sunrise: 5:56:39 (April 21)" for this
+/// 22-Apr-1981 birth. <see cref="PriorSunrise"/> is the sunrise strictly before the birth
+/// moment (equal to <see cref="Sunrise"/> for a night birth; the birth-date sunrise for a
+/// day birth) — kept as its own field so day-count callers (Hora Lagna, Gulika, Maandi in
+/// Task 5) don't re-derive it.
+/// </summary>
+public record SunTimes(
+    DateTimeOffset Sunrise,
+    DateTimeOffset Sunset,
+    DateTimeOffset PriorSunrise,
+    bool IsNightBirth);
+
+/// <summary>
 /// Replaces VedAstro.Library as the raw astronomical engine. Wraps SwissEphNet — a direct managed C#
 /// port of Astrodienst's Swiss Ephemeris (the same precision source behind JHora, Parashara's Light,
 /// and Jyotish Dashboard) — using its Moshier analytical mode (SEFLG_MOSEPH): no external ephemeris
@@ -128,4 +148,90 @@ public static class SwissEphemerisProvider
             BirthMomentFactory.Create(birthDetails),
             birthDetails.Latitude,
             birthDetails.Longitude);
+
+    /// <summary>
+    /// Sunrise / sunset for a person's birth date &amp; place — see <see cref="SunTimes"/>.
+    ///
+    /// Path taken: SwissEphNet 2.8.0.2 DOES expose <c>swe_rise_trans</c> plus the
+    /// <c>SE_CALC_RISE</c> / <c>SE_CALC_SET</c> / <c>SE_BIT_DISC_CENTER</c> /
+    /// <c>SE_BIT_NO_REFRACTION</c> constants (verified by reflecting the shipped
+    /// <c>SwissEphNet.dll</c>), so the manual hour-angle fallback in the brief is not
+    /// needed. Signature used:
+    /// <c>int swe_rise_trans(double tjd_ut, int ipl, string starname, int epheflag,
+    /// int rsmi, double[] geopos, double atpress, double attemp, ref double tret,
+    /// ref string serr)</c>.
+    ///
+    /// Rise/set flag combination: <c>SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION</c> — i.e.
+    /// geometric centre of the Sun's disc crossing the true horizon, no atmospheric
+    /// refraction. This is JHora / Parashara's Light's default and lands within ~2s of the
+    /// golden record's <c>5:56:39</c> sunrise / <c>18:18:53</c> sunset (Chennai,
+    /// 22 Apr 1981). The residual is a fixed early bias: SwissEphNet ships no <c>.se1</c>
+    /// files, so <c>swe_rise_trans</c> falls back to the Moshier analytic theory rather than
+    /// the full Swiss Ephemeris JHora uses, and delta-T handling differs slightly. Toggling
+    /// either bit off shifts sunrise by ~1–2 min (refraction) or ~2.5 min (disc), which is a
+    /// real break; the ~2s Moshier gap is not. <c>verify-jaimini</c> asserts a 5s tolerance.
+    /// </summary>
+    public static SunTimes GetSunTimes(BirthDetails birthDetails)
+    {
+        var moment = BirthMomentFactory.Create(birthDetails);   // local-offset
+        var offset = moment.Offset;
+        using var sweph = new SwissEph();
+
+        var geopos = new[] { birthDetails.Longitude, birthDetails.Latitude, 0.0 };
+
+        double JdOf(DateTimeOffset t)
+        {
+            var u = t.ToUniversalTime();
+            return sweph.swe_julday(u.Year, u.Month, u.Day,
+                u.Hour + u.Minute / 60.0 + u.Second / 3600.0, SwissEph.SE_GREG_CAL);
+        }
+
+        DateTimeOffset LocalOf(double jdUt)
+        {
+            // SwissEphNet's swe_revjul takes ref (not out) parameters.
+            int y = 0, mo = 0, d = 0;
+            double h = 0;
+            sweph.swe_revjul(jdUt, SwissEph.SE_GREG_CAL, ref y, ref mo, ref d, ref h);
+            var whole = (int)h;
+            var min = (int)((h - whole) * 60);
+            var sec = (int)Math.Round(((h - whole) * 60 - min) * 60);
+            var utc = new DateTimeOffset(y, mo, d, whole, min, 0, TimeSpan.Zero).AddSeconds(sec);
+            return utc.ToOffset(offset);
+        }
+
+        double NextEvent(double fromJd, int rsmi)
+        {
+            double tret = 0;
+            string serr = "";
+            var rc = sweph.swe_rise_trans(fromJd, SwissEph.SE_SUN, null,
+                SwissEph.SEFLG_MOSEPH, rsmi, geopos, 0.0, 0.0, ref tret, ref serr);
+            if (rc < 0) throw new InvalidOperationException($"swe_rise_trans failed: {serr}");
+            return tret;
+        }
+
+        const int riseFlag = SwissEph.SE_CALC_RISE | SwissEph.SE_BIT_DISC_CENTER | SwissEph.SE_BIT_NO_REFRACTION;
+        const int setFlag = SwissEph.SE_CALC_SET | SwissEph.SE_BIT_DISC_CENTER | SwissEph.SE_BIT_NO_REFRACTION;
+
+        // Search anchor: local midnight of the birth calendar date, expressed in UT.
+        var localMidnight = new DateTimeOffset(
+            birthDetails.DateOfBirth.ToDateTime(TimeOnly.MinValue), offset);
+        var midnightJd = JdOf(localMidnight);
+
+        var birthDateSunriseJd = NextEvent(midnightJd, riseFlag);
+        var birthDateSunrise = LocalOf(birthDateSunriseJd);
+        var isNight = moment < birthDateSunrise;   // birth precedes the day's sunrise -> night arc
+
+        // The sunrise that OPENS the Vedic day containing the birth (and the sunset that
+        // splits that day from its night). For a night birth that day opened at the
+        // PREVIOUS calendar day's sunrise — exactly what JHora prints as "(April 21)".
+        var arcSunriseJd = isNight ? NextEvent(midnightJd - 1.0, riseFlag) : birthDateSunriseJd;
+        var sunrise = LocalOf(arcSunriseJd);
+        var sunset = LocalOf(NextEvent(arcSunriseJd, setFlag));
+
+        // Sunrise strictly before the birth moment: the arc sunrise for a night birth,
+        // the birth-date sunrise for a day birth (same JD in the latter case).
+        var priorSunrise = isNight ? sunrise : birthDateSunrise;
+
+        return new SunTimes(sunrise, sunset, priorSunrise, isNight);
+    }
 }

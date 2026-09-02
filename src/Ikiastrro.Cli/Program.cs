@@ -482,6 +482,49 @@ if (args.Length > 0 && args[0] == "verify-avastha")
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
+// --- One-off check: `dotnet run -- verify-jaimini` ---
+// Worked-example assertions for the Jaimini Chara Karakas + special points against
+// scratch/Rammy_Jagannatha.txt (person 1_Ramakrishnan). Solution has no unit-test project.
+// Grows over Tasks 3–5; Task 2 seeds it with sunrise / sunset / night-birth only.
+if (args.Length > 0 && args[0] == "verify-jaimini")
+{
+    var failures = 0;
+    void Check(string label, object? actual, object? expected)
+    {
+        var ok = $"{actual}" == $"{expected}";
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual}, expected {expected}");
+        if (!ok) failures++;
+    }
+    void CheckSeconds(string label, DateTimeOffset actual, string expectedHms, double toleranceSec)
+    {
+        var exp = DateTimeOffset.ParseExact(
+            actual.ToString("yyyy-MM-dd ") + expectedHms + actual.ToString(" zzz"),
+            "yyyy-MM-dd HH:mm:ss zzz", System.Globalization.CultureInfo.InvariantCulture);
+        var deltaSec = Math.Abs((actual - exp).TotalSeconds);
+        var ok = deltaSec <= toleranceSec;
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: got {actual:HH:mm:ss}, expected {expectedHms} (Δ {deltaSec:F1}s, tol {toleranceSec:F0}s)");
+        if (!ok) failures++;
+    }
+
+    var ram = birthDetailsRepo.GetAll().First(p => p.Name == "Ramakrishnan");
+
+    // --- Phase 1: sunrise / sunset (Chennai, 22 Apr 1981; night birth -> 21 Apr arc) ---
+    // JHora prints "Sunrise: 5:56:39 / Sunset: 18:18:53 (April 21)" for this birth. SwissEphNet
+    // ships no .se1 files, so swe_rise_trans runs on the Moshier analytic theory; that plus
+    // delta-T differences leave a fixed ~2s early bias vs JHora's full Swiss Ephemeris. A 5s
+    // tolerance is far below the precision Hora Lagna / Gulika / Maandi (day split into 8-12
+    // parts of ~90 min) need in Task 5.
+    var sun = SwissEphemerisProvider.GetSunTimes(ram);
+    CheckSeconds("sunrise (local)", sun.Sunrise, "05:56:39", 5.0);
+    CheckSeconds("sunset (local)",  sun.Sunset,  "18:18:53", 5.0);
+    Check("night birth (05:30 < sunrise)", sun.IsNightBirth, true);
+    Check("prior sunrise == arc sunrise (night birth)",
+        sun.PriorSunrise.ToString("MM-dd HH:mm:ss"), sun.Sunrise.ToString("MM-dd HH:mm:ss"));
+
+    Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
 if (args.Length > 0 && args[0] == "verify-schema")
 {
     using var conn = connectionFactory.CreateOpenConnection();
