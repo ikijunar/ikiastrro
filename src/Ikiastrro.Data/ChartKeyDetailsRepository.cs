@@ -24,7 +24,7 @@ public class ChartKeyDetailsRepository
                  IsCombust, DistanceFromSunDegrees, CombustionOrbUsedDegrees,
                  HouseNumberFromLagna, HouseNumberFromSun, HouseNumberFromMoon,
                  OwnSigns, ExaltationSign, DebilitationSign, MoolatrikonaSign, MoolatrikonaRange,
-                 SignLordPlanet, DignityStatus, AspectingPlanets,
+                 SignLordPlanet, DignityStatus, AspectingPlanets, PointKind, CharaKaraka,
                  PlanetId, SignId, NakshatraLordPlanetId, NakshatraSubLordPlanetId, SignLordPlanetId)
             VALUES
                 (@ChartResultId, @Planet, @Sign, @DegreesInSignDisplay, @DegreesInSignDecimal,
@@ -34,7 +34,7 @@ public class ChartKeyDetailsRepository
                  @IsCombust, @DistanceFromSunDegrees, @CombustionOrbUsedDegrees,
                  @HouseNumberFromLagna, @HouseNumberFromSun, @HouseNumberFromMoon,
                  @OwnSigns, @ExaltationSign, @DebilitationSign, @MoolatrikonaSign, @MoolatrikonaRange,
-                 @SignLordPlanet, @DignityStatus, @AspectingPlanets,
+                 @SignLordPlanet, @DignityStatus, @AspectingPlanets, @PointKind, @CharaKaraka,
                  @PlanetId, @SignId, @NakshatraLordPlanetId, @NakshatraSubLordPlanetId, @SignLordPlanetId)
             """;
 

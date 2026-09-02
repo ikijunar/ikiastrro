@@ -33,6 +33,15 @@ public class ChartKeyDetail
     /// tightness are pure SQL. DegreesInSignDecimal = VargaLongitudeDegrees % 30.</summary>
     public double VargaLongitudeDegrees { get; set; }
 
+    /// <summary>Row discriminator: 'Graha' (a planet or the Ascendant) or one of the special
+    /// points 'SpecialLagna' / 'Arudha' / 'Upagraha'. Non-'Graha' rows carry only position
+    /// (Sign / longitudes / house); dignity, nakshatra, combustion, aspects, CharaKaraka are NULL.</summary>
+    public string PointKind { get; set; } = "Graha";
+
+    /// <summary>Jaimini Chara Karaka label ('AK'..'DK') for this graha in this person's D1 —
+    /// the same label on every chart type. NULL for Ketu, the Ascendant, and special points.</summary>
+    public string? CharaKaraka { get; set; }
+
     /// <summary>
     /// Ecliptic latitude in degrees (Swiss Ephemeris xx[1]) — the real out-of-plane position.
     /// Populated for D1 and every varga (a real-body fact), like NirayanaLongitudeDegrees. Null for

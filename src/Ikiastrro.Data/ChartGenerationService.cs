@@ -1,6 +1,7 @@
 using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Dasha;
+using Ikiastrro.Core.Jaimini;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Data;
@@ -99,7 +100,7 @@ public class ChartGenerationService
             result.AyanamshaDegrees = ctx.AyanamshaDegrees;
             result.SiderealTimeHours = ctx.LocalSiderealTimeHours;
             _chartResultsRepo.InsertAll(new[] { result });   // populates result.Id
-            PersistAnalytics(result.Id, input);
+            PersistAnalytics(result.Id, input, CharaKarakaByPlanet(ctx));
             written.Add(chartType);
         }
 
@@ -140,7 +141,7 @@ public class ChartGenerationService
             _conjunctionsRepo.DeleteByChartResultId(result.Id);
             _aspectsRepo.DeleteByChartResultId(result.Id);
             _planetAvasthaRepo.DeleteByChartResultId(result.Id);
-            PersistAnalytics(result.Id, input);
+            PersistAnalytics(result.Id, input, CharaKarakaByPlanet(ctx));
             written.Add(result.ChartType);
         }
         return new GenerationReport(written, DashaWritten: false, Skipped: Array.Empty<string>());
@@ -162,14 +163,35 @@ public class ChartGenerationService
             result.SiderealTimeHours = ctx.LocalSiderealTimeHours;
         }
         _chartResultsRepo.InsertAll(computed.Select(c => c.Result));   // populates each Result.Id
+        var charaKarakaByPlanet = CharaKarakaByPlanet(ctx);
         foreach (var (result, input) in computed)
-            PersistAnalytics(result.Id, input);
+            PersistAnalytics(result.Id, input, charaKarakaByPlanet);
         return computed.Select(c => c.Result.ChartType).ToList();
     }
 
-    private void PersistAnalytics(int chartResultId, ChartAnalysisInput input)
+    /// <summary>
+    /// The Jaimini 8-karaka (Ashta) label per graha, from this person's D1 degree-within-sign.
+    /// Computed once per person and stamped onto the graha KeyDetail rows of every chart type
+    /// (a chara karaka is a whole-life fact, not a per-varga one). Keyed/valued as strings so
+    /// it drops straight onto <see cref="ChartKeyDetail.CharaKaraka"/>.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string> CharaKarakaByPlanet(SiderealPositions ctx)
+    {
+        var degIn = new Dictionary<PlanetName, double>();
+        foreach (var p in new[] { PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury,
+                                  PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn, PlanetName.Rahu })
+            degIn[p] = ctx.PlanetLongitudes[p] % 30.0;
+        return CharaKarakaCalculator.Assign(degIn)
+            .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value.ToString());
+    }
+
+    private void PersistAnalytics(int chartResultId, ChartAnalysisInput input,
+        IReadOnlyDictionary<string, string> charaKarakaByPlanet)
     {
         var (keyDetails, houseLords, conjunctions, aspects) = ChartAnalyzer.Compute(input);
+        foreach (var r in keyDetails)
+            if (r.PointKind == "Graha" && charaKarakaByPlanet.TryGetValue(r.Planet, out var ck))
+                r.CharaKaraka = ck;
         var avasthas = PlanetAvasthaComputer.Compute(input, keyDetails, AvasthaRules);
         foreach (var r in keyDetails)    r.ChartResultId = chartResultId;
         foreach (var r in houseLords)    r.ChartResultId = chartResultId;

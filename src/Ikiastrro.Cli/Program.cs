@@ -3,6 +3,7 @@ using Dapper;
 using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Calculators;
 using Ikiastrro.Core.Dasha;
+using Ikiastrro.Core.Jaimini;
 using Ikiastrro.Core.Geocoding;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Transits;
@@ -521,6 +522,43 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
     Check("prior sunrise == arc sunrise (night birth)",
         sun.PriorSunrise.ToString("MM-dd HH:mm:ss"), sun.Sunrise.ToString("MM-dd HH:mm:ss"));
 
+    // --- Phase 2: Chara Karakas (8-karaka Ashta) ---
+    // hand-computed ranking check (independent of the DB)
+    var ckHand = CharaKarakaCalculator.Assign(new Dictionary<PlanetName, double>
+    {
+        [PlanetName.Sun] = 8.205, [PlanetName.Moon] = 7.293, [PlanetName.Mars] = 3.950,
+        [PlanetName.Mercury] = 1.842, [PlanetName.Jupiter] = 8.727, [PlanetName.Venus] = 11.992,
+        [PlanetName.Saturn] = 10.956, [PlanetName.Rahu] = 13.059,   // raw; calc reverses Rahu
+    });
+    Check("Assign: Rahu -> AK", ckHand[PlanetName.Rahu], CharaKaraka.AK);
+    Check("Assign: Mercury -> DK", ckHand[PlanetName.Mercury], CharaKaraka.DK);
+
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        var d1 = conn.Query<(string Planet, string? CharaKaraka)>(
+            @"SELECT kd.Planet, kd.CharaKaraka
+              FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
+              WHERE bd.Name = 'Ramakrishnan' AND cr.ChartType = 'D1' AND kd.CharaKaraka IS NOT NULL")
+            .ToDictionary(r => r.CharaKaraka!, r => r.Planet);
+        Check("AK  = Rahu",    d1.GetValueOrDefault("AK"),  "Rahu");
+        Check("AmK = Venus",   d1.GetValueOrDefault("AmK"), "Venus");
+        Check("BK  = Saturn",  d1.GetValueOrDefault("BK"),  "Saturn");
+        Check("MK  = Jupiter", d1.GetValueOrDefault("MK"),  "Jupiter");
+        Check("PiK = Sun",     d1.GetValueOrDefault("PiK"), "Sun");
+        Check("PK  = Moon",    d1.GetValueOrDefault("PK"),  "Moon");
+        Check("GK  = Mars",    d1.GetValueOrDefault("GK"),  "Mars");
+        Check("DK  = Mercury", d1.GetValueOrDefault("DK"),  "Mercury");
+        // karaka label travels to every varga
+        var d9ak = conn.ExecuteScalar<string>(
+            @"SELECT kd.Planet FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
+              WHERE bd.Name = 'Ramakrishnan' AND cr.ChartType = 'D9' AND kd.CharaKaraka = 'AK'");
+        Check("D9 AK label travels", d9ak, "Rahu");
+    }
+
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
@@ -596,6 +634,15 @@ if (args.Length > 0 && args[0] == "verify-schema")
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods c JOIN dbo.tbl_Chart_DashaPeriods p ON p.Id = c.ParentDashaPeriodId WHERE p.ChartResultId <> c.ChartResultId"));
     Check("every stored position chart type is a known Dim code",
         Count("SELECT COUNT(*) FROM (SELECT DISTINCT ChartType FROM dbo.tbl_ChartResults WHERE CalculationKind = 'PositionChart') x WHERE NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType d WHERE d.Code = x.ChartType)"));
+    Check("every position chart has exactly 8 distinct CharaKaraka rows",
+        Count(@"
+            SELECT COUNT(*) FROM (
+                SELECT cr.Id, COUNT(kd.CharaKaraka) n, COUNT(DISTINCT kd.CharaKaraka) d
+                FROM dbo.tbl_ChartResults cr
+                JOIN dbo.tbl_Chart_KeyDetails kd ON kd.ChartResultId = cr.Id
+                WHERE cr.CalculationKind = 'PositionChart'
+                GROUP BY cr.Id
+            ) x WHERE x.n <> 8 OR x.d <> 8"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
