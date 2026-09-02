@@ -34,7 +34,7 @@ GO
         ('SRC_RAMAN_HINDU_PREDICTIVE', N'Hindu Predictive Astrology', N'B. V. Raman', NULL, 'Raman', N'General'),
         ('SRC_PYJHORA',         N'PyJHora (source)',              N'pyjhora', N'_research/PyJHora', 'mixed', N'Varga formulae, special-lagna/upagraha algorithms; AGPL, vendored for reference'),
         ('SRC_JHORA',           N'Jagannatha Hora (desktop)',     N'P. V. R. Narasimha Rao', N'v8.x', 'mixed', N'Golden-record verification'),
-        ('SRC_JHORA_EXPORT_RAMAKRISHNAN', N'JHora natal export — 1_Ramakrishnan', NULL, N'22 Apr 1981 05:30 Chennai', NULL, N'verify-vargas / verify-jaimini golden values; scratch/Rammy_Jagannatha.txt'),
+        ('SRC_JHORA_EXPORT_RAMAKRISHNAN', N'JHora natal export — 1_Ramakrishnan', NULL, N'22 Apr 1981 05:30 Chennai', NULL, N'verify-vargas / verify-jaimini golden values; docs/artifacts/reference-charts/Rammy_Jagannatha.txt'),
         ('SRC_RATH_VARGA',      N'Vedic Astrology / varga methods', N'Sanjay Rath', NULL, 'Jaimini/SJC', N'D11 (Rudramsa), argala'),
         ('SRC_VEDASTRO',        N'VedAstro.Library',              N'(open source)', N'pre-2026-08-24', 'mixed', N'Historical — replaced by SwissEphNet; enum spellings inherited'),
         ('SRC_SWISSEPH',        N'Swiss Ephemeris / SwissEphNet', N'Astrodienst / port', N'SwissEphNet 2.8.0.2', 'astronomy', N'Moshier mode, Lahiri sidereal')
@@ -51,5 +51,6 @@ INSERT dbo.SchemaMigrations (ScriptName, Note)
 SELECT '15_create_dim_source.sql', 'tbl_Dim_Source (SRC_* citation registry) + seed'
 WHERE NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '15_create_dim_source.sql');
 GO
-PRINT '15 applied: tbl_Dim_Source has ' + CAST((SELECT COUNT(*) FROM dbo.tbl_Dim_Source) AS VARCHAR(10)) + ' rows.';
+DECLARE @n INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_Source);
+PRINT '15 applied: tbl_Dim_Source has ' + CAST(@n AS VARCHAR(10)) + ' rows.';
 GO

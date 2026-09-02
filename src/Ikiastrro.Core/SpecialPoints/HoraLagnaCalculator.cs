@@ -12,7 +12,7 @@ namespace Ikiastrro.Core.SpecialPoints;
 /// that sunrise. For a night birth the time-of-day difference is negative (birth 05:30 is
 /// before sunrise 05:56), which is correct — HL runs slightly behind the Sun.
 ///
-/// Verified against scratch/Rammy_Jagannatha.txt: 23 Pi 55' 08" (Pisces; Navamsa Aquarius).
+/// Verified against docs/artifacts/reference-charts/Rammy_Jagannatha.txt: 23 Pi 55' 08" (Pisces; Navamsa Aquarius).
 /// </summary>
 public static class HoraLagnaCalculator
 {

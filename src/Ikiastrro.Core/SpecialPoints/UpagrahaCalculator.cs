@@ -14,7 +14,7 @@ namespace Ikiastrro.Core.SpecialPoints;
 /// Weekday is the Vedic day's (opens at <see cref="SunTimes.Sunrise"/>),
 /// so a pre-dawn birth uses the previous civil day's ruler row — matching JHora.
 ///
-/// Verified against scratch/Rammy_Jagannatha.txt (Tuesday-night birth, Saturn = night part 1):
+/// Verified against docs/artifacts/reference-charts/Rammy_Jagannatha.txt (Tuesday-night birth, Saturn = night part 1):
 /// Gulika 7 Li 44' 38" (Navamsa Sg), Maandi 18 Li 07' 01" (Navamsa Pi).
 /// </summary>
 public static class UpagrahaCalculator

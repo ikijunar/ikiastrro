@@ -504,7 +504,7 @@ if (args.Length > 0 && args[0] == "verify-avastha")
 
 // --- One-off check: `dotnet run -- verify-jaimini` ---
 // Worked-example assertions for the Jaimini Chara Karakas + special points against
-// scratch/Rammy_Jagannatha.txt (person 1_Ramakrishnan). Solution has no unit-test project.
+// docs/artifacts/reference-charts/Rammy_Jagannatha.txt (person 1_Ramakrishnan). Solution has no unit-test project.
 // Grows over Tasks 3–5; Task 2 seeds it with sunrise / sunset / night-birth only.
 if (args.Length > 0 && args[0] == "verify-jaimini")
 {

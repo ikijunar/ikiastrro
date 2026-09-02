@@ -16,3 +16,13 @@
 
 # git worktrees (isolated task workspaces)
 /.claude/worktrees/
+
+# Throwaway scratch dir (JHora reference exports now live in docs/artifacts/reference-charts/)
+/scratch/
+
+# Ad-hoc CLI output redirects
+/build_output.txt
+/verify_*_output.txt
+
+# Ad-hoc DDL notebooks
+/db/*.ipynb
