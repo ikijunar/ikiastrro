@@ -1,5 +1,6 @@
 using System.Globalization;
 using Dapper;
+using Ikiastrro.Cli;
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Pipeline;
@@ -833,6 +834,128 @@ if (args.Length > 0 && args[0] == "verify-schema")
             ) x WHERE x.n <> 12"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- One-off seed mode: `dotnet run -- seed-terminology [--emit-sql]` ---
+// Mechanically (re)builds dbo.tbl_Astro_Terminology + _Text from the Core enums + Dim tables
+// (see TerminologySeed.cs — the single source of truth), one romanized-Sanskrit 'sa' row and one
+// English 'en' row per concept, all Script 'Latn'. Idempotent: MERGE on Code for the concept rows,
+// MERGE on (TerminologyId, LanguageCode, Script) for the text rows — re-running changes nothing.
+// --emit-sql also writes db/terminology-seed.generated.sql, the block folded into db/ikiastrro.sql.
+if (args.Length > 0 && args[0] == "seed-terminology")
+{
+    var emitSql = args.Contains("--emit-sql");
+    using var conn = connectionFactory.CreateOpenConnection();
+    var seed = TerminologySeedData.Build(conn);
+
+    const string mergeTerm = @"
+MERGE dbo.tbl_Astro_Terminology AS tgt
+USING (SELECT @Code AS Code) AS src
+ON tgt.Code = src.Code
+WHEN MATCHED THEN UPDATE SET
+    Category = @Category, ParentCode = @ParentCode, EngineCode = @EngineCode,
+    NumericKey = @NumericKey, DisplayOrder = @DisplayOrder, IsActive = 1
+WHEN NOT MATCHED THEN INSERT (Category, Code, ParentCode, EngineCode, NumericKey, DisplayOrder, IsActive)
+    VALUES (@Category, @Code, @ParentCode, @EngineCode, @NumericKey, @DisplayOrder, 1);";
+
+    static object ToParam(TermSeed t) =>
+        new { t.Category, t.Code, t.ParentCode, t.EngineCode, t.NumericKey, t.DisplayOrder };
+
+    // Base rows first, then NakshatraPada rows — the self-referencing ParentCode FK needs its parent.
+    conn.Execute(mergeTerm, seed.Terms.Where(t => t.Category != "NakshatraPada").Select(ToParam).ToList());
+    conn.Execute(mergeTerm, seed.Terms.Where(t => t.Category == "NakshatraPada").Select(ToParam).ToList());
+
+    var idByCode = conn.Query<(string Code, int TerminologyId)>(
+            "SELECT Code, TerminologyId FROM dbo.tbl_Astro_Terminology")
+        .ToDictionary(x => x.Code, x => x.TerminologyId, StringComparer.Ordinal);
+
+    const string mergeText = @"
+MERGE dbo.tbl_Astro_TerminologyText AS tgt
+USING (SELECT @TerminologyId AS TerminologyId, @LanguageCode AS LanguageCode, @Script AS Script) AS src
+ON tgt.TerminologyId = src.TerminologyId AND tgt.LanguageCode = src.LanguageCode AND tgt.Script = src.Script
+WHEN MATCHED THEN UPDATE SET Name = @Name, TraditionalName = @TraditionalName, ShortDescription = @ShortDescription
+WHEN NOT MATCHED THEN INSERT (TerminologyId, LanguageCode, Script, Name, TraditionalName, ShortDescription)
+    VALUES (@TerminologyId, @LanguageCode, @Script, @Name, @TraditionalName, @ShortDescription);";
+
+    conn.Execute(mergeText, seed.Texts.Select(x => new
+    {
+        TerminologyId = idByCode[x.Code],
+        LanguageCode = x.Lang,
+        Script = "Latn",
+        x.Name,
+        x.TraditionalName,
+        x.ShortDescription
+    }).ToList());
+
+    var termCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.tbl_Astro_Terminology");
+    var textCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.tbl_Astro_TerminologyText");
+    Console.WriteLine($"seed-terminology: {termCount} terminology rows, {textCount} text rows");
+
+    if (emitSql)
+    {
+        var outPath = Path.Combine(TerminologySeedData.FindRepoRoot(), "db", "terminology-seed.generated.sql");
+        var note = $"dumped {DateTime.UtcNow:yyyy-MM-dd} from db '{dbOverride ?? "ikiastrro"}' — "
+                   + $"{seed.Terms.Count} concept rows / {seed.Texts.Count} text rows (sa+en, Latn).";
+        File.WriteAllText(outPath, seed.ToBaselineSql(note));
+        Console.WriteLine($"seed-terminology: wrote {outPath}");
+    }
+    return;
+}
+
+// --- One-off check: `dotnet run -- verify-terminology` ---
+// Asserts the seeded catalogue covers the engine: every PlanetName / ZodiacName / CharaKaraka enum
+// value has a Code; every Code carries both an 'sa' and an 'en' text row; no ParentCode is an orphan;
+// every tbl_Dim_ChartType row maps to a VARGA_* Code and every tbl_Dim_PlanetaryState row to an
+// AVASTHA_* Code. Solution has no unit-test project.
+if (args.Length > 0 && args[0] == "verify-terminology")
+{
+    var repo = new TerminologyRepository(connectionFactory);
+    var rows = repo.GetTerminology();
+    var text = repo.GetTerminologyText();
+    var failures = 0;
+    void Fail(string m) { Console.WriteLine($"  [FAIL] {m}"); failures++; }
+
+    var codes = rows.Select(r => r.Code).ToHashSet();
+
+    foreach (var p in Enum.GetNames<PlanetName>())
+        if (!codes.Contains($"PLANET_{p.ToUpperInvariant()}")) Fail($"no Code for planet {p}");
+    foreach (var s in Enum.GetNames<ZodiacName>())
+    {
+        var slug = s == "Capricornus" ? "CAPRICORN" : s.ToUpperInvariant();
+        if (!codes.Contains($"SIGN_{slug}")) Fail($"no Code for sign {s}");
+    }
+    foreach (var k in Enum.GetNames<Ikiastrro.Core.Engines.Karakas.CharaKaraka>())
+        if (!codes.Contains($"KARAKA_{k.ToUpperInvariant()}")) Fail($"no Code for karaka {k}");
+
+    var textByCodeLang = text
+        .Join(rows, t => t.TerminologyId, r => r.TerminologyId, (t, r) => (r.Code, t.LanguageCode))
+        .ToHashSet();
+    foreach (var c in codes)
+    {
+        if (!textByCodeLang.Contains((c, "sa"))) Fail($"{c}: missing 'sa' text");
+        if (!textByCodeLang.Contains((c, "en"))) Fail($"{c}: missing 'en' text");
+    }
+
+    foreach (var r in rows.Where(r => r.ParentCode is not null))
+        if (!codes.Contains(r.ParentCode!)) Fail($"{r.Code}: orphan ParentCode {r.ParentCode}");
+
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        foreach (var ct in conn.Query<string>("SELECT Code FROM dbo.tbl_Dim_ChartType"))
+        {
+            var slug = ct.Replace("-", "_").ToUpperInvariant();
+            if (!codes.Contains($"VARGA_{slug}")) Fail($"tbl_Dim_ChartType '{ct}' has no VARGA_ Code");
+        }
+        foreach (var st in conn.Query<(string AvasthaSystem, string StateName)>(
+                     "SELECT AvasthaSystem, StateName FROM dbo.tbl_Dim_PlanetaryState"))
+        {
+            var code = $"AVASTHA_{st.AvasthaSystem.ToUpperInvariant()}_{st.StateName.ToUpperInvariant()}";
+            if (!codes.Contains(code)) Fail($"tbl_Dim_PlanetaryState '{st.AvasthaSystem}/{st.StateName}' has no AVASTHA_ Code");
+        }
+    }
+
+    Console.WriteLine(failures == 0 ? "\nverify-terminology: ALL PASS" : $"\nverify-terminology: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 
