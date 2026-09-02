@@ -827,6 +827,12 @@ git commit -m "$(printf 'feat(web): connection string from ConnectionStrings:Iki
   `ikiastrro`), so `sqlcmd -v DbName=ikiastrro_scratch -i db/ikiastrro.sql` replaces the
   `sed`-based scratch rebuild used by earlier plans.
 
+> Note: on this machine's ODBC `sqlcmd` (v15/v17) an in-file `:setvar` outranks the `-v`
+> command-line value (documented Microsoft behavior), so `sqlcmd -v DbName=ikiastrro_scratch -i
+> db/ikiastrro.sql` silently targets `ikiastrro`. A from-empty rebuild check therefore keeps the
+> `sed 's/\[ikiastrro\]/[ikiastrro_scratch]/g; ...' db/ikiastrro.sql > tmp.sql` substitution;
+> `-v DbName=<name>` works only with go-sqlcmd (v1.x, `winget install sqlcmd`).
+
 - [ ] **Step 1: Replace the `CREATE DATABASE` / `USE` header**
 
 Lines currently:

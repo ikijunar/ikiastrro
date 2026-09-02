@@ -23,8 +23,8 @@ ladder: `Planned → Designed → DB → Core → Verified → Web → Done`. Co
 | YOGA | 1 | 0% | 1 | 1 | 1 | 1 | 1 |
 | TRANSIT | 2 | 80% | 0 | 0 | 0 | 1 | 0 |
 | TERM | 1 | 0% | 1 | 1 | 1 | 1 | 1 |
-| INFRA | 1 | 60% | 0 | 1 | 1 | 0 | 0 |
-| DOCS | 1 | 60% | 0 | 0 | 1 | 0 | 0 |
+| INFRA | 1 | 80% | 0 | 0 | 0 | 1 | 0 |
+| DOCS | 1 | 100% | 0 | 0 | 0 | 0 | 0 |
 
 *(Recompute the rollup from the feature rows whenever a box changes — it is a manual mirror.)*
 
@@ -130,11 +130,11 @@ ladder: `Planned → Designed → DB → Core → Verified → Web → Done`. Co
   DB [ ] · Core [ ] · Verify [ ] · Web [ ] · Docs [ ]
 
 ### INFRA
-- **FEAT-INFRA-01 · Multi-environment config (dev/stage/uat/prod)** — Core · 60%
+- **FEAT-INFRA-01 · Multi-environment config (dev/stage/uat/prod)** — Verified · 80%
   Spec `2026-09-02-engine-organization-terminology-design` §17 · Plan `2026-09-02-project-foundations`
-  DB [x] (`tbl_Dim_Source`, `:setvar`) · Core [ ] · Verify [ ] (`verify-sources` partial) · Web [x] · Docs [x] · Research: complete
+  DB [x] (`tbl_Dim_Source`, `:setvar`) · Core [x] (`SqlConnectionFactory.Create` + CLI `--db` + `:setvar DbName`) · Verify [x] · Web [ ] (per-env `appsettings.{Environment}.json` land with a real stage/uat deploy) · Docs [x] · Research: complete
 
 ### DOCS
-- **FEAT-DOCS-01 · Documentation taxonomy + `PRODUCT.md` + citation registry** — Verified · 60%
+- **FEAT-DOCS-01 · Documentation taxonomy + `PRODUCT.md` + citation registry** — Done · 100%
   Spec `2026-09-02-engine-organization-terminology-design` §16 · Plan `2026-09-02-project-foundations`
-  DB [x] · Core [x] · Verify [ ] · Web [x] · Docs [x] · Research: complete
+  DB [x] · Core [x] · Verify [x] (`verify-sources`) · Web [x] · Docs [x] · Research: complete

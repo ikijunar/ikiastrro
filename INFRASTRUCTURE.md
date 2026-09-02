@@ -42,8 +42,12 @@ layer for the Web app. `SqlConnectionFactory.Create` precedence: explicit string
 ## Migration application
 
 - **dev:** `sqlcmd -S localhost -E -b -i db/ikiastrro.sql` for a fresh install; the numbered
-  `db/NN_*.sql` for an incremental change; `sqlcmd -v DbName=ikiastrro_scratch -i db/ikiastrro.sql`
-  for a from-empty rebuild check.
+  `db/NN_*.sql` for an incremental change. A from-empty rebuild check uses the
+  `sed 's/\[ikiastrro\]/[ikiastrro_scratch]/g; ...' db/ikiastrro.sql > tmp.sql` substitution
+  with the ODBC `sqlcmd`; `sqlcmd -v DbName=<name>` works only with go-sqlcmd. (On the ODBC
+  `sqlcmd`, v15/v17, the in-file `:setvar DbName "ikiastrro"` outranks the `-v` command-line
+  value — documented Microsoft behavior — so `-v DbName=ikiastrro_scratch` would silently
+  target `ikiastrro`. go-sqlcmd v1.x, `winget install sqlcmd`, honours `-v`.)
 - **stage / uat / prod:** apply the numbered `db/NN_*.sql` chain **in order**, starting from
   the first number past the last row in `dbo.SchemaMigrations`. Each script self-records.
   **Never** run `db/ikiastrro.sql` (the baseline) against a populated higher environment.
@@ -62,3 +66,8 @@ dotnet run --project src/Ikiastrro.Cli -- compute-all Ramakrishnan   # (repeat p
 dotnet run --project src/Ikiastrro.Cli -- verify-schema             # ... and the other verify-* modes
 dotnet run --project src/Ikiastrro.Web                              # https://localhost:...
 ```
+
+> Note: a from-empty rebuild check uses the
+> `sed 's/\[ikiastrro\]/[ikiastrro_scratch]/g; ...' db/ikiastrro.sql > tmp.sql` substitution
+> with the ODBC `sqlcmd`; `sqlcmd -v DbName=<name>` works only with go-sqlcmd (the in-file
+> `:setvar DbName` outranks `-v` on the ODBC `sqlcmd`).

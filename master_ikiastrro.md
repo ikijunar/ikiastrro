@@ -23,11 +23,12 @@ maintained · `superseded` = replaced, kept for history.
 | [`README.md`](README.md) | Public-facing project overview — what it is, how to run it | 2026-08-30 | living |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Internal engineering reference — current architecture, stack, data layer, known limits | 2026-08-30 | living |
 | **`master_ikiastrro.md`** (this file) | The doc index — where everything is | 2026-08-31 | living |
-| [`PRODUCT.md`](PRODUCT.md) | Feature catalogue + completion tracker — what the software does and how much of each part is done (STANDARDS §M.3) | 2026-09-02 | planned — Plan 0 |
-| [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) | Environments, database-naming rule, config & secrets layering, migration policy (STANDARDS §M.1) | 2026-09-02 | planned — Plan 0 |
+| [`PRODUCT.md`](PRODUCT.md) | Feature catalogue + completion tracker — what the software does and how much of each part is done (STANDARDS §M.3) | 2026-09-02 | living |
+| [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) | Environments, database-naming rule, config & secrets layering, migration policy (STANDARDS §M.1) | 2026-09-02 | living |
 | [`../ikiastrro.md`](../ikiastrro.md) | Full running build/decision **history**, dated sections, every session's "what changed and why" | 2026-08-24 | living |
 | [`../methods_prodmag.md`](../methods_prodmag.md) | Reusable product-management process (Vision → JTBD → ICE → roadmap) — read before picking the next feature | 2026-08-27 | living |
 | [`../STANDARDS.md`](../STANDARDS.md) | Workspace-wide naming/structure conventions this project follows | — | living |
+| [`docs/artifacts/`](docs/artifacts/) | Non-prose artifacts — DB DDL exports, UI mockups, rendered diagrams, reference charts; see STANDARDS §M.1 | 2026-09-02 | living |
 
 ---
 
@@ -35,9 +36,10 @@ maintained · `superseded` = replaced, kept for history.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
-| [`docs/research-topic-coverage.md`](docs/research-topic-coverage.md) | Topic-research master — for each classical technique: is its raw data captured, where are the gaps. Topic 1: planetary roles + avastha states. D2 diagrams under `docs/research/` | 2026-08-31 | living |
+| [`docs/research-topic-coverage.md`](docs/research-topic-coverage.md) | Topic-research master — for each classical technique: is its raw data captured, where are the gaps. Topic 1: planetary roles + avastha states. D2 diagrams (source + rendered `.svg`) under `docs/artifacts/diagrams/` | 2026-08-31 | living |
 | [`docs/research-horoscope-software-compare.md`](docs/research-horoscope-software-compare.md) | UI/UX & feature comparison of existing Vedic software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow/avoid, mapped to our components | 2026-08-30 | snapshot |
 | [`docs/research-top5-vedic-software.md`](docs/research-top5-vedic-software.md) | Competitive benchmark of the top 5 Vedic astrology tools | 2026-08-31 | snapshot |
+| [`docs/research/reference-sources.md`](docs/research/reference-sources.md) | `SRC_*` citation master — one bibliographic entry per source key; mirrors `tbl_Dim_Source` (STANDARDS §M.4) | 2026-09-02 | living |
 
 ## Rationale — why we chose what
 
@@ -52,6 +54,7 @@ maintained · `superseded` = replaced, kept for history.
 |---|---|---|---|
 | [`docs/techstack-overview.md`](docs/techstack-overview.md) | Verified stack snapshot — pinned package versions, per-project (Core/Data/Cli/Web) dependency lists, checked against the `.csproj` files | 2026-08-30 | living |
 | [`docs/techstack-details.md`](docs/techstack-details.md) | Architecture, projects, data layer, DB, build/run, verification — the long form | 2026-08-30 | living |
+| [`docs/artifacts/dotnet_engine_map.md`](docs/artifacts/dotnet_engine_map.md) | Generated map of `src/Ikiastrro.Core/` — a D2 diagram + per-file reference grouped by folder (moved into `docs/artifacts/` 2026-09-02) | 2026-09-02 | snapshot |
 
 ## Database design
 
@@ -107,6 +110,8 @@ maintained · `superseded` = replaced, kept for history.
 | [`docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md`](docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md) | Complete the divisional-chart set (17 vargas + D2-US), DB-driven varga rules, DB-completeness invariant. Plan A scope; D81/D108/D144/D150 → Plan B (not yet written) | 2026-08-31 | snapshot (Plan A implemented) |
 | [`docs/superpowers/specs/2026-09-01-jaimini-chara-karaka-special-points-design.md`](docs/superpowers/specs/2026-09-01-jaimini-chara-karaka-special-points-design.md) | Chara Karakas (Ashta) + special points (AL, 12 Bhava Arudhas, HL, Gulika, Maandi) through all 21 vargas; `PointKind` column; static combined D1+D9 chart. Migration 14. Sequenced before the UI rebuild | 2026-09-01 | snapshot (implemented) |
 | [`docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md`](docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md) | Whole-app Web rebuild: varga-centric (D1 hero + grouped varga rail), enriched South-Indian grid + Syncfusion polar-wheel toggle, dedicated Timing route, dark parchment kept, yellow Home/Charts nav. Consumes the Jaimini spec | 2026-09-01 | draft (for plan) |
+| [`docs/superpowers/specs/2026-09-02-engine-organization-terminology-design.md`](docs/superpowers/specs/2026-09-02-engine-organization-terminology-design.md) | Engine reorganization to a 13-engine target architecture + `tbl_Astro_Terminology` + self-describing rule tables + `ChartPipeline`; sequenced Plans 0→4 (Plan 0 = docs/config foundations, done 2026-09-02) | 2026-09-02 | snapshot (design) |
+| [`docs/superpowers/specs/_TEMPLATE.md`](docs/superpowers/specs/_TEMPLATE.md) | Skeleton for a new dated spec — Research-status block + standard sections (Problem → Open decisions) | 2026-09-02 | living |
 
 ## Plans — dated per-feature implementation (writing-plans output)
 
@@ -118,6 +123,8 @@ maintained · `superseded` = replaced, kept for history.
 | [`docs/superpowers/plans/2026-08-31-chart-schema-normalization.md`](docs/superpowers/plans/2026-08-31-chart-schema-normalization.md) | 19-task chart-fact normalization plan — **done + merged 2026-08-31** | 2026-08-31 | snapshot (done) |
 | [`docs/superpowers/plans/2026-08-31-divisional-charts-plan-a.md`](docs/superpowers/plans/2026-08-31-divisional-charts-plan-a.md) | 20-task divisional-chart completion (Plan A) — D2-US + D3–D60, `tbl_Rule_VargaScheme`, `VargaLongitudeDegrees`, one `VargaChartComputer` — **implemented 2026-09-01** | 2026-08-31 | snapshot (done) |
 | [`docs/superpowers/plans/2026-09-01-jaimini-chara-karaka-special-points.md`](docs/superpowers/plans/2026-09-01-jaimini-chara-karaka-special-points.md) | 8-task Chara Karakas + special points — migration 14 (`PointKind` + `CharaKaraka`), `SpecialPoints/` calculators, `swe_rise_trans` sunrise, `CombinedD1D9Grid` — **implemented 2026-09-01** | 2026-09-01 | snapshot (done) |
+| [`docs/superpowers/plans/2026-09-02-project-foundations.md`](docs/superpowers/plans/2026-09-02-project-foundations.md) | Plan 0 — docs/config foundations: `STANDARDS §D.2/§M.1/§M.3/§M.4`, `docs/artifacts/` tree + templates, `reference-sources.md` + `tbl_Dim_Source` (migration 15) + `verify-sources`, `INFRASTRUCTURE.md`, `PRODUCT.md`, `SqlConnectionFactory.Create` + CLI `--db` + Web `ConnectionStrings:Ikiastrro` + `:setvar DbName` — **done 2026-09-02** | 2026-09-02 | snapshot (done) |
+| [`docs/superpowers/plans/_TEMPLATE.md`](docs/superpowers/plans/_TEMPLATE.md) | Skeleton for a new dated plan — Global Constraints (branch, commit trailer, no-push, migrations, no-test-project) + `Task N` structure + PRODUCT.md tick line | 2026-09-02 | living |
 | Plan B (D81/D108/D144 chart-composition + D150) | Not yet written — see spec §1/§6 | — | not started |
 
 ## Decision records (ADRs)
@@ -137,5 +144,7 @@ never edited after acceptance (a reversal is a new record). See STANDARDS §M.1.
   reference repos) and their own READMEs. Git-ignored, not project docs.
 - `db/_archive/` — the pre-consolidation `001..034` migration chain, kept as
   frozen history.
+- `docs/artifacts/diagrams/*.d2` — D2 diagram **source**, committed next to the
+  rendered `.svg` the prose docs embed; regenerated with `d2`, not prose themselves.
 - `../ikiastrro.md` history entries reference docs by their **name at the time** —
   those are a dated record and are not rewritten when a doc is renamed.
