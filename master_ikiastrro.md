@@ -3,6 +3,8 @@
 Every `.md` that documents this project, grouped by category, with what it's for,
 where it lives, when it was created, and whether it's kept current.
 
+**Naming + doc conventions:** STANDARDS.md §D.2 (identifiers), §M.1/§M.3 (docs & PRODUCT.md), §M.4 (citations).
+
 **Naming convention:** `<category>-<slug>.md` in `<repo>/docs/` — see
 [`STANDARDS.md`](../STANDARDS.md) §M.1. Categories: `research` · `rationale` ·
 `techstack` · `dbdesign` · `uidesign` · `scope` · `reference` · `process`, plus
@@ -21,6 +23,8 @@ maintained · `superseded` = replaced, kept for history.
 | [`README.md`](README.md) | Public-facing project overview — what it is, how to run it | 2026-08-30 | living |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Internal engineering reference — current architecture, stack, data layer, known limits | 2026-08-30 | living |
 | **`master_ikiastrro.md`** (this file) | The doc index — where everything is | 2026-08-31 | living |
+| [`PRODUCT.md`](PRODUCT.md) | Feature catalogue + completion tracker — what the software does and how much of each part is done (STANDARDS §M.3) | 2026-09-02 | planned — Plan 0 |
+| [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) | Environments, database-naming rule, config & secrets layering, migration policy (STANDARDS §M.1) | 2026-09-02 | planned — Plan 0 |
 | [`../ikiastrro.md`](../ikiastrro.md) | Full running build/decision **history**, dated sections, every session's "what changed and why" | 2026-08-24 | living |
 | [`../methods_prodmag.md`](../methods_prodmag.md) | Reusable product-management process (Vision → JTBD → ICE → roadmap) — read before picking the next feature | 2026-08-27 | living |
 | [`../STANDARDS.md`](../STANDARDS.md) | Workspace-wide naming/structure conventions this project follows | — | living |
