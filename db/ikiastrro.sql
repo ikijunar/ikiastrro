@@ -427,6 +427,11 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+-- tbl_Chart_KeyDetails — one row per chart point per chart type. PointKind discriminates
+-- 'Graha' (Ascendant + 9 planets) from the special points 'SpecialLagna' (HL) / 'Arudha'
+-- (AL, A2..A12) / 'Upagraha' (Gulika, Maandi); non-'Graha' rows are position-only, enforced
+-- by CK_KeyDetails_NonGrahaNulls. CharaKaraka carries the Jaimini 8-karaka label on grahas.
+-- PointKind + CharaKaraka folded from db/14_add_karaka_and_pointkind.sql.
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]') AND type in (N'U'))
 BEGIN
 CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
@@ -435,6 +440,8 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
 	[Planet] [varchar](20) NOT NULL,
 	[NirayanaLongitudeDegrees] [float] NOT NULL,
 	[VargaLongitudeDegrees] [decimal](9, 6) NOT NULL,
+	[PointKind] [varchar](12) NOT NULL CONSTRAINT DF_KeyDetails_PointKind DEFAULT ('Graha'),
+	[CharaKaraka] [varchar](4) NULL,
 	[EclipticLatitudeDegrees] [float] NULL,
 	[SpeedLongitudeDegPerDay] [float] NULL,
 	[IsRetrograde] [bit] NULL,
@@ -473,6 +480,9 @@ CREATE TABLE [dbo].[tbl_Chart_KeyDetails](
  CONSTRAINT [FK_KeyDetails_SignLord]   FOREIGN KEY ([SignLordPlanetId])         REFERENCES [dbo].[tbl_Planets] ([Id]),
  CONSTRAINT [CK_KeyDetails_Longitude]  CHECK ([NirayanaLongitudeDegrees] >= 0 AND [NirayanaLongitudeDegrees] < 360),
  CONSTRAINT [CK_KeyDetails_VargaLongitude] CHECK ([VargaLongitudeDegrees] >= 0 AND [VargaLongitudeDegrees] < 360),
+ CONSTRAINT [CK_KeyDetails_PointKind]     CHECK ([PointKind] IN ('Graha','SpecialLagna','Arudha','Upagraha')),
+ CONSTRAINT [CK_KeyDetails_CharaKaraka]   CHECK ([CharaKaraka] IS NULL OR [CharaKaraka] IN ('AK','AmK','BK','MK','PiK','PK','GK','DK')),
+ CONSTRAINT [CK_KeyDetails_NonGrahaNulls] CHECK ([PointKind] = 'Graha' OR ([PlanetId] IS NULL AND [DignityStatus] IS NULL AND [Nakshatra] IS NULL AND [CharaKaraka] IS NULL AND [AspectingPlanets] IS NULL AND [IsCombust] IS NULL AND [NakshatraLordPlanet] IS NULL)),
  CONSTRAINT [CK_KeyDetails_DegInSign]  CHECK ([DegreesInSignDecimal] IS NULL OR ([DegreesInSignDecimal] >= 0 AND [DegreesInSignDecimal] < 30)),
  CONSTRAINT [CK_KeyDetails_HouseLagna] CHECK ([HouseNumberFromLagna] BETWEEN 1 AND 12),
  CONSTRAINT [CK_KeyDetails_HouseSun]   CHECK ([HouseNumberFromSun] BETWEEN 1 AND 12),
@@ -2530,6 +2540,8 @@ SELECT
     cr.HouseSystem,
     cr.EngineVersion,
     kd.Planet,
+    kd.PointKind,
+    kd.CharaKaraka,
     kd.NirayanaLongitudeDegrees,
     kd.VargaLongitudeDegrees,
     kd.EclipticLatitudeDegrees,
