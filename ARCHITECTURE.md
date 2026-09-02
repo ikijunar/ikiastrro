@@ -119,6 +119,18 @@ Four tables, populated automatically alongside **every** chart type this project
 - **`tbl_Chart_Conjunctions`** — one row per pair of grahas (the 9 planets; Ascendant excluded) sharing the same sign in this chart, with `DegreeSeparation` (0–180°, **D1 only** — see below) showing how tight the conjunction is.
 - **`tbl_Chart_Aspects`** — one row per directional aspect (Graha Drishti): every graha casts a full aspect on the 7th house from itself; Mars additionally casts on the 4th & 8th; Jupiter on the 5th & 9th; Saturn on the 3rd & 10th. `AspectedTarget` can be a graha name or `"Ascendant"`. **Rahu/Ketu use the Jupiter-style convention (5th/7th/9th)** per rammyps's explicit decision (2026-08-24) — their aspect rule, like their exaltation/debilitation, is genuinely disputed across classical texts.
 
+**Jaimini Chara Karakas + special points (2026-09-01, migration 14):** `tbl_Chart_KeyDetails`
+also holds a **`CharaKaraka`** label (`AK`…`DK`, 8-karaka *Ashta*) on the graha rows of every
+chart type, and — discriminated by a new **`PointKind`** column (`Graha` / `SpecialLagna` /
+`Arudha` / `Upagraha`) — position-only rows for the special points **AL + the 12 Bhava
+Arudhas + Hora Lagna + Gulika + Maandi**, each projected into all 21 vargas with the same
+`IVargaSignRule` a planet uses. `CK_KeyDetails_NonGrahaNulls` forbids graha-only analytics
+(dignity, nakshatra, combustion, aspects, karaka) on non-`Graha` rows. `verify-jaimini`
+checks them against the `1_Ramakrishnan` JHora export; `vw_Chart_Consolidated` surfaces both
+columns; the workspace shows a static **D1 ⊕ D9 combined grid** (`CombinedD1D9Grid.razor`).
+Still future: Karakamsa / Swamsa chart, Jaimini rasi dashas, the other upagrahas. See
+`docs/reference-calculations.md` §10b.
+
 **Avasthas (star-schema, 2026-08-31):** `tbl_Fact_PlanetAvastha` (Fact) holds each planet's
 **Baaladi** (D1 only — the "age" from within-sign degree) and **Jagradadi** (every chart type
 — the "waking state" from dignity) avastha, written by `PlanetAvasthaComputer` alongside the 4

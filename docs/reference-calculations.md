@@ -309,6 +309,44 @@ Planetary "states" — slice 1 of the avastha layer (`docs/research-topic-covera
 
 ---
 
+## 10b. Chara Karakas & special points (Jaimini, 2026-09-01)
+
+Migration 14 added two columns to `tbl_Chart_KeyDetails`: **`CharaKaraka`** (a label on the 8
+graha rows) and **`PointKind`** (row discriminator — `Graha` vs `SpecialLagna` / `Arudha` /
+`Upagraha`). `CK_KeyDetails_NonGrahaNulls` keeps non-graha rows position-only (no
+dignity / nakshatra / combustion / aspects / karaka). `verify-jaimini` is the check;
+`vw_Chart_Consolidated` surfaces both columns.
+
+- **Chara Karakas** (`CharaKarakaCalculator.cs`, 8-karaka *Ashta* scheme) — rank the 8 grahas
+  (Sun…Saturn, Rahu) by longitude **within their sign**, descending; **Rahu's key is
+  `30 − degreeInSign`** (always retrograde). Highest → `AK`, then `AmK BK MK PiK PK GK` →
+  lowest `DK`. **Ketu is not ranked.** Computed once per person from the D1 degrees
+  (`ChartGenerationService.CharaKarakaByPlanet`) and stamped on the graha rows of **every**
+  chart type — a chara karaka is a whole-life fact, not a per-varga one.
+  `1_Ramakrishnan`: AK Rahu · AmK Venus · BK Saturn · MK Jupiter · PiK Sun · PK Moon · GK Mars · DK Mercury.
+- **Special points** — one D1 longitude each (`SpecialPointCalculator.ComputeSeeds`), then
+  projected into all 21 vargas by `SpecialPointProjector` using **the same `IVargaSignRule`
+  a planet uses** for that chart:
+  - **AL + the 12 Bhava Arudhas** (`ArudhaCalculator.cs`, kind `Arudha`) — Parashari pada
+    per house: `n` signs from the house's lord (where `n` = house-sign → lord-sign inclusive),
+    with the 1st/7th exception → 10th; placed at the natal Lagna's degree-in-sign so it carries
+    a longitude. A1 is emitted as code `AL`. `1_Ramakrishnan` AL → Capricorn.
+  - **Hora Lagna** (`HoraLagnaCalculator.cs`, kind `SpecialLagna`, code `HL`) — Sun's sidereal
+    longitude at the Vedic day's opening sunrise + 0.5° per clock-minute of time-of-day since
+    it (negative for a night birth). `1_Ramakrishnan` → 23 Pi 55′ (Pisces; D9 Aquarius).
+  - **Gulika + Maandi** (`UpagrahaCalculator.cs`, kind `Upagraha`, codes `Gulika` / `Maandi`) —
+    split the day arc (sunrise→sunset) or night arc (sunset→next sunrise) into 8; the Ascendant
+    at the **start** of Saturn's part is Gulika, at its **middle** is Maandi. Weekday is the
+    Vedic day's, so a pre-dawn birth uses the previous civil day's ruler row.
+    `1_Ramakrishnan` → Gulika 7 Li 45′ (D9 Sagittarius), Maandi 18 Li 07′ (D9 Pisces).
+- Sunrise/sunset come from `SwissEphemerisProvider.GetSunTimes` (`swe_rise_trans`,
+  `SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION` — JHora's default; SwissEphNet ships no `.se1`
+  files so it runs on Moshier, ~2s early vs JHora, well inside tolerance).
+- **Not built:** Karakamsa / Swamsa chart, Jaimini rasi dashas, the remaining upagrahas
+  (Dhooma, Kaala, Mrityu, …), Bhava/Ghati/other special lagnas.
+
+---
+
 ## 11. Reference / master data (`docs/reference-vedic-data-tables.md`)
 
 Parallel dimension layer, distinct from the chart-specific `tbl_Chart_*`:

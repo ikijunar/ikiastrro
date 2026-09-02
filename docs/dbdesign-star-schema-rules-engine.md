@@ -103,7 +103,7 @@ ikiastrro/
 | Rule | `tbl_Rule_VargaScheme` | **2026-09-01** — divisional-chart completion (Plan A); born §D.1-compliant, `RuleSetId` FK, `UQ(RuleSetId, ChartTypeId)` |
 | Fact | `tbl_Fact_PlanetAvastha` | **2026-08-31** — avastha slice 1; born as a real `tbl_Fact_*`, carries `RuleSetId` |
 | Fact | `tbl_ChartResults` | exists (→ `tbl_Fact_ChartResults` in Phase 2, gains `RuleSetId`) |
-| Fact | `tbl_Chart_KeyDetails` | exists (→ `tbl_Fact_ChartKeyDetails` in Phase 2) |
+| Fact | `tbl_Chart_KeyDetails` | exists (→ `tbl_Fact_ChartKeyDetails` in Phase 2). **2026-09-01 (migration 14):** gained `PointKind` (row discriminator — `Graha` vs the special points `SpecialLagna` / `Arudha` / `Upagraha`) + `CharaKaraka` (Jaimini 8-karaka label on grahas); `CK_KeyDetails_NonGrahaNulls` keeps non-graha rows position-only |
 | Fact | `tbl_Chart_HouseLords` | exists (→ `tbl_Fact_ChartHouseLords` in Phase 2) |
 | Fact | `tbl_Chart_Conjunctions` | exists (→ `tbl_Fact_ChartConjunctions` in Phase 2) |
 | Fact | `tbl_Chart_Aspects` | exists (→ `tbl_Fact_ChartAspects` in Phase 2) |
