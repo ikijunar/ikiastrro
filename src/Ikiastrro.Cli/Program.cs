@@ -76,7 +76,26 @@ TimeOnly ReadTime(string prompt)
 }
 
 // --- Standard input ---
-var connectionFactory = SqlConnectionFactory.CreateDefault();
+// --db <name> / --db=<name> : target a non-default catalog (stage/uat/scratch). Stripped from
+// args before mode dispatch so `verify-schema --db foo` still dispatches on "verify-schema".
+static string? ExtractDbOverride(ref string[] args)
+{
+    string? db = null;
+    var kept = new List<string>(args.Length);
+    for (var i = 0; i < args.Length; i++)
+    {
+        if (args[i] == "--db" && i + 1 < args.Length) { db = args[++i]; continue; }
+        if (args[i].StartsWith("--db=", StringComparison.Ordinal)) { db = args[i]["--db=".Length..]; continue; }
+        kept.Add(args[i]);
+    }
+    args = kept.ToArray();
+    return string.IsNullOrWhiteSpace(db) ? null : db;
+}
+
+var dbOverride = ExtractDbOverride(ref args);
+
+var connectionFactory = SqlConnectionFactory.Create(dbNameOverride: dbOverride);
+if (dbOverride is not null) Console.WriteLine($"(targeting catalog: {dbOverride})");
 var birthDetailsRepo = new BirthDetailsRepository(connectionFactory);
 
 // --- Shared compute-and-store pipeline (Task 6/7): one instance, reused by every one-off mode
