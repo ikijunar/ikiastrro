@@ -1,6 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Dignity;
 
 /// <summary>One planet's classical dignity within a computed D1 chart.</summary>
 public record DignityResult(
@@ -27,7 +27,7 @@ public record DignityResult(
 /// not part of the Naisargika Maitri table, and have no Moolatrikona or own sign in standard Parashari
 /// texts — their DignityStatus is limited to Exalted/Debilitated/Neutral.
 /// </summary>
-public static class ClassicalDignity
+public static class DignityEngine
 {
     private static readonly Dictionary<string, ZodiacName[]> OwnSigns = new()
     {

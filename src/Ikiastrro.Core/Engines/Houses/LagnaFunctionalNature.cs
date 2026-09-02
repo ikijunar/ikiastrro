@@ -1,6 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Dignity;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Houses;
 
 /// <summary>Parashari functional nature of a planet with respect to a Lagna — Benefic / Malefic /
 /// Neutral / Yogakaraka — derived from which houses the planet rules from that Lagna. This is the
@@ -25,14 +26,14 @@ public static class LagnaFunctionalNature
 
         var ruledHouses = Enumerable.Range(0, 12)
             .Select(i => (ZodiacName)i)
-            .Where(sign => ClassicalDignity.GetSignLord(sign) == planet.ToString())
+            .Where(sign => DignityEngine.GetSignLord(sign) == planet.ToString())
             .Select(sign => AstroMath.CountFromSignToSign(lagnaSign, sign))
             .OrderBy(h => h)
             .ToArray();
 
         if (ruledHouses.Length == 0)
             throw new InvalidOperationException(
-                $"No sign rulership found for {planet} — ClassicalDignity.GetSignLord contract drift?");
+                $"No sign rulership found for {planet} — DignityEngine.GetSignLord contract drift?");
 
         var isMaraka = ruledHouses.Contains(2) || ruledHouses.Contains(7);
         var hasKendra  = ruledHouses.Intersect(Kendras).Any();

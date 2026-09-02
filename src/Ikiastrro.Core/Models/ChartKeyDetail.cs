@@ -84,7 +84,7 @@ public class ChartKeyDetail
     /// <summary>True if retrograde (Vakri) at this moment — from Swiss Ephemeris's own motion speed. Null for the Ascendant (no retrograde concept). Same real value for D1 and D9 (2026-08-28).</summary>
     public bool? IsRetrograde { get; set; }
 
-    /// <summary>Classical combustion (Asta) — within orb of the Sun, evaluated within THIS row's own chart type (D1 uses real longitude, D9 uses Navamsa-remapped longitude — see ClassicalCombustion/VargaLongitudeDegrees). Only meaningful for Moon/Mars/Mercury/Jupiter/Venus/Saturn; null for Sun/Rahu/Ketu/Ascendant. Computed separately per chart type since 2026-08-28 — a D9 row is no longer guaranteed to match its D1 counterpart.</summary>
+    /// <summary>Classical combustion (Asta) — within orb of the Sun, evaluated within THIS row's own chart type (D1 uses real longitude, D9 uses Navamsa-remapped longitude — see CombustionEngine/VargaLongitudeDegrees). Only meaningful for Moon/Mars/Mercury/Jupiter/Venus/Saturn; null for Sun/Rahu/Ketu/Ascendant. Computed separately per chart type since 2026-08-28 — a D9 row is no longer guaranteed to match its D1 counterpart.</summary>
     public bool? IsCombust { get; set; }
 
     /// <summary>Actual angular separation from the Sun within this row's own chart type (D1: real degrees; D9: Navamsa-space degrees), 0-180°, for the 6 planets combustion applies to. Null otherwise.</summary>

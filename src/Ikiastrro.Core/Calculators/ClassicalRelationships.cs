@@ -1,4 +1,5 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Dignity;
 
 namespace Ikiastrro.Core.Calculators;
 
@@ -7,7 +8,7 @@ public record AspectResult(string AspectingPlanet, string AspectedTarget, string
 
 /// <summary>
 /// Conjunctions (Graha Yuti) and aspects (Graha Drishti) — computed purely from this project's own
-/// already-computed ChartAnalysisInput, same rationale as ClassicalDignity: pure classical rules
+/// already-computed ChartAnalysisInput, same rationale as DignityEngine: pure classical rules
 /// applied to data this project's own pipeline produced, not re-derived via some engine's own
 /// relationship helpers. Chart-type-agnostic: works identically for D1, D9, and any future divisional
 /// chart, since "same sign" and "house offset" only need Sign/HouseNumber, not which chart produced them.
@@ -85,7 +86,7 @@ public static class ClassicalRelationships
 
             foreach (var offset in AspectOffsets[aspecting.Planet])
             {
-                var aspectedSign = ClassicalDignity.GetHouseSign(aspectingSign, offset);
+                var aspectedSign = DignityEngine.GetHouseSign(aspectingSign, offset);
 
                 foreach (var target in input.Planets)
                 {

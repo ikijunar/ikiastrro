@@ -1,4 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Dignity;
+using Ikiastrro.Core.Engines.Relationships;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Calculators;
@@ -37,7 +39,7 @@ public static class ChartAnalyzer
             : sunPlanet.VargaLongitudeDegrees
                 ?? throw new InvalidOperationException($"Chart data for Sun is missing VargaLongitudeDegrees for chart type '{input.ChartType}'.");
 
-        // All classical planets' current signs, needed by ClassicalDignity to locate a sign-lord's own
+        // All classical planets' current signs, needed by DignityEngine to locate a sign-lord's own
         // position for Panchadha Maitri (temporary friendship depends on where the lord itself sits).
         var allSigns = input.Planets
             .Where(p => p.Planet != "Ascendant")
@@ -56,7 +58,7 @@ public static class ChartAnalyzer
             var nirayanaLongitude = planet.NirayanaLongitudeDegrees
                 ?? throw new InvalidOperationException($"Chart data for {planet.Planet} is missing NirayanaLongitudeDegrees.");
             var degreeInSign = (decimal)(nirayanaLongitude % 30);
-            var dignity = ClassicalDignity.Evaluate(planet.Planet, sign, isRasiChart ? (double?)degreeInSign : null, allSigns);
+            var dignity = DignityEngine.Evaluate(planet.Planet, sign, isRasiChart ? (double?)degreeInSign : null, allSigns);
 
             // The planet's longitude in THIS chart's own 360-degree space. For D1 it IS the real
             // longitude; for a varga it's the (real x N) mod 360 value the computer already stamped.
@@ -80,8 +82,8 @@ public static class ChartAnalyzer
                 ? nirayanaLongitude
                 : planet.VargaLongitudeDegrees
                     ?? throw new InvalidOperationException($"Chart data for {planet.Planet} is missing VargaLongitudeDegrees for chart type '{input.ChartType}'.");
-            var combustion = ClassicalCombustion.IsApplicable(planet.Planet)
-                ? ClassicalCombustion.Evaluate(planet.Planet, combustionLongitude, sunCombustionLongitude, planet.IsRetrograde)
+            var combustion = CombustionEngine.IsApplicable(planet.Planet)
+                ? CombustionEngine.Evaluate(planet.Planet, combustionLongitude, sunCombustionLongitude, planet.IsRetrograde)
                 : null;
 
             keyDetails.Add(new ChartKeyDetail
@@ -157,8 +159,8 @@ public static class ChartAnalyzer
         var houseLords = new List<ChartHouseLord>();
         for (var houseNumber = 1; houseNumber <= 12; houseNumber++)
         {
-            var houseSign = ClassicalDignity.GetHouseSign(input.AscendantSign, houseNumber);
-            var lordPlanet = ClassicalDignity.GetSignLord(houseSign);
+            var houseSign = DignityEngine.GetHouseSign(input.AscendantSign, houseNumber);
+            var lordPlanet = DignityEngine.GetSignLord(houseSign);
             var lordPlacement = placementByPlanet[lordPlanet];
 
             houseLords.Add(new ChartHouseLord

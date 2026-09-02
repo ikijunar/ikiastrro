@@ -3,7 +3,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 
 namespace Ikiastrro.Data;
 
-/// <summary>tbl_Rule_CombustionOrb -- same two-dictionary shape ClassicalCombustion hardcodes today.</summary>
+/// <summary>tbl_Rule_CombustionOrb -- same two-dictionary shape CombustionEngine hardcodes today.</summary>
 public class CombustionRuleRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;

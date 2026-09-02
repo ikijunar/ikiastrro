@@ -1,13 +1,13 @@
 using Ikiastrro.Core.Engines.Astronomy;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Engines.Relationships;
 
 /// <summary>One planet's combustion (Asta) evaluation against the Sun's real longitude.</summary>
 public record CombustionResult(bool IsCombust, decimal DistanceFromSunDegrees, decimal OrbUsedDegrees);
 
 /// <summary>
 /// Classical combustion (Asta): a planet sitting within its orb of the Sun's real longitude is
-/// "combust" — a distinct affliction layer, independent of sign-dignity (see ClassicalDignity).
+/// "combust" — a distinct affliction layer, independent of sign-dignity (see DignityEngine).
 /// Orbs are the standard BPHS/Phaladeepika values, narrower when the planet is retrograde (its
 /// apparent motion reverses, changing the classically-observed combustion window) — see the
 /// 2026-08-28 backlog note in ikiastrro.md for the worked example that surfaced this gap.
@@ -15,7 +15,7 @@ public record CombustionResult(bool IsCombust, decimal DistanceFromSunDegrees, d
 /// Applies only to the 6 classical grahas that can meaningfully be combust: Moon, Mars, Mercury,
 /// Jupiter, Venus, Saturn. The Sun cannot combust itself, and Rahu/Ketu are excluded — shadow
 /// points with no physical orb-of-the-Sun concept in standard Parashari texts, same convention
-/// ClassicalDignity already applies to their more limited dignity treatment.
+/// DignityEngine already applies to their more limited dignity treatment.
 ///
 /// Distance is computed from whichever longitude ChartAnalyzer passes in — the real (D1)
 /// NirayanaLongitudeDegrees for a D1 row, or the varga-remapped VargaLongitudeDegrees for a D9 (or
@@ -24,7 +24,7 @@ public record CombustionResult(bool IsCombust, decimal DistanceFromSunDegrees, d
 /// itself is longitude-space-agnostic: it just measures separation and applies the orb, whatever
 /// space the two longitudes it's given belong to.
 /// </summary>
-public static class ClassicalCombustion
+public static class CombustionEngine
 {
     /// <summary>Base orb, in degrees, used when the planet is direct (or has no retrograde-specific override below).</summary>
     private static readonly IReadOnlyDictionary<string, decimal> DirectOrbDegrees = new Dictionary<string, decimal>

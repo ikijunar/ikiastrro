@@ -1,6 +1,6 @@
 using Ikiastrro.Core.Models;
 
-namespace Ikiastrro.Core.Calculators;
+namespace Ikiastrro.Core.Presentation;
 
 /// <summary>One planet's row for the visual chart display — everything a UI needs to render it.</summary>
 public record PlanetRow(

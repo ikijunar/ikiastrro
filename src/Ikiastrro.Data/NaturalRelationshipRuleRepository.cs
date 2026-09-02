@@ -5,7 +5,7 @@ namespace Ikiastrro.Data;
 
 /// <summary>
 /// tbl_Rule_NaturalRelationship -- same (Friends,Neutrals,Enemies) tuple shape
-/// ClassicalDignity.NaturalRelationship hardcodes today.
+/// DignityEngine.NaturalRelationship hardcodes today.
 /// </summary>
 public class NaturalRelationshipRuleRepository
 {
