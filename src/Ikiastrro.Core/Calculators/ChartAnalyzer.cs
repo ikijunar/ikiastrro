@@ -125,8 +125,34 @@ public static class ChartAnalyzer
             });
         }
 
+        // Special points (AL, A2..A12, HL, Gulika, Maandi) already projected into this chart's zodiac
+        // by SpecialPointProjector. Position-only rows: no dignity/nakshatra/combustion/aspects/karaka
+        // (CK_KeyDetails_NonGrahaNulls enforces it).
+        foreach (var sp in input.SpecialPoints)
+        {
+            var spSign = Enum.Parse<ZodiacName>(sp.Sign);
+            var spVargaLon = sp.VargaLongitudeDegrees ?? sp.NirayanaLongitudeDegrees ?? 0;
+            keyDetails.Add(new ChartKeyDetail
+            {
+                Planet = sp.Planet,               // "AL", "A2".."A12", later "HL"/"Gulika"/"Maandi"
+                PointKind = sp.PointKind,
+                Sign = sp.Sign,
+                SignId = AstroIds.SignId(spSign),
+                NirayanaLongitudeDegrees = sp.NirayanaLongitudeDegrees ?? 0,
+                VargaLongitudeDegrees = spVargaLon,
+                DegreesInSignDisplay = AstroMath.FormatDegreesMinutesSeconds(spVargaLon % 30),
+                DegreesInSignDecimal = Math.Round((decimal)(spVargaLon % 30), 4),
+                HouseNumberFromLagna = sp.HouseNumber,
+                HouseNumberFromSun = AstroMath.CountFromSignToSign(sunSign, spSign),
+                HouseNumberFromMoon = AstroMath.CountFromSignToSign(moonSign, spSign),
+                // everything else stays null — CK_KeyDetails_NonGrahaNulls enforces it
+            });
+        }
+
         // Quick lookup for house-lords: where does each planet actually sit (all 3 reckonings + dignity)?
-        var placementByPlanet = keyDetails.Where(k => k.Planet != "Ascendant").ToDictionary(k => k.Planet);
+        var placementByPlanet = keyDetails
+            .Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
+            .ToDictionary(k => k.Planet);
 
         var houseLords = new List<ChartHouseLord>();
         for (var houseNumber = 1; houseNumber <= 12; houseNumber++)

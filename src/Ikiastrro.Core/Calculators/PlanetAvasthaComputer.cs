@@ -24,7 +24,9 @@ public static class PlanetAvasthaComputer
 
         foreach (var kd in keyDetails)
         {
-            if (kd.Planet == "Ascendant")
+            // Ascendant + the special points (AL / A2–A12 / HL / Gulika / Maandi) are not grahas —
+            // no avastha for a house-circle or reference point.
+            if (kd.Planet == "Ascendant" || kd.PointKind != "Graha")
                 continue;
 
             var fact = new PlanetAvasthaFact

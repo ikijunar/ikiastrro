@@ -559,6 +559,32 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
         Check("D9 AK label travels", d9ak, "Rahu");
     }
 
+    // --- Phase 3: Arudha Lagna + 12 Bhava Arudhas ---
+    using (var conn = connectionFactory.CreateOpenConnection())
+    {
+        string SpSign(string chart, string code) => conn.ExecuteScalar<string>(
+            @"SELECT kd.Sign FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id = kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id = cr.BirthDetailId
+              WHERE bd.Name='Ramakrishnan' AND cr.ChartType=@c AND kd.Planet=@p AND kd.PointKind<>'Graha'",
+            new { c = chart, p = code });
+
+        Check("AL (D1) -> Capricornus", SpSign("D1", "AL"), "Capricornus");
+        Check("A2..A12 present in D1", conn.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id=kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id=cr.BirthDetailId
+              WHERE bd.Name='Ramakrishnan' AND cr.ChartType='D1' AND kd.PointKind='Arudha'"), 12);
+        // channel integrity: AL's D9 sign == NavamsaD9 rule applied to AL's D1 longitude
+        var alD1Lon = conn.ExecuteScalar<double>(
+            @"SELECT kd.NirayanaLongitudeDegrees FROM dbo.tbl_Chart_KeyDetails kd
+              JOIN dbo.tbl_ChartResults cr ON cr.Id=kd.ChartResultId
+              JOIN dbo.tbl_BirthDetails bd ON bd.Id=cr.BirthDetailId
+              WHERE bd.Name='Ramakrishnan' AND cr.ChartType='D1' AND kd.Planet='AL'");
+        var expectedD9 = VargaSignRuleFactory.For("NavamsaD9", 9).SignFor(alD1Lon).ToString();
+        Check("AL D9 channel integrity", SpSign("D9", "AL"), expectedD9);
+    }
+
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
@@ -643,6 +669,21 @@ if (args.Length > 0 && args[0] == "verify-schema")
                 WHERE cr.CalculationKind = 'PositionChart'
                 GROUP BY cr.Id
             ) x WHERE x.n <> 8 OR x.d <> 8"));
+    Check("non-Graha KeyDetails carry no graha-only analytics",
+        Count(@"
+            SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails
+            WHERE PointKind <> 'Graha' AND (PlanetId IS NOT NULL OR DignityStatus IS NOT NULL
+                OR Nakshatra IS NOT NULL OR CharaKaraka IS NOT NULL OR AspectingPlanets IS NOT NULL
+                OR IsCombust IS NOT NULL OR NakshatraLordPlanet IS NOT NULL)"));
+    Check("every position chart has 12 Arudha rows (AL + A2..A12)",
+        Count(@"
+            SELECT COUNT(*) FROM (
+                SELECT cr.Id, COUNT(*) n
+                FROM dbo.tbl_ChartResults cr
+                JOIN dbo.tbl_Chart_KeyDetails kd ON kd.ChartResultId = cr.Id AND kd.PointKind = 'Arudha'
+                WHERE cr.CalculationKind = 'PositionChart'
+                GROUP BY cr.Id
+            ) x WHERE x.n <> 12"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);

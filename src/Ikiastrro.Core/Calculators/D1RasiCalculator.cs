@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Ikiastrro.Core.Models;
+using Ikiastrro.Core.SpecialPoints;
 
 namespace Ikiastrro.Core.Calculators;
 
@@ -12,7 +13,9 @@ public class D1RasiCalculator : IChartCalculator
 {
     public string ChartType => "D1";
 
-    public ChartAnalysisInput ComputeAnalysisInput(BirthDetails birthDetails) => D1ChartComputer.Compute(birthDetails);
+    public ChartAnalysisInput ComputeAnalysisInput(
+        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null)
+        => D1ChartComputer.Compute(birthDetails, specialPoints);
 
     public ChartResult BuildResult(BirthDetails birthDetails, ChartAnalysisInput analysisInput)
     {

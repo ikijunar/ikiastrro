@@ -5,6 +5,11 @@ public class PlanetPosition
 {
     public string Planet { get; set; } = string.Empty;
 
+    /// <summary>'Graha' for the Ascendant + 9 planets; one of 'SpecialLagna' / 'Arudha' /
+    /// 'Upagraha' for a special point projected into this chart. ChartAnalyzer emits a
+    /// minimal (position-only) key-details row for non-'Graha' entries.</summary>
+    public string PointKind { get; set; } = "Graha";
+
     public string Sign { get; set; } = string.Empty;
 
     /// <summary>Degrees elapsed within the sign, e.g. "7°14'30\"".</summary>

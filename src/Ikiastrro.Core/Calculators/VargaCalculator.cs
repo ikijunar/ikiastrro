@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Models;
+using Ikiastrro.Core.SpecialPoints;
 
 namespace Ikiastrro.Core.Calculators;
 
@@ -28,9 +29,10 @@ public sealed class VargaCalculator : IChartCalculator
 
     public string ChartType => _chartType;
 
-    public ChartAnalysisInput ComputeAnalysisInput(BirthDetails birthDetails)
+    public ChartAnalysisInput ComputeAnalysisInput(
+        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null)
     {
-        var input = VargaChartComputer.Compute(birthDetails, _scheme.DivisionFactor, _rule);
+        var input = VargaChartComputer.Compute(birthDetails, _scheme.DivisionFactor, _rule, specialPoints);
         return input with { ChartType = _chartType };
     }
 

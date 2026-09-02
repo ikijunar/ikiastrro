@@ -18,8 +18,12 @@ public interface IChartCalculator
     /// <summary>e.g. "D1", "D9" — matches ChartResult.ChartType.</summary>
     string ChartType { get; }
 
-    /// <summary>Computes the chart's Ascendant + planet placements for the given birth details, using its EffectiveTimeOfBirth.</summary>
-    ChartAnalysisInput ComputeAnalysisInput(BirthDetails birthDetails);
+    /// <summary>Computes the chart's Ascendant + planet placements for the given birth details, using its
+    /// EffectiveTimeOfBirth. <paramref name="specialPoints"/> (D1 longitudes of AL / A2–A12 / HL / Gulika /
+    /// Maandi) are projected into this chart's zodiac when supplied; null/empty leaves ChartAnalysisInput.SpecialPoints empty.</summary>
+    ChartAnalysisInput ComputeAnalysisInput(
+        BirthDetails birthDetails,
+        IReadOnlyList<SpecialPoints.SpecialPointSeed>? specialPoints = null);
 
     /// <summary>Packages an already-computed analysis input into the ChartResult row to store (ResultJson shape is chart-type-specific).</summary>
     ChartResult BuildResult(BirthDetails birthDetails, ChartAnalysisInput analysisInput);

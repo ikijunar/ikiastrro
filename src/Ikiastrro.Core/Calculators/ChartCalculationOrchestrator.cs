@@ -1,4 +1,5 @@
 using Ikiastrro.Core.Models;
+using Ikiastrro.Core.SpecialPoints;
 
 namespace Ikiastrro.Core.Calculators;
 
@@ -38,10 +39,11 @@ public class ChartCalculationOrchestrator
     /// </summary>
     public IReadOnlyList<(ChartResult Result, ChartAnalysisInput Input)> CalculateAll(BirthDetails birthDetails)
     {
+        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails);
         var results = new List<(ChartResult, ChartAnalysisInput)>();
         foreach (var calculator in _calculators)
         {
-            var input = calculator.ComputeAnalysisInput(birthDetails);
+            var input = calculator.ComputeAnalysisInput(birthDetails, seeds);
             var result = calculator.BuildResult(birthDetails, input);
             results.Add((result, input));
         }
@@ -60,6 +62,7 @@ public class ChartCalculationOrchestrator
     {
         var calculator = _calculators.FirstOrDefault(c => c.ChartType == chartType)
             ?? throw new InvalidOperationException($"No calculator registered for chart type '{chartType}'.");
-        return calculator.ComputeAnalysisInput(birthDetails);
+        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails);
+        return calculator.ComputeAnalysisInput(birthDetails, seeds);
     }
 }

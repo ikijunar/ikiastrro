@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Astro;
 using Ikiastrro.Core.Models;
+using Ikiastrro.Core.SpecialPoints;
 
 namespace Ikiastrro.Core.Calculators;
 
@@ -12,7 +13,9 @@ namespace Ikiastrro.Core.Calculators;
 /// </summary>
 public static class VargaChartComputer
 {
-    public static ChartAnalysisInput Compute(BirthDetails birthDetails, int divisionFactor, IVargaSignRule rule)
+    public static ChartAnalysisInput Compute(
+        BirthDetails birthDetails, int divisionFactor, IVargaSignRule rule,
+        IReadOnlyList<SpecialPointSeed>? seeds = null)
     {
         var localMoment = BirthMomentFactory.Create(birthDetails);
         var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude);
@@ -52,6 +55,8 @@ public static class VargaChartComputer
             });
         }
 
-        return new ChartAnalysisInput(ChartType: "", lagnaSign, planetPositions);
+        var specialPoints = SpecialPointProjector.Project(
+            seeds ?? Array.Empty<SpecialPointSeed>(), rule, divisionFactor, lagnaSign);
+        return new ChartAnalysisInput(ChartType: "", lagnaSign, planetPositions) { SpecialPoints = specialPoints };
     }
 }
