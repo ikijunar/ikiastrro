@@ -745,7 +745,14 @@ CREATE TABLE [dbo].[tbl_Rule_AspectOffset](
 	[PlanetId] [tinyint] NOT NULL,
 	[HouseOffset] [tinyint] NOT NULL,
 	[OffsetLabel] [varchar](10) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[MethodCode] [varchar](30) NULL,
+	[RuleParametersJson] [nvarchar](max) NULL,
+	[CalculationNarrative] [nvarchar](max) NULL,
+	[SourceRefCode] [varchar](40) NULL,
+	[IsActive] [bit] NOT NULL CONSTRAINT DF_Rule_AspectOffset_IsActive DEFAULT 1,
+	CONSTRAINT CK_RuleAspect_Json CHECK ([RuleParametersJson] IS NULL OR ISJSON([RuleParametersJson]) = 1),
+	CONSTRAINT CK_RuleAspect_Src CHECK ([SourceRefCode] IS NULL OR [SourceRefCode] LIKE 'SRC[_]%'),
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
@@ -770,7 +777,14 @@ CREATE TABLE [dbo].[tbl_Rule_CombustionOrb](
 	[PlanetId] [tinyint] NOT NULL,
 	[DirectOrbDegrees] [decimal](5, 2) NOT NULL,
 	[RetrogradeOrbDegrees] [decimal](5, 2) NULL,
-PRIMARY KEY CLUSTERED 
+	[MethodCode] [varchar](30) NULL,
+	[RuleParametersJson] [nvarchar](max) NULL,
+	[CalculationNarrative] [nvarchar](max) NULL,
+	[SourceRefCode] [varchar](40) NULL,
+	[IsActive] [bit] NOT NULL CONSTRAINT DF_Rule_CombustionOrb_IsActive DEFAULT 1,
+	CONSTRAINT CK_RuleCombust_Json CHECK ([RuleParametersJson] IS NULL OR ISJSON([RuleParametersJson]) = 1),
+	CONSTRAINT CK_RuleCombust_Src CHECK ([SourceRefCode] IS NULL OR [SourceRefCode] LIKE 'SRC[_]%'),
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
@@ -794,7 +808,14 @@ CREATE TABLE [dbo].[tbl_Rule_NaturalRelationship](
 	[PlanetId] [tinyint] NOT NULL,
 	[RelatedPlanetId] [tinyint] NOT NULL,
 	[RelationshipType] [varchar](10) NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[MethodCode] [varchar](30) NULL,
+	[RuleParametersJson] [nvarchar](max) NULL,
+	[CalculationNarrative] [nvarchar](max) NULL,
+	[SourceRefCode] [varchar](40) NULL,
+	[IsActive] [bit] NOT NULL CONSTRAINT DF_Rule_NaturalRelationship_IsActive DEFAULT 1,
+	CONSTRAINT CK_RuleNatRel_Json CHECK ([RuleParametersJson] IS NULL OR ISJSON([RuleParametersJson]) = 1),
+	CONSTRAINT CK_RuleNatRel_Src CHECK ([SourceRefCode] IS NULL OR [SourceRefCode] LIKE 'SRC[_]%'),
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
@@ -859,7 +880,14 @@ CREATE TABLE [dbo].[tbl_Rule_TemporaryFriendshipDistance](
 	[RuleSetId] [tinyint] NOT NULL,
 	[SignDistance] [tinyint] NOT NULL,
 	[IsFriend] [bit] NOT NULL,
-PRIMARY KEY CLUSTERED 
+	[MethodCode] [varchar](30) NULL,
+	[RuleParametersJson] [nvarchar](max) NULL,
+	[CalculationNarrative] [nvarchar](max) NULL,
+	[SourceRefCode] [varchar](40) NULL,
+	[IsActive] [bit] NOT NULL CONSTRAINT DF_Rule_TemporaryFriendshipDistance_IsActive DEFAULT 1,
+	CONSTRAINT CK_RuleTempFri_Json CHECK ([RuleParametersJson] IS NULL OR ISJSON([RuleParametersJson]) = 1),
+	CONSTRAINT CK_RuleTempFri_Src CHECK ([SourceRefCode] IS NULL OR [SourceRefCode] LIKE 'SRC[_]%'),
+PRIMARY KEY CLUSTERED
 (
 	[RuleSetId] ASC,
 	[SignDistance] ASC
@@ -3202,7 +3230,13 @@ CREATE TABLE dbo.tbl_Rule_VargaScheme (
     MethodSource   VARCHAR(200) NOT NULL,
     SignRuleKind   VARCHAR(10)  NOT NULL,
     SignRuleKey    VARCHAR(40)  NOT NULL,
-    CONSTRAINT UQ_Rule_VargaScheme UNIQUE (RuleSetId, ChartTypeId)
+    RuleParametersJson   NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode        VARCHAR(40)   NULL,
+    IsActive             BIT NOT NULL CONSTRAINT DF_Rule_VargaScheme_IsActive DEFAULT 1,
+    CONSTRAINT UQ_Rule_VargaScheme UNIQUE (RuleSetId, ChartTypeId),
+    CONSTRAINT CK_RuleVarga_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_RuleVarga_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
 );
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_VargaScheme)
@@ -3272,7 +3306,14 @@ CREATE TABLE dbo.tbl_Rule_AgeState (
     EvenSignFromDegree DECIMAL(4,1) NOT NULL,
     EvenSignToDegree   DECIMAL(4,1) NOT NULL,
     EffectFraction     DECIMAL(4,3) NOT NULL,
-    CONSTRAINT UQ_Rule_AgeState UNIQUE (RuleSetId, AvasthaStateId)
+    MethodCode           VARCHAR(30)   NULL,
+    RuleParametersJson   NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode        VARCHAR(40)   NULL,
+    IsActive             BIT NOT NULL CONSTRAINT DF_Rule_AgeState_IsActive DEFAULT 1,
+    CONSTRAINT UQ_Rule_AgeState UNIQUE (RuleSetId, AvasthaStateId),
+    CONSTRAINT CK_RuleAgeState_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_RuleAgeState_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
 );
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_AgeState)
@@ -3293,7 +3334,14 @@ CREATE TABLE dbo.tbl_Rule_WakefulnessState (
     RuleSetId      TINYINT     NOT NULL CONSTRAINT FK_Rule_WakefulnessState_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
     DignityStatus  VARCHAR(20) NOT NULL,
     AvasthaStateId TINYINT     NOT NULL CONSTRAINT FK_Rule_WakefulnessState_State   FOREIGN KEY REFERENCES dbo.tbl_Dim_PlanetaryState (Id),
-    CONSTRAINT UQ_Rule_WakefulnessState UNIQUE (RuleSetId, DignityStatus)
+    MethodCode           VARCHAR(30)   NULL,
+    RuleParametersJson   NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode        VARCHAR(40)   NULL,
+    IsActive             BIT NOT NULL CONSTRAINT DF_Rule_WakefulnessState_IsActive DEFAULT 1,
+    CONSTRAINT UQ_Rule_WakefulnessState UNIQUE (RuleSetId, DignityStatus),
+    CONSTRAINT CK_RuleWakeState_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_RuleWakeState_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
 );
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_WakefulnessState)
@@ -3311,6 +3359,147 @@ FROM (VALUES
     ('Debilitated',  'Sushupti')
 ) v (DignityStatus, StateName)
 JOIN dbo.tbl_Dim_PlanetaryState s ON s.AvasthaSystem = 'Jagradadi' AND s.StateName = v.StateName;
+GO
+
+-- =====================================================================
+-- Rule-table portability (folded from db/18_rule_table_portability.sql).
+-- The portability tail (MethodCode / RuleParametersJson /
+-- CalculationNarrative / SourceRefCode / IsActive) + the ISJSON and
+-- SRC_ CHECK constraints are defined inline in each tbl_Rule_* CREATE
+-- TABLE above. This block backfills SourceRefCode for the rule tables
+-- whose classical source is already known (codes resolve in
+-- tbl_Dim_Source); tbl_Rule_VargaScheme stays NULL (Task 12).
+-- =====================================================================
+UPDATE dbo.tbl_Rule_AspectOffset                SET SourceRefCode = 'SRC_BPHS_26'         WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_CombustionOrb               SET SourceRefCode = 'SRC_BPHS_COMBUSTION' WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_NaturalRelationship         SET SourceRefCode = 'SRC_BPHS'            WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_TemporaryFriendshipDistance SET SourceRefCode = 'SRC_BPHS'            WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_AgeState                    SET SourceRefCode = 'SRC_BPHS_AVASTHA'    WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_WakefulnessState           SET SourceRefCode = 'SRC_BPHS_AVASTHA'    WHERE SourceRefCode IS NULL;
+GO
+
+-- =====================================================================
+-- tbl_Rule_Catalog — one-page index of "what a port must reimplement":
+-- one row per rule table (7 live + 5 reserved). EngineCode groups the
+-- interpreter families; MethodCodes lists the method tags the engine
+-- must understand. Folded from db/18_rule_table_portability.sql.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Rule_Catalog', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_Catalog (
+    RuleTableName   VARCHAR(80)  CONSTRAINT PK_Rule_Catalog PRIMARY KEY,
+    EngineCode      VARCHAR(30)  NOT NULL,
+    MethodCodes     VARCHAR(300) NOT NULL,
+    Purpose         VARCHAR(400) NOT NULL,
+    IntroducedIn    VARCHAR(40)  NOT NULL
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog)
+INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+VALUES
+    ('tbl_Rule_VargaScheme',                'VARGA',        'LINEAR_VARGA,TABLE_VARGA,BAND_VARGA,WRAPPED_VARGA', 'Per-rule-set mapping of each divisional chart type to its varga-sign derivation method.', 'migration 11'),
+    ('tbl_Rule_AspectOffset',               'RELATIONSHIP', 'OFFSET_LIST',   'Graha drishti: the house offsets each planet aspects, including special aspects for Mars/Jupiter/Saturn.', 'baseline'),
+    ('tbl_Rule_CombustionOrb',              'RELATIONSHIP', 'ORB_PAIR',      'Combustion (astangata) orb in degrees per planet, for direct and retrograde motion.', 'baseline'),
+    ('tbl_Rule_NaturalRelationship',        'DIGNITY',      'MAP_LOOKUP',    'Naisargika (permanent) friendship: friend/neutral/enemy for each ordered planet pair.', 'baseline'),
+    ('tbl_Rule_TemporaryFriendshipDistance','DIGNITY',      'DISTANCE_SET',  'Tatkalika (temporary) friendship: which sign-distances from a planet count as friendly.', 'baseline'),
+    ('tbl_Rule_AgeState',                   'AVASTHA',      'BAND_LOOKUP',   'Baaladi avastha (infant..dead) degree bands per odd/even sign, with the effect fraction.', 'migration 00 / renamed 16'),
+    ('tbl_Rule_WakefulnessState',           'AVASTHA',      'MAP_LOOKUP',    'Jagradadi avastha (awake/dreaming/sleeping) keyed by the planet''s dignity status.', 'migration 00 / renamed 16'),
+    ('tbl_Rule_HouseSignification',         'HOUSE',        'MAP_LOOKUP',    'Reserved: bhava karakatvas — the significations attached to each house.', 'migration 18 (empty; P2)'),
+    ('tbl_Rule_Karaka',                     'KARAKA',       'MAP_LOOKUP',    'Reserved: chara / sthira / naisargika karaka assignment schemes.', 'migration 18 (empty; P2)'),
+    ('tbl_Rule_ShadbalaComponent',          'STRENGTH',     'WEIGHT_TABLE',  'Reserved: shadbala sub-component weights and maxima, in rupas.', 'migration 18 (empty; P3)'),
+    ('tbl_Rule_VimsopakaWeight',            'STRENGTH',     'WEIGHT_TABLE',  'Reserved: vimsopaka bala varga-group weights per scheme (shadvarga..shodasavarga).', 'migration 18 (empty; P3)'),
+    ('tbl_Rule_Yoga',                       'YOGA',         'PREDICATE_SET', 'Reserved: yoga definitions — formation predicates, cancellation rules, and result codes.', 'migration 18 (empty; P4)');
+GO
+
+-- =====================================================================
+-- Reserved rule tables (empty; populated by later plans). Each carries
+-- the same portability tail + ISJSON / SRC_ CHECKs. Folded from
+-- db/18_rule_table_portability.sql.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Rule_HouseSignification', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_HouseSignification (
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_HouseSignification PRIMARY KEY,
+    RuleSetId INT NOT NULL,
+    HouseNumber TINYINT NOT NULL,
+    SignificationCode VARCHAR(40) NOT NULL,
+    MethodCode VARCHAR(30) NULL,
+    RuleParametersJson NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode VARCHAR(40) NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_Rule_HouseSignification_IsActive DEFAULT 1,
+    CONSTRAINT CK_Rule_HouseSignification_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_Rule_HouseSignification_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+);
+GO
+IF OBJECT_ID('dbo.tbl_Rule_Karaka', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_Karaka (
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_Karaka PRIMARY KEY,
+    RuleSetId INT NOT NULL,
+    KarakaScheme VARCHAR(20) NOT NULL,
+    PlanetOrHouse VARCHAR(20) NULL,
+    TargetValue VARCHAR(40) NULL,
+    OrderIndex TINYINT NULL,
+    ReverseForRahu BIT NULL,
+    MethodCode VARCHAR(30) NULL,
+    RuleParametersJson NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode VARCHAR(40) NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_Rule_Karaka_IsActive DEFAULT 1,
+    CONSTRAINT CK_Rule_Karaka_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_Rule_Karaka_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+);
+GO
+IF OBJECT_ID('dbo.tbl_Rule_ShadbalaComponent', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_ShadbalaComponent (
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_ShadbalaComponent PRIMARY KEY,
+    RuleSetId INT NOT NULL,
+    BalaCode VARCHAR(30) NOT NULL,
+    SubComponentCode VARCHAR(40) NULL,
+    WeightRupas DECIMAL(6,3) NULL,
+    MaxRupas DECIMAL(6,3) NULL,
+    LookupJson NVARCHAR(MAX) NULL,
+    MethodCode VARCHAR(30) NULL,
+    RuleParametersJson NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode VARCHAR(40) NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_Rule_ShadbalaComponent_IsActive DEFAULT 1,
+    CONSTRAINT CK_Rule_ShadbalaComponent_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_Rule_ShadbalaComponent_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+);
+GO
+IF OBJECT_ID('dbo.tbl_Rule_VimsopakaWeight', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_VimsopakaWeight (
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_VimsopakaWeight PRIMARY KEY,
+    RuleSetId INT NOT NULL,
+    SchemeCode VARCHAR(20) NOT NULL,
+    VargaChartType VARCHAR(10) NOT NULL,
+    Weight DECIMAL(5,2) NULL,
+    MaxTotal DECIMAL(6,2) NULL,
+    MethodCode VARCHAR(30) NULL,
+    RuleParametersJson NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode VARCHAR(40) NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_Rule_VimsopakaWeight_IsActive DEFAULT 1,
+    CONSTRAINT CK_Rule_VimsopakaWeight_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_Rule_VimsopakaWeight_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+);
+GO
+IF OBJECT_ID('dbo.tbl_Rule_Yoga', 'U') IS NULL
+CREATE TABLE dbo.tbl_Rule_Yoga (
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_Yoga PRIMARY KEY,
+    RuleSetId INT NOT NULL,
+    YogaCode VARCHAR(40) NOT NULL,
+    YogaCategory VARCHAR(30) NULL,
+    RequirementJson NVARCHAR(MAX) NULL,
+    CancellationJson NVARCHAR(MAX) NULL,
+    ResultCode VARCHAR(40) NULL,
+    MethodCode VARCHAR(30) NULL,
+    RuleParametersJson NVARCHAR(MAX) NULL,
+    CalculationNarrative NVARCHAR(MAX) NULL,
+    SourceRefCode VARCHAR(40) NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_Rule_Yoga_IsActive DEFAULT 1,
+    CONSTRAINT CK_Rule_Yoga_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+    CONSTRAINT CK_Rule_Yoga_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+);
 GO
 IF OBJECT_ID('dbo.tbl_Fact_PlanetaryState', 'U') IS NULL
 BEGIN
