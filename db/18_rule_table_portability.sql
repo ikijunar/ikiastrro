@@ -223,7 +223,7 @@ IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '18_rule_ta
 BEGIN
     MERGE dbo.tbl_Rule_Catalog AS tgt
     USING (VALUES
-        ('tbl_Rule_VargaScheme',                'VARGA',        'LINEAR_VARGA,TABLE_VARGA,BAND_VARGA,WRAPPED_VARGA', 'Per-rule-set mapping of each divisional chart type to its varga-sign derivation method.', 'migration 11'),
+        ('tbl_Rule_VargaScheme',                'VARGA',        'LINEAR_VARGA,GRID_VARGA,BAND_VARGA', 'Per-rule-set mapping of each divisional chart type to its varga-sign derivation method.', 'migration 11'),
         ('tbl_Rule_AspectOffset',               'RELATIONSHIP', 'OFFSET_LIST',   'Graha drishti: the house offsets each planet aspects, including special aspects for Mars/Jupiter/Saturn.', 'baseline'),
         ('tbl_Rule_CombustionOrb',              'RELATIONSHIP', 'ORB_PAIR',      'Combustion (astangata) orb in degrees per planet, for direct and retrograde motion.', 'baseline'),
         ('tbl_Rule_NaturalRelationship',        'DIGNITY',      'MAP_LOOKUP',    'Naisargika (permanent) friendship: friend/neutral/enemy for each ordered planet pair.', 'baseline'),
@@ -257,4 +257,11 @@ BEGIN
 END
 ELSE
     PRINT '18 already applied.';
+GO
+
+-- Self-heal: correct the VargaScheme catalog row on DBs where migration 18's guarded MERGE already ran.
+UPDATE dbo.tbl_Rule_Catalog
+   SET MethodCodes = 'LINEAR_VARGA,GRID_VARGA,BAND_VARGA'
+ WHERE RuleTableName = 'tbl_Rule_VargaScheme'
+   AND MethodCodes <> 'LINEAR_VARGA,GRID_VARGA,BAND_VARGA';
 GO

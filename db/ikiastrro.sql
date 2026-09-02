@@ -3429,7 +3429,7 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog)
 INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
 VALUES
-    ('tbl_Rule_VargaScheme',                'VARGA',        'LINEAR_VARGA,TABLE_VARGA,BAND_VARGA,WRAPPED_VARGA', 'Per-rule-set mapping of each divisional chart type to its varga-sign derivation method.', 'migration 11'),
+    ('tbl_Rule_VargaScheme',                'VARGA',        'LINEAR_VARGA,GRID_VARGA,BAND_VARGA', 'Per-rule-set mapping of each divisional chart type to its varga-sign derivation method.', 'migration 11'),
     ('tbl_Rule_AspectOffset',               'RELATIONSHIP', 'OFFSET_LIST',   'Graha drishti: the house offsets each planet aspects, including special aspects for Mars/Jupiter/Saturn.', 'baseline'),
     ('tbl_Rule_CombustionOrb',              'RELATIONSHIP', 'ORB_PAIR',      'Combustion (astangata) orb in degrees per planet, for direct and retrograde motion.', 'baseline'),
     ('tbl_Rule_NaturalRelationship',        'DIGNITY',      'MAP_LOOKUP',    'Naisargika (permanent) friendship: friend/neutral/enemy for each ordered planet pair.', 'baseline'),

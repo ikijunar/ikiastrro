@@ -1127,6 +1127,20 @@ if (args.Length > 0 && args[0] == "verify-rules")
     Console.WriteLine($"  [{(missing.Count == 0 ? "PASS" : "FAIL")}] tbl_Rule_Catalog covers "
                       + $"{ruleTables.Count - missing.Count}/{ruleTables.Count} tbl_Rule_* tables");
 
+    // 1b. the catalog's advertised varga interpreters are the ones that actually exist — the catalog
+    //     is the "what a port must reimplement" index, so it must not name a phantom interpreter.
+    var catalogMethods = (conn.ExecuteScalar<string?>(
+        "SELECT MethodCodes FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Rule_VargaScheme'") ?? "")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var badTokens = 0;
+    foreach (var token in catalogMethods)
+    {
+        try { VargaMethodInterpreterFactory.For(token); }
+        catch (InvalidOperationException) { Fail($"tbl_Rule_Catalog names unknown interpreter '{token}'"); badTokens++; }
+    }
+    if (badTokens == 0)
+        Console.WriteLine($"  [PASS] tbl_Rule_Catalog MethodCodes resolve: {string.Join(", ", catalogMethods)}");
+
     // 2. every scheme's JSON round-trips through its interpreter to the C# class's exact output.
     var schemes = conn.Query<(int Id, string SignRuleKey, int DivisionFactor, string? Json)>(
         "SELECT CAST(Id AS INT), SignRuleKey, CAST(DivisionFactor AS INT), RuleParametersJson " +
