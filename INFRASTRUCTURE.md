@@ -42,12 +42,15 @@ layer for the Web app. `SqlConnectionFactory.Create` precedence: explicit string
 ## Migration application
 
 - **dev:** `sqlcmd -S localhost -E -b -i db/ikiastrro.sql` for a fresh install; the numbered
-  `db/NN_*.sql` for an incremental change. A from-empty rebuild check uses the
-  `sed 's/\[ikiastrro\]/[ikiastrro_scratch]/g; ...' db/ikiastrro.sql > tmp.sql` substitution
-  with the ODBC `sqlcmd`; `sqlcmd -v DbName=<name>` works only with go-sqlcmd. (On the ODBC
-  `sqlcmd`, v15/v17, the in-file `:setvar DbName "ikiastrro"` outranks the `-v` command-line
-  value — documented Microsoft behavior — so `-v DbName=ikiastrro_scratch` would silently
-  target `ikiastrro`. go-sqlcmd v1.x, `winget install sqlcmd`, honours `-v`.)
+  `db/NN_*.sql` for an incremental change. A from-empty rebuild check (`db/ikiastrro.sql`
+  against a throwaway `ikiastrro_scratch`):
+  - **go-sqlcmd** (v1.x, `winget install sqlcmd`) honours the override —
+    `sqlcmd -v DbName=ikiastrro_scratch -i db/ikiastrro.sql`.
+  - **ODBC `sqlcmd`** (v15/v17) does **not**: an in-file `:setvar` outranks the `-v`
+    command-line value (documented Microsoft behavior), so `-v DbName=…` silently targets
+    `ikiastrro`. Substitute the `:setvar` line itself instead:
+    `sed 's/:setvar DbName "ikiastrro"/:setvar DbName "ikiastrro_scratch"/' db/ikiastrro.sql > db/_scratch_tmp.sql`
+    then `sqlcmd -b -i db/_scratch_tmp.sql`.
 - **stage / uat / prod:** apply the numbered `db/NN_*.sql` chain **in order**, starting from
   the first number past the last row in `dbo.SchemaMigrations`. Each script self-records.
   **Never** run `db/ikiastrro.sql` (the baseline) against a populated higher environment.
@@ -67,7 +70,7 @@ dotnet run --project src/Ikiastrro.Cli -- verify-schema             # ... and th
 dotnet run --project src/Ikiastrro.Web                              # https://localhost:...
 ```
 
-> Note: a from-empty rebuild check uses the
-> `sed 's/\[ikiastrro\]/[ikiastrro_scratch]/g; ...' db/ikiastrro.sql > tmp.sql` substitution
-> with the ODBC `sqlcmd`; `sqlcmd -v DbName=<name>` works only with go-sqlcmd (the in-file
-> `:setvar DbName` outranks `-v` on the ODBC `sqlcmd`).
+> Note: a from-empty rebuild check runs `db/ikiastrro.sql` against a throwaway
+> `ikiastrro_scratch`. With **go-sqlcmd**: `sqlcmd -v DbName=ikiastrro_scratch -i db/ikiastrro.sql`.
+> With the **ODBC `sqlcmd`** (`-v` is outranked by the in-file `:setvar`): substitute the
+> `:setvar` line — `sed 's/:setvar DbName "ikiastrro"/:setvar DbName "ikiastrro_scratch"/' db/ikiastrro.sql > db/_scratch_tmp.sql` then `sqlcmd -b -i db/_scratch_tmp.sql`.
