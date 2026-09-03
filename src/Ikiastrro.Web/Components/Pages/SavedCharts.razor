@@ -1,0 +1,65 @@
+@page "/charts"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject BirthDetailDeletionService DeletionService
+
+<PageTitle>Saved Charts — ikiastrro</PageTitle>
+<h1>Saved charts</h1>
+
+@if (_rows.Count == 0)
+{
+    <p class="muted">No charts saved yet.</p>
+}
+else
+{
+    <DataTable TRow="Row" Rows="_rows" InitialSortHeader="Name" Columns="Cols" />
+}
+
+<ConfirmDialog IsOpen="@(_pendingDelete is not null)"
+               Message="@($"Delete {_pendingDelete?.Person.Name}'s chart and all computed data? This can't be undone.")"
+               IsBusy="_isDeleting" OnConfirm="HandleDelete" OnCancel="() => _pendingDelete = null" />
+
+@code {
+    private record Row(BirthDetails Person, string Lagna, IReadOnlyDictionary<string, IReadOnlyList<string>> Glyphs);
+
+    private readonly List<Row> _rows = new();
+    private Row? _pendingDelete;
+    private bool _isDeleting;
+
+    private IReadOnlyList<DataTable<Row>.Column> Cols => new[]
+    {
+        new DataTable<Row>.Column("Chart", _ => 0, r => @<MiniGrid PlanetsBySign="@r.Glyphs" LagnaSign="@r.Lagna" Href="@($"/charts/{r.Person.Id}")" />),
+        new DataTable<Row>.Column("Name", r => r.Person.Name, r => @<a href="@($"/charts/{r.Person.Id}")">@r.Person.Name</a>),
+        new DataTable<Row>.Column("Date of Birth", r => r.Person.DateOfBirth, r => @<text>@r.Person.DateOfBirth.ToString("d MMM yyyy")</text>),
+        new DataTable<Row>.Column("Place", r => r.Person.PlaceCity, r => @<text>@r.Person.PlaceCity, @r.Person.PlaceCountry</text>),
+        new DataTable<Row>.Column("", _ => 0, r => @<DeleteIconButton Title="@($"Delete {r.Person.Name}")" OnClick="() => _pendingDelete = r" />),
+    };
+
+    protected override void OnInitialized() => Load();
+
+    private void Load()
+    {
+        _rows.Clear();
+        foreach (var p in BirthDetailsRepo.GetAll())
+        {
+            var d1 = ChartResultsRepo.GetByBirthDetailId(p.Id).FirstOrDefault(r => r.ChartType == "D1");
+            var kd = d1 is null ? Array.Empty<ChartKeyDetail>() : ChartKeyDetailsRepo.GetByChartResultId(d1.Id);
+            var lagna = kd.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign ?? "";
+            var glyphs = kd.Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
+                .GroupBy(k => k.Sign)
+                .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
+            _rows.Add(new Row(p, lagna, glyphs));
+        }
+    }
+
+    private void HandleDelete()
+    {
+        if (_pendingDelete is null) return;
+        _isDeleting = true;
+        DeletionService.DeleteBirthDetail(_pendingDelete.Person.Id);
+        _pendingDelete = null;
+        _isDeleting = false;
+        Load();
+    }
+}
