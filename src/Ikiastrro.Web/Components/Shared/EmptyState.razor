@@ -1,0 +1,15 @@
+@* Placeholder for a region with no data — a not-yet-computed chart, an empty transit table. *@
+<div class="empty">
+    <span class="empty-icon" aria-hidden="true">@Icon</span>
+    <p class="empty-msg">@Message</p>
+    @if (Cli is not null)
+    {
+        <p class="empty-cli"><code>dotnet run --project src/Ikiastrro.Cli -- @Cli</code></p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "◦";
+    [Parameter, EditorRequired] public string Message { get; set; } = "";
+    [Parameter] public string? Cli { get; set; }
+}
