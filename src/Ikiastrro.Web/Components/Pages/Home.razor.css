@@ -1,3 +1,5 @@
+h1 { margin: 0 0 4px; }
+p { color: var(--ink-soft); max-width: 560px; }
 .home-search {
     display: block; width: 100%; max-width: 360px; margin: 1rem 0;
     padding: .4rem .6rem; background: var(--paper-raised); border: 1px solid var(--paper-line);

@@ -81,8 +81,7 @@
     margin: 0;
 }
 
-.ws-dasha-head a,
-.ws-ppt-head a {
+.ws-dasha-head a {
     color: var(--accent);
     text-decoration: none;
     font-size: 13px;

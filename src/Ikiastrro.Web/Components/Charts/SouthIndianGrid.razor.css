@@ -1,5 +1,5 @@
 /* Scoped to this component by Blazor's CSS isolation. Reads --paper/--ink/--dignity-* etc. from the
-   caller's .page-scoped tokens (D1ChartView.razor.css) — custom-property inheritance follows the real
+   caller's .page-scoped tokens (the page's own .razor.css) — custom-property inheritance follows the real
    DOM tree, not component scope boundaries, so this works even in a separate isolation scope. */
 
 * { box-sizing: border-box; }

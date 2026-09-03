@@ -66,6 +66,3 @@ table.ppt .pill .dot {
     border-radius: 50%;
     flex: none;
 }
-
-.ppt th, .ppt td { white-space: nowrap; }
-.ppt .mono { font-variant-numeric: tabular-nums; }

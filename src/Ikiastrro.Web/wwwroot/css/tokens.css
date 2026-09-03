@@ -1,17 +1,16 @@
 /*
  * Shared design tokens for ikiastrro's web UI.
  *
- * These are the exact custom properties D1ChartView.razor.css defines (scoped to its own
- * `.page` element, since Blazor CSS isolation means `:root` never carries a component's scope
- * attribute). Here they're declared on the real `:root`, so every OTHER page/component in the
- * app — anything that is NOT D1ChartView itself — can reference the same `var(--paper)` etc.
- * without re-guessing hex values.
+ * These custom properties began as the scoped `.page` variables of the original chart-view
+ * component (Blazor CSS isolation means `:root` never carries a component's scope attribute).
+ * Here they're declared on the real `:root`, so every page/component in the app can reference
+ * the same `var(--paper)` etc. without re-guessing hex values.
  *
  * Standing rule for this project: new page/component styling goes in that component's own
  * Blazor CSS-isolation file (ComponentName.razor.css), reading these tokens via var(...) —
  * never a hard-coded hex value, and never an inline <style> block inside the .razor markup.
- * This keeps every page visually consistent with D1ChartView (the one piece of this app that
- * got real design attention).
+ * This keeps every page visually consistent with the parchment/serif chart look (the one
+ * piece of this app that got real design attention).
  *
  * Dark-only (2026-08-28, rammyps's explicit call): this app used to switch these tokens via
  * `prefers-color-scheme: dark`, with the light values as the :root default. Both the light
@@ -31,7 +30,7 @@
     --asc-glow: rgba(226, 173, 79, 0.16);
     --shadow: rgba(0, 0, 0, 0.35);
 
-    /* House-number badges on every South Indian grid cell (ChartWorkspace): the house counted
+    /* House-number badges on every South Indian grid cell (SouthIndianGrid): the house counted
        from the Lagna reads gold, the house counted from the natal Moon reads silver — two axes,
        two colours, so a glance separates them. --house-lagna deliberately equals --accent. */
     --house-lagna: #e2ad4f;
@@ -121,8 +120,8 @@
     --wheel-tick: #7c7398;     /* = --ink-faint */
 }
 
-/* App-wide base look, shared by every page (D1ChartView keeps its own copy of these rules
-   scoped to `.page` — harmless duplication, since CSS isolation means it can't read these). */
+/* App-wide base look, shared by every page (scoped-CSS components keep their own copies of
+   these rules — harmless duplication, since CSS isolation means they can't read these). */
 body {
     background: var(--paper);
     color: var(--ink);

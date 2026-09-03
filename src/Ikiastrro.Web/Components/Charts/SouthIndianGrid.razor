@@ -1,13 +1,13 @@
 @*
     Shared 4x4 South Indian style chart grid — fixed sign positions, dignity-dot glyphs, an
     ascendant highlight, and a 2x2 center info cell. Just the grid+center cell: the dignity legend
-    is rendered once by the caller (D1ChartView shows D1 and D9 side by side, sharing one legend
-    below both, since they use the same 7-tier dignity scale). Extracted from D1ChartView so
-    D1ChartView's own D9 grid and any future compact card preview reuse the exact same rendering
+    is rendered once by the caller (a page can show several grids side by side, sharing one
+    legend below them, since they use the same 7-tier dignity scale). Kept as one component so
+    every caller and any future compact card preview reuse the exact same rendering
     instead of copy-pasting the grid markup.
 
-    Reads --paper/--ink/--dignity-* etc. via var(...) from a closer .page-scoped override (D1ChartView's
-    own tokens) — CSS custom-property inheritance follows the real DOM tree and isn't affected by
+    Reads --paper/--ink/--dignity-* etc. via var(...) from a closer .page-scoped override (the
+    caller's own tokens) — CSS custom-property inheritance follows the real DOM tree and isn't affected by
     Blazor's per-component scope attributes, so this works even though this component has its own
     separate CSS-isolation scope.
 

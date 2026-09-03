@@ -5,3 +5,4 @@
 .hlt .mono { font-variant-numeric: tabular-nums; }
 .hlt .pill { display: inline-flex; align-items: center; gap: .3rem; }
 .hlt .dot { width: .5rem; height: .5rem; border-radius: 50%; display: inline-block; }
+.muted { color: var(--muted-text); }

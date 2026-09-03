@@ -3,7 +3,7 @@ using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Data;
 
-/// <summary>tbl_Dim_ChartType — the fixed chart-type vocabulary. Six rows today (D1/D2/D6/D9/D10/D11).</summary>
+/// <summary>tbl_Dim_ChartType — the fixed chart-type vocabulary: D1 plus the divisional charts (D2 through D60).</summary>
 public class ChartTypeRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;
