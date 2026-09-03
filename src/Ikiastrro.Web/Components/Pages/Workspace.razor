@@ -1,0 +1,187 @@
+@page "/charts/{Id:int}"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartTypeRepository ChartTypeRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject BirthDetailDeletionService DeletionService
+@inject NavigationManager Nav
+@using Ikiastrro.Web.Components.Workspace
+
+<PageTitle>@(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
+
+@if (_data is null)
+{
+    <EmptyState Message="No saved chart found for that person." />
+}
+else
+{
+    <div class="ws-top">
+        <a class="ws-back" href="/charts">← All saved charts</a>
+        <div class="ws-actions">
+            <a class="ws-print" href="@($"/charts/{Id}/print")">Print / Save PDF</a>
+            <DeleteIconButton Title="@($"Delete {_data.Person.Name}'s chart")" OnClick="() => _confirmingDelete = true" />
+        </div>
+    </div>
+
+    <WorkspaceHeader Person="_data.Person" D1="D1" ComputationOpen="_compOpen"
+                     OnToggleComputation="v => _compOpen = v" />
+    @if (_compOpen)
+    {
+        <div class="ws-comp"><BirthComputationPanel Person="_data.Person" Charts="_data.Charts" /></div>
+    }
+
+    <div class="ws-cols">
+        <div class="ws-hero">
+            <ChartFrame View="@View" BaseHref="@($"/charts/{Id}")">
+                <GridContent>
+                    <SouthIndianGrid AscendantSign="@D1.AscendantSign" MoonSign="@D1.MoonSign"
+                                     PlanetsBySign="D1PlanetsBySign()"
+                                     AspectedByGlyphs="ChartViewModel.BuildAspectedByGlyphs(D1.KeyDetails, D1.Aspects)"
+                                     SpecialPointLabels="SpecialLabels(D1)"
+                                     CenterTitle="D1 · Rasi">
+                        <CenterMeta><b>Lagna</b> @Disp(D1.AscendantSign)</CenterMeta>
+                    </SouthIndianGrid>
+                </GridContent>
+                <WheelContent>
+                    <PolarWheel Points="WheelPoints(D1, varga: false)"
+                                Chords="@(ShowAspects ? ChordsFor(D1) : Array.Empty<PolarWheel.Chord>())" />
+                </WheelContent>
+            </ChartFrame>
+
+            @if (View == "wheel")
+            {
+                <a class="ws-aspects" href="@AspectsHref()">@(ShowAspects ? "hide aspects" : "show aspects")</a>
+            }
+
+            @if (_data.Charts.ContainsKey("D9"))
+            {
+                <Disclosure Title="D1 ⊕ D9 — combined" Open="_combinedOpen" OnToggle="v => _combinedOpen = v">
+                    <CombinedD1D9Grid D1KeyDetails="D1.KeyDetails" D9KeyDetails="@(_data.Charts["D9"].KeyDetails)"
+                                      LagnaSign="@D1.AscendantSign" />
+                </Disclosure>
+            }
+        </div>
+
+        <div class="ws-rail">
+            <VargaRail PersonId="Id" Charts="_data.Charts" />
+        </div>
+    </div>
+
+    <section class="ws-ppt">
+        <div class="ws-ppt-head">
+            <h2>Planet positions — D1</h2>
+            <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
+        </div>
+        <PlanetPositionsTable Rows="D1Rows()" LagnaSign="@D1.AscendantSign" Variant="d1" ShowTechnical="Tech" />
+    </section>
+
+    <section class="ws-dasha">
+        <div class="ws-dasha-head">
+            <h3>Vimshottari Dasha</h3>
+            <a href="@($"/charts/{Id}/timing")">Full timing →</a>
+        </div>
+        @if (_dashaRoots.Count > 0)
+        {
+            <DashaTimeline Roots="_dashaRoots" Compact="true" />
+        }
+        else
+        {
+            <EmptyState Message="No Dasha computed." Cli="@($"compute-dasha {_data.Person.Name}")" />
+        }
+    </section>
+
+    <ConfirmDialog IsOpen="_confirmingDelete"
+                   Message="@($"Delete {_data.Person.Name}'s chart and all computed data? This can't be undone.")"
+                   IsBusy="_isDeleting" OnConfirm="HandleDelete" OnCancel="() => _confirmingDelete = false" />
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "view")] public string? ViewParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "tech")] public string? TechParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "aspects")] public string? AspectsParam { get; set; }
+
+    private WorkspaceData? _data;
+    private IReadOnlyList<DashaPeriodRecord> _dashaRoots = Array.Empty<DashaPeriodRecord>();
+    private bool _compOpen, _combinedOpen, _confirmingDelete, _isDeleting;
+
+    private string View => ViewParam == "wheel" ? "wheel" : "grid";
+    private bool Tech => TechParam == "1";
+    private bool ShowAspects => AspectsParam == "1";
+    private LoadedChart D1 => _data!.Charts["D1"];
+
+    protected override void OnParametersSet()
+    {
+        _confirmingDelete = false;
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
+            ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_data is not null && !_data.Charts.ContainsKey("D1")) _data = null; // no D1 → treat as not found
+        _dashaRoots = _data is null ? Array.Empty<DashaPeriodRecord>() : DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+    }
+
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+
+    private IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> D1PlanetsBySign() =>
+        D1.Grahas.Where(k => k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
+                k.Planet, ChartViewModel.PlanetGlyph(k.Planet), ChartViewModel.DignityToken(k.DignityStatus),
+                k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialLabels(LoadedChart lc) =>
+        lc.SpecialPoints.GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch
+            {
+                "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet
+            }).ToList());
+
+    private IReadOnlyList<PlanetRow> D1Rows() =>
+        ChartViewModel.BuildPlanetRows(D1.KeyDetails, D1.HouseLords, D1.Aspects);
+
+    private IReadOnlyList<PolarWheel.Point> WheelPoints(LoadedChart lc, bool varga) =>
+        lc.KeyDetails.Select(k => new PolarWheel.Point(
+            k.Planet,
+            varga ? k.VargaLongitudeDegrees : k.NirayanaLongitudeDegrees,
+            k.PointKind != "Graha" ? "--accent"
+              : k.Planet == "Ascendant" ? "--accent"
+              : $"--planet-{k.Planet.ToLowerInvariant()}")).ToList();
+
+    private IReadOnlyList<SegmentedToggle.Segment> TechSegments() => new[]
+    {
+        new SegmentedToggle.Segment("off", "Clean", $"/charts/{Id}?view={View}&tech=0"),
+        new SegmentedToggle.Segment("on",  "Technical", $"/charts/{Id}?view={View}&tech=1"),
+    };
+
+    private string AspectsHref() =>
+        $"/charts/{Id}?view=wheel&tech={(Tech ? "1" : "0")}&aspects={(ShowAspects ? "0" : "1")}";
+
+    private static IReadOnlyList<PolarWheel.Chord> ChordsFor(LoadedChart lc)
+    {
+        var lonByPlanet = lc.KeyDetails
+            .GroupBy(k => k.Planet)
+            .ToDictionary(g => g.Key, g => g.First().NirayanaLongitudeDegrees);
+        var signByPlanet = lc.KeyDetails
+            .GroupBy(k => k.Planet)
+            .ToDictionary(g => g.Key, g => g.First().Sign);
+        return lc.Aspects
+            .Where(a => lonByPlanet.ContainsKey(a.AspectingPlanet) && lonByPlanet.ContainsKey(a.AspectedTarget))
+            .Where(a => signByPlanet[a.AspectingPlanet] != signByPlanet[a.AspectedTarget])
+            .Select(a => new PolarWheel.Chord(
+                lonByPlanet[a.AspectingPlanet],
+                lonByPlanet[a.AspectedTarget],
+                $"--planet-{a.AspectingPlanet.ToLowerInvariant()}"))
+            .ToList();
+    }
+
+    private void HandleDelete()
+    {
+        if (_data is null) return;
+        _isDeleting = true;
+        DeletionService.DeleteBirthDetail(_data.Person.Id);
+        Nav.NavigateTo("/charts");
+    }
+}
