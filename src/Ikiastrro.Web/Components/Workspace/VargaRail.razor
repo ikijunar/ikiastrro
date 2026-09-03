@@ -10,7 +10,7 @@
                     @if (Charts.TryGetValue(code, out var lc))
                     {
                         <MiniGrid PlanetsBySign="GlyphsBySign(lc)" LagnaSign="@lc.AscendantSign"
-                                  Href="@($"/charts/{PersonId}/varga/{code}")"
+                                  Href="@(code == "D1" ? $"/charts/{PersonId}" : $"/charts/{PersonId}/varga/{code}")"
                                   Caption="@Caption(code, lc)" />
                     }
                     else

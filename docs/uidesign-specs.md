@@ -212,7 +212,7 @@ tables, the full `FunctionalNaturePanel`, Home card gallery, `/reference/*`,
 
 Spec: `docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md`; plan
 `docs/superpowers/plans/2026-09-03-varga-centric-web-ui.md` (7 phases, branch
-`feat/signattributes-classifications`, commits `f15fe97..863deae`). The read layer was
+`feat/signattributes-classifications`, commits `f15fe97..e6786fa`). The read layer was
 rebuilt around the charts themselves — D1 hero + a rail over all 20 divisionals grouped by
 the classical varga bundles. Design language, dark parchment palette, `tokens.css`,
 `SouthIndianGrid` and `DashaTimeline` are kept; the life-area tabs and `TabBar` are gone.

@@ -13,7 +13,11 @@
     <table class="bcp-methods">
         <thead><tr><th>Chart</th><th>Varga method</th></tr></thead>
         <tbody>
-            @foreach (var kv in Charts.OrderBy(k => k.Key))
+            @foreach (var kv in Charts.OrderBy(k =>
+            {
+                var i = VargaBundles.RailOrder.ToList().IndexOf(k.Key);
+                return i < 0 ? int.MaxValue : i;
+            }))
             {
                 <tr><td>@kv.Key</td><td>@(kv.Value.VargaMethod ?? "—")</td></tr>
             }

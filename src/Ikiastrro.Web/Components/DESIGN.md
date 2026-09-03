@@ -7,8 +7,8 @@ its own palette.
 **Tokens** live in `wwwroot/css/tokens.css` (`--paper`, `--ink`, `--accent`, the 7
 `--dignity-*` colors, etc.) as real `:root` custom properties. Read them with
 `var(--token-name)` — never a raw hex or a CSS named color (the "rebeccapurple"/"burlywood"
-placeholders once in `SavedCharts.razor` and `Workspace.razor` were exactly that: never-revisited
-scaffolding, not a real color choice). Dark-only (2026-08-28, rammyps's explicit call): there's
+placeholders once in the pages that are now `SavedCharts.razor` and `Workspace.razor` were exactly
+that: never-revisited scaffolding, not a real color choice). Dark-only (2026-08-28, rammyps's explicit call): there's
 no `prefers-color-scheme` split anymore — the app has one theme, not a light/dark pair, so a
 new token just needs one value, not two.
 
@@ -25,6 +25,12 @@ things this design language never covered. Its theme CSS must be scoped (wrap in
 `Palettes` fed the same hex values `tokens.css` defines. Layout, tables, and the
 North/South Indian chart *diagrams* stay hand-rolled. Full rules:
 `../../docs/uidesign-dataviz.md`.
+
+> **2026-09-03 update** (mirrors `docs/uidesign-specs.md` §1): the varga-centric rebuild did
+> **not** take the Syncfusion dependency. `PolarWheel.razor` (the polar longitude wheel), the
+> South / North Indian grids, `MiniGrid`, and every chart diagram are hand-rolled SVG / CSS —
+> **no `Syncfusion.Blazor` package is referenced by `Ikiastrro.Web`**. Syncfusion remains a
+> documented *option* for a later dataviz pass, not a current dependency.
 
 **Tooling**: no new dependency is needed to enforce this — run `dotnet format` before
 committing. If a new page's styling can't be expressed with the existing tokens, extend

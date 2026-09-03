@@ -43,7 +43,7 @@ public class BirthDetails
     /// The time used for chart calculation. Kept as its own property (rather than having every
     /// calculator/view read TimeOfBirth directly) so a future per-person time adjustment can be
     /// reintroduced without touching every call site again — see BirthMomentFactory, IChartCalculator,
-    /// ChartView.razor.
+    /// and the chart view components.
     /// </summary>
     public TimeOnly EffectiveTimeOfBirth => TimeOfBirth;
 }

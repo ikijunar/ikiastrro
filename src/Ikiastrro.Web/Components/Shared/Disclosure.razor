@@ -6,7 +6,7 @@
         <span class="disc-tw">@(Open ? "▾" : "▸")</span>
         <span class="disc-title">@Title</span>
     </button>
-    <div class="disc-body-wrap" inert="@(!Open)" aria-hidden="@(!Open)">
+    <div class="disc-body-wrap" inert="@(!Open)" aria-hidden="@((!Open).ToString().ToLowerInvariant())">
         <div class="disc-body">@ChildContent</div>
     </div>
 </div>

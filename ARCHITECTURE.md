@@ -179,7 +179,7 @@ old partial 3-tab `ChartWorkspace` (which only wired D1 / D6 / D9 / D10 / D2 / D
   `docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md` → "Implementation notes
   (2026-09-03)".
 
-Branch `feat/signattributes-classifications`, commits `f15fe97..863deae` (7 build phases).
+Branch `feat/signattributes-classifications`, commits `f15fe97..e6786fa` (7 build phases).
 
 ## Web app: entry form, native D1+D9 charts, saved charts (2026-08-24) — superseded by the 2026-09-03 section above; kept for history
 

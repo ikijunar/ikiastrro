@@ -117,7 +117,7 @@ else
     private static IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> Glyphs(LoadedChart lc) =>
         lc.Grahas.Where(k => k.Planet != "Ascendant").GroupBy(k => k.Sign)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
-                k.Planet, ChartViewModel.PlanetGlyph(k.Planet), ChartViewModel.DignityToken(k.DignityStatus),
+                k.Planet, ChartViewModel.DignityToken(k.DignityStatus),
                 k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> GlyphNames(LoadedChart lc) =>

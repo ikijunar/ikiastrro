@@ -99,9 +99,9 @@ public static class ChartViewModel
     /// separate lookup is needed for that case. Works for any chart type (D1, D9, ...) — callers pass
     /// that chart's own KeyDetails/Aspects, already scoped by ChartResultId.
     ///
-    /// EXTENSION POINT: adding a new divisional chart (D2, D10, ...)? Call this the same way D1/D9 do
-    /// (its own KeyDetails + Aspects in, its own SouthIndianGrid's AspectedByGlyphs out) — see
-    /// ChartView.razor's D1AspectedByGlyphs/D9AspectedByGlyphs for the pattern to copy.
+    /// EXTENSION POINT: adding a new divisional chart (D2, D10, ...)? Call this the same way the
+    /// workspace and varga pages do (its own KeyDetails + Aspects in, its own SouthIndianGrid's
+    /// AspectedByGlyphs out) — see VargaView.razor for the pattern to copy.
     /// </summary>
     /// <summary>
     /// Chip label for one aspecting planet, e.g. "Ma(a)" for the universal 7th-house aspect (the

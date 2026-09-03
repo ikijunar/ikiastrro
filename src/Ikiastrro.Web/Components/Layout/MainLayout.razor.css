@@ -30,7 +30,7 @@
 
 /* Nav links are filled accent pills (2026-09-03 varga-centric UI). The old underlined
    text-link rules (.site-nav a / a:hover / a.active) are gone with them. */
-.nav-pill {
+.site-nav ::deep .nav-pill {
     padding: .3rem .8rem;
     border-radius: .4rem;
     text-decoration: none;
@@ -39,7 +39,7 @@
     color: var(--nav-btn-fg);
 }
 
-.nav-pill.active {
+.site-nav ::deep .nav-pill.active {
     outline: 2px solid var(--accent-line);
 }
 

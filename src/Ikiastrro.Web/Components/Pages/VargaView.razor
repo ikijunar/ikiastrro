@@ -10,7 +10,7 @@
 
 <PageTitle>@Code — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
 
-@if (_data is null || !_data.Charts.TryGetValue(Code, out var dn))
+@if (_data is null || !_data.Charts.ContainsKey("D1") || !_data.Charts.TryGetValue(Code, out var dn))
 {
     <p class="vv-back"><a href="@($"/charts/{Id}")">← Workspace</a></p>
     <EmptyState Message="@($"{Code} is not computed for this person.")" Cli="backfill-charts" />
@@ -100,7 +100,7 @@ else
         lc.Grahas.Where(k => k.Planet != "Ascendant")
             .GroupBy(k => k.Sign)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
-                k.Planet, ChartViewModel.PlanetGlyph(k.Planet), ChartViewModel.DignityToken(k.DignityStatus),
+                k.Planet, ChartViewModel.DignityToken(k.DignityStatus),
                 k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialLabels(LoadedChart lc) =>
