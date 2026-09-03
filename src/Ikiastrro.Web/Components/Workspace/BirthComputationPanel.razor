@@ -5,7 +5,7 @@
     <dl class="bcp-grid">
         <dt>Latitude</dt><dd>@Person.Latitude.ToString("0.0000")</dd>
         <dt>Longitude</dt><dd>@Person.Longitude.ToString("0.0000")</dd>
-        <dt>Time zone</dt><dd>@(Person.IanaTimeZoneId ?? "—") (@Person.UtcOffset)</dd>
+        <dt>Time zone</dt><dd>@(Person.IanaTimeZoneId ?? "—") (@ChartViewModel.FormatUtcOffset(Person.UtcOffset))</dd>
         <dt>Ayanamsha</dt><dd>@Ayanamsha()</dd>
         <dt>Sidereal time</dt><dd>@SiderealTime()</dd>
         <dt>Engine</dt><dd>@Engine()</dd>

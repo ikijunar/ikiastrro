@@ -175,4 +175,14 @@ public static class ChartViewModel
         "Ketu" => "Ke",
         _ => planet.Length >= 2 ? planet[..2] : planet
     };
+
+    /// <summary>Formats a stored <c>BirthDetails.UtcOffset</c> string ("05:30:00", "-08:00:00") for display
+    /// as "UTC+05:30" / "UTC-08:00". Returns "—" when blank, or the raw string if it doesn't parse.</summary>
+    public static string FormatUtcOffset(string? utcOffset)
+    {
+        if (string.IsNullOrWhiteSpace(utcOffset)) return "—";
+        if (!TimeSpan.TryParse(utcOffset.TrimStart('+'), out var offset)) return utcOffset;
+        var abs = offset.Duration();
+        return $"UTC{(offset < TimeSpan.Zero ? "-" : "+")}{abs.Hours:00}:{abs.Minutes:00}";
+    }
 }

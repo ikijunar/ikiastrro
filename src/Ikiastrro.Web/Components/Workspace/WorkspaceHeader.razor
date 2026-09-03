@@ -4,7 +4,7 @@
     <h1>@Person.Name</h1>
     <p class="ws-sub">
         @Person.DateOfBirth.ToString("d MMM yyyy") ·
-        @Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@Person.UtcOffset) ·
+        @Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@ChartViewModel.FormatUtcOffset(Person.UtcOffset)) ·
         @Person.PlaceCity, @Person.PlaceCountry
     </p>
     <p class="ws-karakas">

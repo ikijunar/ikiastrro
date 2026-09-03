@@ -27,7 +27,7 @@ else
     <div class="print-doc">
         <header class="print-head">
             <h1>@_data.Person.Name</h1>
-            <p>@_data.Person.DateOfBirth.ToString("d MMMM yyyy") · @_data.Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@_data.Person.UtcOffset) · @_data.Person.PlaceCity, @_data.Person.PlaceCountry</p>
+            <p>@_data.Person.DateOfBirth.ToString("d MMMM yyyy") · @_data.Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@ChartViewModel.FormatUtcOffset(_data.Person.UtcOffset)) · @_data.Person.PlaceCity, @_data.Person.PlaceCountry</p>
             <p class="print-karakas">
                 @foreach (var g in d1.Grahas.Where(g => g.CharaKaraka is not null))
                 { <span>@g.CharaKaraka @ChartViewModel.PlanetGlyph(g.Planet)</span> }
