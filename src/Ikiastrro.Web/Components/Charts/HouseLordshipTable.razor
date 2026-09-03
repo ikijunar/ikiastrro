@@ -1,0 +1,29 @@
+@* House lordship for one chart — the classical "lord of the Nth house is placed in…" reading. *@
+<div class="hlt-scroll">
+    <table class="hlt">
+        <thead>
+            <tr><th>House</th><th>Sign</th><th>Lord</th><th>Placed in (Lagna)</th><th>Placed in (Chandra)</th><th>Lord's dignity</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Rows.OrderBy(r => r.HouseNumber))
+            {
+                <tr>
+                    <td class="mono">@r.HouseNumber</td>
+                    <td>@Disp(r.HouseSign)</td>
+                    <td>@r.LordPlanet</td>
+                    <td>House @r.LordPlacedInHouseFromLagna, @Disp(r.LordPlacedInSign)</td>
+                    <td class="mono">House @r.LordPlacedInHouseFromMoon</td>
+                    <td>
+                        @if (r.LordDignityStatus is null) { <span class="muted">—</span> }
+                        else { <span class="pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(r.LordDignityStatus))"></span>@r.LordDignityStatus</span> }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChartHouseLord> Rows { get; set; } = Array.Empty<ChartHouseLord>();
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+}

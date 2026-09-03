@@ -1,0 +1,7 @@
+.hlt-scroll { overflow-x: auto; }
+.hlt { width: 100%; border-collapse: collapse; }
+.hlt th, .hlt td { padding: .35rem .6rem; border-bottom: 1px solid var(--paper-line); text-align: left; white-space: nowrap; }
+.hlt th { color: var(--muted-text); font-weight: 600; }
+.hlt .mono { font-variant-numeric: tabular-nums; }
+.hlt .pill { display: inline-flex; align-items: center; gap: .3rem; }
+.hlt .dot { width: .5rem; height: .5rem; border-radius: 50%; display: inline-block; }
