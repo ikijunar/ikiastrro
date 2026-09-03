@@ -211,10 +211,12 @@ configurable weights (`Dignity×w₁ + Relationship×w₂ + House×w₃ + …`),
 ladder independently. The merged 9-value `DignityStatus` label is still produced (axis A wins by
 priority) for display + the `tbl_Rule_WakefulnessState` join.
 
-`tbl_Rule_NaturalRelationship` — data confirmed = PVR; **the Moon row is kept as-is** (Moon neutral
-to Mars/Jupiter/Venus/Saturn, no enemies — the 3-column grid in the source note had a column slip on
-that one row). `tbl_Rule_TemporaryFriendshipDistance` — confirmed = PVR (sign-distance 2/3/4/10/11/12
-→ friend). Neither table is modified.
+`tbl_Rule_NaturalRelationship` — 42 data rows unchanged (**the Moon row is kept as-is** — neutral to
+Mars/Jupiter/Venus/Saturn, no enemies; the 3-column grid in the source note had a column slip on that
+one row), but `SourceRefCode` is repointed `SRC_BPHS → SRC_PVR_INTEGRATED` (migration 25): PVR is the
+cited key reference for the relationship layer, a BPHS toggle can be added later as a second
+rule-set. `tbl_Rule_TemporaryFriendshipDistance` — confirmed = PVR (sign-distance 2/3/4/10/11/12 →
+friend), unmodified, stays on `SRC_BPHS`.
 
 ### Every own sign is `OWN +2`
 

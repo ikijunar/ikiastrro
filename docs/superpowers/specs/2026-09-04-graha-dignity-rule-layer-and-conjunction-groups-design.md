@@ -225,9 +225,11 @@ instead of hard-coding it, and returns `(Status, RelationshipScore)`. `DignityRe
 `tbl_Rule_WakefulnessState` join. `verify-dignity` asserts the `tbl_Rule_GrahaDignity` scores match
 the axis-A ladder and the `tbl_Rule_CompoundRelationship` scores match the axis-B ladder.
 
-`tbl_Rule_NaturalRelationship` (data confirmed = PVR; Moon keeps its DB row — neutral to
-Mars/Jupiter/Venus/Saturn, no enemies) and `tbl_Rule_TemporaryFriendshipDistance` (data confirmed =
-PVR: sign-distance 2/3/4/10/11/12 → friend) are **not modified**.
+`tbl_Rule_NaturalRelationship` — 42 data rows unchanged (Moon keeps its DB row: neutral to
+Mars/Jupiter/Venus/Saturn, no enemies), but `SourceRefCode` is repointed `SRC_BPHS → SRC_PVR_INTEGRATED`
+(migration 25) — PVR is the cited key reference for the relationship layer; a BPHS variant can be
+added later as a second rule-set. `tbl_Rule_TemporaryFriendshipDistance` (sign-distance 2/3/4/10/11/12
+→ friend) is **not modified** — stays on `SRC_BPHS`.
 
 ### 4.3 Own-sign / moolatrikona segment resolution
 

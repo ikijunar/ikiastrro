@@ -3436,7 +3436,7 @@ GO
 -- =====================================================================
 UPDATE dbo.tbl_Rule_AspectOffset                SET SourceRefCode = 'SRC_BPHS_26'         WHERE SourceRefCode IS NULL;
 UPDATE dbo.tbl_Rule_CombustionOrb               SET SourceRefCode = 'SRC_BPHS_COMBUSTION' WHERE SourceRefCode IS NULL;
-UPDATE dbo.tbl_Rule_NaturalRelationship         SET SourceRefCode = 'SRC_BPHS'            WHERE SourceRefCode IS NULL;
+UPDATE dbo.tbl_Rule_NaturalRelationship         SET SourceRefCode = 'SRC_PVR_INTEGRATED'  WHERE SourceRefCode IS NULL OR SourceRefCode = 'SRC_BPHS';  -- PVR is the cited key ref (data == BPHS); folded from db/25
 UPDATE dbo.tbl_Rule_TemporaryFriendshipDistance SET SourceRefCode = 'SRC_BPHS'            WHERE SourceRefCode IS NULL;
 UPDATE dbo.tbl_Rule_AgeState                    SET SourceRefCode = 'SRC_BPHS_AVASTHA'    WHERE SourceRefCode IS NULL;
 UPDATE dbo.tbl_Rule_WakefulnessState           SET SourceRefCode = 'SRC_BPHS_AVASTHA'    WHERE SourceRefCode IS NULL;
