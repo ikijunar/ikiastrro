@@ -1,0 +1,45 @@
+@* Hand-drawn 360° sidereal longitude ring. Aries 0° at 9 o'clock, increasing counter-clockwise.
+   Pure SVG, no JS — renders correctly server-side on the dark theme. Markers cluster-nudge is
+   NOT attempted; two near-conjunct planets overlap slightly, same as a paper wheel. *@
+<svg class="wheel" viewBox="0 0 320 320" role="img" aria-label="Sidereal longitude wheel">
+    <circle cx="160" cy="160" r="150" class="wheel-outer" />
+    <circle cx="160" cy="160" r="96" class="wheel-inner" />
+    @for (var s = 0; s < 12; s++)
+    {
+        var (x1, y1) = AngleToXy(s * 30, 96);
+        var (x2, y2) = AngleToXy(s * 30, 150);
+        var (lx, ly) = AngleToXy(s * 30 + 15, 124);
+        <g>
+            <line x1="@F(x1)" y1="@F(y1)" x2="@F(x2)" y2="@F(y2)" class="wheel-spoke" />
+            <text x="@F(lx)" y="@F(ly)" class="wheel-signlabel" text-anchor="middle" dominant-baseline="central">@SignAbbr(s)</text>
+        </g>
+    }
+    @foreach (var p in Points)
+    {
+        var (px, py) = AngleToXy(p.LongitudeDegrees, 132);
+        <g>
+            <text x="@F(px)" y="@F(py)" class="wheel-marker" text-anchor="middle" dominant-baseline="central" style="fill:var(@p.ColorVar)">@ChartViewModel.PlanetGlyph(p.Label)</text>
+        </g>
+    }
+</svg>
+
+@code {
+    public record Point(string Label, double LongitudeDegrees, string ColorVar);
+
+    [Parameter, EditorRequired] public IReadOnlyList<Point> Points { get; set; } = Array.Empty<Point>();
+
+    // 0° Aries at 9 o'clock (=180° screen), longitude increases counter-clockwise.
+    private static (double X, double Y) AngleToXy(double lonDeg, double radius)
+    {
+        const double baseDeg = 180;
+        var screenDeg = baseDeg - lonDeg;           // counter-clockwise
+        var rad = screenDeg * Math.PI / 180.0;
+        return (160 + radius * Math.Cos(rad), 160 - radius * Math.Sin(rad));
+    }
+
+    private static string F(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static readonly string[] Signs =
+        { "Ar","Ta","Ge","Cn","Le","Vi","Li","Sc","Sg","Cp","Aq","Pi" };
+    private static string SignAbbr(int i) => Signs[i];
+}
