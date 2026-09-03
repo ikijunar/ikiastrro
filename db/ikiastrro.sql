@@ -529,6 +529,7 @@ CREATE TABLE [dbo].[tbl_Chart_Conjunctions](
 	[Planet1Id] [tinyint] NOT NULL,
 	[Planet2Id] [tinyint] NOT NULL,
 	[SignId] [tinyint] NOT NULL,
+	[MultiGrahaConjunctionId] [int] NULL,   -- FK added after tbl_Chart_MultiGrahaConjunction (folded from db/22_add_multigraha_conjunction.sql)
  CONSTRAINT [FK_Conjunctions_Planet1] FOREIGN KEY ([Planet1Id]) REFERENCES [dbo].[tbl_Planets] ([Id]),
  CONSTRAINT [FK_Conjunctions_Planet2] FOREIGN KEY ([Planet2Id]) REFERENCES [dbo].[tbl_Planets] ([Id]),
  CONSTRAINT [FK_Conjunctions_Sign]    FOREIGN KEY ([SignId])    REFERENCES [dbo].[tbl_SignAttributes] ([Id]),
@@ -3574,6 +3575,76 @@ BEGIN
     );
     CREATE NONCLUSTERED INDEX IX_Fact_PlanetaryState_ChartResultId ON dbo.tbl_Fact_PlanetaryState (ChartResultId);
 END
+GO
+
+-- =====================================================================
+-- Multi-graha conjunction (Graha Saṃyoga) layer — folded from
+-- db/22_add_multigraha_conjunction.sql. One group row per (ChartResultId,
+-- SignId) holding >= 2 grahas; per-planet facts once in the member table;
+-- tbl_Chart_Conjunctions.MultiGrahaConjunctionId links each pair to its group.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Chart_MultiGrahaConjunction', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Chart_MultiGrahaConjunction (
+        Id                    INT IDENTITY(1,1) NOT NULL
+                                  CONSTRAINT PK_Chart_MultiGrahaConjunction PRIMARY KEY,
+        ChartResultId         INT     NOT NULL
+                                  CONSTRAINT FK_MultiGrahaConjunction_ChartResult
+                                  FOREIGN KEY REFERENCES dbo.tbl_ChartResults (Id),
+        SignId                TINYINT NOT NULL
+                                  CONSTRAINT FK_MultiGrahaConjunction_Sign
+                                  FOREIGN KEY REFERENCES dbo.tbl_SignAttributes (Id),
+        HouseNumberFromLagna  TINYINT      NOT NULL,
+        PlanetCount           TINYINT      NOT NULL,
+        MemberKey             VARCHAR(40)  NOT NULL,
+        LongitudeSpanDegrees  DECIMAL(7,4) NULL,
+        CONSTRAINT UQ_MultiGrahaConjunction UNIQUE (ChartResultId, SignId),
+        CONSTRAINT CK_MultiGrahaConjunction_House CHECK (HouseNumberFromLagna BETWEEN 1 AND 12),
+        CONSTRAINT CK_MultiGrahaConjunction_Count CHECK (PlanetCount >= 2),
+        CONSTRAINT CK_MultiGrahaConjunction_Span  CHECK (LongitudeSpanDegrees IS NULL
+                                  OR (LongitudeSpanDegrees >= 0 AND LongitudeSpanDegrees < 30))
+    );
+    CREATE NONCLUSTERED INDEX IX_Chart_MultiGrahaConjunction_ChartResultId
+        ON dbo.tbl_Chart_MultiGrahaConjunction (ChartResultId);
+END
+GO
+IF OBJECT_ID('dbo.tbl_Chart_MultiGrahaConjunctionMember', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Chart_MultiGrahaConjunctionMember (
+        Id                        INT IDENTITY(1,1) NOT NULL
+                                      CONSTRAINT PK_Chart_MultiGrahaConjunctionMember PRIMARY KEY,
+        MultiGrahaConjunctionId   INT     NOT NULL
+                                      CONSTRAINT FK_MultiGrahaConjunctionMember_Group
+                                      FOREIGN KEY REFERENCES dbo.tbl_Chart_MultiGrahaConjunction (Id)
+                                      ON DELETE CASCADE,
+        PlanetId                  TINYINT NOT NULL
+                                      CONSTRAINT FK_MultiGrahaConjunctionMember_Planet
+                                      FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        DegreesInSign             DECIMAL(7,4) NULL,
+        NirayanaLongitude         FLOAT        NULL,
+        VargaLongitude            DECIMAL(9,6) NULL,
+        OrbFromGroupCenterDegrees DECIMAL(7,4) NULL,
+        DignityStatus             VARCHAR(20)  NULL,
+        IsRetrograde              BIT          NULL,
+        IsCombust                 BIT          NULL,
+        CONSTRAINT UQ_MultiGrahaConjunctionMember UNIQUE (MultiGrahaConjunctionId, PlanetId),
+        CONSTRAINT CK_MGCMember_DegInSign CHECK (DegreesInSign IS NULL
+                                  OR (DegreesInSign >= 0 AND DegreesInSign < 30)),
+        CONSTRAINT CK_MGCMember_Nirayana  CHECK (NirayanaLongitude IS NULL
+                                  OR (NirayanaLongitude >= 0 AND NirayanaLongitude < 360)),
+        CONSTRAINT CK_MGCMember_Varga     CHECK (VargaLongitude IS NULL
+                                  OR (VargaLongitude >= 0 AND VargaLongitude < 360)),
+        CONSTRAINT CK_MGCMember_Orb       CHECK (OrbFromGroupCenterDegrees IS NULL
+                                  OR (OrbFromGroupCenterDegrees >= 0 AND OrbFromGroupCenterDegrees < 30))
+    );
+    -- UQ_MultiGrahaConjunctionMember (MultiGrahaConjunctionId, PlanetId) already indexes the FK's
+    -- leading column, so no separate index on MultiGrahaConjunctionId is needed.
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Chart_Conjunctions_MultiGrahaConjunction')
+    ALTER TABLE dbo.tbl_Chart_Conjunctions
+        ADD CONSTRAINT FK_Chart_Conjunctions_MultiGrahaConjunction
+            FOREIGN KEY (MultiGrahaConjunctionId) REFERENCES dbo.tbl_Chart_MultiGrahaConjunction (Id);
 GO
 
 -- =====================================================================
