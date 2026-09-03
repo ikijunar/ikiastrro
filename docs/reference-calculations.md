@@ -288,17 +288,17 @@ IsMaraka, KendradhipatiDosha, Rationale)`. Rahu/Ketu out of scope (no sign ruler
 ## 10a. Avasthas — Baaladi & Jagradadi (star-schema, 2026-08-31)
 
 Planetary "states" — slice 1 of the avastha layer (`docs/research-topic-coverage.md`). Star-schema
-(`STANDARDS.md` §D.1): `tbl_Dim_AvasthaState` (state vocabulary) + `tbl_Rule_BaaladiState` /
-`tbl_Rule_JagradadiState` (`RuleSetId`-scoped) → computed per planet per chart by
-`PlanetAvasthaComputer` (in `ChartGenerationService.PersistAnalytics`), stored on
-`tbl_Fact_PlanetAvastha`, surfaced on `vw_Chart_Consolidated`.
+(`STANDARDS.md` §D.1): `tbl_Dim_PlanetaryState` (state vocabulary) + `tbl_Rule_AgeState` /
+`tbl_Rule_WakefulnessState` (`RuleSetId`-scoped) → computed per planet per chart by
+`PlanetaryStateComputer` (in `ChartGenerationService.PersistAnalytics`), stored on
+`tbl_Fact_PlanetaryState`, surfaced on `vw_Chart_Consolidated`.
 
-- **Baaladi** (`BaaladiAvastha.cs`) — the planet's "age" from its within-sign degree. Odd
+- **Baaladi** (`AgeStateCalculator.cs`) — the planet's "age" from its within-sign degree. Odd
   signs (Aries/Gemini/Leo/Libra/Sagittarius/Aquarius): 0–6 Baala, 6–12 Kumara, 12–18 Yuva,
-  18–24 Vriddha, 24–30 Mrita. Even signs: reversed. Effect fraction (`tbl_Rule_BaaladiState`,
+  18–24 Vriddha, 24–30 Mrita. Even signs: reversed. Effect fraction (`tbl_Rule_AgeState`,
   RuleSetId 1 = BPHS convention): Baala .25 / Kumara .50 / Yuva 1.00 / Vriddha .125 / Mrita 0.
   **D1 only** (needs a continuous within-sign degree).
-- **Jagradadi** (`JagradadiAvastha.cs`) — the planet's "waking state" from its `DignityStatus`:
+- **Jagradadi** (`WakefulnessStateCalculator.cs`) — the planet's "waking state" from its `DignityStatus`:
   Exalted / Moolatrikona / Own Sign → **Jagrat**; Great Friend / Friend / Neutral → **Swapna**;
   Enemy / Great Enemy / Debilitated → **Sushupti**. Populated for **every chart type**.
 - Ascendant is excluded. A different classical convention is a new `RuleSetId`, never an edit.

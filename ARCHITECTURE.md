@@ -186,12 +186,12 @@ columns; the workspace shows a static **D1 ⊕ D9 combined grid** (`CombinedD1D9
 Still future: Karakamsa / Swamsa chart, Jaimini rasi dashas, the other upagrahas. See
 `docs/reference-calculations.md` §10b.
 
-**Avasthas (star-schema, 2026-08-31):** `tbl_Fact_PlanetAvastha` (Fact) holds each planet's
+**Avasthas (star-schema, 2026-08-31; renamed to the planetary-state names 2026-09-03, migration 16):** `tbl_Fact_PlanetaryState` (Fact) holds each planet's
 **Baaladi** (D1 only — the "age" from within-sign degree) and **Jagradadi** (every chart type
-— the "waking state" from dignity) avastha, written by `PlanetAvasthaComputer` alongside the 4
-tables above. Vocabulary in `tbl_Dim_AvasthaState`; the degree bands / dignity map are
-`RuleSetId`-scoped `tbl_Rule_BaaladiState` / `tbl_Rule_JagradadiState`. Surfaced on
-`vw_Chart_Consolidated` (`BaaladiState`, `BaaladiEffectFraction`, `JagradadiState`). Deeptadi /
+— the "waking state" from dignity) avastha, written by `PlanetaryStateComputer` alongside the 4
+tables above. Vocabulary in `tbl_Dim_PlanetaryState`; the degree bands / dignity map are
+`RuleSetId`-scoped `tbl_Rule_AgeState` / `tbl_Rule_WakefulnessState`. Surfaced on
+`vw_Chart_Consolidated` (`AgeState`, `AgeEffectFraction`, `WakefulnessState`). Deeptadi /
 Lajjitadi / Sayanadi are follow-on slices — see `docs/research-topic-coverage.md`.
 
 All 4 tables carry a `ChartType` column (`"D1"`, `"D9"`, ...) alongside `ChartResultId`/`BirthDetailId`, so any of them read standalone without a join to `tbl_ChartResults`. (They also used to carry a denormalized `Name` copy of `tbl_BirthDetails.Name` the same way; dropped 2026-08-28 — schema-review finding, nothing read it and nothing kept it in sync, see the dated history for the full list of that day's fixes.)
@@ -233,7 +233,7 @@ change** — `tbl_ChartResults` + the 4 analytics tables are already chart-type-
 formula (Sanjay Rath, the PyJHora default) is the one method-ambiguous piece — a one-line change
 in `GetRudramsaSign` if it ever needs the Raman variant.
 
-**`ClassicalDignity.cs`/`ClassicalRelationships.cs` are pure classical reference-table lookups** (own signs, exaltation/debilitation, Moolatrikona ranges, Naisargika Maitri, aspect house-offsets) applied to the signs this project's own `AstroMath`/`SwissEphemerisProvider` pipeline computes, plus Tatkalika Maitri (temporary friendship) computed from sign distance — no dependency on any external library's relationship helpers, and chart-type-agnostic by construction (they only need "which sign is this planet in").
+**`Engines/Dignity/DignityEngine.cs`/`Engines/Relationships/RelationshipEngine.cs` are pure classical reference-table lookups** (own signs, exaltation/debilitation, Moolatrikona ranges, Naisargika Maitri, aspect house-offsets) applied to the signs this project's own `AstroMath`/`SwissEphemerisProvider` pipeline computes, plus Tatkalika Maitri (temporary friendship) computed from sign distance — no dependency on any external library's relationship helpers, and chart-type-agnostic by construction (they only need "which sign is this planet in").
 
 **Rahu/Ketu convention**: exaltation/debilitation is genuinely disputed across classical texts. This project uses the Parashari convention (Rahu exalted Taurus/debilitated Scorpio, Ketu exalted Scorpio/debilitated Taurus), per rammyps's explicit decision (2026-08-24). Rahu/Ketu aren't part of the Naisargika Maitri table in standard Parashari texts, so their `DignityStatus` is limited to Exalted/Debilitated/Neutral — no fine-grained friend/enemy tiering.
 
@@ -297,7 +297,7 @@ ran, palette-validation detail): see the dated section in `ikiastrro.md`.
 ## Extending later
 
 This path has now been walked five times — D9 (2026-08-24), then D2/D6/D10/D11 (2026-08-30, mirroring the D9 pair line-for-line). Adding another chart type (e.g. D3, D7, D12) gets full dignity/house-lordship/conjunction/aspect analytics **and** nakshatra linkage **for free**, with no new tables and almost no new code:
-1. Implement `IChartCalculator` in `Ikiastrro.Core/Calculators/` — two methods: `ComputeAnalysisInput` (Ascendant + planet placements, as a `ChartAnalysisInput`) and `BuildResult` (packages that into the `ChartResult` row to store). The varga-sign math is one pure `AstroMath` function (transcribe it verbatim from PyJHora `charts.py` `chart_method=1`, add worked examples to `verify-vargas`).
+1. Implement `IChartCalculator` in `Ikiastrro.Core/Pipeline/` — two methods: `ComputeAnalysisInput` (Ascendant + planet placements, as a `ChartAnalysisInput`) and `BuildResult` (packages that into the `ChartResult` row to store). The varga-sign math is one pure `AstroMath` function (transcribe it verbatim from PyJHora `charts.py` `chart_method=1`, add worked examples to `verify-vargas`).
 2. Register it in `ChartCalculationOrchestrator.CreateDefault()`. (`ChartCalculationOrchestrator.Calculators` exposes the list to the CLI.)
 3. That's it — the CLI and Web write paths already loop over every registered calculator generically and call `ChartAnalyzer.Compute` on each one's `ChartAnalysisInput`, so the new chart type's `tbl_Chart_KeyDetails`/`HouseLords`/`Conjunctions`/`Aspects` rows get written automatically. No database schema change needed either — `tbl_ChartResults` already stores arbitrary `ChartType` rows, and the 4 analytical tables are chart-type-generic (see above).
 4. `dotnet run --project src/Ikiastrro.Cli -- backfill-charts` creates every registered chart type a saved person is missing (ChartResult + all analytics), idempotently — the way D2/D6/D10/D11 were backfilled for the 5 existing people. (`-- backfill-analytics` only fills analytics for ChartResults that already exist; `-- recompute-keydetails` re-derives KeyDetails for every calculable chart type, e.g. after a column is added.)
@@ -316,7 +316,7 @@ Rashi rows), `tbl_PlanetSignTransitEvents` (Saturn/Jupiter/Rahu sign-boundary cr
 (243, KP sub-lord levels 1-2 only). Full design rationale, classical cross-references, and
 what's still NULL pending a sourced reference: `D:\@ClaudeSpace\ikiastrro\docs\reference-vedic-data-tables.md`.
 
-Not yet wired into the calculation engine — `ClassicalDignity.cs`/`AstroMath.cs` still hold
+Not yet wired into the calculation engine — `Engines/Dignity/DignityEngine.cs`/`AstroMath.cs` still hold
 their own hardcoded lookups, cross-checked to match these tables' seed data but not reading
 from them. Whether to switch the engine over to reading these tables is an open decision.
 
@@ -349,7 +349,7 @@ Shodhana) still needs BPHS/PyJHora as a reference — jyotishganit stops at the 
 Full gap analysis and build tiers: `docs/scope-jhora-coverage.md`.
 
 **Star-schema rules engine (Phase 1)**: classical rules previously only hardcoded in
-`ClassicalRelationships.cs`/`ClassicalCombustion.cs`/`ClassicalDignity.cs` are now also
+`Engines/Relationships/RelationshipEngine.cs`/`Engines/Relationships/CombustionEngine.cs`/`Engines/Dignity/DignityEngine.cs` are now also
 mirrored in `tbl_Rule_*` tables (`tbl_Rule_Sets`, `tbl_Rule_AspectOffset`,
 `tbl_Rule_CombustionOrb`, `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance`),
 each scoped by a `RuleSetId` so a future rule change is a new row set, never an edit — read via
@@ -387,7 +387,7 @@ DB/Core/CLI only — **no Web `.razor`/CSS change** (the Web app still renders t
 D1+D9 view; the life-area UI rebuild is the next plan). Spec:
 `docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`.
 
-- **`LagnaFunctionalNature`** (`Core/Calculators/`) — pure Parashari classifier: given a Lagna
+- **`LagnaFunctionalNature`** (`Core/Engines/Houses/`) — pure Parashari classifier: given a Lagna
   sign + planet, returns `Benefic | Malefic | Neutral | Yogakaraka` derived from which houses the
   planet rules from that Lagna, plus `IsMaraka` / `KendradhipatiDosha` / a rationale string. A
   documented heuristic following Raman's general rules (Vol. 1 p.14-15). **This is the single

@@ -4,7 +4,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 namespace Ikiastrro.Data;
 
 /// <summary>
-/// tbl_Rule_AspectOffset -- returns the same shape ClassicalRelationships.AspectOffsets
+/// tbl_Rule_AspectOffset -- returns the same shape RelationshipEngine.AspectOffsets
 /// hardcodes today, so a future Phase 2 wiring swap is a one-line change at the call site.
 /// </summary>
 public class AspectRuleRepository

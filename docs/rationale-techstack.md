@@ -101,7 +101,7 @@ near the present.
   (`RuleSetId`), not hard-coded constants — so a rule change is a new row-set, never
   an edit to rows a stored fact already references. Design: `docs/dbdesign-star-schema-rules-engine.md`.
 - **Chart-type-generic fact tables**: `tbl_Chart_KeyDetails` / `HouseLords` /
-  `Conjunctions` / `Aspects` / `tbl_Fact_PlanetAvastha` hold one row per
+  `Conjunctions` / `Aspects` / `tbl_Fact_PlanetaryState` hold one row per
   `(person × chart-type × planet)` with integer FKs. Adding a divisional chart is
   **additive rows**, never a schema change. This is what lets "add the full
   Shodashavarga set" be a bounded task and what shapes the tables to feed the

@@ -113,9 +113,9 @@ scoped. The CLI is top-level statements with no container — it news up what it
 | Chart analytics (chart-type-generic, keyed by `ChartResultId` + `ChartType`) | `tbl_Chart_KeyDetails` (raw position: longitude / latitude / speed / retrograde / sign / degree / nakshatra, then dignity / house / combustion / aspects), `tbl_Chart_HouseLords`, `tbl_Chart_Conjunctions`, `tbl_Chart_Aspects` | `ChartAnalyzer` |
 | Dasha | `tbl_Chart_DashaPeriods` (self-referencing, 3 levels) | `VimshottariDashaService` |
 | Reference / master | `tbl_Planets` (9), `tbl_SignAttributes` (12), `tbl_Nakshatras` (27), `tbl_NakshatraPadas` (108), `tbl_NakshatraSubLords` (243, KP L1–L2 only), `tbl_PlanetSignTransitEvents` (Sa/Ju/Ra sign-crossing log 1930–2060) | seed data / CLI backfill |
-| Rules engine (versioned; every row carries `RuleSetId`) | `tbl_Rule_Sets`, `tbl_Rule_AspectOffset`, `tbl_Rule_CombustionOrb`, `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance`, `tbl_Rule_BaaladiState`, `tbl_Rule_JagradadiState` | seed (`'Parashari-Classical'`) |
-| Dimensions | `tbl_Dim_LifeCalendar` (age-relative day dimension, 0 = birth), `tbl_Dim_AvasthaState` (avastha-state vocabulary) | CTE / static seed |
-| Facts (per chart, star-schema `tbl_Fact_*`) | `tbl_Fact_PlanetAvastha` (Baaladi + Jagradadi per planet; `RuleSetId` records which rules produced it) | `PlanetAvasthaComputer` via `ChartGenerationService` |
+| Rules engine (versioned; every row carries `RuleSetId`) | `tbl_Rule_Sets`, `tbl_Rule_AspectOffset`, `tbl_Rule_CombustionOrb`, `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance`, `tbl_Rule_AgeState`, `tbl_Rule_WakefulnessState` | seed (`'Parashari-Classical'`) |
+| Dimensions | `tbl_Dim_LifeCalendar` (age-relative day dimension, 0 = birth), `tbl_Dim_PlanetaryState` (avastha-state vocabulary) | CTE / static seed |
+| Facts (per chart, star-schema `tbl_Fact_*`) | `tbl_Fact_PlanetaryState` (Baaladi + Jagradadi per planet; `RuleSetId` records which rules produced it) | `PlanetaryStateComputer` via `ChartGenerationService` |
 
 ### Views & functions
 

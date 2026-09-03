@@ -17,9 +17,9 @@ classes: {
 status: STATUS (2026-08-31) {
   near: top-left
   x: |md
-    - **Slice 1 SHIPPED:** Baaladi + Jagradadi — star-schema (tbl_Dim_AvasthaState /
-      tbl_Rule_BaaladiState / tbl_Rule_JagradadiState / tbl_Fact_PlanetAvastha), computed by
-      PlanetAvasthaComputer in ChartGenerationService, on vw_Chart_Consolidated. 270 fact rows.
+    - **Slice 1 SHIPPED:** Baaladi + Jagradadi — star-schema (tbl_Dim_PlanetaryState /
+      tbl_Rule_AgeState / tbl_Rule_WakefulnessState / tbl_Fact_PlanetaryState), computed by
+      PlanetaryStateComputer in ChartGenerationService, on vw_Chart_Consolidated. 270 fact rows.
     - Deeptadi / Lajjitadi / Sayanadi: **not built** (follow-on slices).
     - `jyotishganit/components/states.py` is an empty stub; the vendored PyJHora copy has no avastha module.
     - Source: **BPHS** (public-domain) + **B.V. Raman, *Graha and Bhava Balas*** (not in repo — cited-edition discipline).
@@ -47,14 +47,14 @@ systems: Avastha systems {
     5 states from degree-in-sign:
     Baala 0-6 / Kumara 6-12 / Yuva 12-18 / Vriddha 18-24 / Mrita 24-30
     (reversed in even signs). Effect fraction per state (.25/.50/1/.125/0).
-    `BaaladiAvastha.cs` + `tbl_Rule_BaaladiState` (RuleSetId 1). D1 only. `verify-avastha`.
+    `AgeStateCalculator.cs` + `tbl_Rule_AgeState` (RuleSetId 1). D1 only. `verify-avastha`.
   | { class: built }
 
   jagradadi: |md
     ## 2. Jagradadi (waking)  —  ✅ BUILT 2026-08-31
     3 states from dignity:
     Jagrat (own / exalted / moolatrikona) / Swapna (friend / neutral) / Sushupti (enemy / debilitated).
-    `JagradadiAvastha.cs` + `tbl_Rule_JagradadiState` (RuleSetId 1). Every chart type.
+    `WakefulnessStateCalculator.cs` + `tbl_Rule_WakefulnessState` (RuleSetId 1). Every chart type.
   | { class: built }
 
   deeptadi: |md
@@ -114,14 +114,14 @@ inputs.bday -> systems.sayanadi: "needs persisting"
 inputs.pnum -> systems.sayanadi: "new constant"
 
 # ---- storage (star-schema Fact) ---------------------------------------
-store: tbl_Fact_PlanetAvastha  (built; one row per planet x chart type) {
+store: tbl_Fact_PlanetaryState  (built; one row per planet x chart type) {
   class: built
   cols: |md
     Id, ChartResultId, BirthDetailId, ChartType, Planet, RuleSetId,
-    BaaladiStateId + BaaladiEffectFraction   (D1 only, FK tbl_Dim_AvasthaState),
-    JagradadiStateId                          (every chart type, FK tbl_Dim_AvasthaState),
+    AgeStateId + AgeEffectFraction   (D1 only, FK tbl_Dim_PlanetaryState),
+    WakefulnessStateId                          (every chart type, FK tbl_Dim_PlanetaryState),
     ComputedAt.
-    Later slices ADD: DeeptadiStateId, SayanadiStateId, + child tbl_Fact_PlanetAvasthaLajjita.
+    Later slices ADD: DeeptadiStateId, SayanadiStateId, + child tbl_Fact_PlanetaryStateLajjita.
   |
 }
 systems.baaladi -> store

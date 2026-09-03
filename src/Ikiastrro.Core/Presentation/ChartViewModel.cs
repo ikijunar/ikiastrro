@@ -94,7 +94,7 @@ public static class ChartViewModel
     /// <summary>
     /// Chip label for one aspecting planet, e.g. "Ma(a)" for the universal 7th-house aspect (the
     /// default, so no number shown) or "Ma(a)-8" for a planet's classical special aspect (2026-08-28,
-    /// rammyps's explicit format). <paramref name="aspectType"/> is the label ClassicalRelationships
+    /// rammyps's explicit format). <paramref name="aspectType"/> is the label RelationshipEngine
     /// already produces ("7th", "8th", ...) — just strips the ordinal suffix to get the bare number.
     /// </summary>
     private static string FormatAspectChip(string aspectingPlanet, string aspectType)
