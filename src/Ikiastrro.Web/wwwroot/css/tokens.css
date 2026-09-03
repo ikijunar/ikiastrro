@@ -99,6 +99,26 @@
     --planet-saturn:  #4f79d8;  --planet-saturn-bg:  #20274d;
     --planet-rahu:    #8b8fa0;  --planet-rahu-bg:    #2c2c42;
     --planet-ketu:    #a9713f;  --planet-ketu-bg:    #32262e;
+
+    /* Nav pills (MainLayout) — filled Home / Saved Charts buttons. --nav-btn is --accent. */
+    --nav-btn: #e2ad4f;
+    --nav-btn-fg: #1a1730;
+
+    /* Semantic South-Indian grid tokens — so SouthIndianGrid/MiniGrid stop reading --paper/--ink
+       directly (DESIGN.md: name the role, not the raw surface). Values equal the existing
+       surfaces today; kept separate so the grid can be retuned without touching page chrome. */
+    --cell-fill: #1c1a3a;      /* = --paper-raised */
+    --lagna-fill: #262247;     /* --paper-raised lifted ~6% toward --accent for the Lagna cell */
+    --grid-stroke: #322f57;    /* = --paper-line */
+    --sign-text: #b3a9cf;      /* = --ink-soft */
+    --muted-text: #7c7398;     /* = --ink-faint */
+
+    /* VargottamaStrip lit state — a graha whose Dn sign equals its D1 sign. Alias of --dignity-good. */
+    --vargottama: #7cc98a;
+
+    /* PolarWheel ring + degree ticks. */
+    --wheel-ring: #322f57;     /* = --paper-line */
+    --wheel-tick: #7c7398;     /* = --ink-faint */
 }
 
 /* App-wide base look, shared by every page (D1ChartView keeps its own copy of these rules
