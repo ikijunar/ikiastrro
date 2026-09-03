@@ -14,6 +14,14 @@
             <text x="@F(lx)" y="@F(ly)" class="wheel-signlabel" text-anchor="middle" dominant-baseline="central">@SignAbbr(s)</text>
         </g>
     }
+    @foreach (var c in Chords)
+    {
+        var (ax, ay) = AngleToXy(c.FromLongitudeDegrees, 90);
+        var (bx, by) = AngleToXy(c.ToLongitudeDegrees, 90);
+        <g>
+            <line x1="@F(ax)" y1="@F(ay)" x2="@F(bx)" y2="@F(by)" class="wheel-chord" style="stroke:var(@c.ColorVar)" />
+        </g>
+    }
     @foreach (var p in Points)
     {
         var (px, py) = AngleToXy(p.LongitudeDegrees, 132);
@@ -27,6 +35,10 @@
     public record Point(string Label, double LongitudeDegrees, string ColorVar);
 
     [Parameter, EditorRequired] public IReadOnlyList<Point> Points { get; set; } = Array.Empty<Point>();
+
+    public record Chord(double FromLongitudeDegrees, double ToLongitudeDegrees, string ColorVar);
+
+    [Parameter] public IReadOnlyList<Chord> Chords { get; set; } = Array.Empty<Chord>();
 
     // 0° Aries at 9 o'clock (=180° screen), longitude increases counter-clockwise.
     private static (double X, double Y) AngleToXy(double lonDeg, double radius)
