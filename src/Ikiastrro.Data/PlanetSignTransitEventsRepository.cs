@@ -42,7 +42,7 @@ public class PlanetSignTransitEventsRepository
         using var connection = _connectionFactory.CreateOpenConnection();
 
         var current = connection.QuerySingleOrDefault<CurrentRow>(
-            "SELECT TOP (1) SignId, EventDateTimeUtc, MotionDirection FROM dbo.tvf_PlanetSignAtDate(@PlanetId, @AsOf)",
+            "SELECT TOP (1) CAST(SignId AS tinyint) AS SignId, EventDateTimeUtc, MotionDirection FROM dbo.tvf_PlanetSignAtDate(@PlanetId, @AsOf)",
             new { PlanetId = planetId, AsOf = asOfUtc });
         if (current is null) return null;
 
