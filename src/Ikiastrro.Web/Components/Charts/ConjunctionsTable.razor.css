@@ -1,0 +1,5 @@
+.cjt-scroll { overflow-x: auto; }
+.cjt { width: 100%; border-collapse: collapse; }
+.cjt th, .cjt td { padding: .35rem .6rem; border-bottom: 1px solid var(--paper-line); text-align: left; white-space: nowrap; }
+.cjt th { color: var(--muted-text); font-weight: 600; }
+.cjt .mono { font-variant-numeric: tabular-nums; }

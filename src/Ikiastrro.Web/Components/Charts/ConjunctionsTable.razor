@@ -1,0 +1,29 @@
+@* Graha Yuti — pairs sharing a sign. DegreeSeparation is only meaningful for D1 (null in vargas). *@
+@if (Rows.Count == 0)
+{
+    <EmptyState Message="No conjunctions in this chart." />
+}
+else
+{
+    <div class="cjt-scroll">
+        <table class="cjt">
+            <thead><tr><th>Pair</th><th>Sign</th><th>House</th><th>Separation</th></tr></thead>
+            <tbody>
+                @foreach (var r in Rows)
+                {
+                    <tr>
+                        <td>@r.Planet1 · @r.Planet2</td>
+                        <td>@Disp(r.Sign)</td>
+                        <td class="mono">@r.HouseNumberFromLagna</td>
+                        <td class="mono">@(r.DegreeSeparation is decimal d ? $"{d:0.00}°" : "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChartConjunction> Rows { get; set; } = Array.Empty<ChartConjunction>();
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+}
