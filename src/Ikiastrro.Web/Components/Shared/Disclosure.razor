@@ -1,0 +1,21 @@
+@* Collapse/expand a region. Route/parent owns the Open state (bookmarkable pages pass it from a
+   query param); this component just renders + raises OnToggle. Animated via grid-template-rows
+   0fr->1fr so it works with dynamic-height content and no JS. *@
+<div class="disc @(Open ? "open" : "")">
+    <button type="button" class="disc-head" aria-expanded="@Open" @onclick="Toggle">
+        <span class="disc-tw">@(Open ? "▾" : "▸")</span>
+        <span class="disc-title">@Title</span>
+    </button>
+    <div class="disc-body-wrap" inert="@(!Open)" aria-hidden="@(!Open)">
+        <div class="disc-body">@ChildContent</div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OnToggle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task Toggle() => await OnToggle.InvokeAsync(!Open);
+}
