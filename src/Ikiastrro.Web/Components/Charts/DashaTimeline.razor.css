@@ -103,6 +103,16 @@ button.period-line:hover {
     color: var(--accent);
 }
 
+ul.maha-list.compact {
+    display: flex;
+    flex-direction: column;
+}
+
+.maha-list.compact .maha-row > .period-line {
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
 .current-badge {
     font-size: 11px;
     text-transform: uppercase;

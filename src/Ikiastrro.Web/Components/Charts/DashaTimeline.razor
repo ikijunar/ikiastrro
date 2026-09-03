@@ -3,6 +3,29 @@
    AsOf (the current period) is opened, and the active period at every level is badged —
    so "what's happening now" never depends on colour alone. *@
 <div class="dasha-timeline">
+@if (Compact)
+{
+    <ul class="maha-list compact">
+        @foreach (var maha in Roots.OrderBy(p => p.StartDayOffset))
+        {
+            var mahaCurrent = IsCurrent(maha);
+            <li class="maha-row @(mahaCurrent ? "current" : "")">
+                <div class="period-line">
+                    <span class="swatch" style="background:@DashaLordColors.CssVar(maha.Lord)"></span>
+                    <span class="lord">@maha.Lord</span>
+                    <span class="label">Mahadasha</span>
+                    <span class="range">@FormatRange(maha.StartDate, maha.EndDate)</span>
+                    @if (mahaCurrent)
+                    {
+                        <span class="current-badge">current</span>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
     <DashaLegend />
 
     <ul class="maha-list">
@@ -72,6 +95,7 @@
             </li>
         }
     </ul>
+}
 </div>
 
 @code {
@@ -80,12 +104,16 @@
     /// <summary>Defaults to now — overridable for testing/screenshots of a specific moment.</summary>
     [Parameter] public DateTime AsOf { get; set; } = DateTime.Now;
 
+    /// <summary>When true, render only non-interactive Mahadasha rows (docked strip). Default: full interactive tree.</summary>
+    [Parameter] public bool Compact { get; set; }
+
     private int? _openMahaId;
     private int? _openAntarId;
     private bool _seeded;
 
     protected override void OnParametersSet()
     {
+        if (Compact) return;
         if (_seeded || Roots.Count == 0) return;
         _seeded = true;
 
