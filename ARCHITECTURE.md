@@ -135,9 +135,53 @@ City/Country is geocoded to lat/long via [OpenStreetMap Nominatim](https://nomin
    ```
    dotnet run --project src\Ikiastrro.Web
    ```
-   Same input flow, plus a native visual D1 chart display and a saved-charts browser — see below.
+   Same input flow, plus the native visual varga-centric chart workspace and a saved-charts browser — see below.
 
-## Web app: entry form, native D1+D9 charts, saved charts (2026-08-24)
+## Web app: varga-centric workspace — all 21 charts, grid + wheel (2026-09-03)
+
+`Ikiastrro.Web`'s read layer was rebuilt around **the charts themselves**: D1 as the hero,
+all 20 divisionals one click away on a rail grouped by the classical varga bundles. The
+old partial 3-tab `ChartWorkspace` (which only wired D1 / D6 / D9 / D10 / D2 / D11) and its
+`TabBar` are deleted. **All 21 position chart types now render** — D1 plus the 20 vargas
+(D2, D2-US, D3–D60) — each as an enriched South-Indian grid **and** a hand-drawn polar wheel.
+
+| Route | Component | What it shows |
+|---|---|---|
+| `/` | `Home` | name-prefix filter over person rows, each a compact D1 `MiniGrid`; "Add someone" button (the old bare `<select>` is gone) |
+| `/charts` | `SavedCharts` (was `Charts.razor`) | sortable `DataTable<Row>` (name / DOB / place) + `MiniGrid` thumbnail + `ConfirmDialog` delete |
+| `/add` | `Add` | unchanged entry form; submit still calls `ChartGenerationService`; copy now says "all 21 charts" |
+| `/charts/{id}` | `Workspace` (was `ChartWorkspace`) | D1 hero in a `ChartFrame` grid⇄wheel toggle, `VargaRail` over all 21 charts, `PlanetPositionsTable` (D1), docked compact Vimshottari Dasha strip, `BirthComputationPanel` disclosure |
+| `/charts/{id}/varga/{code}` | `VargaView` | one divisional in full — `ChartFrame`, `VargottamaStrip`, positions table, house-lordship + conjunctions disclosure, prev/next along the bundle rail order |
+| `/charts/{id}/timing` | `Timing` | Vimshottari Dasha tree + Sade Sati + Gochara (`GocharaPanel`) |
+| `/charts/{id}/print` | `PrintChart` | flat dark single-column document, every section expanded; `wwwroot/css/print.css` via `<HeadContent><link media="print">` |
+| `/charts/{id}/life-weeks` | `LifeWeeks` | unchanged |
+
+- **The polar wheel is a hand-drawn inline `<svg>` ring** (`PolarWheel.razor`) — **no
+  Syncfusion package was added** (no `SfPolarChart`). An `?aspects=1` query toggle on the
+  Workspace and `VargaView` draws hand-drawn aspect chords (same-sign planet pairs filtered
+  out); "show aspects / hide aspects" link, wheel view only.
+- **`WorkspaceData.Load(...)`** is a single batch loader (over Plan 1's `GetByBirthDetailId`
+  repository reads) that feeds every page one `IReadOnlyDictionary<string, LoadedChart>` map
+  keyed by chart code — no page issues its own per-chart queries.
+- New / rebuilt components: pages `Workspace`, `VargaView`, `Timing`, `PrintChart`,
+  `SavedCharts`, `Home`; `PolarWheel`, `ChartFrame`, `SegmentedToggle`, `Disclosure`,
+  `EmptyState`, `DataTable<T>`, `MiniGrid`, `VargaRail`, `WorkspaceHeader`,
+  `BirthComputationPanel`, `VargottamaStrip`, `HouseLordshipTable`, `ConjunctionsTable`,
+  `GocharaPanel`; enriched `SouthIndianGrid` (glyph pills via `PlanetChip`,
+  `SpecialPointLabels`); `DashaTimeline` gained a `Compact` (Maha-only, non-interactive)
+  mode for the workspace dock.
+- **One correctness fix outside the Web project** — this rebuild was *not* read-only w.r.t.
+  Data as the plan assumed: `PlanetSignTransitEventsRepository.GetSnapshot` gained a
+  `CAST(SignId AS tinyint)` in its `tvf_PlanetSignAtDate` query — a latent `int`→`byte`
+  Dapper mapping bug that the Timing page (via `GocharaRepository` → `GocharaPanel`) was the
+  first runtime consumer to hit. `db/ikiastrro.sql` and the TVF itself are untouched.
+- Design deviations from the spec are recorded in
+  `docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md` → "Implementation notes
+  (2026-09-03)".
+
+Branch `feat/signattributes-classifications`, commits `f15fe97..863deae` (7 build phases).
+
+## Web app: entry form, native D1+D9 charts, saved charts (2026-08-24) — superseded by the 2026-09-03 section above; kept for history
 
 `Ikiastrro.Web` (Blazor Server) is more than a form-in/JSON-out shell — the charts render natively, entirely in .NET, no external service involved:
 
@@ -159,7 +203,16 @@ v1 originally embedded `VedAstro.Library` (NuGet 1.2.0). Real testing surfaced f
 
 ## Known limitations (v1 scaffold)
 
-- **`ChartView.razor` is still hardcoded to two charts (D1 + D9)**, not a generic loop over every registered `IChartCalculator` — unlike the write path (§ Extending later), which already handles any chart type with no new code. **D2 (Hora), D6 (Shashtamsa), D10 (Dasamsa), D11 (Rudramsa) were added 2026-08-30 at the DB/CLI level** — they get full analytics + nakshatra linkage for every saved person, but have **no Web UI**. **This is being addressed by the Web UI life-area recreate** — spec `docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`, Plan 1 (Core/Data/CLI groundwork) merged 2026-08-30 (`ChartViewModel` rename, `ChartGenerationService`, `GetByBirthDetailId` batch reads, `LifeAreaMap`, `LagnaFunctionalNature` + migration 031), Plan 2 (the actual UI — 5 life-area/Timing tabs, generic `VargaChartPanel`, per-planet colour backgrounds, reference browser, print view) not yet started. Carry-forward: `docs/superpowers/plans/groundwork-outcomes-for-plan-2.md`.
+- **~~`ChartView.razor` is hardcoded to two charts (D1 + D9)~~ — RESOLVED 2026-09-03.** The
+  Web read layer was rebuilt varga-centric (see "Web app: varga-centric workspace" above): all
+  21 position chart types render (enriched South-Indian grid + hand-drawn SVG polar wheel), the
+  old `ChartWorkspace` / `TabBar` are deleted. The **life-area** framing from the 2026-08-30
+  recreate spec was dropped; that spec's Phase-0 Core/Data groundwork (`ChartViewModel` rename,
+  `ChartGenerationService`, the four `GetByBirthDetailId` batch reads, `LagnaFunctionalNature`,
+  migration 031) was kept and is what the new UI loads through (`WorkspaceData`). D2 / D6 / D10 /
+  D11 — and the other 16 vargas — now all have a Web UI. Spec:
+  `docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md`; the older
+  `docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md` is superseded.
 - **Varga degree data is now stored; sign-only *display* is still the UI's choice** — as of the divisional-chart completion (Plan A, 2026-09-01) every varga `tbl_Chart_KeyDetails` row carries `VargaLongitudeDegrees` (`Normalize(realLon × N)`) and un-gated `DegreesInSignDecimal`/`Display` (= `VargaLongitudeDegrees mod 30`, the true within-sign varga degree). `tbl_ChartResults` also carries numeric `AyanamshaDegrees` / `SiderealTimeHours` / `VargaMethod`. A classical varga chart still conventionally *shows* sign only — that stays a rendering decision — but the DB is now complete (every computed value has a typed column), which the Python personality-comparison layer depends on. Still D1-only by nature: `Nakshatra`/`NakshatraPada` (a varga cell is a discrete bucket) and conjunction `DegreeSeparation`.
 - **D81 / D108 / D144 / D150 → Plan B** — the chart-composition mechanism (a varga *of* a varga) plus D150 are deferred to a not-yet-written Plan B; see `docs/superpowers/specs/2026-08-31-divisional-chart-completion-design.md` §1/§6.
 - **Swiss Ephemeris license**: Swiss Ephemeris (and by extension SwissEphNet) is AGPL/commercial dual-licensed. Fine for this private, non-distributed tool; would need revisiting (AGPL compliance or a commercial license) if this project were ever distributed or hosted as a public service.
@@ -383,9 +436,11 @@ Sourced from `BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman).
 
 The project is now **under git** (`master`; baseline `363eeeb` = pre-recreate state — all
 history before that lives only in `D:\@ClaudeSpace\ikiastrro.md`). This batch is
-DB/Core/CLI only — **no Web `.razor`/CSS change** (the Web app still renders the pre-recreate
-D1+D9 view; the life-area UI rebuild is the next plan). Spec:
-`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md`.
+DB/Core/CLI only — **no Web `.razor`/CSS change** in *this* 2026-08-30 groundwork batch (the
+Web app then still rendered the pre-recreate D1+D9 view; the varga-centric UI rebuild landed
+2026-09-03 — see "Web app: varga-centric workspace" above). Spec:
+`docs/superpowers/specs/2026-08-30-web-ui-life-area-recreate-design.md` (superseded 2026-09-01
+by `2026-09-01-varga-centric-web-ui-design.md`).
 
 - **`LagnaFunctionalNature`** (`Core/Engines/Houses/`) — pure Parashari classifier: given a Lagna
   sign + planet, returns `Benefic | Malefic | Neutral | Yogakaraka` derived from which houses the

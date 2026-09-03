@@ -407,3 +407,52 @@ carries over vs. what is dropped:
   re-theme, and risks the classical chart diagrams looking unfamiliar. Not worth it for a
   private tool whose look is already settled.
 - **New `Ikiastrro.Web2` project.** Re-solves routing/DI/layout/delete-cascade for no gain.
+
+
+---
+
+## Implementation notes (2026-09-03, plan `2026-09-03-varga-centric-web-ui.md`)
+
+Deviations from this spec, all approved by rammyps (at planning time or the 2026-09-03
+Phase-2 gate):
+
+1. **§6 / §9 — Syncfusion cut.** The polar wheel is a hand-drawn inline `<svg>` ring
+   (`PolarWheel.razor`), not `SfPolarChart`. No `Syncfusion.Blazor` package was added. A
+   later follow-up may swap it in for zoom / tooltips.
+2. **§9 override — functional-nature column kept.** `PlanetPositionsTable` retains its
+   "Malefic / Benefic" column (`LagnaFunctionalNature`). §9's "deferred" no longer applies.
+3. **§4.1 — `BirthComputationPanel` reduced.** Sunrise / sunset **and** the method-source
+   line are omitted — no repo or column path exists for `SwissEphemerisProvider.GetSunTimes`
+   output or the method-provenance string. Ayanamsha and sidereal time are shown. Deferred.
+
+Restorations decided at the 2026-09-03 Phase-2 gate — the plan had originally cut these, so
+they are **not** deviations from the spec's intent:
+
+4. **Wheel aspect-chord overlay** — reimplemented as hand-drawn SVG lines. A new
+   `PolarWheel.Chord` record plus an `?aspects=1` query toggle on `/charts/{id}` (Workspace)
+   and `/charts/{id}/varga/{code}` (VargaView); a "show aspects / hide aspects" link, wheel
+   view only. Same-sign planet pairs are filtered out.
+5. **Docked Dasha strip** — `DashaTimeline` gained a `Compact` bool: a Maha-only,
+   non-interactive list for the workspace dock. The full interactive tree is unchanged when
+   `Compact` is false.
+
+Other notes:
+
+- **`--dasha-*` / `--planet-*` were not re-aliased** into a single block (spec §7). The
+  `--planet-*` token set already in `tokens.css` is sufficient; the re-expression is
+  cosmetic and was skipped to avoid churn. Revisit if a consolidated palette is wanted.
+- **One Data-layer fix outside the Web project.**
+  `PlanetSignTransitEventsRepository.GetSnapshot` now casts `SignId` to `tinyint` in its
+  `tvf_PlanetSignAtDate` query — a latent `int`→`byte` Dapper mapping bug that this plan
+  was the first runtime consumer to exercise (via `GocharaRepository` → the Timing page).
+  `db/ikiastrro.sql` and the TVF are untouched; the TVF's own int-promotion is left for a
+  later schema pass.
+- **`MainLayout.razor.css`** kept its pre-existing serif-gold brand-banner rules; only the
+  dead `.site-nav a` / `a:hover` / `a.active` text-link rules were dropped when the nav
+  links became `.nav-pill` buttons.
+- **`VargaView` prev/next** walks `VargaBundles.RailOrder`; for D9 that renders
+  `D3 ‹ D9 › D12` (the Shadvarga block order), not the `D12 ‹ D9 › D30` shown illustratively
+  in an early draft of the plan.
+
+§12.3 (VargaBundles membership) was resolved against classical Shodashavarga plus the
+project's varga reference index — see `VargaBundles.Groups` (D2-US sits in Shadvarga).

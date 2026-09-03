@@ -29,6 +29,11 @@ Originally built for the D1 chart view; every page matches it, nothing invents i
   Indian chart diagrams, and the LifeWeeks grid remain hand-rolled SVG/CSS. Syncfusion's
   own theme CSS is scoped and its chart palette is driven from `tokens.css`. Rationale,
   screen-by-screen chart mapping, and NuGet list: `docs/uidesign-dataviz.md`.
+  - **2026-09-03 update:** the varga-centric rebuild did **not** take the Syncfusion
+    dependency. The polar wheel (`PolarWheel.razor`), the South / North Indian grids,
+    `MiniGrid`, and `LifeWeeks` are all hand-rolled SVG / CSS; **no `Syncfusion.Blazor`
+    package is referenced by `Ikiastrro.Web`**. Syncfusion remains a documented *option*
+    for a later dataviz pass (`docs/uidesign-dataviz.md`), not a current dependency.
 - `dotnet format` before committing.
 
 ### Token set (`tokens.css`)
@@ -46,9 +51,24 @@ Originally built for the D1 chart view; every page matches it, nothing invents i
 | `--house-moon` / `--house-moon-fg` | `#c7c8d4` / `#1a1730` | **silver** house-from-Moon badge |
 | `--dasha-ketu … --dasha-mercury` | 9-hue categorical (Vimshottari cycle order) | Dasha lord swatches, life-weeks grid |
 
+**Added by the varga-centric rebuild (Task 1.1, 2026-09-03):**
+
+| Token | Value | Use |
+|---|---|---|
+| `--nav-btn` / `--nav-btn-fg` | `#e2ad4f` / `#1a1730` | filled yellow Home / Charts nav pills (`.nav-pill`) in `MainLayout` |
+| `--cell-fill` / `--lagna-fill` | semantic (over `--paper`) | `SouthIndianGrid` cell ground / Lagna cell — grid stops reading `--paper` directly |
+| `--grid-stroke` | semantic | `SouthIndianGrid` / `MiniGrid` cell borders |
+| `--sign-text` / `--muted-text` | semantic / `#7c7398` | grid sign label / de-emphasised grid text |
+| `--vargottama` | `#7cc98a` (alias of `--dignity-good`) | `VargottamaStrip` lit-chip state |
+| `--wheel-ring` / `--wheel-tick` | semantic | `PolarWheel` outer ring / degree ticks |
+
 ---
 
 ## 2. Chart workspace — `/charts/{id}?tab=<t>`
+
+> **Superseded 2026-09-03 by §6 (varga-centric rebuild).** `ChartWorkspace.razor` and
+> `TabBar.razor` are deleted; `/charts/{id}` is now `Workspace.razor` with a varga rail,
+> not life-area tabs. §2–§5 below are kept as the record of the tabbed design.
 
 `Components/Pages/ChartWorkspace.razor` (replaced `ChartDetail.razor` + `ChartView.razor`,
 2026-08-30). Tab state is a query param — bookmarkable, back-button-correct. Unknown/absent
@@ -185,3 +205,52 @@ Nav shows **`ikiastrro`** (brass, larger) + "dedicated to my guru Sundari Hemach
 Deferred (spec §7–§13 of the life-area recreate): per-varga positions/lordship/significator
 tables, the full `FunctionalNaturePanel`, Home card gallery, `/reference/*`,
 `/charts/{id}/print`.
+
+---
+
+## 6. Varga-centric rebuild (2026-09-03)
+
+Spec: `docs/superpowers/specs/2026-09-01-varga-centric-web-ui-design.md`; plan
+`docs/superpowers/plans/2026-09-03-varga-centric-web-ui.md` (7 phases, branch
+`feat/signattributes-classifications`, commits `f15fe97..863deae`). The read layer was
+rebuilt around the charts themselves — D1 hero + a rail over all 20 divisionals grouped by
+the classical varga bundles. Design language, dark parchment palette, `tokens.css`,
+`SouthIndianGrid` and `DashaTimeline` are kept; the life-area tabs and `TabBar` are gone.
+Deviations from the spec are logged in the spec's "Implementation notes (2026-09-03)" block.
+
+### Routes
+
+| Route | Page | Notes |
+|---|---|---|
+| `/` | `Home` | name-prefix filter over person rows, each a compact D1 `MiniGrid`; "Add someone" button |
+| `/charts` | `SavedCharts` (was `Charts.razor`) | sortable `DataTable<Row>` + `MiniGrid` thumbnail + `ConfirmDialog` delete |
+| `/add` | `Add` | unchanged form; copy now "all 21 charts" |
+| `/charts/{id}` | `Workspace` (was `ChartWorkspace`) | D1 hero in a `ChartFrame` grid⇄wheel toggle, `VargaRail` (all 21), `PlanetPositionsTable` (D1), docked compact Dasha strip, `BirthComputationPanel` |
+| `/charts/{id}/varga/{code}` | `VargaView` | one varga: `ChartFrame`, `VargottamaStrip`, positions table, house-lordship + conjunctions disclosure, prev/next along the rail |
+| `/charts/{id}/timing` | `Timing` | Vimshottari Dasha tree + Sade Sati + Gochara |
+| `/charts/{id}/print` | `PrintChart` | flat dark single-column document; `wwwroot/css/print.css` via `<HeadContent><link media="print">` |
+| `/charts/{id}/life-weeks` | `LifeWeeks` | unchanged |
+
+### Components
+
+- **Pages:** `Workspace`, `VargaView`, `Timing`, `PrintChart`, `SavedCharts`, `Home`.
+- **Shared:** `Disclosure`, `EmptyState`, `SegmentedToggle`, `DataTable<T>` (generic
+  sortable table).
+- **Charts:** `PolarWheel` (hand-drawn inline `<svg>` 360° sidereal ring — **no Syncfusion**;
+  optional `?aspects=1` hand-drawn aspect chords, same-sign pairs filtered), `ChartFrame`
+  (grid⇄wheel toggle around `SouthIndianGrid | PolarWheel`), `MiniGrid` (compact
+  glyphs-only `SouthIndianGrid` thumbnail), `SouthIndianGrid` (shared, enriched — glyph
+  pills via `PlanetChip`, `SpecialPointLabels` param), `VargottamaStrip`, `HouseLordshipTable`,
+  `ConjunctionsTable`, `GocharaPanel`, `DashaTimeline` (+ new `Compact` Maha-only
+  non-interactive mode for the workspace dock).
+- **Workspace:** `WorkspaceHeader`, `VargaRail` (bundle-grouped `Disclosure`s; `VargaBundles`
+  map), `BirthComputationPanel` (ayanamsha + sidereal time; sunrise/sunset and method-source
+  omitted — see spec impl-notes).
+- **Deleted:** `ChartWorkspace`, `TabBar`, `Charts.razor`.
+
+### Data flow
+
+`WorkspaceData.Load(...)` — one batch load over the Plan-1 `GetByBirthDetailId` repository
+reads — returns an `IReadOnlyDictionary<string, LoadedChart>` keyed by chart code that every
+page renders from. `GocharaRepository` (new, over `tbl_PlanetSignTransitEvents` /
+`tvf_PlanetSignAtDate`) backs the Timing page's Gochara panel.
