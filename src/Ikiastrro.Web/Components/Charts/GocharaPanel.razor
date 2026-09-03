@@ -1,0 +1,43 @@
+@* Gochara — where the slow grahas sit sidereally now, relative to the natal Moon. Sa/Ju/Ra only. *@
+@if (Snapshots.Count == 0)
+{
+    <EmptyState Message="Transit events not backfilled." Cli="backfill-planet-transits" />
+}
+else
+{
+    <table class="gp">
+        <thead><tr><th>Graha</th><th>Sign now</th><th>House from Moon</th><th>In since</th><th>Next change</th></tr></thead>
+        <tbody>
+            @foreach (var s in Snapshots)
+            {
+                var sign = SignName(s.SignId);
+                <tr>
+                    <td>@s.Planet</td>
+                    <td>@Disp(sign) <span class="gp-dir">(@s.MotionDirection)</span></td>
+                    <td class="mono">@HouseFromMoon(sign)</td>
+                    <td class="mono">@s.InSignSinceUtc.ToString("d MMM yyyy")</td>
+                    <td class="mono">@(s.NextChangeUtc?.ToString("d MMM yyyy") ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<PlanetTransitSnapshot> Snapshots { get; set; } = Array.Empty<PlanetTransitSnapshot>();
+    [Parameter, EditorRequired] public string NatalMoonSign { get; set; } = "";
+
+    // Index = SignId (1..12). Confirm order against tbl_SignAttributes in Step 1.
+    private static readonly string[] SignById =
+        { "", "Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricornus","Aquarius","Pisces" };
+    private static string SignName(byte id) => id >= 1 && id <= 12 ? SignById[id] : "?";
+
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+
+    private string HouseFromMoon(string sign)
+    {
+        if (!Enum.TryParse<ZodiacName>(NatalMoonSign, out var moon) || !Enum.TryParse<ZodiacName>(sign, out var target))
+            return "—";
+        return AstroMath.CountFromSignToSign(moon, target).ToString();
+    }
+}
