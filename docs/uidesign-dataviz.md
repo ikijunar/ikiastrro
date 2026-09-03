@@ -124,3 +124,66 @@ everything from `tokens.css`, dark-only" rule in `docs/uidesign-specs.md`. Mitig
   Syncfusion job.
 - **Animated / real-time charts:** none of the current screens need them; keep
   `EnableAnimation="false"` for print stability.
+
+---
+
+## 6. Chart-component evolution, snapshots & revert
+
+The hand-rolled SVG / CSS-grid components (`src/Ikiastrro.Web/Components/Charts/`,
+catalogued in that folder's `README.md`) change often — new attributes, tweaked
+geometry, restyled cells. This section is how a past look stays recoverable.
+
+### 6.1 Golden snapshots
+
+Every release commits one rendered sample per visual component:
+
+```
+docs/artifacts/ui/<Component>-sample.svg
+```
+
+- Rendered from **one fixed fixture** (a single birth chart, defined once, never
+  changed) so a diff between two releases is pure rendering change, no data noise.
+- Committed on `master`, so `git show v0.5.3:docs/artifacts/ui/PolarWheel-sample.svg`
+  returns exactly what that component drew at `v0.5.3` — no checkout, no build.
+- `scripts/show-chart-at.ps1 -Chart PolarWheel -Tag v0.5.3` pulls it and opens it.
+- The snapshot is the **arbiter of a faithful revert**: a revert is correct iff the
+  current render matches `git show <oldtag>:<snapshot>` byte-for-byte.
+
+Generation harness: `tests/Ikiastrro.Web.Tests` (bUnit `ChartSnapshotTests` +
+`ChartFixture` + `SnapshotAssert`). Runs from **VS Test Explorer** (WDAC blocks
+terminal `dotnet test`); `dotnet build` still compiles it. Mint / update goldens
+with env `IKIASTRRO_UPDATE_SNAPSHOTS=1`. Full flow: `docs/artifacts/ui/README.md`.
+
+### 6.2 Two rules that make revert mechanical, not archaeology
+
+A chart component is `.razor` + `.razor.css` + shared geometry (`SvgGeometry` /
+`AstroMath`) + `--*` tokens in `tokens.css`. Reverting one file only reproduces an
+old look if its dependencies still mean what they did then. So:
+
+1. **Chart tokens are namespaced and additive.** `--wheel-ring`, `--cell-fill`,
+   `--vargottama`, … Never repurpose an existing token's meaning. A different look
+   ⇒ a **new** token (`--wheel-ring-sq`) or a value change **dated in
+   `uidesign-specs.md`**. An old `.razor.css` then still resolves against the
+   current `tokens.css`.
+2. **Geometry helpers version by addition.** If `AngleToXy` (or any shared
+   projection) must change behaviour, add `AngleToXyV2` or a parameter — do not
+   silently change the return. Old components keep compiling and rendering.
+
+With both held, a targeted file restore almost always produces a byte-identical
+snapshot.
+
+### 6.3 Revert procedure — `vX` back to `vY`
+
+| Fidelity | How |
+|---|---|
+| Fast | `git checkout vY -- src/Ikiastrro.Web/Components/Charts/<C>.razor <C>.razor.css` — then render and diff against `git show vY:docs/artifacts/ui/<C>-sample.svg`. Match ⇒ done. Mismatch ⇒ a token or helper moved; reconcile those. |
+| Guaranteed | `git worktree add ../ikiastrro-vY vY` — copy the component's whole surface (`.razor`, `.razor.css`, the geometry helper, the relevant `tokens.css` lines) into `master`. Brings every dependency at its `vY` state. |
+| Cleanest history | `git revert -m 1 <the feature merge that changed it>` — only if that merge was narrow. Find it: `scripts/show-chart-at.ps1 -Chart <C> -History`. |
+
+### 6.4 If you're toggling a look across releases — keep both, don't revert
+
+A recurring "classic vs square wheel" choice is a **variant**, not a mistake to
+undo. Add `PolarWheelSquare.razor` (its own `.razor.css`) or a `Shape` parameter,
+and let `ChartFrame` (or a `SegmentedToggle` / `?style=` param) pick. Each variant
+carries its own golden snapshot. One extra file; zero archaeology. Note the new
+variant under its `FEAT-…` row in `CHANGELOG.md`.

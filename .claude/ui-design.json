@@ -1,0 +1,34 @@
+{
+  "_comment": "Short-circuit config for the ui-design-spec skill. Phases 0-1 are settled; skill jumps to Phase 2.",
+  "stack": "blazor-server",
+  "dotnet": "net8.0",
+  "webProject": "src/Ikiastrro.Web",
+  "componentModel": "hand-rolled",
+  "uiLibs": [],
+  "uiLibsSanctionedException": "Syncfusion.Blazor is a DOCUMENTED OPTION for a future dataviz pass only (docs/uidesign-dataviz.md). Not a current dependency. Do not add it or any other component library without rammyps sign-off.",
+  "theme": "dark-only. No prefers-color-scheme split, no light palette.",
+  "tokenSource": "src/Ikiastrro.Web/wwwroot/css/tokens.css (:root custom properties)",
+  "cssRules": [
+    "Every component gets a CSS-isolation file Component.razor.css.",
+    "Components read tokens via var(--...) only - never a raw hex, never a CSS named colour, never an inline <style> block in .razor.",
+    "Run dotnet format before committing."
+  ],
+  "typography": {
+    "display": "Georgia, 'Iowan Old Style', 'Palatino Linotype', serif",
+    "bodyUi": "system sans",
+    "dataDates": "ui-monospace with tabular-nums"
+  },
+  "renderModes": {
+    "shell/layout": "static SSR or Interactive Server",
+    "forms/toggles/filters": "Interactive Server",
+    "svg charts/grids": "static SSR, hand-drawn inline <svg>, no JS",
+    "read-only tables": "static SSR"
+  },
+  "sharedPrimitives": ["Disclosure", "EmptyState", "SegmentedToggle", "DataTable<T>", "ConfirmDialog", "DeleteIconButton", "PlanetChip"],
+  "svgComponents": ["PolarWheel", "SouthIndianGrid", "MiniGrid", "ChartFrame", "VargottamaStrip", "LifeWeeks grid"],
+  "specDir": "docs/superpowers/specs",
+  "specNaming": "<date>-<slug>-design.md (structure per docs/superpowers/specs/_TEMPLATE.md)",
+  "livingUiDoc": "docs/uidesign-specs.md",
+  "designLanguageRule": "src/Ikiastrro.Web/Components/DESIGN.md (one-design-language rule)",
+  "companionDocs": ["docs/uidesign-dataviz.md", "docs/techstack-details.md", "docs/reference-calculations.md"]
+}

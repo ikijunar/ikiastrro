@@ -17,6 +17,9 @@
 # git worktrees (isolated task workspaces)
 /.claude/worktrees/
 
+# Obsidian vault config (per-user editor state, not project)
+/.obsidian/
+
 # Throwaway scratch dir (JHora reference exports now live in docs/artifacts/reference-charts/)
 /scratch/
 
@@ -26,3 +29,6 @@
 
 # Ad-hoc DDL notebooks
 /db/*.ipynb
+
+# Chart snapshot mismatches (transient; the committed baseline is *-sample.svg)
+/docs/artifacts/ui/*-sample.received.svg
