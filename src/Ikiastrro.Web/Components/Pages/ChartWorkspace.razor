@@ -34,6 +34,25 @@ else if (birthDetails is not null && charts.TryGetValue("D1", out var d1))
         </div>
     </header>
 
+    <section class="scaffold-smoke" style="margin:1rem 0;border:1px dashed var(--accent-line);padding:1rem;">
+        <p style="color:var(--ink-faint);font-size:12px;">SCAFFOLD — primitives smoke (removed with ChartWorkspace in Phase 2)</p>
+        <ChartFrame View="@(Tab == "wheel" ? "wheel" : "grid")" BaseHref="@($"/charts/{Id}")">
+            <GridContent>
+                @if (charts.TryGetValue("D1", out var d1s))
+                {
+                    <SouthIndianGrid AscendantSign="@d1s.AscSign" PlanetsBySign="d1s.PlanetsBySign"
+                                     CenterTitle="D1"><CenterMeta><b>D1</b></CenterMeta></SouthIndianGrid>
+                }
+            </GridContent>
+            <WheelContent>
+                <PolarWheel Points="SmokeWheelPoints()" />
+            </WheelContent>
+        </ChartFrame>
+        <Disclosure Title="Smoke disclosure" Open="false" OnToggle="_ => {}">
+            <EmptyState Message="Nothing here — this is the EmptyState primitive." Cli="backfill-charts" />
+        </Disclosure>
+    </section>
+
     <section class="ppt-section">
         <h2>Planetary positions &mdash; D1</h2>
         <PlanetPositionsTable Rows="d1PlanetRows" LagnaSign="@d1.AscSign" />
@@ -229,6 +248,18 @@ else if (birthDetails is not null)
     }
 
     private static string Display(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+
+    private IReadOnlyList<PolarWheel.Point> SmokeWheelPoints()
+    {
+        if (!d1KeyDetailsRaw.Any()) return Array.Empty<PolarWheel.Point>();
+        return d1KeyDetailsRaw
+            .Where(k => k.PointKind == "Graha")
+            .Select(k => new PolarWheel.Point(
+                k.Planet,
+                k.NirayanaLongitudeDegrees,
+                k.Planet == "Ascendant" ? "--accent" : $"--planet-{k.Planet.ToLowerInvariant()}"))
+            .ToList();
+    }
 
     private static IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> BuildPlanetsBySign(IReadOnlyList<ChartKeyDetail> keyDetails) =>
         keyDetails
