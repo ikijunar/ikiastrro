@@ -22,6 +22,8 @@ builder.Services.AddScoped<DashaPeriodsRepository>();
 builder.Services.AddScoped<SadeSatiRepository>();
 builder.Services.AddScoped<PlanetaryStateRuleRepository>();
 builder.Services.AddScoped<PlanetaryStateRepository>();
+builder.Services.AddScoped<PlanetSignTransitEventsRepository>();
+builder.Services.AddScoped<GocharaRepository>();
 builder.Services.AddScoped<RuleSetRepository>();
 builder.Services.AddScoped<ChartTypeRepository>();
 builder.Services.AddScoped<VargaSchemeRepository>();
