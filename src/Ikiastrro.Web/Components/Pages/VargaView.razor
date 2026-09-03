@@ -1,0 +1,139 @@
+@page "/charts/{Id:int}/varga/{Code}"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartTypeRepository ChartTypeRepo
+@using Ikiastrro.Web.Components.Workspace
+
+<PageTitle>@Code — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
+
+@if (_data is null || !_data.Charts.TryGetValue(Code, out var dn))
+{
+    <p class="vv-back"><a href="@($"/charts/{Id}")">← Workspace</a></p>
+    <EmptyState Message="@($"{Code} is not computed for this person.")" Cli="backfill-charts" />
+}
+else
+{
+    <div class="vv-nav">
+        <a href="@($"/charts/{Id}")">← Workspace</a>
+        <span class="vv-prevnext">
+            @if (Prev() is string p) { <a href="@($"/charts/{Id}/varga/{p}?view={View}")">‹ @p</a> }
+            <b>@Code · @dn.SanskritName · @(dn.VargaMethod ?? "—")</b>
+            @if (Next() is string n) { <a href="@($"/charts/{Id}/varga/{n}?view={View}")">@n ›</a> }
+        </span>
+    </div>
+
+    <WorkspaceHeader Person="_data.Person" D1="@(_data.Charts["D1"])" ComputationOpen="false"
+                     OnToggleComputation="@((bool _) => { })" />
+
+    <ChartFrame View="@View" BaseHref="@($"/charts/{Id}/varga/{Code}")">
+        <GridContent>
+            <SouthIndianGrid AscendantSign="@dn.AscendantSign"
+                             PlanetsBySign="PlanetsBySign(dn)"
+                             AspectedByGlyphs="ChartViewModel.BuildAspectedByGlyphs(dn.KeyDetails, dn.Aspects)"
+                             SpecialPointLabels="SpecialLabels(dn)"
+                             CenterTitle="@($"{Code} · {dn.SanskritName}")">
+                <CenterMeta><b>Lagna</b> @Disp(dn.AscendantSign)</CenterMeta>
+            </SouthIndianGrid>
+        </GridContent>
+        <WheelContent><PolarWheel Points="WheelPoints(dn)" Chords="@(ShowAspects ? ChordsFor(dn) : Array.Empty<PolarWheel.Chord>())" /></WheelContent>
+    </ChartFrame>
+
+    @if (View == "wheel")
+    {
+        <a class="vv-aspects" href="@AspectsHref()">@(ShowAspects ? "hide aspects" : "show aspects")</a>
+    }
+
+    <section class="vv-vg"><VargottamaStrip D1Grahas="@(_data.Charts["D1"].Grahas)" DnGrahas="dn.Grahas" DnCode="@Code" /></section>
+
+    <section class="vv-ppt">
+        <div class="vv-ppt-head">
+            <h2>Planet positions — @Code</h2>
+            <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
+        </div>
+        <PlanetPositionsTable Rows="Rows(dn)" LagnaSign="@dn.AscendantSign" Variant="varga" ShowTechnical="Tech" />
+    </section>
+
+    <Disclosure Title="House lordship & conjunctions" Open="_tablesOpen" OnToggle="v => _tablesOpen = v">
+        <HouseLordshipTable Rows="dn.HouseLords" />
+        <div style="height:1rem"></div>
+        <ConjunctionsTable Rows="dn.Conjunctions" />
+    </Disclosure>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public string Code { get; set; } = "";
+    [Parameter, SupplyParameterFromQuery(Name = "view")] public string? ViewParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "tech")] public string? TechParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "aspects")] public string? AspectsParam { get; set; }
+
+    private WorkspaceData? _data;
+    private bool _tablesOpen;
+
+    private string View => ViewParam == "wheel" ? "wheel" : "grid";
+    private bool Tech => TechParam == "1";
+    private bool ShowAspects => AspectsParam == "1";
+
+    protected override void OnParametersSet() =>
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
+            ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+
+    private string? Prev()
+    {
+        var i = VargaBundles.RailOrder.ToList().IndexOf(Code);
+        return i > 0 ? VargaBundles.RailOrder[i - 1] : null;
+    }
+    private string? Next()
+    {
+        var order = VargaBundles.RailOrder.ToList();
+        var i = order.IndexOf(Code);
+        return i >= 0 && i < order.Count - 1 ? order[i + 1] : null;
+    }
+
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+
+    private IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> PlanetsBySign(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
+                k.Planet, ChartViewModel.PlanetGlyph(k.Planet), ChartViewModel.DignityToken(k.DignityStatus),
+                k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialLabels(LoadedChart lc) =>
+        lc.SpecialPoints.GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch
+            { "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet }).ToList());
+
+    private static IReadOnlyList<PlanetRow> Rows(LoadedChart lc) =>
+        ChartViewModel.BuildPlanetRows(lc.KeyDetails, lc.HouseLords, lc.Aspects);
+
+    private IReadOnlyList<PolarWheel.Point> WheelPoints(LoadedChart lc) =>
+        lc.KeyDetails.Select(k => new PolarWheel.Point(
+            k.Planet, k.VargaLongitudeDegrees,
+            k.PointKind != "Graha" || k.Planet == "Ascendant" ? "--accent"
+              : $"--planet-{k.Planet.ToLowerInvariant()}")).ToList();
+
+    private IReadOnlyList<SegmentedToggle.Segment> TechSegments() => new[]
+    {
+        new SegmentedToggle.Segment("off", "Clean", $"/charts/{Id}/varga/{Code}?view={View}&tech=0"),
+        new SegmentedToggle.Segment("on",  "Technical", $"/charts/{Id}/varga/{Code}?view={View}&tech=1"),
+    };
+
+    private string AspectsHref() =>
+        $"/charts/{Id}/varga/{Code}?view=wheel&tech={(Tech ? "1" : "0")}&aspects={(ShowAspects ? "0" : "1")}";
+
+    private static IReadOnlyList<PolarWheel.Chord> ChordsFor(LoadedChart lc)
+    {
+        var lonByPlanet = lc.KeyDetails.GroupBy(k => k.Planet).ToDictionary(g => g.Key, g => g.First().VargaLongitudeDegrees);
+        var signByPlanet = lc.KeyDetails.GroupBy(k => k.Planet).ToDictionary(g => g.Key, g => g.First().Sign);
+        return lc.Aspects
+            .Where(a => lonByPlanet.ContainsKey(a.AspectingPlanet) && lonByPlanet.ContainsKey(a.AspectedTarget))
+            .Where(a => signByPlanet[a.AspectingPlanet] != signByPlanet[a.AspectedTarget])
+            .Select(a => new PolarWheel.Chord(lonByPlanet[a.AspectingPlanet], lonByPlanet[a.AspectedTarget], $"--planet-{a.AspectingPlanet.ToLowerInvariant()}"))
+            .ToList();
+    }
+}

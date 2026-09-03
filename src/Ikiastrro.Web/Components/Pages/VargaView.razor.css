@@ -1,0 +1,7 @@
+.vv-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+.vv-nav a { color: var(--accent); text-decoration: none; }
+.vv-prevnext { display: flex; gap: .75rem; align-items: baseline; }
+.vv-vg { margin: 1rem 0; }
+.vv-ppt { margin-top: 1rem; }
+.vv-ppt-head { display: flex; justify-content: space-between; align-items: baseline; }
+.vv-aspects { display: block; text-align: right; color: var(--accent); text-decoration: none; font-size: 12px; margin-top: .25rem; }
