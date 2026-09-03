@@ -1,51 +1,63 @@
 @page "/"
 @inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
 @inject NavigationManager Nav
 
 <PageTitle>ikiastrro</PageTitle>
 
 <h1>ikiastrro</h1>
-<p>Pick a saved person to view their chart, or add someone new.</p>
+<p>Pick a saved person to open their charts, or add someone new.</p>
 
-@if (people.Count == 0)
+@if (_people.Count == 0)
 {
-    <p class="muted">No charts saved yet — add your first person to get started.</p>
+    <p class="muted">No charts saved yet — add your first person.</p>
 }
 else
 {
-    <div class="field">
-        <label for="person-select">Saved people</label>
-        <select id="person-select" @onchange="OnPersonSelected">
-            <option value="">Select a name…</option>
-            @foreach (var p in people)
-            {
-                <option value="@p.Id">@FormatOption(p)</option>
-            }
-        </select>
+    <input class="home-search" type="search" placeholder="Filter by name…" @bind="_filter" @bind:event="oninput" />
+    <div class="home-rows">
+        @foreach (var row in Filtered())
+        {
+            <a class="home-row" href="@($"/charts/{row.Person.Id}")">
+                <MiniGrid PlanetsBySign="row.Glyphs" LagnaSign="@row.Lagna" />
+                <span class="home-meta">
+                    <b>@row.Person.Name</b>
+                    <span>@row.Person.DateOfBirth.ToString("d MMM yyyy") · @row.Person.EffectiveTimeOfBirth.ToString("h:mm tt")</span>
+                    <span>@row.Person.PlaceCity, @row.Person.PlaceCountry</span>
+                </span>
+            </a>
+        }
     </div>
 }
 
-<button class="btn-add" type="button" @onclick="GoToAdd">+ Add New Person</button>
+<button class="btn-add" type="button" @onclick='() => Nav.NavigateTo("/add")'>＋ Add someone</button>
 
 @code {
-    private IReadOnlyList<BirthDetails> people = Array.Empty<BirthDetails>();
+    private record Row(BirthDetails Person, string Lagna, IReadOnlyDictionary<string, IReadOnlyList<string>> Glyphs);
+
+    private readonly List<Row> _people = new();
+    private string _filter = "";
 
     protected override void OnInitialized()
     {
-        people = BirthDetailsRepo.GetAll();
-    }
-
-    /// <summary>Selecting a person is the whole interaction — no separate "view" submit step.</summary>
-    private void OnPersonSelected(ChangeEventArgs e)
-    {
-        if (e.Value is string s && int.TryParse(s, out var id) && id > 0)
+        foreach (var p in BirthDetailsRepo.GetAll())
         {
-            Nav.NavigateTo($"/charts/{id}");
+            var d1 = ChartResultsRepo.GetByBirthDetailId(p.Id).FirstOrDefault(r => r.ChartType == "D1");
+            if (d1 is null) { _people.Add(new Row(p, "", Empty)); continue; }
+            var kd = ChartKeyDetailsRepo.GetByChartResultId(d1.Id);
+            var lagna = kd.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign ?? "";
+            var glyphs = kd.Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
+                .GroupBy(k => k.Sign)
+                .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
+            _people.Add(new Row(p, lagna, glyphs));
         }
     }
 
-    private void GoToAdd() => Nav.NavigateTo("/add");
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> Empty =
+        new Dictionary<string, IReadOnlyList<string>>();
 
-    private static string FormatOption(BirthDetails p) =>
-        $"{p.Name} — {p.DateOfBirth:d MMM yyyy}, {p.TimeOfBirth:h:mm tt} — {p.PlaceCity}, {p.PlaceCountry}";
+    private IEnumerable<Row> Filtered() => string.IsNullOrWhiteSpace(_filter)
+        ? _people
+        : _people.Where(r => r.Person.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase));
 }
