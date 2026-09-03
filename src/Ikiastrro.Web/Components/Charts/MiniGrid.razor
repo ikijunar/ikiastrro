@@ -1,0 +1,56 @@
+@* Thumbnail South-Indian grid: glyphs only, whole grid optionally a link. Used in the VargaRail,
+   Home rows, and SavedCharts. Deliberately NOT SouthIndianGrid(Compact) — that still draws house
+   badges + dignity dots + a center info cell we don't want at this size. *@
+@{
+    RenderFragment gridInner =
+        @<div class="mini-chart">
+            @foreach (var cell in GridCells)
+            {
+                var planets = PlanetsBySign.TryGetValue(cell.MatchSign, out var list) ? list : Empty;
+                <div class="mini-cell @(cell.MatchSign == LagnaSign ? "lagna" : "")"
+                     style="grid-column:@cell.Col;grid-row:@cell.Row;">
+                    <span class="mini-sign">@cell.Abbr</span>
+                    <span class="mini-planets">
+                        @foreach (var p in planets)
+                        {
+                            <span class="mini-g">@ChartViewModel.PlanetGlyph(p)</span>
+                        }
+                    </span>
+                </div>
+            }
+            <div class="mini-cell mini-center" style="grid-column:2/4;grid-row:2/4;"></div>
+        </div>
+    ;
+}
+<div class="mini-root">
+    @if (Href is not null)
+    {
+        <a class="mini-link" href="@Href">@gridInner</a>
+    }
+    else
+    {
+        @gridInner
+    }
+    @if (Caption is not null)
+    {
+        <span class="mini-caption">@Caption</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyList<string>> PlanetsBySign { get; set; }
+        = new Dictionary<string, IReadOnlyList<string>>();
+    [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Caption { get; set; }
+
+    private static readonly IReadOnlyList<string> Empty = Array.Empty<string>();
+
+    private static readonly (string MatchSign, string Abbr, int Col, int Row)[] GridCells = new[]
+    {
+        ("Pisces","Pi",1,1), ("Aries","Ar",2,1), ("Taurus","Ta",3,1), ("Gemini","Ge",4,1),
+        ("Aquarius","Aq",1,2), ("Cancer","Cn",4,2),
+        ("Capricornus","Cp",1,3), ("Leo","Le",4,3),
+        ("Sagittarius","Sg",1,4), ("Scorpio","Sc",2,4), ("Libra","Li",3,4), ("Virgo","Vi",4,4)
+    };
+}

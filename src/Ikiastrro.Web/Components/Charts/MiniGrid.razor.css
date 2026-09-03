@@ -1,0 +1,14 @@
+.mini-root { display: inline-flex; flex-direction: column; gap: .25rem; }
+.mini-link { text-decoration: none; color: inherit; display: block; }
+.mini-link:hover .mini-chart { outline: 1px solid var(--accent); }
+.mini-chart {
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+    width: 132px; height: 132px; background: var(--grid-stroke); gap: 1px;
+}
+.mini-cell { background: var(--cell-fill); padding: 2px 3px; overflow: hidden; }
+.mini-cell.lagna { background: var(--lagna-fill); }
+.mini-center { background: var(--paper); }
+.mini-sign { font-size: 8px; color: var(--sign-text); }
+.mini-planets { display: flex; flex-wrap: wrap; gap: 1px; }
+.mini-g { font-size: 9px; color: var(--ink); font-weight: 600; }
+.mini-caption { font-size: 11px; color: var(--muted-text); text-align: center; }
