@@ -1,0 +1,134 @@
+@page "/charts/{Id:int}/print"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartTypeRepository ChartTypeRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject SadeSatiRepository SadeSatiRepo
+@inject GocharaRepository GocharaRepo
+@using Ikiastrro.Web.Components.Workspace
+
+<HeadContent>
+    <link rel="stylesheet" href="css/print.css" media="print" />
+</HeadContent>
+
+<PageTitle>@(_data?.Person.Name ?? "Chart") — print — ikiastrro</PageTitle>
+
+@if (_data is null)
+{
+    <EmptyState Message="No saved chart found." />
+}
+else
+{
+    var d1 = _data.Charts["D1"];
+    <div class="print-doc">
+        <header class="print-head">
+            <h1>@_data.Person.Name</h1>
+            <p>@_data.Person.DateOfBirth.ToString("d MMMM yyyy") · @_data.Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@_data.Person.UtcOffset) · @_data.Person.PlaceCity, @_data.Person.PlaceCountry</p>
+            <p class="print-karakas">
+                @foreach (var g in d1.Grahas.Where(g => g.CharaKaraka is not null))
+                { <span>@g.CharaKaraka @ChartViewModel.PlanetGlyph(g.Planet)</span> }
+            </p>
+        </header>
+
+        <section class="print-sec">
+            <h2>D1 · Rasi</h2>
+            <SouthIndianGrid AscendantSign="@d1.AscendantSign" MoonSign="@d1.MoonSign"
+                             PlanetsBySign="Glyphs(d1)" SpecialPointLabels="Special(d1)"
+                             CenterTitle="D1"><CenterMeta><b>Lagna</b> @Disp(d1.AscendantSign)</CenterMeta></SouthIndianGrid>
+        </section>
+
+        @if (_data.Charts.ContainsKey("D9"))
+        {
+            <section class="print-sec">
+                <h2>D1 ⊕ D9</h2>
+                <CombinedD1D9Grid D1KeyDetails="d1.KeyDetails" D9KeyDetails="@(_data.Charts["D9"].KeyDetails)" LagnaSign="@d1.AscendantSign" />
+            </section>
+        }
+
+        <section class="print-sec">
+            <h2>All vargas</h2>
+            <div class="print-minis">
+                @foreach (var vc in VargaBundles.RailOrder)
+                {
+                    @if (_data.Charts.TryGetValue(vc, out var lc))
+                    {
+                        <MiniGrid PlanetsBySign="GlyphNames(lc)" LagnaSign="@lc.AscendantSign" Caption="@vc" />
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="print-sec">
+            <h2>Planet positions — D1</h2>
+            <PlanetPositionsTable Rows="Rows(d1)" LagnaSign="@d1.AscendantSign" Variant="d1" ShowTechnical="true" />
+        </section>
+
+        <section class="print-sec">
+            <h2>House lordship — D1</h2>
+            <HouseLordshipTable Rows="d1.HouseLords" />
+        </section>
+
+        <section class="print-sec">
+            <h2>Conjunctions — D1</h2>
+            <ConjunctionsTable Rows="d1.Conjunctions" />
+        </section>
+
+        <section class="print-sec">
+            <h2>Vimshottari Dasha</h2>
+            @if (_dasha.Count > 0) { <DashaTimeline Roots="_dasha" /> }
+        </section>
+
+        <section class="print-sec">
+            <h2>Sade Sati</h2>
+            <SadeSatiTable Periods="_sadeSati" BirthDate="_data.Person.DateOfBirth.ToDateTime(_data.Person.EffectiveTimeOfBirth)" />
+        </section>
+
+        <section class="print-sec">
+            <h2>Gochara</h2>
+            <GocharaPanel Snapshots="_gochara" NatalMoonSign="@(d1.MoonSign ?? "")" />
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private WorkspaceData? _data;
+    private IReadOnlyList<DashaPeriodRecord> _dasha = Array.Empty<DashaPeriodRecord>();
+    private IReadOnlyList<SadeSatiPeriod> _sadeSati = Array.Empty<SadeSatiPeriod>();
+    private IReadOnlyList<PlanetTransitSnapshot> _gochara = Array.Empty<PlanetTransitSnapshot>();
+
+    protected override void OnParametersSet()
+    {
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
+            ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_data is null || !_data.Charts.ContainsKey("D1")) { _data = null; return; }
+        _dasha = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+        _sadeSati = SadeSatiRepo.GetByBirthDetailId(Id);
+        _gochara = GocharaRepo.GetSnapshots(DateTime.UtcNow);
+    }
+
+    private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> Glyphs(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant").GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
+                k.Planet, ChartViewModel.PlanetGlyph(k.Planet), ChartViewModel.DignityToken(k.DignityStatus),
+                k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> GlyphNames(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant").GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> Special(LoadedChart lc) =>
+        lc.SpecialPoints.GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch
+            { "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet }).ToList());
+
+    private static IReadOnlyList<PlanetRow> Rows(LoadedChart lc) =>
+        ChartViewModel.BuildPlanetRows(lc.KeyDetails, lc.HouseLords, lc.Aspects);
+}

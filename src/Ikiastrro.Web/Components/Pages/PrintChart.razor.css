@@ -1,0 +1,5 @@
+.print-doc { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+.print-head { border-bottom: 1px solid var(--paper-line); padding-bottom: 1rem; }
+.print-karakas { display: flex; flex-wrap: wrap; gap: .5rem; color: var(--ink-soft); }
+.print-sec h2 { margin-bottom: .75rem; }
+.print-minis { display: flex; flex-wrap: wrap; gap: 1rem; }

@@ -1,0 +1,11 @@
+/* Print-media override. Raw hex is intentional here: @media print must not depend on :root
+   custom properties surviving the print pipeline. DESIGN.md's no-raw-hex rule governs the token
+   system, not print fallbacks. */
+@media print {
+    .site-nav, .blazor-error-ui, #blazor-error-ui { display: none !important; }
+    body { background: #14132a !important; color: #ece2cb !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .print-sec { break-before: page; }
+    .print-head { break-after: avoid; }
+    .print-minis > * , table tr, .chart, .mini-chart, .cd9-chart, .wheel { break-inside: avoid; }
+}
