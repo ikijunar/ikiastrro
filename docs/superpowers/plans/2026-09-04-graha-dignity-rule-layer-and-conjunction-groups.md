@@ -24,9 +24,9 @@ Status: [x] complete   [ ] partial   [ ] not started
   Claude-Session: https://claude.ai/code/session_01FkkFi2M4dmZ2S4dxMQN5z7
   ```
 - Do not push unless asked.
-- Migrations: numbered `NN_*.sql`, idempotent, self-recording into `dbo.SchemaMigrations`. Migration `22` (multi-graha conjunction) is **applied**; Phase 1 adds **`23` only** (one file — table + both rule-sets + source + catalog + view). Fold the proven migration's final DDL forward into `db/ikiastrro.sql`; keep `vw_Chart_Consolidated` last, `vw_Dignity_Legend` just before it.
+- Migrations: numbered `NN_*.sql`, idempotent, self-recording into `dbo.SchemaMigrations`. Migration `22` (multi-graha conjunction) **applied**; Phase 1 adds **`23`** (`tbl_Rule_GrahaDignity` — applied) and **`24`** (`tbl_Rule_CompoundRelationship`). Fold each proven migration's DDL into `db/ikiastrro.sql`; keep `vw_Chart_Consolidated` last, `vw_Dignity_Legend` just before it.
 - No test project — verify via `dotnet build -warnaserror` (Debug + Release) + CLI `verify-*` modes + Web smoke `/charts/1`.
-- Spec §8 decisions 1–6 are settled: two-axis model, no `tbl_Dim_DignityType`, `MultiGrahaConjunction*` naming, Phase 3 first, and the **`DignityScore` ladder** `Exalted +4 · Moolatrikona +3 · Own +2 (every own row) · Friend +1 · Neutral 0 · Enemy −1 · Debilitated −2` (`Great Friend`→`+1`, `Great Enemy`→`−1`). §8.10–11 (`IsPrimary` assignment) are cosmetic — pick during seed authoring.
+- Spec §8 decisions 1–8 are settled: two-axis model, no `tbl_Dim_DignityType`, `MultiGrahaConjunction*` naming, Phase 3 first; **two separate scores** — `DignityScore` (`tbl_Rule_GrahaDignity`, `−2…+4`: `Exalted +4 · Moolatrikona +3 · Own +2 on every own row · Debilitated −2`) and `RelationshipScore` (`tbl_Rule_CompoundRelationship`, `−2…+2`: `Adhimitra +2 · Mitra +1 · Sama 0 · Śatru −1 · Adhiśatru −2`, full 5 tiers, never merged); `tbl_Rule_NaturalRelationship` Moon row kept as-is. §8.12–13 (`IsPrimary` assignment) are cosmetic — pick during seed authoring.
 
 ---
 
@@ -54,13 +54,25 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [ ] New `verify-dignity` branch, same shape as `verify-rules`.
 - [ ] **Tiling** — for each `RuleSetId` and each (PlanetId, SignId) that has rows, segments tile `[StartDegree, EndDegree)` with no gap / no overlap. (A planet's other 8 signs have no axis-A row — expected.)
 - [ ] **Coverage** — each classical planet (1–7) has exactly one whole-sign `EXALTED` and one `DEBILITATED` row in both rule-sets; 1–2 `OWN` signs; MT on exactly one sign.
-- [ ] **Score map** — every row's `DignityScore` = its `DignityTypeCode` canonical value (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on **every** own row, `DEBILITATED −2`); axis-B scores from `CombineToPanchadha` = `Great Friend`/`Friend`→`+1`, `Neutral`→`0`, `Enemy`/`Great Enemy`→`−1`.
+- [ ] **Dignity score map** — every `tbl_Rule_GrahaDignity` row's `DignityScore` = its `DignityTypeCode` canonical value (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on **every** own row, `DEBILITATED −2`).
+- [ ] **Relationship score map** — `tbl_Rule_CompoundRelationship` has all 6 (natural × temporary) combos, `RelationshipScore` per the ladder (`ADHIMITRA +2 · MITRA +1 · SAMA 0 · SHATRU −1 · ADHISHATRU −2`), `EnglishName` ∈ the 5 Maitrī `DignityStatus` labels, and `CombineToPanchadha` output = a lookup on it for all 6 cases.
 - [ ] **Metadata constancy** — `Mood`/`InterpretationTendency`/`Analogy` single-valued per `DignityTypeCode`; `DignityRationale` non-NULL only on `PVR_INTEGRATED`.
 - [ ] **Vocabulary unchanged** — the distinct `DignityStatus` strings `DignityEngine` can emit are exactly the 9 keyed in `tbl_Rule_WakefulnessState` (every one has a wakefulness row).
 - [ ] **Fixture** — a committed fixture chart's expected `DignityStatus` + `DignityScore` for all 9 grahas matches `DignityEngine.Evaluate` (passes against BPHS values now; re-checked after Task 5 — gate the active-set checks on `IsActive`).
 - [ ] **Seed cross-check** — `tbl_SignAttributes.ExaltedDegree` / `DebilitatedDegree` / `MooltrikonaRange*` agree with the active-set classical-seven rows (nodes exempt).
 - [ ] Register `verify-dignity` in `db/README.md`, `PRODUCT.md` verify column, any "run all verify" helper.
 - [ ] `dotnet build`; `verify-dignity` `ALL PASS`.
+- [ ] Commit.
+
+## Task 3: Migration `24` — `tbl_Rule_CompoundRelationship`
+**Files:** Create `db/24_add_rule_compound_relationship.sql` · Modify `db/ikiastrro.sql`
+**Interfaces:** Produces `dbo.tbl_Rule_CompoundRelationship` (6 rows, the Pañcadhā Maitrī 2×3 matrix); `tbl_Rule_Catalog` gains a row
+- [ ] Create `tbl_Rule_CompoundRelationship` per spec §5.24 — `RuleSetId` FK, `NaturalRelation VARCHAR(10) CHECK IN ('Friend','Neutral','Enemy')`, `IsTemporaryFriend BIT`, `CompoundCode VARCHAR(20) CHECK IN ('ADHIMITRA','MITRA','SAMA','SHATRU','ADHISHATRU')`, `SanskritName`, `EnglishName` (= the `DignityStatus` label), `RelationshipScore SMALLINT CHECK BETWEEN -2 AND 2`, `tbl_Rule_*` template cols, `UNIQUE (RuleSetId, NaturalRelation, IsTemporaryFriend)`. `IF OBJECT_ID` guarded.
+- [ ] Seed the 6 rows (RuleSetId 1, `SourceRefCode = 'SRC_PVR_INTEGRATED'`): Friend+TF→ADHIMITRA/Adhimitra/Great Friend/+2 · Friend+TE→SAMA/Sama/Neutral/0 · Neutral+TF→MITRA/Mitra/Friend/+1 · Neutral+TE→SHATRU/Śatru/Enemy/−1 · Enemy+TF→SAMA/Sama/Neutral/0 · Enemy+TE→ADHISHATRU/Adhiśatru/Great Enemy/−2. Idempotent (`IF NOT EXISTS` on the table).
+- [ ] Add the `tbl_Rule_Catalog` row (EngineCode `DIGNITY`, MethodCode `MATRIX_LOOKUP`, IntroducedIn `24_add_rule_compound_relationship.sql`).
+- [ ] `INSERT dbo.SchemaMigrations`; `PRINT` summary. Assert the 6-row lookup reproduces `CombineToPanchadha`'s truth table.
+- [ ] Apply to dev DB; fold into `db/ikiastrro.sql` (near the natural/temporary relationship seeds, or with the tbl_Rule_Catalog block).
+- [ ] `verify-sources` + `verify-schema` `ALL PASS`.
 - [ ] Commit.
 
 ---
@@ -73,8 +85,8 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [ ] `IDignityRuleProvider` — returns the active rule-set's segments as an in-memory structure keyed by planet → ordered segments (+ deep points, own-sign list, exalt/debil signs).
 - [ ] `DignityRuleProvider` (Data) — loads once via `SqlConnectionFactory`; Dapper.
 - [ ] `DignityEngine.Evaluate` — replace the private `ExaltationSign` / `DebilitationSign` / `Moolatrikona` dicts with lookups on the provider's data; add the `[StartDegree, EndDegree)` segment walk for own-sign vs moolatrikona (spec §4.3). Keep the varga-chart (`degreeInSign == null`) path identical to today. **`NaturalRelationship`, `SignDistance`, `IsTemporaryFriend`, and the priority merge stay untouched.**
-- [ ] `CombineToPanchadha` — keep the exact truth table; change its return to `(string Status, int Score)` — `Great Friend`/`Friend`→`+1`, `Neutral`→`0`, `Enemy`/`Great Enemy`→`−1` (spec §4.2d).
-- [ ] `DignityResult` gains `DeepDegree` (decimal?), `DignityTypeCode` (string?, null for Maitrī tiers), `DignityScore` (int, `−2…+4` — from the provider for axis A, from `CombineToPanchadha` for axis B).
+- [ ] `CombineToPanchadha` — replace the hard-coded 2×3 truth table with a lookup on `tbl_Rule_CompoundRelationship` (via `IDignityRuleProvider`); return `(string Status, int RelationshipScore)` from the matched row. Output strings unchanged (the 5 Maitrī labels).
+- [ ] `DignityResult` gains `DeepDegree` (decimal?), `DignityTypeCode` (string?, null for Maitrī tiers), `DignityScore` (int, `−2…+4`, axis A — 0 when no dignity applies), `RelationshipScore` (int?, `−2…+2`, axis B — null for Ascendant / a node with no Maitrī). The two scores are **never** merged.
 - [ ] Relax the Rāhu/Ketu branch so nodes can resolve to `Own Sign` / `Moolatrikona` when the active set provides those rows; a node not in any dignity still returns `Neutral` (no Panchadhā Maitrī for nodes). The 9 possible `DignityStatus` strings are unchanged — `tbl_Rule_WakefulnessState` needs no migration.
 - [ ] Update the `DignityEngine.cs` XML doc-comment: replace the 2026-08-24 Parāśari-convention paragraph with "active rule-set = `tbl_Rule_GrahaDignity` where `IsActive = 1`; currently `PVR_INTEGRATED` (Table 6). BPHS values retained as inactive `BPHS_PARASHARI`."
 - [ ] `dotnet build -warnaserror` Debug + Release.

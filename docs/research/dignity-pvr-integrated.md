@@ -178,26 +178,43 @@ would drop `Great Friend` / `Great Enemy` (they need the temporal layer), duplic
 
 Where a (planet, sign) spans two segment rows the same text is copied to both.
 
-## `DignityScore` — coarse ordinal over the final 9-value `DignityStatus`
+## Two separate scores — `DignityScore` and `RelationshipScore`
 
-rammyps's ladder (2026-09-04). Axis A carries four values; the axis-B Panchadhā tiers fill the
-`+1 … −1` band. The two **"great"** Maitrī tiers keep their distinction in the `DignityStatus`
-*string* but collapse to their base tier's number for scoring:
+rammyps's PVR scoring model (2026-09-04). Dignity and compound relationship are **two distinct
+dimensions** — kept as separate raw ordinals, combined only at the interpretation layer with
+configurable weights (`Dignity×w₁ + Relationship×w₂ + House×w₃ + …`), never baked into master data.
 
-| `DignityStatus` | Score | Axis |
-|---|--:|---|
-| Exalted | +4 | A |
-| Moolatrikona | +3 | A |
-| Own Sign — primary segment **and** "other own sign" | +2 | A |
-| Great Friend / Friend | +1 | B |
-| Neutral | 0 | B |
-| Enemy / Great Enemy | −1 | B |
-| Debilitated | −2 | A |
+**`DignityScore`** — axis A, stored on `tbl_Rule_GrahaDignity`, `CHECK (DignityScore BETWEEN -2 AND 4)`:
 
-The 4 axis-A values (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on **every** own row, `DEBILITATED
-−2`) are stored as a `DignityScore` column on `tbl_Rule_GrahaDignity`; the axis-B values (`+1` /
-`0` / `−1`) are returned by `CombineToPanchadha`. `verify-dignity` holds the canonical 9-row map
-(`Great Friend`→`+1`, `Great Enemy`→`−1`) and reconciles both. `CHECK (DignityScore BETWEEN -2 AND 4)`.
+| `DignityTypeCode` | Score |
+|---|--:|
+| `EXALTED` | +4 |
+| `MOOLATRIKONA` | +3 |
+| `OWN` — primary segment **and** "other own sign" | +2 |
+| *(no axis-A dignity applies)* | 0 |
+| `DEBILITATED` | −2 |
+
+**`RelationshipScore`** — axis B, stored on `tbl_Rule_CompoundRelationship` (migration 24),
+`CHECK (RelationshipScore BETWEEN -2 AND 2)`. The **full five-fold** Pañcadhā Maitrī — the two
+"great" tiers keep their own number (not collapsed):
+
+| Natural × Temporary | `CompoundCode` | Sanskrit | `EnglishName` (= `DignityStatus` label) | Score |
+|---|---|---|---|--:|
+| Friend + temp-friend | `ADHIMITRA` | Adhimitra | Great Friend | +2 |
+| Neutral + temp-friend | `MITRA` | Mitra | Friend | +1 |
+| Friend + temp-enemy · Enemy + temp-friend | `SAMA` | Sama | Neutral | 0 |
+| Neutral + temp-enemy | `SHATRU` | Śatru | Enemy | −1 |
+| Enemy + temp-enemy | `ADHISHATRU` | Adhiśatru | Great Enemy | −2 |
+
+`CombineToPanchadha` reads this 2×3 matrix instead of hard-coding it and returns
+`(Status, RelationshipScore)`. `DignityResult` surfaces **both** scores; `verify-dignity` pins each
+ladder independently. The merged 9-value `DignityStatus` label is still produced (axis A wins by
+priority) for display + the `tbl_Rule_WakefulnessState` join.
+
+`tbl_Rule_NaturalRelationship` — data confirmed = PVR; **the Moon row is kept as-is** (Moon neutral
+to Mars/Jupiter/Venus/Saturn, no enemies — the 3-column grid in the source note had a column slip on
+that one row). `tbl_Rule_TemporaryFriendshipDistance` — confirmed = PVR (sign-distance 2/3/4/10/11/12
+→ friend). Neither table is modified.
 
 ### Every own sign is `OWN +2`
 
@@ -214,7 +231,7 @@ whole-sign "other own sign" score `+2`. The 7 "other own sign" rows (`OWN 0–30
 \* PVR node scheme (source-dependent). `IsPrimary` marks the PVR "home" own sign (Gemini, Pisces,
 Taurus, Capricorn for Me/Ju/Ve/Sa; sole own sign for Sun/Moon/nodes); it does **not** affect
 `DignityScore`. Mars has no PVR "home" prose — Aries (MT sign) own segment proposed `IsPrimary = 1`
-(spec §8.11).
+(spec §8.13).
 
 ### Derived segment model — with `DignityScore`
 

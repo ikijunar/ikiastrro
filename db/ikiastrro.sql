@@ -3472,7 +3472,8 @@ VALUES
     ('tbl_Rule_ShadbalaComponent',          'STRENGTH',     'WEIGHT_TABLE',  'Reserved: shadbala sub-component weights and maxima, in rupas.', 'migration 18 (empty; P3)'),
     ('tbl_Rule_VimsopakaWeight',            'STRENGTH',     'WEIGHT_TABLE',  'Reserved: vimsopaka bala varga-group weights per scheme (shadvarga..shodasavarga).', 'migration 18 (empty; P3)'),
     ('tbl_Rule_Yoga',                       'YOGA',         'PREDICATE_SET', 'Reserved: yoga definitions — formation predicates, cancellation rules, and result codes.', 'migration 18 (empty; P4)'),
-    ('tbl_Rule_GrahaDignity',               'DIGNITY',      'SEGMENT_LOOKUP', 'Graha dignity (axis A): exaltation / debilitation / moolatrikona / own-sign degree segments per rule-set, with deep-degree points and DignityScore. PVR Integrated Approach Table 6 active; BPHS-Parashari mirror inactive.', '23_add_rule_graha_dignity.sql');
+    ('tbl_Rule_GrahaDignity',               'DIGNITY',      'SEGMENT_LOOKUP', 'Graha dignity (axis A): exaltation / debilitation / moolatrikona / own-sign degree segments per rule-set, with deep-degree points and DignityScore. PVR Integrated Approach Table 6 active; BPHS-Parashari mirror inactive.', '23_add_rule_graha_dignity.sql'),
+    ('tbl_Rule_CompoundRelationship',       'DIGNITY',      'MATRIX_LOOKUP', 'Panchadha Maitri: the natural x temporary compound relationship (Adhimitra..Adhishatru) with RelationshipScore -2..+2. Separate axis from tbl_Rule_GrahaDignity; combined only at the interpretation layer.', '24_add_rule_compound_relationship.sql');
 GO
 
 -- =====================================================================
@@ -3851,6 +3852,60 @@ CREATE VIEW dbo.vw_Dignity_Legend AS
 SELECT DISTINCT DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy
 FROM dbo.tbl_Rule_GrahaDignity
 WHERE IsActive = 1;
+GO
+
+-- =====================================================================
+-- 24 — tbl_Rule_CompoundRelationship: the Panchadha Maitri 2x3 matrix
+-- (natural x temporary -> compound) as scored master data (folded from
+-- db/24_add_rule_compound_relationship.sql). RelationshipScore -2..+2 is a
+-- SEPARATE axis from tbl_Rule_GrahaDignity.DignityScore; combined only at
+-- the interpretation layer. DignityEngine.CombineToPanchadha reads this
+-- instead of hard-coding the grid. EnglishName = the DignityStatus label.
+-- tbl_Rule_NaturalRelationship / tbl_Rule_TemporaryFriendshipDistance are
+-- the input rules and are unchanged. Idempotent.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Rule_CompoundRelationship', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_CompoundRelationship (
+        Id                   INT IDENTITY(1,1) NOT NULL
+                                 CONSTRAINT PK_Rule_CompoundRelationship PRIMARY KEY,
+        RuleSetId            TINYINT      NOT NULL
+                                 CONSTRAINT FK_Rule_CompoundRelationship_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        NaturalRelation      VARCHAR(10)  NOT NULL,
+        IsTemporaryFriend    BIT          NOT NULL,
+        CompoundCode         VARCHAR(20)  NOT NULL,
+        SanskritName         NVARCHAR(40) NOT NULL,
+        EnglishName          NVARCHAR(40) NOT NULL,
+        RelationshipScore    SMALLINT     NOT NULL,
+        MethodCode           VARCHAR(30)  NULL,
+        RuleParametersJson   NVARCHAR(MAX) NULL,
+        CalculationNarrative NVARCHAR(MAX) NULL,
+        SourceRefCode        VARCHAR(40)  NULL,
+        IsActive             BIT          NOT NULL
+                                 CONSTRAINT DF_Rule_CompoundRelationship_IsActive DEFAULT 1,
+        CONSTRAINT CK_RuleCompoundRel_Nat   CHECK (NaturalRelation IN ('Friend','Neutral','Enemy')),
+        CONSTRAINT CK_RuleCompoundRel_Code  CHECK (CompoundCode IN ('ADHIMITRA','MITRA','SAMA','SHATRU','ADHISHATRU')),
+        CONSTRAINT CK_RuleCompoundRel_Score CHECK (RelationshipScore BETWEEN -2 AND 2),
+        CONSTRAINT CK_RuleCompoundRel_Json  CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_RuleCompoundRel_Src   CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_CompoundRelationship UNIQUE (RuleSetId, NaturalRelation, IsTemporaryFriend)
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_CompoundRelationship)
+    INSERT dbo.tbl_Rule_CompoundRelationship
+        (RuleSetId, NaturalRelation, IsTemporaryFriend, CompoundCode, SanskritName, EnglishName,
+         RelationshipScore, MethodCode, SourceRefCode)
+    SELECT 1, v.NaturalRelation, v.IsTemporaryFriend, v.CompoundCode, v.SanskritName, v.EnglishName,
+           v.RelationshipScore, 'MATRIX_LOOKUP', 'SRC_PVR_INTEGRATED'
+    FROM (VALUES
+        ('Friend',  CONVERT(BIT,1), 'ADHIMITRA',  N'Adhimitra',  N'Great Friend', CONVERT(SMALLINT, 2)),
+        ('Friend',  CONVERT(BIT,0), 'SAMA',       N'Sama',       N'Neutral',      CONVERT(SMALLINT, 0)),
+        ('Neutral', CONVERT(BIT,1), 'MITRA',      N'Mitra',      N'Friend',       CONVERT(SMALLINT, 1)),
+        ('Neutral', CONVERT(BIT,0), 'SHATRU',     N'Shatru',     N'Enemy',        CONVERT(SMALLINT,-1)),
+        ('Enemy',   CONVERT(BIT,1), 'SAMA',       N'Sama',       N'Neutral',      CONVERT(SMALLINT, 0)),
+        ('Enemy',   CONVERT(BIT,0), 'ADHISHATRU', N'Adhishatru', N'Great Enemy',  CONVERT(SMALLINT,-2))
+    ) v (NaturalRelation, IsTemporaryFriend, CompoundCode, SanskritName, EnglishName, RelationshipScore);
 GO
 
 -- =====================================================================

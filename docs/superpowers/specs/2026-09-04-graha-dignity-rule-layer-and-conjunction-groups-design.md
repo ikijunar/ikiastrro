@@ -16,7 +16,8 @@
   - **No `tbl_Dim_DignityType`** (rammyps: "not create a new table"). Dignity-type metadata (`Mood` / `InterpretationTendency` / `Analogy`) and the new `DignityScore` are **columns on `tbl_Rule_GrahaDignity`**.
   - `tbl_Rule_GrahaDignity.DignityTypeCode` is a **4-value** set — `EXALTED / MOOLATRIKONA / OWN / DEBILITATED` — i.e. **axis A only** (see §4.2c). `FRIEND / NEUTRAL / ENEMY` are **not** in this table.
   - The five-fold **Panchadhā Maitrī axis is untouched**: `tbl_Rule_NaturalRelationship` (42 rows), `tbl_Rule_TemporaryFriendshipDistance` (12 rows), `DignityEngine.CombineToPanchadha`, the 9-value `DignityStatus` vocabulary, the `tbl_Rule_WakefulnessState` join, `verify-avastha`, and the `DignityState` terminology (9 concepts) all stay exactly as they are.
-  - New **`DignityScore`** — rammyps's coarse ordinal `−2…+4` over the *final* 9-value `DignityStatus` (§4.2d): `Exalted +4 · Moolatrikona +3 · Own +2 (every own row) · Friend +1 · Neutral 0 · Enemy −1 · Debilitated −2`, with `Great Friend`→`+1` / `Great Enemy`→`−1`. Axis-A values stored on `tbl_Rule_GrahaDignity`; axis-B values from `CombineToPanchadha`.
+  - **Two separate scores** (§4.2d, rammyps's PVR model — updated 2026-09-04, superseding the earlier single merged ladder): **`DignityScore`** (axis A, `−2…+4`, on `tbl_Rule_GrahaDignity` — `Exalted +4 · Moolatrikona +3 · Own +2 on every own row · Debilitated −2`) and **`RelationshipScore`** (axis B, `−2…+2`, on the new `tbl_Rule_CompoundRelationship` — `Adhimitra +2 · Mitra +1 · Sama 0 · Śatru −1 · Adhiśatru −2`). The two are never merged into one number; the interpretation layer combines them with configurable weights.
+  - New **migration `24`** — `tbl_Rule_CompoundRelationship` (the Pañcadhā Maitrī 2×3 matrix as scored master data). `tbl_Rule_NaturalRelationship` (Moon row kept as-is per rammyps) and `tbl_Rule_TemporaryFriendshipDistance` confirmed = PVR, unmodified.
   - Phase 1 migrations renumber: the dignity table is **migration `23`** (single file — table + both rule-sets + source + catalog).
 
 ## Research
@@ -86,9 +87,10 @@ segments**, and a **place to hang per-planet degree + dignity** for a conjunctio
 
 ## 3. Non-goals
 
-- No shadbala / virūpa strength model. `DignityScore` is a **coarse ordinal (−2…+4)** for a future
-  Planet ↔ Rāśi relationship score, not a shadbala component. No deep-exaltation falloff curve —
-  `DeepDegree` is stored, not consumed.
+- No shadbala / virūpa strength model, and **no combined "positional score"** — `DignityScore`
+  (`−2…+4`) and `RelationshipScore` (`−2…+2`) are stored as separate raw ordinals; the weighting that
+  combines them (with House etc.) is a later interpretation-layer concern and lives in code/config,
+  not master data. No deep-exaltation falloff curve — `DeepDegree` is stored, not consumed.
 - **No change to axis B (Panchadhā Maitrī).** The natural + temporary friendship rule tables, the
   9-value `DignityStatus` vocabulary, the `tbl_Rule_WakefulnessState` coupling, `verify-avastha`, and
   the `DignityState` terminology (9 concepts) are all out of scope. Phase 1 adds the axis-A segment
@@ -109,20 +111,22 @@ segments**, and a **place to hang per-planet degree + dignity** for a conjunctio
 ### 4.1 Layering
 
 ```
-AXIS A — dignity (sign + degree)          AXIS B — Panchadhā Maitrī (chart-specific)   [UNCHANGED]
-tbl_Rule_GrahaDignity                     tbl_Rule_NaturalRelationship (42 rows)
-  DignityTypeCode ∈ {EXALTED,               + tbl_Rule_TemporaryFriendshipDistance (12 rows)
-    MOOLATRIKONA, OWN, DEBILITATED}         + DignityEngine.CombineToPanchadha
-  segments per rule-set (PVR active,          → Great Friend / Friend / Neutral / Enemy / Great Enemy
-    BPHS inactive); DeepDegree;
-    DignityScore; Mood/Tendency/Analogy
+AXIS A — dignity (sign + degree)          AXIS B — Panchadhā Maitrī (chart-specific)   [DATA UNCHANGED]
+tbl_Rule_GrahaDignity                     tbl_Rule_NaturalRelationship (42 rows, Naisargika)
+  DignityTypeCode ∈ {EXALTED,               + tbl_Rule_TemporaryFriendshipDistance (12 rows, Tātkālika)
+    MOOLATRIKONA, OWN, DEBILITATED}         + tbl_Rule_CompoundRelationship (6 rows, NEW — the 2×3 matrix
+  segments per rule-set (PVR active,            NaturalRelation × IsTemporaryFriend → CompoundCode +
+    BPHS inactive); DeepDegree;                 RelationshipScore −2…+2)
+    DignityScore −2…+4                        + DignityEngine.CombineToPanchadha (reads the matrix)
+                                             → Great Friend / Friend / Neutral / Enemy / Great Enemy
         \_______________________  ______________________/
                                 \/
-              DignityEngine.Evaluate   (axis A wins by priority; else axis B)
+              DignityEngine.Evaluate   (axis A wins by priority for the LABEL; else axis B)
                         │
                         ▼
-              DignityStatus  (the SAME 9 values as today) + DignityScore (−2…+4)
-                        │
+   DignityStatus (SAME 9 values as today)  ·  DignityScore (−2…+4, axis A)  ·  RelationshipScore (−2…+2, axis B)
+                        │                              the two scores stay SEPARATE — combined only at the
+                        │                              interpretation layer with configurable weights
         ┌───────────────┴───────────────┐
         ▼                               ▼
   tbl_Chart_KeyDetails.DignityStatus    tbl_Chart_MultiGrahaConjunctionMember.DignityStatus
@@ -186,35 +190,44 @@ axis B — producing the one 9-value `DignityStatus`. That merge stays. `tbl_Rul
 `tbl_Rule_NaturalRelationship`, (c) collide on the words "Friend"/"Enemy" which mean different
 things on the two axes.
 
-### 4.2d `DignityScore`
+### 4.2d Two scores — `DignityScore` and `RelationshipScore` (kept separate)
 
-A coarse ordinal (rammyps's ladder, 2026-09-04). Axis A carries four values; the axis-B Panchadhā
-tiers fill the `+1 … −1` band between `Own` and `Debilitated`. The two **"great"** tiers keep their
-distinction in the `DignityStatus` *string* but collapse to their base tier's number for scoring —
-`Great Friend` scores as `Friend` (`+1`), `Great Enemy` as `Enemy` (`−1`):
+Per rammyps's PVR scoring model (2026-09-04): dignity and compound relationship are **two distinct
+astrological dimensions**. They are **not** merged into one number — the interpretation layer combines
+them later with configurable weights (`Dignity×w₁ + Relationship×w₂ + House×w₃ + …`), which live in
+code/config, never in master data.
 
-| `DignityStatus` | Score | Axis |
-|---|--:|---|
-| Exalted | **+4** | A |
-| Moolatrikona | **+3** | A |
-| Own Sign (primary segment **and** secondary "other own sign") | **+2** | A |
-| Great Friend / Friend | **+1** | B |
-| Neutral | **0** | B |
-| Enemy / Great Enemy | **−1** | B |
-| Debilitated | **−2** | A |
+**`DignityScore`** — axis A, stored on `tbl_Rule_GrahaDignity` (`CHECK BETWEEN -2 AND 4`):
 
-Storage, honouring "no new table":
-- The **4 axis-A scores** (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2`, `DEBILITATED −2`) are a stored
-  `DignityScore SMALLINT` column on `tbl_Rule_GrahaDignity` rows. `OWN` is `+2` on **every** own row
-  — the own segment of a moolatrikona sign (e.g. Leo 20–30° for Sun) and the whole-sign "other own
-  sign" (e.g. Gemini for Mercury), regardless of `IsPrimary`.
-- The **axis-B scores** (`+1` / `0` / `−1`) are returned by `DignityEngine.CombineToPanchadha`
-  alongside the tier string — already computed there; no table.
-- `verify-dignity` holds the canonical 9-row map (`Great Friend`→`+1`, `Great Enemy`→`−1`) and
-  asserts both sources agree with it.
+| `DignityTypeCode` | Score |
+|---|--:|
+| Exalted | **+4** |
+| Moolatrikona | **+3** |
+| Own Sign — primary segment **and** the secondary "other own sign", regardless of `IsPrimary` | **+2** |
+| *(no axis-A dignity)* | 0 |
+| Debilitated | **−2** |
 
-`DignityResult` surfaces `DignityScore` (int). Consumers that want mood/analogy join
-`vw_Dignity_Legend` (axis A) or the static map (axis B).
+**`RelationshipScore`** — axis B, stored on the new `tbl_Rule_CompoundRelationship` (§5.24, `CHECK
+BETWEEN -2 AND 2`). The full five-fold Pañcadhā Maitrī, **not** collapsed:
+
+| Natural × Temporary | `CompoundCode` | Sanskrit | `DignityStatus` label | Score |
+|---|---|---|---|--:|
+| Friend + Temp-friend | `ADHIMITRA` | Adhimitra | Great Friend | **+2** |
+| Neutral + Temp-friend | `MITRA` | Mitra | Friend | **+1** |
+| Friend + Temp-enemy · Enemy + Temp-friend | `SAMA` | Sama | Neutral | **0** |
+| Neutral + Temp-enemy | `SHATRU` | Śatru | Enemy | **−1** |
+| Enemy + Temp-enemy | `ADHISHATRU` | Adhiśatru | Great Enemy | **−2** |
+
+`DignityEngine.CombineToPanchadha` reads the 2×3 matrix from `tbl_Rule_CompoundRelationship`
+instead of hard-coding it, and returns `(Status, RelationshipScore)`. `DignityResult` surfaces
+**both** `DignityScore` (int, axis A) and `RelationshipScore` (int, axis B); the merged 9-value
+`DignityStatus` label is still produced (axis A wins by priority) for display and the
+`tbl_Rule_WakefulnessState` join. `verify-dignity` asserts the `tbl_Rule_GrahaDignity` scores match
+the axis-A ladder and the `tbl_Rule_CompoundRelationship` scores match the axis-B ladder.
+
+`tbl_Rule_NaturalRelationship` (data confirmed = PVR; Moon keeps its DB row — neutral to
+Mars/Jupiter/Venus/Saturn, no enemies) and `tbl_Rule_TemporaryFriendshipDistance` (data confirmed =
+PVR: sign-distance 2/3/4/10/11/12 → friend) are **not modified**.
 
 ### 4.3 Own-sign / moolatrikona segment resolution
 
@@ -375,6 +388,45 @@ INDEX (RuleSetId, PlanetId)
 - **Not touched:** `tbl_Rule_NaturalRelationship`, `tbl_Rule_TemporaryFriendshipDistance`,
   `tbl_Rule_WakefulnessState`, `tbl_Astro_Terminology` `DignityState` rows.
 
+### 24 — `tbl_Rule_CompoundRelationship` (the Pañcadhā Maitrī 2×3 matrix + `RelationshipScore`)
+
+`db/24_add_rule_compound_relationship.sql`. Makes the compound (natural × temporary) combination
+first-class, scored master data — so `CombineToPanchadha` reads it instead of hard-coding, and the
+`RelationshipScore` stays configurable (rammyps, 2026-09-04).
+
+```
+Id                   INT IDENTITY PK
+RuleSetId            TINYINT NOT NULL   FK tbl_Rule_Sets          -- RuleSetId 1 (matrix is shared BPHS/PVR)
+NaturalRelation     VARCHAR(10) NOT NULL   CHECK IN ('Friend','Neutral','Enemy')
+IsTemporaryFriend   BIT NOT NULL
+CompoundCode        VARCHAR(20) NOT NULL   CHECK IN ('ADHIMITRA','MITRA','SAMA','SHATRU','ADHISHATRU')
+SanskritName        NVARCHAR(40) NOT NULL
+EnglishName         NVARCHAR(40) NOT NULL  -- EXACTLY the DignityStatus label: Great Friend / Friend / Neutral / Enemy / Great Enemy
+RelationshipScore   SMALLINT NOT NULL      CHECK (RelationshipScore BETWEEN -2 AND 2)
+MethodCode          VARCHAR(30) NULL       -- 'MATRIX_LOOKUP'
+RuleParametersJson  NVARCHAR(MAX) NULL     CHECK (… ISJSON = 1)
+CalculationNarrative NVARCHAR(MAX) NULL
+SourceRefCode       VARCHAR(40) NULL       CHECK (… LIKE 'SRC[_]%')   -- SRC_PVR_INTEGRATED
+IsActive            BIT NOT NULL DEFAULT 1
+CONSTRAINT UQ_Rule_CompoundRelationship UNIQUE (RuleSetId, NaturalRelation, IsTemporaryFriend)
+```
+
+Seed 6 rows (the full 2×3):
+
+| NaturalRelation | IsTemporaryFriend | CompoundCode | Sanskrit | English | Score |
+|---|:--:|---|---|---|--:|
+| Friend | 1 | `ADHIMITRA` | Adhimitra | Great Friend | +2 |
+| Friend | 0 | `SAMA` | Sama | Neutral | 0 |
+| Neutral | 1 | `MITRA` | Mitra | Friend | +1 |
+| Neutral | 0 | `SHATRU` | Śatru | Enemy | −1 |
+| Enemy | 1 | `SAMA` | Sama | Neutral | 0 |
+| Enemy | 0 | `ADHISHATRU` | Adhiśatru | Great Enemy | −2 |
+
+Register in `tbl_Rule_Catalog` (EngineCode `DIGNITY`, MethodCode `MATRIX_LOOKUP`). No FK to
+`tbl_Rule_NaturalRelationship` / `tbl_Rule_TemporaryFriendshipDistance` — this is the *combination*
+rule, they are the *input* rules. `EnglishName` matches `tbl_Chart_KeyDetails.DignityStatus` so a
+consumer can `JOIN … ON kd.DignityStatus = cr.EnglishName` for the score.
+
 ## 6. Verification
 
 - **`verify-dignity`** (new CLI mode):
@@ -383,10 +435,13 @@ INDEX (RuleSetId, PlanetId)
     — that is expected, they are axis B).
   - **Coverage** — every classical planet (Id 1–7) has exactly one whole-sign `EXALTED` and one
     `DEBILITATED` row in both rule-sets; each has 1–2 `OWN` signs; MT appears on exactly one sign.
-  - **Score map** — every row's `DignityScore` equals the canonical value for its `DignityTypeCode`
-    (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on every own row, `DEBILITATED −2`); and the axis-B
-    scores from `CombineToPanchadha` match the canonical map (`Great Friend`/`Friend` → `+1`,
-    `Neutral` → `0`, `Enemy`/`Great Enemy` → `−1`).
+  - **Dignity score map** — every `tbl_Rule_GrahaDignity` row's `DignityScore` equals the canonical
+    value for its `DignityTypeCode` (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on every own row,
+    `DEBILITATED −2`).
+  - **Relationship score map** — `tbl_Rule_CompoundRelationship` has all 6 (natural × temporary)
+    combinations, `RelationshipScore` per the §4.2d ladder (`ADHIMITRA +2`, `MITRA +1`, `SAMA 0`,
+    `SHATRU −1`, `ADHISHATRU −2`), `EnglishName` ∈ the 5 Maitrī `DignityStatus` labels, and
+    `CombineToPanchadha`'s output matches a lookup on it for all 6 cases.
   - **Metadata constancy** — `Mood` / `InterpretationTendency` / `Analogy` are single-valued per
     `DignityTypeCode`; `DignityRationale` is non-NULL only on `PVR_INTEGRATED` rows.
   - **Vocabulary unchanged** — the set of distinct `DignityStatus` strings `DignityEngine` can emit
@@ -422,7 +477,7 @@ INDEX (RuleSetId, PlanetId)
 | Node Panchadhā Maitrī undefined under PVR | Non-goal — node not in dignity → `Neutral`, same as today. Documented in research note §"Divergence" + spec §3. |
 | Range-overlap can't be a per-row CHECK | `verify-dignity` gap/overlap assertion is the gate; `UNIQUE (RuleSetId,PlanetId,SignId,DignityTypeCode,StartDegree)` blocks exact dupes. |
 | Re-deriving axis B (Friend/Neutral/Enemy) into `tbl_Rule_GrahaDignity` | Rejected — would drop `Great Friend`/`Great Enemy`, duplicate `tbl_Rule_NaturalRelationship`, and collide on the words. Axis A holds only `EXALTED/MOOLATRIKONA/OWN/DEBILITATED`; §4.2c. |
-| More `DignityStatus` tiers than score rungs | The two "great" Maitrī tiers collapse to their base number for scoring (`Great Friend`→`+1`, `Great Enemy`→`−1`); the 9-value string keeps the distinction. Ladder is rammyps's `−2…+4`. §4.2d; `verify-dignity` pins each value. |
+| Dignity and relationship conflated in one score | Kept as two raw ordinals — `DignityScore` (`−2…+4`, `tbl_Rule_GrahaDignity`) and `RelationshipScore` (`−2…+2`, `tbl_Rule_CompoundRelationship`, full 5 Maitrī tiers, not collapsed). Weighting is interpretation-layer, not master data. §4.2d; `verify-dignity` pins both ladders. |
 | Book typo (note 4 "Leo") encoded literally | Encoded as Aries per Table 6; `CalculationNarrative` on that row records the discrepancy. |
 | `Mood`/`Analogy` repeated across ~40 rows | Accepted (small reference table); `verify-dignity` asserts constancy per `DignityTypeCode`; `vw_Dignity_Legend` is the de-duplicated read. |
 
@@ -441,28 +496,34 @@ INDEX (RuleSetId, PlanetId)
 4. **`tbl_Dim_DignityType`** — dropped. Metadata + score are columns on `tbl_Rule_GrahaDignity`;
    `vw_Dignity_Legend` is the de-duplicated read (rammyps, 2026-09-04).
 5. **Two axes** — `tbl_Rule_GrahaDignity` = axis A only (`EXALTED/MOOLATRIKONA/OWN/DEBILITATED`);
-   axis B (Panchadhā Maitrī) untouched. §4.2c.
-6. **`DignityScore` ladder** — resolved (rammyps, 2026-09-04): `Exalted +4 · Moolatrikona +3 ·
-   Own +2 · Friend +1 · Neutral 0 · Enemy −1 · Debilitated −2`, with `Great Friend`→`+1` and
-   `Great Enemy`→`−1` (the string keeps the distinction, the number does not). Every `OWN` row is
-   `+2` — the MT-sign own segment and the "other own sign" alike. §4.2d.
+   axis B (Panchadhā Maitrī) data-unchanged. §4.2c.
+6. **Two separate scores** — resolved (rammyps, 2026-09-04, superseding the earlier merged ladder):
+   **`DignityScore`** (`tbl_Rule_GrahaDignity`, `−2…+4`: `Exalted +4 · Moolatrikona +3 · Own +2 on
+   every own row · Debilitated −2`) and **`RelationshipScore`** (`tbl_Rule_CompoundRelationship`,
+   `−2…+2`: `Adhimitra +2 · Mitra +1 · Sama 0 · Śatru −1 · Adhiśatru −2` — full 5 tiers, not
+   collapsed). Never merged; interpretation-layer weights combine them. §4.2d.
+7. **`tbl_Rule_NaturalRelationship` Moon row** — resolved (rammyps, 2026-09-04): keep the DB row
+   (Moon neutral to Mars/Jupiter/Venus/Saturn, no enemies — standard BPHS/PVR). The 3-column grid in
+   the source message had a column slip on that row.
+8. **`tbl_Rule_CompoundRelationship` `RuleSetId`** — `1` (the natural × temporary combination matrix
+   is identical across BPHS and PVR; `SourceRefCode = SRC_PVR_INTEGRATED` records the citation used).
 
-### Open — not blocking migration 23
+### Open — not blocking the migrations
 
-7. **Axis-B tier mood/analogy** — take from the existing `DignityState` terminology `Description` +
-   a static presentation map (proposed), or add `Mood`/`Analogy` to `tbl_Rule_NaturalRelationship`
-   later.
-8. **Retire `tbl_SignAttributes` dignity columns?** — out of scope; `verify-dignity` cross-checks
-   them. Flag a later cleanup migration.
-9. **`DignityRationale` inline vs. side table** — inline `NVARCHAR(MAX)` column (proposed, text is
-   short and single-sourced). A `tbl_Rule_GrahaDignity_Note` side table only earns its keep if
-   multiple sourced notes per row are later wanted.
+9. **Axis-B tier mood/analogy** — take from the existing `DignityState` terminology `Description` +
+   a static presentation map (proposed), or add `Mood`/`Analogy` to `tbl_Rule_CompoundRelationship`
+   later (it already has `SanskritName` / `EnglishName`).
+10. **Retire `tbl_SignAttributes` dignity columns?** — out of scope; `verify-dignity` cross-checks
+    them. Flag a later cleanup migration.
+11. **`DignityRationale` inline vs. side table** — inline `NVARCHAR(MAX)` column (proposed, text is
+    short and single-sourced). A `tbl_Rule_GrahaDignity_Note` side table only earns its keep if
+    multiple sourced notes per row are later wanted.
 
 ### Open — pick during seed authoring (cosmetic, no score impact)
 
-10. **`IsPrimary` for dual-own planets** — proposed: `1` on the PVR "home" sign (Gemini, Pisces,
+12. **`IsPrimary` for dual-own planets** — proposed: `1` on the PVR "home" sign (Gemini, Pisces,
     Taurus, Capricorn for Me/Ju/Ve/Sa; sole own sign for Sun/Moon/nodes), `0` on the MT-sign own
     segment where a home exists.
-11. **Mars `IsPrimary`** — PVR gives Mars no "home" prose. Proposed: Aries (MT sign) own segment
+13. **Mars `IsPrimary`** — PVR gives Mars no "home" prose. Proposed: Aries (MT sign) own segment
     `IsPrimary = 1`, Scorpio `IsPrimary = 0` — inverse of the Me/Ju/Ve/Sa pattern. Flag if you'd
     rather Scorpio be primary.
