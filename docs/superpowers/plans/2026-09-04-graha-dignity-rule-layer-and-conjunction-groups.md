@@ -24,7 +24,7 @@ Status: [x] complete   [ ] partial   [ ] not started
   Claude-Session: https://claude.ai/code/session_01FkkFi2M4dmZ2S4dxMQN5z7
   ```
 - Do not push unless asked.
-- Migrations: numbered `NN_*.sql`, idempotent, self-recording into `dbo.SchemaMigrations`. Migration `22` (multi-graha conjunction) **applied**; Phase 1 adds **`23`** (`tbl_Rule_GrahaDignity`), **`24`** (`tbl_Rule_CompoundRelationship`), **`25`** (repoint `tbl_Rule_NaturalRelationship.SourceRefCode` → `SRC_PVR_INTEGRATED`) — all applied. Fold each proven migration's DDL into `db/ikiastrro.sql`; keep `vw_Chart_Consolidated` last, `vw_Dignity_Legend` just before it.
+- Migrations: numbered `NN_*.sql`, idempotent, self-recording into `dbo.SchemaMigrations`. Migration `22` (multi-graha conjunction) **applied**; Phase 1 adds **`23`** (`tbl_Rule_GrahaDignity`), **`24`** (`tbl_Rule_CompoundRelationship`), **`25`** (repoint `tbl_Rule_NaturalRelationship.SourceRefCode` → `SRC_PVR_INTEGRATED`), **`26`** (`tbl_Dim_GrahaAttribute` + `tbl_Rule_GrahaAttribute` + `tbl_Rule_DigBala` — graha characters, PVR-consolidated) — all applied. Fold each proven migration's DDL into `db/ikiastrro.sql`; keep `vw_Chart_Consolidated` last, `vw_Dignity_Legend` just before it.
 - No test project — verify via `dotnet build -warnaserror` (Debug + Release) + CLI `verify-*` modes + Web smoke `/charts/1`.
 - Spec §8 decisions 1–8 are settled: two-axis model, no `tbl_Dim_DignityType`, `MultiGrahaConjunction*` naming, Phase 3 first; **two separate scores** — `DignityScore` (`tbl_Rule_GrahaDignity`, `−2…+4`: `Exalted +4 · Moolatrikona +3 · Own +2 on every own row · Debilitated −2`) and `RelationshipScore` (`tbl_Rule_CompoundRelationship`, `−2…+2`: `Adhimitra +2 · Mitra +1 · Sama 0 · Śatru −1 · Adhiśatru −2`, full 5 tiers, never merged); `tbl_Rule_NaturalRelationship` Moon row kept as-is. §8.12–13 (`IsPrimary` assignment) are cosmetic — pick during seed authoring.
 
@@ -73,6 +73,17 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [ ] `INSERT dbo.SchemaMigrations`; `PRINT` summary. Assert the 6-row lookup reproduces `CombineToPanchadha`'s truth table.
 - [ ] Apply to dev DB; fold into `db/ikiastrro.sql` (near the natural/temporary relationship seeds, or with the tbl_Rule_Catalog block).
 - [ ] `verify-sources` + `verify-schema` `ALL PASS`.
+- [ ] Commit.
+
+## Task 3b: Migration `25` — repoint `tbl_Rule_NaturalRelationship` citation to PVR  · **DONE**
+`UPDATE … SET SourceRefCode = 'SRC_PVR_INTEGRATED'` (42 rows, data unchanged); baseline `UPDATE` line converged; from-empty rebuild → all 42 PVR; `verify-sources` ALL PASS. Committed `68003f1`.
+
+## Task 4: Migration `26` — graha characters (PVR-consolidated)  · **DONE**
+**Files:** `db/26_add_rule_graha_attributes.sql` · `db/ikiastrro.sql` · `docs/research/graha-characters-pvr.md`
+- [x] `docs/research/graha-characters-pvr.md` — cleaned/normalized worksheet (16 attributes, canonical `ValueCode`s, value vocabularies, 2 divergence flags).
+- [x] `tbl_Dim_GrahaAttribute` (16) + `tbl_Rule_GrahaAttribute` (111 rows, `UNIQUE (RuleSetId, GrahaId, AttributeCode)`, `SourceRefCode = SRC_PVR_INTEGRATED`) + `tbl_Rule_DigBala` (7, `DigBalaHouse` 1–12). Spec §5.26.
+- [x] 2 `tbl_Rule_Catalog` rows (`GRAHA`/`ATTR_LOOKUP`, `STRENGTH`/`HOUSE_LOOKUP`). `tbl_Planets` unchanged.
+- [x] Applied + idempotent; folded; from-empty scratch rebuild clean (16 / 111 / 7); `verify-sources` / `verify-schema` / `verify-rules` ALL PASS.
 - [ ] Commit.
 
 ---

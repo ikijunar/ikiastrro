@@ -429,6 +429,40 @@ Register in `tbl_Rule_Catalog` (EngineCode `DIGNITY`, MethodCode `MATRIX_LOOKUP`
 rule, they are the *input* rules. `EnglishName` matches `tbl_Chart_KeyDetails.DignityStatus` so a
 consumer can `JOIN … ON kd.DignityStatus = cr.EnglishName` for the score.
 
+### 25 — repoint `tbl_Rule_NaturalRelationship` citation
+
+`db/25_repoint_natural_relationship_source.sql`. `UPDATE … SET SourceRefCode = 'SRC_PVR_INTEGRATED'`
+(was `SRC_BPHS`) — 42 data rows unchanged; PVR is the cited key reference for the relationship layer.
+
+### 26 — `tbl_Dim_GrahaAttribute` + `tbl_Rule_GrahaAttribute` + `tbl_Rule_DigBala`
+
+`db/26_add_rule_graha_attributes.sql`. Normalizes rammyps's PVR-consolidated graha-characters
+worksheet (BPHS ch. 3 material) — see `docs/research/graha-characters-pvr.md`. `RuleSetId 1`,
+`SourceRefCode = 'SRC_PVR_INTEGRATED'` throughout. A blank worksheet cell → **no row** ("not defined
+for this source", not "unimplemented").
+
+```
+tbl_Dim_GrahaAttribute   AttributeCode PK, DisplayName, ValueKind (CODE/TEXT/NUMBER), SortOrder, Notes   — 16 rows
+
+tbl_Rule_GrahaAttribute  Id PK, RuleSetId FK, GrahaId FK tbl_Planets, AttributeCode FK tbl_Dim_GrahaAttribute,
+                         ValueCode (canonical token; NULL only for TEXT), ValueText (label, NOT NULL),
+                         Priority, SourceRefCode, IsActive, Notes
+                         UNIQUE (RuleSetId, GrahaId, AttributeCode)   — 111 rows
+  Attributes: SUBSTANCE_CLASS · BODY_DHATU · TIME_PERIOD · DIURNAL_STRENGTH · RITU ·
+              NATURAL_SIGNIFICATION · COLOR · ROYAL_STATUS · PRESIDING_DEITY · GENDER · TATTVA ·
+              GENERAL_CHARACTER (TEXT) · VARNA · VARNA_TRAIT · GUNA · RESIDENCE
+
+tbl_Rule_DigBala         Id PK, RuleSetId FK, GrahaId FK, DigBalaHouse TINYINT CHECK 1..12,
+                         MethodCode, RuleParametersJson, CalculationNarrative, SourceRefCode, IsActive
+                         UNIQUE (RuleSetId, GrahaId)   — 7 rows (Lagna = 1)
+```
+
+The worksheet's `Strength` column is `tbl_Rule_DigBala` (a strength input, kept out of the generic
+bag — spec §3). Catalog rows: `tbl_Rule_GrahaAttribute` → EngineCode `GRAHA` / `ATTR_LOOKUP`;
+`tbl_Rule_DigBala` → `STRENGTH` / `HOUSE_LOOKUP`. `tbl_Planets` is unchanged. Two source divergences
+recorded in `Notes`: Mercury & Saturn `GENDER = Female` (BPHS ch. 3 = neuter); Mercury `VARNA =
+Vaiśya` (some BPHS renderings = Śūdra).
+
 ## 6. Verification
 
 - **`verify-dignity`** (new CLI mode):
