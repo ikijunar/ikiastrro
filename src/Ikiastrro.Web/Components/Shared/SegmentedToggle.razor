@@ -1,0 +1,15 @@
+@* 2–3 link segments; the active one is filled --accent. Used for grid⇄wheel and show-technical,
+   both of which live in the query string so the view is bookmarkable. *@
+<div class="seg" role="group">
+    @foreach (var s in Segments)
+    {
+        <a class="seg-item @(s.Key == ActiveKey ? "active" : "")" href="@s.Href">@s.Label</a>
+    }
+</div>
+
+@code {
+    public record Segment(string Key, string Label, string Href);
+
+    [Parameter, EditorRequired] public IReadOnlyList<Segment> Segments { get; set; } = Array.Empty<Segment>();
+    [Parameter, EditorRequired] public string ActiveKey { get; set; } = "";
+}
