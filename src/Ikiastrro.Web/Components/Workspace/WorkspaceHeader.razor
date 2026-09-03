@@ -1,0 +1,40 @@
+@* Identity band for the workspace + VargaView. Chara Karakas come from the D1 grahas (the label
+   is identical on every varga, so D1 is the canonical source). *@
+<header class="ws-header">
+    <h1>@Person.Name</h1>
+    <p class="ws-sub">
+        @Person.DateOfBirth.ToString("d MMM yyyy") ·
+        @Person.EffectiveTimeOfBirth.ToString("h:mm tt") (@Person.UtcOffset) ·
+        @Person.PlaceCity, @Person.PlaceCountry
+    </p>
+    <p class="ws-karakas">
+        <span class="ws-karakas-lbl">Chara Karakas:</span>
+        @foreach (var (code, glyph) in KarakaGlyphs())
+        {
+            <span class="ws-karaka">@(code) <b>@glyph</b></span>
+        }
+    </p>
+    <button type="button" class="ws-comp-trigger" aria-expanded="@ComputationOpen"
+            @onclick="() => OnToggleComputation.InvokeAsync(!ComputationOpen)">
+        @(ComputationOpen ? "▾" : "▸") Birth &amp; computation
+    </button>
+</header>
+
+@code {
+    [Parameter, EditorRequired] public BirthDetails Person { get; set; } = null!;
+    [Parameter, EditorRequired] public LoadedChart D1 { get; set; } = null!;
+    [Parameter] public bool ComputationOpen { get; set; }
+    [Parameter] public EventCallback<bool> OnToggleComputation { get; set; }
+
+    private static readonly string[] KarakaOrder = { "AK", "AmK", "BK", "MK", "PiK", "PK", "GK", "DK" };
+
+    private IEnumerable<(string Code, string Glyph)> KarakaGlyphs()
+    {
+        var byCode = D1.Grahas
+            .Where(g => g.CharaKaraka is not null)
+            .ToDictionary(g => g.CharaKaraka!, g => ChartViewModel.PlanetGlyph(g.Planet));
+        foreach (var code in KarakaOrder)
+            if (byCode.TryGetValue(code, out var glyph))
+                yield return (code, glyph);
+    }
+}
