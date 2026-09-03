@@ -108,7 +108,15 @@ CREATE TABLE [dbo].[tbl_SignAttributes](
 	[MooltrikonaPlanetId] [tinyint] NULL,
 	[MooltrikonaRangeStart] [decimal](5, 2) NULL,
 	[MooltrikonaRangeEnd] [decimal](5, 2) NULL,
-PRIMARY KEY CLUSTERED 
+	[Foot] [varchar](11) NULL,
+	[OddEven] [varchar](4) NULL,
+	[OddEvenSanskrit] [varchar](10) NULL,
+	[BodyType] [varchar](10) NULL,
+	[Guna] [varchar](10) NULL,
+	[Day_Night] [varchar](5) NULL,
+	[Varna_Class] [varchar](11) NULL,
+	[SignIndication] [nvarchar](1000) NULL,
+PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
@@ -1322,6 +1330,18 @@ INSERT [dbo].[tbl_SignAttributes] ([Id], [SignName], [SignNameSanskrit], [Zodiac
 INSERT [dbo].[tbl_SignAttributes] ([Id], [SignName], [SignNameSanskrit], [ZodiacEnumValue], [RulingPlanetId], [type_house_element], [type_house_keyattri], [Gender], [Direction], [RisingType], [SymbolAnimalType], [SymbolDescription], [KalapurushaBodyPart], [ExaltedPlanetId], [ExaltedDegree], [DebilitatedPlanetId], [DebilitatedDegree], [MooltrikonaPlanetId], [MooltrikonaRangeStart], [MooltrikonaRangeEnd]) VALUES (10, N'Capricorn', N'Makara', N'Capricornus', 7, N'Earth', N'Chara', N'Female', N'South', NULL, N'Jalachara', N'Sea-goat', N'Knees', 3, CAST(28.00 AS Decimal(5, 2)), 5, CAST(5.00 AS Decimal(5, 2)), NULL, NULL, NULL)
 INSERT [dbo].[tbl_SignAttributes] ([Id], [SignName], [SignNameSanskrit], [ZodiacEnumValue], [RulingPlanetId], [type_house_element], [type_house_keyattri], [Gender], [Direction], [RisingType], [SymbolAnimalType], [SymbolDescription], [KalapurushaBodyPart], [ExaltedPlanetId], [ExaltedDegree], [DebilitatedPlanetId], [DebilitatedDegree], [MooltrikonaPlanetId], [MooltrikonaRangeStart], [MooltrikonaRangeEnd]) VALUES (11, N'Aquarius', N'Kumbha', N'Aquarius', 7, N'Air', N'Sthira', N'Male', N'West', NULL, N'Dwipada', N'Water-bearer', N'Calves/Ankles', NULL, NULL, NULL, NULL, 7, CAST(0.00 AS Decimal(5, 2)), CAST(20.00 AS Decimal(5, 2)))
 INSERT [dbo].[tbl_SignAttributes] ([Id], [SignName], [SignNameSanskrit], [ZodiacEnumValue], [RulingPlanetId], [type_house_element], [type_house_keyattri], [Gender], [Direction], [RisingType], [SymbolAnimalType], [SymbolDescription], [KalapurushaBodyPart], [ExaltedPlanetId], [ExaltedDegree], [DebilitatedPlanetId], [DebilitatedDegree], [MooltrikonaPlanetId], [MooltrikonaRangeStart], [MooltrikonaRangeEnd]) VALUES (12, N'Pisces', N'Meena', N'Pisces', 5, N'Water', N'Dwiswabhava', N'Female', N'North', NULL, N'Jalachara', N'Fish', N'Feet', 6, CAST(27.00 AS Decimal(5, 2)), 4, CAST(15.00 AS Decimal(5, 2)), NULL, NULL, NULL)
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Dynamic, enterprising, valiant, ruddy, head, forests, large forehead, hasty, impulsive, restless, thick eyebrows, leadership, overbearing, dry, lean, tall.' WHERE [Id] = 1
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Beautiful, face, stable, sluggish, loyal, meadows, plains, luxury halls, dining halls, eating places, fine teeth, large eyes, luxurious, faithful, thick hair, stout.' WHERE [Id] = 2
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Chest, garden, communication, journalism, schools, colleges, study rooms, cables, telephone, newspapers, tall, well-built, prominent cheeks, thick hair, broad chest, curious, learned, jovial.' WHERE [Id] = 3
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Heart, breast, watery fields, rivers, canals, kitchen, food, attractive, small build, emotional, deeply attached, mother-like, sensitive.' WHERE [Id] = 4
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Stomach, digestion, navel, mountains, forests, caves, deserts, palaces, parks, forts, boilers, steel factories, thin, dry, hot, royal, self-pride, insolent, domineering.' WHERE [Id] = 5
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Hip, appendix, lush gardens, fields, orchards, libraries, bookstores, farms, intelligent, sharp, orator, nervous, physically weak, discretion, tactfulness.' WHERE [Id] = 6
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Groins, businessmen, markets, trade centers, banks, hotels, amusement parks, entertainment, toilets, cosmetics, balanced, wise, good talker.' WHERE [Id] = 7
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Private parts, holes, deep caves, mines, garages, small build, dusky complexion, bright eyes, secretive, scheming, occult, best friend or a worst enemy, peevish, sensitive.' WHERE [Id] = 8
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Thighs, royal, attorneys, government offices, aircraft, falling, sparse hair, muscular, deep eyes, upright, honest, genial, gambler.' WHERE [Id] = 9
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Knees, marsh lands, watery places, alligators, beasts, bushes, slender build, long neck, prominent teeth, witty, perfectionist, patient, organizer, cautious, secretive, pragmatic.' WHERE [Id] = 10
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Ankles, charity, philosophy, tall, bony, small eyes, mountain spring, places with water, ill-formed teeth, coarse hair, hard-working, stoic, honest.' WHERE [Id] = 11
+UPDATE [dbo].[tbl_SignAttributes] SET [SignIndication] = N'Feet, oceans, seas, prisons, hospitals, hermitages, short, plump, large eyes, large eyebrows, lazy, emotional, timid, honest, irresolute, talkative, intuitive.' WHERE [Id] = 12
 END
 GO
 
