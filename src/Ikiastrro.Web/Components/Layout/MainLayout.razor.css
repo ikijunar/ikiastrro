@@ -28,22 +28,19 @@
     font-style: italic;
 }
 
-.site-nav a {
-    color: var(--ink-soft);
+/* Nav links are filled accent pills (2026-09-03 varga-centric UI). The old underlined
+   text-link rules (.site-nav a / a:hover / a.active) are gone with them. */
+.nav-pill {
+    padding: .3rem .8rem;
+    border-radius: .4rem;
     text-decoration: none;
-    font-size: 14px;
     font-weight: 600;
-    padding: 4px 2px;
-    border-bottom: 2px solid transparent;
+    background: var(--nav-btn);
+    color: var(--nav-btn-fg);
 }
 
-.site-nav a:hover {
-    color: var(--accent);
-}
-
-.site-nav a.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent-line);
+.nav-pill.active {
+    outline: 2px solid var(--accent-line);
 }
 
 .site-body {
