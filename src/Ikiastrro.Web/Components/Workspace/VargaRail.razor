@@ -1,0 +1,46 @@
+@* The 4 classical strength bundles + Extra vargas, each a Disclosure of MiniGrid tiles.
+   A varga appears once, in its smallest bundle. Missing chart -> EmptyState tile. *@
+<div class="rail">
+    @foreach (var (title, codes) in VargaBundles.Groups)
+    {
+        <Disclosure Title="@title" Open="@(_open.Contains(title))" OnToggle="v => SetOpen(title, v)">
+            <div class="rail-tiles">
+                @foreach (var code in codes)
+                {
+                    @if (Charts.TryGetValue(code, out var lc))
+                    {
+                        <MiniGrid PlanetsBySign="GlyphsBySign(lc)" LagnaSign="@lc.AscendantSign"
+                                  Href="@($"/charts/{PersonId}/varga/{code}")"
+                                  Caption="@Caption(code, lc)" />
+                    }
+                    else
+                    {
+                        <div class="rail-missing">
+                            <EmptyState Message="@($"{code} not computed")" Cli="backfill-charts" />
+                        </div>
+                    }
+                }
+            </div>
+        </Disclosure>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public int PersonId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, LoadedChart> Charts { get; set; }
+        = new Dictionary<string, LoadedChart>();
+
+    private readonly HashSet<string> _open = new() { "Shadvarga (6)" };
+    private void SetOpen(string title, bool open) { if (open) _open.Add(title); else _open.Remove(title); }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> GlyphsBySign(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
+
+    private static string Caption(string code, LoadedChart lc)
+    {
+        var method = lc.VargaMethod is { Length: > 0 } m ? $" · {m[0]}" : "";
+        return code == "D1" ? $"{code} · hero" : $"{code}{method}";
+    }
+}
