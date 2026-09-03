@@ -25,6 +25,7 @@ maintained · `superseded` = replaced, kept for history.
 | **`master_ikiastrro.md`** (this file) | The doc index — where everything is | 2026-08-31 | living |
 | [`PRODUCT.md`](PRODUCT.md) | Feature catalogue + completion tracker — what the software does and how much of each part is done (STANDARDS §M.3) | 2026-09-02 | living |
 | [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) | Environments, database-naming rule, config & secrets layering, migration policy (STANDARDS §M.1) | 2026-09-02 | living |
+| [`CHANGELOG.md`](CHANGELOG.md) | Per-release change log — a release = a push to `origin/master` tagged `vX.Y.Z`; drafted by `scripts/release.ps1`, grouped by `FEAT-<AREA>-<NN>` | 2026-09-04 | living |
 | [`../ikiastrro.md`](../ikiastrro.md) | Full running build/decision **history**, dated sections, every session's "what changed and why" | 2026-08-24 | living |
 | [`../methods_prodmag.md`](../methods_prodmag.md) | Reusable product-management process (Vision → JTBD → ICE → roadmap) — read before picking the next feature | 2026-08-27 | living |
 | [`../STANDARDS.md`](../STANDARDS.md) | Workspace-wide naming/structure conventions this project follows | — | living |
@@ -69,7 +70,9 @@ maintained · `superseded` = replaced, kept for history.
 | Doc | For | Created | Status |
 |---|---|---|---|
 | [`docs/uidesign-specs.md`](docs/uidesign-specs.md) | Web workspace design — layout, design tokens, every component, the decisions behind them | 2026-08-30 | living |
-| [`docs/uidesign-dataviz.md`](docs/uidesign-dataviz.md) | Charting stack — Syncfusion Blazor pick + rationale, screen-by-screen chart mapping, palette reconciliation, NuGet list | 2026-08-31 | living (not yet wired into `src/`) |
+| [`docs/uidesign-dataviz.md`](docs/uidesign-dataviz.md) | Charting stack — Syncfusion pick + rationale (**not taken**; hand-rolled SVG stands), screen→chart map, palette reconciliation; **§6** = chart-component evolution, golden-SVG snapshots, revert procedure, additive-token / additive-geometry rules | 2026-08-31 | living |
+| [`src/Ikiastrro.Web/Components/Charts/README.md`](src/Ikiastrro.Web/Components/Charts/README.md) | Catalog of the hand-rolled SVG/CSS chart components — contract, projection formula, tokens & render mode per component | 2026-09-04 | living |
+| [`docs/artifacts/ui/README.md`](docs/artifacts/ui/README.md) | Golden-SVG snapshot store — fixed fixture, `tests/Ikiastrro.Web.Tests` (bUnit) run/update flow (VS Test Explorer; `IKIASTRRO_UPDATE_SNAPSHOTS=1`) | 2026-09-04 | living |
 | [`src/Ikiastrro.Web/Components/DESIGN.md`](src/Ikiastrro.Web/Components/DESIGN.md) | The one-line Web UI design rule for component authors | 2026-08-30 | living |
 
 ## Scope & requirements — what we're building and why
