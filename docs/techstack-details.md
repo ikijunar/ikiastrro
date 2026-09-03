@@ -144,7 +144,9 @@ computes D1/D2/D6/D9/D10/D11 + Dasha via `ChartGenerationService`, stores, print
 | `verify-functional-nature` | Worked-example assertions for `LagnaFunctionalNature` |
 | `compare-functional-nature` | Print where the computed heuristic diverges from `tbl_Dim_LagnaFunctionalNature` |
 
-No unit-test project — these `verify-*` modes are the regression suite.
+These `verify-*` modes are the regression suite for the engine + DB. The one
+xUnit project is `tests/Ikiastrro.Web.Tests` (bUnit) — golden-SVG snapshots of the
+hand-rolled chart components; see `docs/artifacts/ui/README.md`.
 
 ---
 
@@ -165,15 +167,19 @@ No unit-test project — these `verify-*` modes are the regression suite.
 
 ---
 
-## 8. Verification model (no test project)
+## 8. Verification model
 
 1. `dotnet build Ikiastrro.slnx` clean (0 warnings / 0 errors).
 2. `verify-vargas` + `verify-functional-nature` exit 0.
-3. Golden record: **`1 Ramakrishnan`** (22 Apr 1981, Chennai; Aries Lagna, Moon debilitated
+3. `tests/Ikiastrro.Web.Tests` green in **VS Test Explorer** (bUnit chart-render
+   snapshots; WDAC blocks terminal `dotnet test`, `dotnet build` still compiles it).
+   An intended visual change: re-run with env `IKIASTRRO_UPDATE_SNAPSHOTS=1`, review
+   the `docs/artifacts/ui/*-sample.svg` diff, commit it, note it in `CHANGELOG.md`.
+4. Golden record: **`1 Ramakrishnan`** (22 Apr 1981, Chennai; Aries Lagna, Moon debilitated
    in Scorpio) — a ~12-item fact checklist re-confirmed after UI/engine changes.
-4. Live browser smoke test in VS against `/charts/1`, `/charts/2` (dense chart), `/charts/3`
+5. Live browser smoke test in VS against `/charts/1`, `/charts/2` (dense chart), `/charts/3`
    (born 2010).
-5. Colour: the dataviz-skill `validate_palette.js` run recorded for any categorical palette;
+6. Colour: the dataviz-skill `validate_palette.js` run recorded for any categorical palette;
    colour is always a scan aid, never the sole signal (every mark carries text too).
 
 ---

@@ -5,4 +5,7 @@
     <Project Path="src/Ikiastrro.Data/Ikiastrro.Data.csproj" />
     <Project Path="src/Ikiastrro.Web/Ikiastrro.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ikiastrro.Web.Tests/Ikiastrro.Web.Tests.csproj" />
+  </Folder>
 </Solution>
