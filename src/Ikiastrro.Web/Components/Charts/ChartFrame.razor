@@ -1,0 +1,23 @@
+@* Wraps a South-Indian grid and a polar wheel behind a bookmarkable ?view= toggle. The page
+   supplies both render fragments already bound to that chart's data; ChartFrame just switches. *@
+<div class="frame">
+    <div class="frame-bar">
+        <SegmentedToggle ActiveKey="@View" Segments="Segments" />
+    </div>
+    <div class="frame-body">
+        @if (View == "wheel") { @WheelContent } else { @GridContent }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string View { get; set; } = "grid";
+    [Parameter, EditorRequired] public string BaseHref { get; set; } = "";
+    [Parameter, EditorRequired] public RenderFragment GridContent { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment WheelContent { get; set; } = null!;
+
+    private IReadOnlyList<SegmentedToggle.Segment> Segments => new[]
+    {
+        new SegmentedToggle.Segment("grid",  "Grid",  $"{BaseHref}?view=grid"),
+        new SegmentedToggle.Segment("wheel", "Wheel", $"{BaseHref}?view=wheel"),
+    };
+}
