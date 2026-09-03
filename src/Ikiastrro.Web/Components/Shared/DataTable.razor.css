@@ -1,0 +1,10 @@
+.dt-scroll { overflow-x: auto; }
+.dt { width: 100%; border-collapse: collapse; }
+.dt th { text-align: left; border-bottom: 1px solid var(--paper-line); }
+.dt td { padding: .4rem .6rem; border-bottom: 1px solid var(--paper-line); }
+.dt-sort {
+    background: none; border: 0; color: var(--ink-soft); font: inherit; font-weight: 600;
+    cursor: pointer; padding: .4rem .6rem; display: inline-flex; gap: .3rem; align-items: center;
+}
+.dt-sort.on { color: var(--ink); }
+.dt-arrow { color: var(--accent); font-size: 10px; }

@@ -1,0 +1,61 @@
+@typeparam TRow
+@* Generic sortable table. Column.Sort is the key selector; Column.Cell renders the <td> body.
+   Sort is client-side over the already-loaded Rows — these lists are small (saved people). *@
+<div class="dt-scroll">
+    <table class="dt">
+        <thead>
+            <tr>
+                @foreach (var col in Columns)
+                {
+                    <th>
+                        <button type="button" class="dt-sort @SortClass(col)" @onclick="() => SortBy(col)">
+                            @col.Header
+                            <span class="dt-arrow">@Arrow(col)</span>
+                        </button>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Sorted())
+            {
+                <tr>
+                    @foreach (var col in Columns)
+                    {
+                        <td>@col.Cell(row)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    public record Column(string Header, Func<TRow, object?> Sort, RenderFragment<TRow> Cell);
+
+    [Parameter, EditorRequired] public IReadOnlyList<TRow> Rows { get; set; } = Array.Empty<TRow>();
+    [Parameter, EditorRequired] public IReadOnlyList<Column> Columns { get; set; } = Array.Empty<Column>();
+    [Parameter] public string? InitialSortHeader { get; set; }
+
+    private Column? _sortCol;
+    private bool _desc;
+
+    protected override void OnParametersSet()
+        => _sortCol ??= Columns.FirstOrDefault(c => c.Header == InitialSortHeader) ?? Columns.FirstOrDefault();
+
+    private void SortBy(Column col)
+    {
+        if (_sortCol == col) _desc = !_desc;
+        else { _sortCol = col; _desc = false; }
+    }
+
+    private IEnumerable<TRow> Sorted()
+    {
+        if (_sortCol is null) return Rows;
+        var ordered = Rows.OrderBy(r => _sortCol.Sort(r));
+        return _desc ? ordered.Reverse() : ordered;
+    }
+
+    private string SortClass(Column col) => _sortCol == col ? "on" : "";
+    private string Arrow(Column col) => _sortCol == col ? (_desc ? "▼" : "▲") : "";
+}
