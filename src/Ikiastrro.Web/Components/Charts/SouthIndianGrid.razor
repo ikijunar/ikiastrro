@@ -45,6 +45,12 @@
                             <span class="house-num from-moon" title="House @hm from the Moon">@hm</span>
                         }
                     </span>
+                    @if (SpecialPointLabels.TryGetValue(cell.MatchSign, out var sp) && sp.Count > 0)
+                    {
+                        <div class="special-labels">
+                            @foreach (var spLabel in sp) { <span class="special-label">@spLabel</span> }
+                        </div>
+                    }
                     <div class="sign-label">
                         <span class="sign-en">@cell.DisplayEn</span>
                         @if (!Compact)
@@ -56,15 +62,13 @@
                         @foreach (var g in glyphs)
                         {
                             <span class="planet-glyph">
+                                <PlanetChip Planet="@g.PlanetName" />
                                 @if (g.DignityToken is not null)
                                 {
                                     <span class="dot" style="background:var(--dignity-@g.DignityToken)"></span>
                                 }
-                                @g.Glyph<span class="direction">(@(g.IsRetrograde ? "R" : "D"))</span>
-                                @if (g.IsCombust)
-                                {
-                                    <span class="combust-icon" title="Combust">🔥</span>
-                                }
+                                <span class="direction">(@(g.IsRetrograde ? "R" : "D"))</span>
+                                @if (g.IsCombust) { <span class="combust-icon" title="Combust">🔥</span> }
                             </span>
                         }
                     </div>
@@ -118,6 +122,11 @@
     /// pass aspects (or a chart type nothing's been computed for yet) render exactly as before.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<string>> AspectedByGlyphs { get; set; }
+        = new Dictionary<string, IReadOnlyList<string>>();
+
+    /// <summary>Internal sign name → special-point short codes to print in that cell's top-left
+    /// corner (AL / A2..A12 / HL / Gk / Md). Empty → nothing rendered (back-compat).</summary>
+    [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialPointLabels { get; set; }
         = new Dictionary<string, IReadOnlyList<string>>();
 
     // Fixed South Indian grid: sign never moves. MatchSign uses this project's internal

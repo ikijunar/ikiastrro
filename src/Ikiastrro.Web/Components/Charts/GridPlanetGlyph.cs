@@ -11,4 +11,4 @@ namespace Ikiastrro.Web.Components.Charts;
 /// record is built for — the Ascendant never gets a GridPlanetGlyph at all (BuildPlanetsBySign
 /// filters it out before this is constructed), so there's no "no retrograde concept" case to model here.
 /// </summary>
-public sealed record GridPlanetGlyph(string Glyph, string? DignityToken, bool IsRetrograde, bool IsCombust);
+public sealed record GridPlanetGlyph(string PlanetName, string Glyph, string? DignityToken, bool IsRetrograde, bool IsCombust);

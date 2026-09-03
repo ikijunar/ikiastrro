@@ -238,6 +238,7 @@ else if (birthDetails is not null)
                 g => g.Key,
                 g => (IReadOnlyList<GridPlanetGlyph>)g
                     .Select(k => new GridPlanetGlyph(
+                        k.Planet,
                         ChartViewModel.PlanetGlyph(k.Planet),
                         ChartViewModel.DignityToken(k.DignityStatus),
                         k.IsRetrograde ?? false,
