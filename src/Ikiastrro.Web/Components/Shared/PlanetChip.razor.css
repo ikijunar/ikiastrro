@@ -1,0 +1,14 @@
+.pchip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .05rem .3rem;
+    border-radius: .35rem;
+    background: var(--cbg);
+    border-left: 2px solid var(--c);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.glyph { font-weight: 600; }

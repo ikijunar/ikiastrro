@@ -1,0 +1,125 @@
+/* Scoped to this component by Blazor's CSS isolation. Reads --paper/--ink/--dignity-* etc. from the
+   caller's .page-scoped tokens (D1ChartView.razor.css) — custom-property inheritance follows the real
+   DOM tree, not component scope boundaries, so this works even in a separate isolation scope. */
+
+* { box-sizing: border-box; }
+
+.chart-wrap { display: flex; justify-content: center; }
+
+.chart {
+    /* No aspect-ratio here on purpose: cell height is now content-driven (planet chips plus an
+       optional 2-line "Aspected by" strip), and a forced square + overflow:hidden would silently
+       clip whichever row needed more room — the bottom row, since overflow spills downward. Rows
+       size to their own tallest cell instead; the grid still reads as roughly square in practice
+       since most cells carry similar content. */
+    width: 100%;
+    max-width: 480px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+    background: var(--paper-line);
+    border: 3px solid var(--accent-line);
+    border-radius: 4px;
+    box-shadow: 0 12px 32px var(--shadow);
+}
+
+.cell { background: var(--paper-raised); padding: 8px 9px; display: flex; flex-direction: column; justify-content: space-between; position: relative; min-width: 0; }
+.cell.center { background: var(--paper); align-items: center; justify-content: center; text-align: center; padding: 14px; }
+.cell.ascendant { background: var(--asc-glow); box-shadow: inset 0 0 0 2px var(--accent); }
+
+.sign-label { display: flex; flex-direction: column; gap: 0; }
+.sign-en { font-size: 11px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.02em; }
+.sign-sa { font-size: 10px; color: var(--ink-faint); font-style: italic; }
+
+.lagna-tag {
+    position: absolute; top: 5px; right: 6px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--accent); background: var(--paper);
+    padding: 1px 5px; border-radius: 3px; border: 1px solid var(--accent-line);
+}
+
+.house-nums {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-end;
+}
+
+.house-num {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 0 4px;
+    border-radius: 3px;
+    line-height: 1.5;
+    min-width: 16px;
+    text-align: center;
+}
+
+.house-num.from-lagna {
+    color: var(--house-lagna-fg);
+    background: var(--house-lagna);
+}
+
+.house-num.from-moon {
+    color: var(--house-moon-fg);
+    background: var(--house-moon);
+}
+
+.planets { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; }
+
+.planet-glyph {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--paper-line);
+    border-radius: 3px; padding: 1px 5px; line-height: 1.5;
+}
+.planet-glyph .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.cell.ascendant .planet-glyph { border-color: var(--accent-line); }
+
+/* Direction suffix "(D)"/"(R)" — smaller and unbolded so it reads as an annotation on the glyph,
+   not part of the glyph itself; and the combust flame — sized to sit inline without forcing the
+   cell taller (2026-08-28). */
+.planet-glyph .direction { font-size: 10px; font-weight: 400; color: var(--ink-soft); margin-left: 1px; }
+.planet-glyph .combust-icon { font-size: 10px; line-height: 1; margin-left: 1px; }
+
+/* "Aspected by" strip — pinned to the bottom of the cell (margin-top:auto overrides the cell's own
+   justify-content:space-between once a 3rd flex child is present) below whatever's actually placed
+   there. Ghost/dashed chips, no dignity dot — these planets aren't sitting in this sign, they're just
+   casting a Drishti onto whatever is. Only rendered for cells tbl_Chart_Aspects actually targets. */
+.aspect-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border-top: 1px dashed var(--paper-line);
+    padding-top: 5px;
+    margin-top: auto;
+}
+.aspect-label {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.aspect-strip .planets { gap: 4px; }
+.planet-glyph.aspect {
+    border-style: dashed;
+    background: transparent;
+    color: var(--aspect-faint);
+    font-weight: 600;
+    padding: 1px 5px;
+    font-size: 13px;
+}
+
+.center-title { font-family: Georgia, 'Iowan Old Style', serif; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
+.center-meta { font-size: 12px; color: var(--ink-faint); line-height: 1.7; }
+.center-meta b { color: var(--ink-soft); font-weight: 600; }
+
+@media (max-width: 480px) {
+    .cell { padding: 6px 7px; }
+    .sign-sa, .lagna-tag { display: none; }
+}

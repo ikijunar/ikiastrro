@@ -1,0 +1,131 @@
+# =============================================================================
+# ikiastrro research diagram — PLANETARY STATES / AVASTHA coverage
+# The five classical Parashari avastha systems, their classical inputs mapped
+# to existing stored facts, their output states, and build status.
+# Status as of 2026-08-31.  Render:  d2 planetary-avasthas.d2 planetary-avasthas.svg
+# =============================================================================
+direction: right
+
+classes: {
+  built:    { style: { fill: "#1b5e20"; font-color: "#ffffff"; stroke: "#66bb6a"; stroke-width: 3 } }  # shipped
+  ready:    { style: { fill: "#33691e"; font-color: "#ffffff"; stroke: "#2e7d32" } }   # all inputs present
+  partial:  { style: { fill: "#e65100"; font-color: "#ffffff"; stroke: "#ef6c00" } }   # inputs mostly present
+  blocked:  { style: { fill: "#b71c1c"; font-color: "#ffffff"; stroke: "#c62828" } }   # needs new input / source
+  data:     { style: { fill: "#0d47a1"; font-color: "#ffffff"; stroke: "#1565c0"; stroke-dash: 3 } }
+}
+
+status: STATUS (2026-08-31) {
+  near: top-left
+  x: |md
+    - **Slice 1 SHIPPED:** Baaladi + Jagradadi — star-schema (tbl_Dim_PlanetaryState /
+      tbl_Rule_AgeState / tbl_Rule_WakefulnessState / tbl_Fact_PlanetaryState), computed by
+      PlanetaryStateComputer in ChartGenerationService, on vw_Chart_Consolidated. 270 fact rows.
+    - Deeptadi / Lajjitadi / Sayanadi: **not built** (follow-on slices).
+    - `jyotishganit/components/states.py` is an empty stub; the vendored PyJHora copy has no avastha module.
+    - Source: **BPHS** (public-domain) + **B.V. Raman, *Graha and Bhava Balas*** (not in repo — cited-edition discipline).
+  |
+}
+
+inputs: Existing stored facts (tbl_Chart_KeyDetails + tbl_Chart_Conjunctions) {
+  deg:    "DegreesInSignDecimal  (D1 only)";                         deg.class: data
+  odd:    "Sign  -> odd/even (sign index)";                          odd.class: data
+  dignity:"DignityStatus  (Exalted..Debilitated, 9-level)";          dignity.class: data
+  combust:"IsCombust + DistanceFromSunDegrees";                      combust.class: data
+  aspb:   "AspectingPlanets  +  tbl_Chart_Aspects";                  aspb.class: data
+  conj:   "tbl_Chart_Conjunctions  (Planet1, Planet2, Sign, House)"; conj.class: data
+  house:  "HouseNumberFromLagna  (5th-house rule)";                  house.class: data
+  lon:    "NirayanaLongitudeDegrees  +  NakshatraId";                lon.class: data
+  bmap:   "natural benefic/malefic list  (derivable, not stored)";   bmap.class: data
+  bday:   "tbl_BirthDetails time  ->  janma ghatis  (NOT persisted per-chart)"; bday.class: data
+  pnum:   "planet-number map  (new constant)";                       pnum.class: data
+}
+
+systems: Avastha systems {
+
+  baaladi: |md
+    ## 1. Baaladi (infancy)  —  ✅ BUILT 2026-08-31
+    5 states from degree-in-sign:
+    Baala 0-6 / Kumara 6-12 / Yuva 12-18 / Vriddha 18-24 / Mrita 24-30
+    (reversed in even signs). Effect fraction per state (.25/.50/1/.125/0).
+    `AgeStateCalculator.cs` + `tbl_Rule_AgeState` (RuleSetId 1). D1 only. `verify-avastha`.
+  | { class: built }
+
+  jagradadi: |md
+    ## 2. Jagradadi (waking)  —  ✅ BUILT 2026-08-31
+    3 states from dignity:
+    Jagrat (own / exalted / moolatrikona) / Swapna (friend / neutral) / Sushupti (enemy / debilitated).
+    `WakefulnessStateCalculator.cs` + `tbl_Rule_WakefulnessState` (RuleSetId 1). Every chart type.
+  | { class: built }
+
+  deeptadi: |md
+    ## 3. Deeptadi (mood)  —  🟠 MOSTLY READY
+    9 states, precedence-ordered:
+    Deepta(exalted) / Swastha(own) / Mudita(friend) / Shanta(benefic sign) /
+    Deena(enemy) / Vikala(combust) / Peedita(hemmed by malefics) /
+    Khala(debilitated / with malefic) / Garvita(moolatrikona).
+    Needs a **natural benefic/malefic classifier** over conj+aspect planets. Textual variants -> pin a source.
+  | { class: partial }
+
+  lajjitadi: |md
+    ## 4. Lajjitadi (dignity/shame)  —  🟠 MOSTLY READY
+    6 states:
+    Lajjita (5th house + with Rahu/Ketu/Sun/Mars/Saturn) /
+    Garvita (exalted / moolatrikona) /
+    Kshudhita (enemy sign / with an enemy / with Saturn) /
+    Trishita (watery sign, malefic aspect, no benefic aspect) /
+    Mudita (friend sign / with a benefic / with Jupiter) /
+    Kshobhita (with Sun + malefic + no benefic aspect).
+    All ingredients stored; needs the same benefic/malefic + node classification layer.
+  | { class: partial }
+
+  lajjita_rel: |md
+    ## 4b. "Lajjitadi relationships"  —  🟠 RAW FACTS STORED
+    The planet-to-planet associations the 6 Lajjitadi states key off
+    (conjunct Jupiter -> Mudita, conjunct Saturn -> Kshudhita, conjunct Sun -> Kshobhita, ...).
+    - **Stored:** tbl_Chart_Conjunctions (per chart type) + AspectingPlanets
+    - **Missing:** the classification (benefic / malefic / node / luminary) and the Lajjitadi mapping
+  | { class: partial }
+
+  sayanadi: |md
+    ## 5. Sayanadi (posture) — [FUTURE]  —  🔴 BLOCKED
+    12 states (Sayana..Nidra) from a birth-time + nakshatra + lagna + planet-number formula,
+    plus a Cheshta/Drishti sub-state (partly from speed — now stored: SpeedLongitudeDegPerDay).
+    Needs: **janma ghatis persisted**, a planet-number map, and a **cited edition** (high textual variance).
+  | { class: blocked }
+}
+
+# ---- wiring inputs -> systems --------------------------------------------
+inputs.deg -> systems.baaladi
+inputs.odd -> systems.baaladi
+inputs.dignity -> systems.jagradadi
+inputs.dignity -> systems.deeptadi
+inputs.combust -> systems.deeptadi
+inputs.aspb -> systems.deeptadi
+inputs.bmap -> systems.deeptadi
+inputs.house -> systems.lajjitadi
+inputs.dignity -> systems.lajjitadi
+inputs.conj -> systems.lajjitadi
+inputs.aspb -> systems.lajjitadi
+inputs.bmap -> systems.lajjitadi
+inputs.conj -> systems.lajjita_rel
+inputs.aspb -> systems.lajjita_rel
+inputs.lon -> systems.sayanadi
+inputs.bday -> systems.sayanadi: "needs persisting"
+inputs.pnum -> systems.sayanadi: "new constant"
+
+# ---- storage (star-schema Fact) ---------------------------------------
+store: tbl_Fact_PlanetaryState  (built; one row per planet x chart type) {
+  class: built
+  cols: |md
+    Id, ChartResultId, BirthDetailId, ChartType, Planet, RuleSetId,
+    AgeStateId + AgeEffectFraction   (D1 only, FK tbl_Dim_PlanetaryState),
+    WakefulnessStateId                          (every chart type, FK tbl_Dim_PlanetaryState),
+    ComputedAt.
+    Later slices ADD: DeeptadiStateId, SayanadiStateId, + child tbl_Fact_PlanetaryStateLajjita.
+  |
+}
+systems.baaladi -> store
+systems.jagradadi -> store
+systems.deeptadi -> store
+systems.lajjitadi -> store
+systems.sayanadi -> store: "later"

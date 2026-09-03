@@ -1,0 +1,11 @@
+@* Planet identity glyph on its own colour fill. Minimal build (this plan); a later spec
+   extends it with the Sanskrit-primary name. Colour is a scan aid only — the glyph carries
+   identity. Reads --planet-<name> / --planet-<name>-bg from tokens.css. *@
+<span class="pchip" style="--c: var(--planet-@Key); --cbg: var(--planet-@(Key)-bg)">
+    <span class="glyph">@ChartViewModel.PlanetGlyph(Planet)</span>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Planet { get; set; } = "";
+    private string Key => Planet.ToLowerInvariant();
+}

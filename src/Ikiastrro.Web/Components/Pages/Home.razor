@@ -1,0 +1,51 @@
+@page "/"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject NavigationManager Nav
+
+<PageTitle>ikiastrro</PageTitle>
+
+<h1>ikiastrro</h1>
+<p>Pick a saved person to view their chart, or add someone new.</p>
+
+@if (people.Count == 0)
+{
+    <p class="muted">No charts saved yet — add your first person to get started.</p>
+}
+else
+{
+    <div class="field">
+        <label for="person-select">Saved people</label>
+        <select id="person-select" @onchange="OnPersonSelected">
+            <option value="">Select a name…</option>
+            @foreach (var p in people)
+            {
+                <option value="@p.Id">@FormatOption(p)</option>
+            }
+        </select>
+    </div>
+}
+
+<button class="btn-add" type="button" @onclick="GoToAdd">+ Add New Person</button>
+
+@code {
+    private IReadOnlyList<BirthDetails> people = Array.Empty<BirthDetails>();
+
+    protected override void OnInitialized()
+    {
+        people = BirthDetailsRepo.GetAll();
+    }
+
+    /// <summary>Selecting a person is the whole interaction — no separate "view" submit step.</summary>
+    private void OnPersonSelected(ChangeEventArgs e)
+    {
+        if (e.Value is string s && int.TryParse(s, out var id) && id > 0)
+        {
+            Nav.NavigateTo($"/charts/{id}");
+        }
+    }
+
+    private void GoToAdd() => Nav.NavigateTo("/add");
+
+    private static string FormatOption(BirthDetails p) =>
+        $"{p.Name} — {p.DateOfBirth:d MMM yyyy}, {p.TimeOfBirth:h:mm tt} — {p.PlaceCity}, {p.PlaceCountry}";
+}

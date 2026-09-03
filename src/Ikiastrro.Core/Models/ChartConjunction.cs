@@ -1,0 +1,28 @@
+namespace Ikiastrro.Core.Models;
+
+/// <summary>
+/// One conjunction (Yuti) — a pair of grahas sharing the same sign in a given chart. Ascendant
+/// excluded (not a graha). Shared by every chart type (D1, D9, and any future divisional chart) —
+/// see ChartAnalyzer.
+/// </summary>
+public class ChartConjunction
+{
+    public int Id { get; set; }
+    public int ChartResultId { get; set; }
+    public string Planet1 { get; set; } = string.Empty;
+    /// <summary>FK to tbl_Planets. Canonically Planet1Id &lt; Planet2Id.</summary>
+    public int Planet1Id { get; set; }
+    public string Planet2 { get; set; } = string.Empty;
+    public int Planet2Id { get; set; }
+    public string Sign { get; set; } = string.Empty;
+    public int SignId { get; set; }
+    public int HouseNumberFromLagna { get; set; }
+
+    /// <summary>
+    /// How tight the conjunction is, 0-180°. Only meaningful for D1 — real ecliptic longitude is a
+    /// continuous measure of closeness there. A varga sign is a discrete bucket that repeats every
+    /// few degrees across the zodiac, so two grahas "conjunct" in the same D9 sign can sit far apart
+    /// in real longitude; that number wouldn't mean "tightness" there, so it's left null.
+    /// </summary>
+    public decimal? DegreeSeparation { get; set; }
+}

@@ -1,0 +1,85 @@
+/* Reuses SouthIndianGrid's cell geometry. Reads --paper/--ink/--accent* via var(...) from the
+   caller's token scope (custom-property inheritance ignores component isolation boundaries). */
+
+* { box-sizing: border-box; }
+
+.cd9-root { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.cd9-chart {
+    width: 100%;
+    max-width: 480px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+    background: var(--paper-line);
+    border: 3px solid var(--accent-line);
+    border-radius: 4px;
+    box-shadow: 0 12px 32px var(--shadow);
+}
+
+.cd9-cell {
+    background: var(--paper-raised);
+    padding: 8px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    min-width: 0;
+}
+.cd9-cell.lagna { background: var(--asc-glow); box-shadow: inset 0 0 0 2px var(--accent); }
+.cd9-center { background: var(--paper); align-items: center; justify-content: center; text-align: center; padding: 14px; }
+
+.cd9-sign { font-size: 11px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.02em; }
+
+/* D9 (outer / Navamsa) strip — pinned top-right, small, muted. */
+.cd9-d9strip {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 3px;
+    max-width: 62%;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+.cd9-d9strip span {
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 0 3px;
+    line-height: 1.5;
+}
+
+/* Special-point codes (AL / A2–A12 / HL / Gk / Md) whose D1 sign is this cell — tiny, faint,
+   top-left so they never fight the D9 strip. */
+.cd9-special {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    max-width: 55%;
+    font-size: 9px;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+}
+
+/* D1 (inner / Rasi) occupants — the PlanetChips, pinned to the bottom of the cell. */
+.cd9-d1 { display: flex; flex-wrap: wrap; gap: 3px; align-items: flex-end; margin-top: auto; }
+
+.cd9-center-title { font-family: Georgia, 'Iowan Old Style', serif; font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+.cd9-center-meta { font-size: 11px; color: var(--ink-faint); line-height: 1.7; }
+.cd9-center-meta b { color: var(--ink-soft); font-weight: 600; }
+
+.cd9-narrow-note { display: none; font-size: 11px; color: var(--ink-faint); font-style: italic; }
+
+@media (max-width: 560px) {
+    .cd9-d9strip { display: none; }
+    .cd9-narrow-note { display: block; }
+    .cd9-cell { padding: 6px 7px; }
+}

@@ -1,0 +1,81 @@
+# =============================================================================
+# ikiastrro research diagram — how KARAKAS and AVASTHAS connect
+# They are computed independently; they combine only at the judgment layer.
+# Status as of 2026-08-31.  Render:  d2 karaka-avastha-linkage.d2 karaka-avastha-linkage.svg
+# =============================================================================
+direction: down
+
+classes: {
+  have:  { style: { fill: "#1b5e20"; font-color: "#ffffff"; stroke: "#2e7d32" } }
+  gap:   { style: { fill: "#b71c1c"; font-color: "#ffffff"; stroke: "#c62828" } }
+  synth: { style: { fill: "#4a148c"; font-color: "#ffffff"; stroke: "#6a1b9a" } }
+}
+
+claim: |md
+  ## Core finding
+  **Karakas and Avasthas share no computation.**
+  An avastha is a *state of a planet* (from its longitude / degree / dignity / combustion / associations).
+  A karaka is a *significator assignment* ("planet X stands for topic Y").
+  They meet **only in synthesis**: BPHS / Raman — judge a bhava/topic from
+  *house + its lord + its occupants + its **karaka***, and weigh **each** of those by its **strength & avastha**.
+| { near: top-center }
+
+# ---- left branch: karaka (who signifies the topic) --------------------
+karaka: KARAKA — which planet {
+  nk: "Naisargika Karaka  (fixed: Sun=father, Jupiter=children, Venus=spouse, ...)"; nk.class: gap
+  ck: "Chara Karaka  (Jaimini, chart-specific, ranked by degree)";                   ck.class: gap
+  note_k: "ikiastrro: Naisargika = LifeAreaMap hardcode only;  Chara = not built"
+}
+
+# ---- right branch: avastha (how strong / what state) ------------------
+avastha: AVASTHA — condition of that planet {
+  b1: "Baaladi (age)";            b1.class: gap
+  b2: "Jagradadi (alertness)";    b2.class: gap
+  b3: "Deeptadi (mood)";          b3.class: gap
+  b4: "Lajjitadi (dignity)";      b4.class: gap
+  b5: "Sayanadi (posture) [future]"; b5.class: gap
+  note_a: "ikiastrro: none computed yet — inputs for 1-4 already stored on tbl_Chart_KeyDetails"
+}
+
+# ---- what we DO have to feed the synthesis ---------------------------
+have_now: Already captured (feeds both sides) {
+  hl:  "House Lord — tbl_Chart_HouseLords";                 hl.class: have
+  nl:  "Nakshatra Lord — KeyDetails.NakshatraLordPlanet";   nl.class: have
+  fl:  "Functional Lordship — LagnaFunctionalNature (computed)"; fl.class: have
+  occ: "Occupants + conjunctions + aspects — tbl_Chart_Conjunctions / _Aspects"; occ.class: have
+  dig: "Dignity (Panchadha vs sign-lord) — KeyDetails.DignityStatus"; dig.class: have
+}
+
+# ---- the synthesis layer (not built) --------------------------------
+judge: |md
+  ## Topic / bhava judgment  (NOT BUILT)
+  For topic T:  Karaka(T)  ->  read Karaka's { Baaladi, Jagradadi, Deeptadi, Lajjitadi }
+  alongside  House(T) + Lord(T) + Occupants(T),  each with its own avastha.
+  e.g. Jupiter (Putra-karaka) in Mrita + Khala  ->  obstructed children.
+| { class: synth }
+
+claim -> karaka
+claim -> avastha
+karaka.nk -> judge: "pick the significator"
+karaka.ck -> judge
+avastha.b1 -> judge: "quality lens"
+avastha.b2 -> judge
+avastha.b3 -> judge
+avastha.b4 -> judge
+have_now.hl -> judge
+have_now.nl -> judge
+have_now.fl -> judge
+have_now.occ -> judge
+have_now.dig -> judge
+
+build_order: Suggested build order {
+  near: bottom-center
+  o: |md
+    1. **Baaladi + Jagradadi** (pure functions, all inputs present, zero ambiguity)
+    2. **Naisargika Karaka table** (migration 030 — seed `tbl_Dim_PlanetHouseKaraka`; decide Sapta vs Ashta)
+    3. **Deeptadi + Lajjitadi** (add a natural benefic/malefic + node classifier; pin a source)
+    4. **Chara Karaka** (Jaimini calculator; also unblocks Karakamsa + Jaimini dashas)
+    5. **Sayanadi** (needs janma-ghatis persisted + cited edition) — future
+    6. **Synthesis view** `vw_Chart_KarakaCondition` — karaka planet x its avastha row per topic
+  |
+}

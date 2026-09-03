@@ -1,0 +1,95 @@
+@*
+    Static D1 ⊕ D9 combined South Indian grid. Same fixed 4×4 sign geometry as SouthIndianGrid.
+    Per cell: D1 occupants as PlanetChips (inner/Rasi), a D9-occupants strip pinned to the top
+    (outer/Navamsa), and — top-left — any special-point codes (AL / A2–A12 / HL / Gk / Md) whose
+    D1 sign is this cell. Read-only: no dignity/aspect/house detail (those live on the per-varga
+    grids above). Colour via var(--planet-*) only; identity carried by the glyph.
+*@
+
+<div class="cd9-root">
+    <div class="cd9-chart">
+        @foreach (var cell in GridCells)
+        {
+            var d1 = D1BySign.TryGetValue(cell.MatchSign, out var a) ? a : Empty;
+            var d9 = D9BySign.TryGetValue(cell.MatchSign, out var b) ? b : Empty;
+            var special = SpecialCodesInSign(cell.MatchSign).ToList();
+            <div class="cd9-cell @(cell.MatchSign == LagnaSign ? "lagna" : "")"
+                 style="grid-column:@cell.Col;grid-row:@cell.Row;">
+                @if (special.Count > 0)
+                {
+                    <div class="cd9-special">
+                        @foreach (var sp in special)
+                        {
+                            <span>@sp</span>
+                        }
+                    </div>
+                }
+                @if (d9.Count > 0)
+                {
+                    <div class="cd9-d9strip" title="Navamsa (D9) occupants">
+                        @foreach (var p in d9)
+                        {
+                            <span>@ChartViewModel.PlanetGlyph(p)</span>
+                        }
+                    </div>
+                }
+                <div class="cd9-sign">@cell.DisplayEn</div>
+                <div class="cd9-d1">
+                    @foreach (var p in d1)
+                    {
+                        <PlanetChip Planet="@p" />
+                    }
+                </div>
+            </div>
+        }
+        <div class="cd9-cell cd9-center" style="grid-column:2/4;grid-row:2/4;">
+            <div class="cd9-center-title">D1 &oplus; D9</div>
+            <div class="cd9-center-meta">
+                <b>Outer</b> Navamsa &middot; D9<br>
+                <b>Inner</b> Rasi &middot; D1<br>
+                <b>Lagna</b> @Display(LagnaSign)
+            </div>
+        </div>
+    </div>
+    <p class="cd9-narrow-note">Narrow view: the D9 (outer) strip is hidden — see the D1 and D9 grids above.</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> D1KeyDetails { get; set; } = Array.Empty<ChartKeyDetail>();
+    [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> D9KeyDetails { get; set; } = Array.Empty<ChartKeyDetail>();
+    [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
+
+    private static readonly IReadOnlyList<string> Empty = Array.Empty<string>();
+
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> D1BySign => BySign(D1KeyDetails);
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> D9BySign => BySign(D9KeyDetails);
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BySign(IReadOnlyList<ChartKeyDetail> rows) =>
+        rows.Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
+
+    private IEnumerable<string> SpecialCodesInSign(string sign) =>
+        D1KeyDetails
+            .Where(k => k.PointKind != "Graha" && k.Sign == sign)
+            .Select(k => ShortCode(k.Planet));
+
+    private static string ShortCode(string code) => code switch
+    {
+        "Gulika" => "Gk",
+        "Maandi" => "Md",
+        _ => code   // AL, A2..A12, HL
+    };
+
+    private static string Display(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+
+    private static readonly (string MatchSign, string DisplayEn, int Col, int Row)[] GridCells = new[]
+    {
+        ("Pisces", "Pisces", 1, 1), ("Aries", "Aries", 2, 1),
+        ("Taurus", "Taurus", 3, 1), ("Gemini", "Gemini", 4, 1),
+        ("Aquarius", "Aquarius", 1, 2), ("Cancer", "Cancer", 4, 2),
+        ("Capricornus", "Capricorn", 1, 3), ("Leo", "Leo", 4, 3),
+        ("Sagittarius", "Sagittarius", 1, 4), ("Scorpio", "Scorpio", 2, 4),
+        ("Libra", "Libra", 3, 4), ("Virgo", "Virgo", 4, 4)
+    };
+}

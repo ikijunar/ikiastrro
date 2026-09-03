@@ -1,23 +1,29 @@
 # Design Spec — Web UI recreate around life-area groups
 
-**Status:** Approved design, pre-implementation
+**Status:** SUPERSEDED (2026-09-01) by `2026-09-01-varga-centric-web-ui-design.md` — the UI
+rebuild is now varga-centric, not life-area. Phase 0 (groundwork) of this spec WAS built and
+merged (`ChartViewModel`/`PlanetRow` rename, `LagnaFunctionalNature`, `LifeAreaMap`,
+`ChartGenerationService`, batch `GetByBirthDetailId` reads, migration 031) and is reused by
+the new spec — see its §9. The life-area tabs, `LifeAreaTab` component family, and the
+reference browser here are not being built as designed; kept for reference / a possible later
+pass.
 **Owner:** rammyps
 **Created:** 2026-08-30
-**Approach:** A — in-place incremental rebuild of `VedicHoroGen.Web` (see "Approaches considered")
+**Approach:** A — in-place incremental rebuild of `Ikiastrro.Web` (see "Approaches considered")
 **Related:**
-- `cproj_vedic_horo_gen/README.md` (current Web state + the "hardcoded to D1+D9" known limitation this closes)
-- `cproj_vedic_horo_gen/docs/horoscope_compare.md` (UI research; cross-cutting decisions 1–7)
-- `cproj_vedic_horo_gen/src/VedicHoroGen.Web/Components/DESIGN.md` (design-language rule)
-- `cproj_vedic_horo_gen/docs/house-lagna-significations.md` (migration 031 design — functional nature)
+- `ikiastrro/README.md` (current Web state + the "hardcoded to D1+D9" known limitation this closes)
+- `ikiastrro/docs/research-horoscope-software-compare.md` (UI research; cross-cutting decisions 1–7)
+- `ikiastrro/src/Ikiastrro.Web/Components/DESIGN.md` (design-language rule)
+- `ikiastrro/docs/reference-house-lagna-significations.md` (migration 031 design — functional nature)
 - `D:\@ClaudeSpace\BookExtracts\how-to-judge-a-horoscope-1.md` (B.V. Raman — functional benefic/malefic per Lagna, p.16–18; house significations p.12–13)
-- `key_comp_astro.md` (feature-coverage gap analysis — the "computed but invisible" list this surfaces)
+- `docs/scope-jhora-coverage.md` (feature-coverage gap analysis — the "computed but invisible" list this surfaces)
 - `D:\@ClaudeSpace\methods_prodmag.md` (PM backlog — mark the life-area UI on ship)
 
 ---
 
 ## 1. Goal
 
-Recreate `VedicHoroGen.Web`'s read/display layer so it (a) **surfaces data already computed but invisible today** (D2/D6/D10/D11 charts, KP sub-lord, Sade Sati, transit history, house→nakshatra span, conjunctions), (b) **re-architects the foundation** (one generic multi-varga renderer; a shared generate-and-store service used by both Web and CLI; deep-linkable section navigation), and (c) **organises a person's chart around four life areas + timing** rather than around chart types. Visual language stays the parchment/serif dark-only look; execution is refined.
+Recreate `Ikiastrro.Web`'s read/display layer so it (a) **surfaces data already computed but invisible today** (D2/D6/D10/D11 charts, KP sub-lord, Sade Sati, transit history, house→nakshatra span, conjunctions), (b) **re-architects the foundation** (one generic multi-varga renderer; a shared generate-and-store service used by both Web and CLI; deep-linkable section navigation), and (c) **organises a person's chart around four life areas + timing** rather than around chart types. Visual language stays the parchment/serif dark-only look; execution is refined.
 
 **Interpretation is out of scope.** No outcome text, no scoring. A future core Python engine does synthesis. This pass computes and *displays* classical facts (including functional benefic/malefic classification) and organises them by life area.
 
@@ -44,7 +50,7 @@ Recreate `VedicHoroGen.Web`'s read/display layer so it (a) **surfaces data alrea
 ## 3. Scope
 
 **In:** everything in §4–§13 below.
-**Out:** interpretation/prediction text; ICE-scoring the result; North Indian grid; light theme; auth; any new divisional chart beyond the existing D1/D2/D6/D9/D10/D11; Ashtakavarga/Shadbala UI (those need Core work first — see `key_comp_astro.md`).
+**Out:** interpretation/prediction text; ICE-scoring the result; North Indian grid; light theme; auth; any new divisional chart beyond the existing D1/D2/D6/D9/D10/D11; Ashtakavarga/Shadbala UI (those need Core work first — see `docs/scope-jhora-coverage.md`).
 **Touches Core:** two renames + two new pure classes (`LagnaFunctionalNature`, `LifeAreaMap`). **Touches Data:** one new service + ~9 new repo read methods + 3 reference repos. **Touches CLI:** `Program.cs` cutover to the shared service + two new modes. **Touches DB:** migration 031 only (no chart-schema change).
 
 ---
@@ -177,7 +183,7 @@ Follows the project's existing "table mirrors classical text; engine doesn't rea
 
 **Three rows seeded `FunctionalNature = NULL, Notes = 'Not classified in source (How to Judge a Horoscope, Raman, p.16–18)'`** — the book never classifies them: **Aries → Moon**, **Gemini → Saturn**, **Aquarius → Saturn**. Do not guess.
 
-Column shape (aligns with `house-lagna-significations.md` migration 031 sketch):
+Column shape (aligns with `reference-house-lagna-significations.md` migration 031 sketch):
 `Id TINYINT PK`, `LagnaSignId TINYINT FK tbl_SignAttributes`, `PlanetId TINYINT FK tbl_Planets`, `FunctionalNature VARCHAR(12) NULL CHECK (Benefic|Malefic|Neutral|Yogakaraka)`, `Rank TINYINT NULL` (1 = best/worst within its class, per the book's "best benefic"/"worst malefic" phrasing), `Notes VARCHAR(120) NULL`. Migration number **031** (030 reserved for house significations, per that doc). Base-DDL sync + a `SourceCitation` comment in the migration.
 
 `LagnaFunctionalNatureRepository` (Data): `GetForLagna(byte lagnaSignId) → IReadOnlyList<LagnaFunctionalNatureRow>`.
@@ -238,7 +244,7 @@ Not a life area — its own component, no `LifeAreaMap` entry.
 
 ## 11. Shared write path — `ChartGenerationService` (Data, new)
 
-Owns the "given a persisted `BirthDetails`, compute and store everything" pipeline currently duplicated in `Add.razor` and in five spots of `VedicHoroGen.Cli/Program.cs` (`backfill-analytics`, `recompute-keydetails`, `backfill-charts`, `backfill-dasha`, main add flow).
+Owns the "given a persisted `BirthDetails`, compute and store everything" pipeline currently duplicated in `Add.razor` and in five spots of `Ikiastrro.Cli/Program.cs` (`backfill-analytics`, `recompute-keydetails`, `backfill-charts`, `backfill-dasha`, main add flow).
 
 ```csharp
 class ChartGenerationService   // ctor: ChartCalculationOrchestrator, VimshottariDashaService,
@@ -356,7 +362,7 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 - **Phase 3 — Remaining areas.** `Relationships` / `Career` / `Money` tabs; `HouseNakshatraSpanTable` into the shared `LifeAreaTab` body.
 - **Phase 4 — Timing tab.** `TimingTab`, `GocharaPanel`, `SadeSatiTable`; `DashaTimeline` moves in unchanged. `ChartDetail.razor` retired.
 - **Phase 5 — Non-workspace pages.** Home card gallery; `/reference/*`; `/charts/{id}/print` + `print.css`.
-- **Phase 6 — Cleanup & docs.** Dead CSS/params; `dotnet format`; `README.md` (Web section — the "hardcoded to D1+D9" limitation is now removed), `cproj_vedic_horo_gen.md` dated entry, `methods_prodmag.md` (mark shipped), memory pointer.
+- **Phase 6 — Cleanup & docs.** Dead CSS/params; `dotnet format`; `README.md` (Web section — the "hardcoded to D1+D9" limitation is now removed), `ikiastrro.md` dated entry, `methods_prodmag.md` (mark shipped), memory pointer.
 
 ---
 
@@ -385,8 +391,8 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 
 - North Indian grid (`NorthIndianGrid.razor`) — research doc plan stands; a later pass.
 - Interpretation / prediction text and life-area scoring — the core Python engine.
-- Ashtakavarga / Shadbala / Avastha panels — need Core computation first (`key_comp_astro.md` Tiers 3).
-- Additional vargas (D3/D7/D12/D30/D60 …) — `key_comp_astro.md` §2.
+- Ashtakavarga / Shadbala / Avastha panels — need Core computation first (`docs/scope-jhora-coverage.md` Tiers 3).
+- Additional vargas (D3/D7/D12/D30/D60 …) — `docs/scope-jhora-coverage.md` §2.
 - Compare-two-people (synastry) view.
 - Light theme / theme toggle.
 - Switching `LifeAreaMap` / `LagnaFunctionalNature` to read `tbl_Dim_*` instead of hardcoded C# (blocked on migration 030 shipping and the project's open "engine reads reference tables" decision).
@@ -397,4 +403,4 @@ App builds and runs after every phase. Phase 0 is self-contained Core/Data/CLI w
 
 - **A — in-place incremental rebuild (chosen).** Same project, keep the working primitives, rebuild tab-by-tab, app runnable throughout. Lowest risk; honours "keep the design language."
 - **B — parallel component tree, cut over at the end.** Justified only when the live app must keep serving during a long migration — not the case for a 2–3 user private tool. More total work.
-- **C — new `VedicHoroGen.Web2` project.** Re-solves DI/layout/place-resolver/delete-cascade for no gain; fights "keep the design language."
+- **C — new `Ikiastrro.Web2` project.** Re-solves DI/layout/place-resolver/delete-cascade for no gain; fights "keep the design language."
