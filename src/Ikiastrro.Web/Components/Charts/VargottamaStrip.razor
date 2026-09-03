@@ -1,0 +1,26 @@
+@* Lights each graha whose Dn sign == its D1 sign. True "Vargottama" only for D9; for other vargas
+   it is "same-sign-as-D1", labelled as such in the tooltip. *@
+<div class="vgs">
+    <span class="vgs-lbl">@(DnCode == "D9" ? "Vargottama" : "Same sign as D1"):</span>
+    @foreach (var g in Chips())
+    {
+        <span class="vgs-chip @(g.Lit ? "lit" : "")" title="@(g.Lit ? Tip : "different sign")">
+            @ChartViewModel.PlanetGlyph(g.Planet)
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> D1Grahas { get; set; } = Array.Empty<ChartKeyDetail>();
+    [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> DnGrahas { get; set; } = Array.Empty<ChartKeyDetail>();
+    [Parameter, EditorRequired] public string DnCode { get; set; } = "";
+
+    private string Tip => DnCode == "D9" ? "Vargottama (D9 sign = D1 sign)" : $"{DnCode} sign = D1 sign";
+
+    private IEnumerable<(string Planet, bool Lit)> Chips()
+    {
+        var d1 = D1Grahas.Where(k => k.Planet != "Ascendant").ToDictionary(k => k.Planet, k => k.Sign);
+        foreach (var k in DnGrahas.Where(k => k.Planet != "Ascendant"))
+            yield return (k.Planet, d1.TryGetValue(k.Planet, out var s) && s == k.Sign);
+    }
+}
