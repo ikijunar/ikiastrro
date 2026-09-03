@@ -453,6 +453,23 @@ Other notes:
 - **`VargaView` prev/next** walks `VargaBundles.RailOrder`; for D9 that renders
   `D3 ‹ D9 › D12` (the Shadvarga block order), not the `D12 ‹ D9 › D30` shown illustratively
   in an early draft of the plan.
+- **§4.4 — `Home` search filters client-side.** `Home.razor` loads all people via
+  `GetAll()` and filters in-memory with a case-insensitive `Contains`, rather than calling
+  `BirthDetailsRepository.SearchByNamePrefix`. Behaviourally a superset (substring, not just
+  prefix) and it avoids a round-trip per keystroke; the person list is tens of rows. Revisit
+  if the list grows large enough to need server-side paging.
+- **§8 — VargaBundles membership corrects the spec.** The spec's §8 grouping put D5 and D8
+  in Shodashavarga and treated D60 as an outer addition. The shipped `VargaBundles.Groups`
+  follows textbook Shodashavarga instead: Shadvarga (6) / Saptavarga (7) / Dashavarga (10,
+  incl. D60) / Shodashavarga (16), with D5/D6/D8/D11 in an "Extra vargas" tail. `RailOrder`
+  covers all 21 codes once. Treat `VargaBundles.Groups` as the source of truth over spec §8.
 
 §12.3 (VargaBundles membership) was resolved against classical Shodashavarga plus the
 project's varga reference index — see `VargaBundles.Groups` (D2-US sits in Shadvarga).
+
+Final whole-branch review (opus, 2026-09-03) returned 0 Critical / 3 Important / 10 Minor;
+all 3 Important (nav-pill CSS isolation scoping, a missing `Charts["D1"]` guard in
+`VargaView`, and the rail's D1 tile linking into a self-referential varga route) plus 8 of
+the Minors were fixed in `776ace9`. Two Minors are parked as non-blocking: the `Home` filter
+note above, and a latent `DataTable`/`Cols` reallocation in `SavedCharts.razor` (harmless
+while no captured-state column is sortable).
