@@ -2184,9 +2184,14 @@ END
 GO
 
 -- --- tbl_Rule_Sets ---
+-- Ids 2/3 (dignity rule-sets, folded from db/23_add_rule_graha_dignity.sql) carry
+-- IsActive = 0: rule-set 1 stays the single global active set (UX_RuleSets_OneActive).
+-- Dignity "active" is per row in tbl_Rule_GrahaDignity.IsActive.
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Sets)
 BEGIN
 INSERT [dbo].[tbl_Rule_Sets] ([Id], [RuleSetName], [Description], [IsActive]) VALUES (1, N'Parashari-Classical', N'This project''s existing hardcoded rules (ClassicalRelationships.cs / ClassicalCombustion.cs) as of 2026-08-30 -- Rahu/Ketu use Jupiter-style 5th/7th/9th aspects, BPHS/Phaladeepika combustion orbs.', 1)
+INSERT [dbo].[tbl_Rule_Sets] ([Id], [RuleSetName], [Description], [IsActive], [SupersedesRuleSetId], [SourceReference]) VALUES (2, N'PVR-Dignity-Integrated', N'Graha dignity per PVR Narasimha Rao, Integrated Approach Table 6 + the 7 special-degree notes. Active dignity set via tbl_Rule_GrahaDignity.IsActive=1; rule-set 1 stays the global active set.', 0, 1, N'docs/research/dignity-pvr-integrated.md')
+INSERT [dbo].[tbl_Rule_Sets] ([Id], [RuleSetName], [Description], [IsActive]) VALUES (3, N'BPHS-Dignity-Parashari', N'Graha dignity mirror of the pre-2026-09 hard-coded DignityEngine dicts (BPHS/Parashari). Inactive; kept for provenance and one-UPDATE rollback.', 0)
 END
 GO
 
@@ -2415,7 +2420,8 @@ GO
         ('SRC_JHORA_EXPORT_RAMAKRISHNAN', N'JHora natal export — 1_Ramakrishnan', NULL, N'22 Apr 1981 05:30 Chennai', NULL, N'verify-vargas / verify-jaimini golden values; docs/artifacts/reference-charts/Rammy_Jagannatha.txt'),
         ('SRC_RATH_VARGA',      N'Vedic Astrology / varga methods', N'Sanjay Rath', NULL, 'Jaimini/SJC', N'D11 (Rudramsa), argala'),
         ('SRC_VEDASTRO',        N'VedAstro.Library',              N'(open source)', N'pre-2026-08-24', 'mixed', N'Historical — replaced by SwissEphNet; enum spellings inherited'),
-        ('SRC_SWISSEPH',        N'Swiss Ephemeris / SwissEphNet', N'Astrodienst / port', N'SwissEphNet 2.8.0.2', 'astronomy', N'Moshier mode, Lahiri sidereal')
+        ('SRC_SWISSEPH',        N'Swiss Ephemeris / SwissEphNet', N'Astrodienst / port', N'SwissEphNet 2.8.0.2', 'astronomy', N'Moshier mode, Lahiri sidereal'),
+        ('SRC_PVR_INTEGRATED',  N'Vedic Astrology: An Integrated Approach', N'P. V. R. Narasimha Rao', NULL, 'PVR Integrated', N'Part 1 Chart Analysis, Table 6 (Dignities of Planets) + the 7 special-degree notes. Distinct from SRC_JHORA (same author, desktop software).')
     ) v (Code, Title, Author, Edition, Tradition, Notes)
 )
 MERGE dbo.tbl_Dim_Source AS tgt
@@ -3465,7 +3471,8 @@ VALUES
     ('tbl_Rule_Karaka',                     'KARAKA',       'MAP_LOOKUP',    'Reserved: chara / sthira / naisargika karaka assignment schemes.', 'migration 18 (empty; P2)'),
     ('tbl_Rule_ShadbalaComponent',          'STRENGTH',     'WEIGHT_TABLE',  'Reserved: shadbala sub-component weights and maxima, in rupas.', 'migration 18 (empty; P3)'),
     ('tbl_Rule_VimsopakaWeight',            'STRENGTH',     'WEIGHT_TABLE',  'Reserved: vimsopaka bala varga-group weights per scheme (shadvarga..shodasavarga).', 'migration 18 (empty; P3)'),
-    ('tbl_Rule_Yoga',                       'YOGA',         'PREDICATE_SET', 'Reserved: yoga definitions — formation predicates, cancellation rules, and result codes.', 'migration 18 (empty; P4)');
+    ('tbl_Rule_Yoga',                       'YOGA',         'PREDICATE_SET', 'Reserved: yoga definitions — formation predicates, cancellation rules, and result codes.', 'migration 18 (empty; P4)'),
+    ('tbl_Rule_GrahaDignity',               'DIGNITY',      'SEGMENT_LOOKUP', 'Graha dignity (axis A): exaltation / debilitation / moolatrikona / own-sign degree segments per rule-set, with deep-degree points and DignityScore. PVR Integrated Approach Table 6 active; BPHS-Parashari mirror inactive.', '23_add_rule_graha_dignity.sql');
 GO
 
 -- =====================================================================
@@ -3645,6 +3652,205 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Chart_Conjunction
     ALTER TABLE dbo.tbl_Chart_Conjunctions
         ADD CONSTRAINT FK_Chart_Conjunctions_MultiGrahaConjunction
             FOREIGN KEY (MultiGrahaConjunctionId) REFERENCES dbo.tbl_Chart_MultiGrahaConjunction (Id);
+GO
+
+-- =====================================================================
+-- 23 — tbl_Rule_GrahaDignity: axis-A graha dignity as data (folded from
+-- db/23_add_rule_graha_dignity.sql). EXALTED / MOOLATRIKONA / OWN /
+-- DEBILITATED degree segments per rule-set + DeepDegree + DignityScore
+-- (+4/+3/+2/-2) + Mood/InterpretationTendency/Analogy. Panchadha Maitri
+-- (friend/neutral/enemy, the two "great" tiers) is a separate axis and
+-- stays in tbl_Rule_NaturalRelationship + tbl_Rule_TemporaryFriendshipDistance.
+-- Seeds RuleSetId 2 (PVR-Dignity-Integrated, rows IsActive=1) + RuleSetId 3
+-- (BPHS-Dignity-Parashari, rows IsActive=0). Placed here because the seed
+-- JOINs tbl_Planets / tbl_SignAttributes and FKs tbl_Rule_Sets. Idempotent.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Rule_GrahaDignity', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_GrahaDignity (
+        Id                     INT IDENTITY(1,1) NOT NULL
+                                   CONSTRAINT PK_Rule_GrahaDignity PRIMARY KEY,
+        RuleSetId              TINYINT      NOT NULL
+                                   CONSTRAINT FK_Rule_GrahaDignity_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        PlanetId               TINYINT      NOT NULL
+                                   CONSTRAINT FK_Rule_GrahaDignity_Planet  FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        SignId                 TINYINT      NOT NULL
+                                   CONSTRAINT FK_Rule_GrahaDignity_Sign    FOREIGN KEY REFERENCES dbo.tbl_SignAttributes (Id),
+        DignityTypeCode        VARCHAR(20)  NOT NULL,
+        StartDegree            DECIMAL(5,2) NOT NULL,
+        EndDegree              DECIMAL(5,2) NOT NULL,
+        DeepDegree             DECIMAL(5,2) NULL,
+        DignityScore           SMALLINT     NOT NULL,
+        IsPrimary              BIT          NOT NULL
+                                   CONSTRAINT DF_Rule_GrahaDignity_IsPrimary DEFAULT 1,
+        Mood                   VARCHAR(20)  NULL,
+        InterpretationTendency NVARCHAR(200) NULL,
+        Analogy                NVARCHAR(400) NULL,
+        DignityRationale       NVARCHAR(MAX) NULL,
+        MethodCode             VARCHAR(30)  NULL,
+        RuleParametersJson     NVARCHAR(MAX) NULL,
+        CalculationNarrative   NVARCHAR(MAX) NULL,
+        SourceRefCode          VARCHAR(40)  NULL,
+        IsActive               BIT          NOT NULL
+                                   CONSTRAINT DF_Rule_GrahaDignity_IsActive DEFAULT 1,
+        CONSTRAINT CK_RuleGrahaDignity_Type    CHECK (DignityTypeCode IN ('EXALTED','MOOLATRIKONA','OWN','DEBILITATED')),
+        CONSTRAINT CK_RuleGrahaDignity_Degrees CHECK (StartDegree >= 0 AND EndDegree > StartDegree AND EndDegree <= 30),
+        CONSTRAINT CK_RuleGrahaDignity_Deep    CHECK (DeepDegree IS NULL OR (DeepDegree >= 0 AND DeepDegree <= 30)),
+        CONSTRAINT CK_RuleGrahaDignity_Score   CHECK (DignityScore BETWEEN -2 AND 4),
+        CONSTRAINT CK_RuleGrahaDignity_Json    CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_RuleGrahaDignity_Src     CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_GrahaDignity UNIQUE (RuleSetId, PlanetId, SignId, DignityTypeCode, StartDegree)
+    );
+    CREATE NONCLUSTERED INDEX IX_Rule_GrahaDignity_Lookup
+        ON dbo.tbl_Rule_GrahaDignity (RuleSetId, PlanetId, SignId)
+        INCLUDE (StartDegree, EndDegree, DignityTypeCode, DignityScore, DeepDegree);
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_GrahaDignity)
+BEGIN
+    DECLARE @r_ju_pisces  NVARCHAR(400) = N'Pisces is the 12th house of the natural zodiac; saattwik and ethery - Jupiter is most comfortable here. This is his home, like a peaceful Brahmin doing pooja.';
+    DECLARE @r_ju_sag     NVARCHAR(400) = N'Sagittarius is the 9th house of the natural zodiac; upholding dharma is Jupiter''s duty. He is like a raaja-purohit who must sometimes take strong decisions.';
+    DECLARE @r_ju_cancer  NVARCHAR(400) = N'Cancer is the 4th house of the natural zodiac; Jupiter is excited to do imaginative (watery) learning.';
+    DECLARE @r_ju_cap     NVARCHAR(400) = N'Capricorn is the 10th house of the natural zodiac, taamasik; Jupiter dislikes well-defined taamasik karma - it is against his nature.';
+    DECLARE @r_me_gemini  NVARCHAR(400) = N'Gemini is the 3rd house of the natural zodiac (communications); intelligent communication is what Mercury is most comfortable with. This is his home.';
+    DECLARE @r_me_virgo   NVARCHAR(400) = N'Virgo is the 6th house of the natural zodiac (debate and arguments); Mercury loves this official job, so Virgo is both his office (moolatrikona) and his favourite picnic spot (exaltation).';
+    DECLARE @r_ke_scorpio NVARCHAR(400) = N'Scorpio is the 8th house of the natural zodiac; Ketu is most comfortable with occult activity, so he owns it.';
+    DECLARE @r_ke_pisces  NVARCHAR(400) = N'Pisces is the 12th house of the natural zodiac; Ketu''s duty is giving upaasana (meditation) and moksha (liberation).';
+    DECLARE @n_mars_typo  NVARCHAR(400) = N'PVR special-point note as printed reads "first 12 deg of Leo", which contradicts Table 6 (Mars moolatrikona = Aries) and the note itself. Encoded as Aries per Table 6.';
+
+    ;WITH meta (DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy) AS (
+        SELECT * FROM (VALUES
+            ('EXALTED',      CONVERT(SMALLINT,  4), 'Elevated',      N'Performs exceptionally and enthusiastically.', N'Favourite picnic or party - excited and eager, performing at its best.'),
+            ('MOOLATRIKONA', CONVERT(SMALLINT,  3), 'Dutiful',       N'Powerful, purposeful and responsible.',        N'Office - executes its formal duty, whether it enjoys the work or not.'),
+            ('OWN',          CONVERT(SMALLINT,  2), 'Comfortable',   N'Natural, authentic and relaxed.',              N'Home - most natural, comfortable and at ease.'),
+            ('DEBILITATED',  CONVERT(SMALLINT, -2), 'Uncomfortable', N'Struggles to express its natural qualities.',  N'Worst party - unhappy and stuck where it hates to be.')
+        ) m (DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy)
+    ),
+    pvr (PlanetName, SignName, DignityTypeCode, StartDegree, EndDegree, DeepDegree, IsPrimary, DignityRationale, CalcNarr) AS (
+        SELECT * FROM (VALUES
+            ('Sun','Aries','EXALTED',        0, 30,  10, 1, CONVERT(NVARCHAR(MAX),NULL), CONVERT(NVARCHAR(MAX),NULL)),
+            ('Sun','Leo','MOOLATRIKONA',     0, 20, NULL, 1, NULL, NULL),
+            ('Sun','Leo','OWN',             20, 30, NULL, 1, NULL, NULL),
+            ('Sun','Libra','DEBILITATED',    0, 30,  10, 1, NULL, NULL),
+            ('Moon','Taurus','EXALTED',      0,  3,   3, 1, NULL, NULL),
+            ('Moon','Taurus','MOOLATRIKONA', 3, 30, NULL, 1, NULL, NULL),
+            ('Moon','Cancer','OWN',          0, 30, NULL, 1, NULL, NULL),
+            ('Moon','Scorpio','DEBILITATED', 0, 30,   3, 1, NULL, NULL),
+            ('Mars','Capricorn','EXALTED',   0, 30,  28, 1, NULL, NULL),
+            ('Mars','Aries','MOOLATRIKONA',  0, 12, NULL, 1, NULL, @n_mars_typo),
+            ('Mars','Aries','OWN',          12, 30, NULL, 1, NULL, NULL),
+            ('Mars','Scorpio','OWN',         0, 30, NULL, 0, NULL, NULL),
+            ('Mars','Cancer','DEBILITATED',  0, 30,  28, 1, NULL, NULL),
+            ('Mercury','Virgo','EXALTED',    0, 15,  15, 1, @r_me_virgo,  NULL),
+            ('Mercury','Virgo','MOOLATRIKONA',15,20, NULL, 0, @r_me_virgo, NULL),
+            ('Mercury','Virgo','OWN',        20, 30, NULL, 0, @r_me_virgo,  NULL),
+            ('Mercury','Gemini','OWN',        0, 30, NULL, 1, @r_me_gemini, NULL),
+            ('Mercury','Pisces','DEBILITATED',0,30,  15, 1, NULL, NULL),
+            ('Jupiter','Cancer','EXALTED',   0, 30,   5, 1, @r_ju_cancer, NULL),
+            ('Jupiter','Sagittarius','MOOLATRIKONA',0,10,NULL,0,@r_ju_sag, NULL),
+            ('Jupiter','Sagittarius','OWN', 10, 30, NULL, 0, @r_ju_sag,    NULL),
+            ('Jupiter','Pisces','OWN',       0, 30, NULL, 1, @r_ju_pisces, NULL),
+            ('Jupiter','Capricorn','DEBILITATED',0,30, 5, 1, @r_ju_cap,    NULL),
+            ('Venus','Pisces','EXALTED',     0, 30,  27, 1, NULL, NULL),
+            ('Venus','Libra','MOOLATRIKONA', 0, 15, NULL, 0, NULL, NULL),
+            ('Venus','Libra','OWN',         15, 30, NULL, 0, NULL, NULL),
+            ('Venus','Taurus','OWN',         0, 30, NULL, 1, NULL, NULL),
+            ('Venus','Virgo','DEBILITATED',  0, 30,  27, 1, NULL, NULL),
+            ('Saturn','Libra','EXALTED',     0, 30,  20, 1, NULL, NULL),
+            ('Saturn','Aquarius','MOOLATRIKONA',0,20,NULL,0, NULL, NULL),
+            ('Saturn','Aquarius','OWN',      20, 30, NULL, 0, NULL, NULL),
+            ('Saturn','Capricorn','OWN',      0, 30, NULL, 1, NULL, NULL),
+            ('Saturn','Aries','DEBILITATED', 0, 30,  20, 1, NULL, NULL),
+            ('Rahu','Gemini','EXALTED',      0, 30, NULL, 1, NULL, NULL),
+            ('Rahu','Virgo','MOOLATRIKONA',  0, 30, NULL, 1, NULL, NULL),
+            ('Rahu','Aquarius','OWN',        0, 30, NULL, 1, NULL, NULL),
+            ('Rahu','Sagittarius','DEBILITATED',0,30,NULL,1, NULL, NULL),
+            ('Ketu','Sagittarius','EXALTED', 0, 30, NULL, 1, NULL, NULL),
+            ('Ketu','Pisces','MOOLATRIKONA', 0, 30, NULL, 1, @r_ke_pisces,  NULL),
+            ('Ketu','Scorpio','OWN',         0, 30, NULL, 1, @r_ke_scorpio, NULL),
+            ('Ketu','Gemini','DEBILITATED',  0, 30, NULL, 1, NULL, NULL)
+        ) v (PlanetName, SignName, DignityTypeCode, StartDegree, EndDegree, DeepDegree, IsPrimary, DignityRationale, CalcNarr)
+    )
+    INSERT dbo.tbl_Rule_GrahaDignity
+        (RuleSetId, PlanetId, SignId, DignityTypeCode, StartDegree, EndDegree, DeepDegree, DignityScore,
+         IsPrimary, Mood, InterpretationTendency, Analogy, DignityRationale, MethodCode, CalculationNarrative,
+         SourceRefCode, IsActive)
+    SELECT 2, p.Id, s.Id, d.DignityTypeCode,
+           CONVERT(DECIMAL(5,2), d.StartDegree), CONVERT(DECIMAL(5,2), d.EndDegree), CONVERT(DECIMAL(5,2), d.DeepDegree),
+           m.DignityScore, d.IsPrimary, m.Mood, m.InterpretationTendency, m.Analogy, d.DignityRationale,
+           'SEGMENT_LOOKUP', d.CalcNarr, 'SRC_PVR_INTEGRATED', 1
+    FROM pvr d
+    JOIN dbo.tbl_Planets p        ON p.PlanetName = d.PlanetName
+    JOIN dbo.tbl_SignAttributes s ON s.SignName  = d.SignName
+    JOIN meta m                   ON m.DignityTypeCode = d.DignityTypeCode;
+
+    ;WITH meta (DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy) AS (
+        SELECT * FROM (VALUES
+            ('EXALTED',      CONVERT(SMALLINT,  4), 'Elevated',      N'Performs exceptionally and enthusiastically.', N'Favourite picnic or party - excited and eager, performing at its best.'),
+            ('MOOLATRIKONA', CONVERT(SMALLINT,  3), 'Dutiful',       N'Powerful, purposeful and responsible.',        N'Office - executes its formal duty, whether it enjoys the work or not.'),
+            ('OWN',          CONVERT(SMALLINT,  2), 'Comfortable',   N'Natural, authentic and relaxed.',              N'Home - most natural, comfortable and at ease.'),
+            ('DEBILITATED',  CONVERT(SMALLINT, -2), 'Uncomfortable', N'Struggles to express its natural qualities.',  N'Worst party - unhappy and stuck where it hates to be.')
+        ) m (DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy)
+    ),
+    bphs (PlanetName, SignName, DignityTypeCode, StartDegree, EndDegree, DeepDegree, IsPrimary) AS (
+        SELECT * FROM (VALUES
+            ('Sun','Aries','EXALTED',        0, 30,  10, 1),
+            ('Sun','Leo','MOOLATRIKONA',     0, 20, NULL, 1),
+            ('Sun','Leo','OWN',             20, 30, NULL, 1),
+            ('Sun','Libra','DEBILITATED',    0, 30,  10, 1),
+            ('Moon','Taurus','EXALTED',      0, 30,   3, 1),
+            ('Moon','Cancer','OWN',          0, 30, NULL, 1),
+            ('Moon','Scorpio','DEBILITATED', 0, 30,   3, 1),
+            ('Mars','Capricorn','EXALTED',   0, 30,  28, 1),
+            ('Mars','Aries','MOOLATRIKONA',  0, 12, NULL, 1),
+            ('Mars','Aries','OWN',          12, 30, NULL, 1),
+            ('Mars','Scorpio','OWN',         0, 30, NULL, 0),
+            ('Mars','Cancer','DEBILITATED',  0, 30,  28, 1),
+            ('Mercury','Virgo','EXALTED',    0, 30,  15, 1),
+            ('Mercury','Gemini','OWN',       0, 30, NULL, 1),
+            ('Mercury','Pisces','DEBILITATED',0,30,  15, 1),
+            ('Jupiter','Cancer','EXALTED',   0, 30,   5, 1),
+            ('Jupiter','Sagittarius','MOOLATRIKONA',0,10,NULL,0),
+            ('Jupiter','Sagittarius','OWN', 10, 30, NULL, 0),
+            ('Jupiter','Pisces','OWN',       0, 30, NULL, 1),
+            ('Jupiter','Capricorn','DEBILITATED',0,30, 5, 1),
+            ('Venus','Pisces','EXALTED',     0, 30,  27, 1),
+            ('Venus','Libra','MOOLATRIKONA', 0, 15, NULL, 0),
+            ('Venus','Libra','OWN',         15, 30, NULL, 0),
+            ('Venus','Taurus','OWN',         0, 30, NULL, 1),
+            ('Venus','Virgo','DEBILITATED',  0, 30,  27, 1),
+            ('Saturn','Libra','EXALTED',     0, 30,  20, 1),
+            ('Saturn','Aquarius','MOOLATRIKONA',0,20,NULL,0),
+            ('Saturn','Aquarius','OWN',      20, 30, NULL, 0),
+            ('Saturn','Capricorn','OWN',      0, 30, NULL, 1),
+            ('Saturn','Aries','DEBILITATED', 0, 30,  20, 1),
+            ('Rahu','Taurus','EXALTED',      0, 30, NULL, 1),
+            ('Rahu','Scorpio','DEBILITATED', 0, 30, NULL, 1),
+            ('Ketu','Scorpio','EXALTED',     0, 30, NULL, 1),
+            ('Ketu','Taurus','DEBILITATED',  0, 30, NULL, 1)
+        ) v (PlanetName, SignName, DignityTypeCode, StartDegree, EndDegree, DeepDegree, IsPrimary)
+    )
+    INSERT dbo.tbl_Rule_GrahaDignity
+        (RuleSetId, PlanetId, SignId, DignityTypeCode, StartDegree, EndDegree, DeepDegree, DignityScore,
+         IsPrimary, Mood, InterpretationTendency, Analogy, DignityRationale, MethodCode, CalculationNarrative,
+         SourceRefCode, IsActive)
+    SELECT 3, p.Id, s.Id, d.DignityTypeCode,
+           CONVERT(DECIMAL(5,2), d.StartDegree), CONVERT(DECIMAL(5,2), d.EndDegree), CONVERT(DECIMAL(5,2), d.DeepDegree),
+           m.DignityScore, d.IsPrimary, m.Mood, m.InterpretationTendency, m.Analogy, NULL,
+           'SEGMENT_LOOKUP', NULL, 'SRC_BPHS', 0
+    FROM bphs d
+    JOIN dbo.tbl_Planets p        ON p.PlanetName = d.PlanetName
+    JOIN dbo.tbl_SignAttributes s ON s.SignName  = d.SignName
+    JOIN meta m                   ON m.DignityTypeCode = d.DignityTypeCode;
+END
+GO
+IF OBJECT_ID('dbo.vw_Dignity_Legend', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_Dignity_Legend;
+GO
+CREATE VIEW dbo.vw_Dignity_Legend AS
+SELECT DISTINCT DignityTypeCode, DignityScore, Mood, InterpretationTendency, Analogy
+FROM dbo.tbl_Rule_GrahaDignity
+WHERE IsActive = 1;
 GO
 
 -- =====================================================================
