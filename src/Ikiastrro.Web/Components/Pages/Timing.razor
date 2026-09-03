@@ -1,0 +1,62 @@
+@page "/charts/{Id:int}/timing"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartTypeRepository ChartTypeRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject SadeSatiRepository SadeSatiRepo
+@inject GocharaRepository GocharaRepo
+@using Ikiastrro.Web.Components.Workspace
+
+<PageTitle>Timing — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
+
+@if (_data is null)
+{
+    <EmptyState Message="No saved chart found for that person." />
+}
+else
+{
+    <p class="tm-back"><a href="@($"/charts/{Id}")">← Workspace</a></p>
+    <h1>@_data.Person.Name — timing</h1>
+
+    <section class="tm-sec">
+        <h2>Vimshottari Dasha</h2>
+        @if (_dasha.Count > 0) { <DashaTimeline Roots="_dasha" /> }
+        else { <EmptyState Message="No Dasha computed." Cli="@($"compute-dasha {_data.Person.Name}")" /> }
+    </section>
+
+    <section class="tm-sec">
+        <h2>Sade Sati, Kantaka &amp; Ashtama</h2>
+        <SadeSatiTable Periods="_sadeSati"
+                       BirthDate="_data.Person.DateOfBirth.ToDateTime(_data.Person.EffectiveTimeOfBirth)" />
+    </section>
+
+    <section class="tm-sec">
+        <h2>Gochara — slow grahas now</h2>
+        <GocharaPanel Snapshots="_gochara" NatalMoonSign="@(_data.Charts.GetValueOrDefault("D1")?.MoonSign ?? "")" />
+    </section>
+
+    <p><a href="@($"/charts/{Id}/life-weeks")">Life in weeks →</a></p>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private WorkspaceData? _data;
+    private IReadOnlyList<DashaPeriodRecord> _dasha = Array.Empty<DashaPeriodRecord>();
+    private IReadOnlyList<SadeSatiPeriod> _sadeSati = Array.Empty<SadeSatiPeriod>();
+    private IReadOnlyList<PlanetTransitSnapshot> _gochara = Array.Empty<PlanetTransitSnapshot>();
+
+    protected override void OnParametersSet()
+    {
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
+            ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_data is null) return;
+        _dasha = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+        _sadeSati = SadeSatiRepo.GetByBirthDetailId(Id);
+        _gochara = GocharaRepo.GetSnapshots(DateTime.UtcNow);
+    }
+}

@@ -1,0 +1,3 @@
+.tm-back a { color: var(--accent); text-decoration: none; }
+.tm-sec { margin: 1.5rem 0; }
+.tm-sec h2 { margin-bottom: .5rem; }
