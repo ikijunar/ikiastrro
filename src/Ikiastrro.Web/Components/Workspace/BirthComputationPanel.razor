@@ -1,0 +1,47 @@
+@* The "clean by default" scalars, shown only when the header's "Birth & computation" disclosure
+   is open. Sunrise/sunset are NOT included here — they are Spec-1 SunTimes, not on ChartResult;
+   deferred to a later pass (noted in the plan). *@
+<div class="bcp">
+    <dl class="bcp-grid">
+        <dt>Latitude</dt><dd>@Person.Latitude.ToString("0.0000")</dd>
+        <dt>Longitude</dt><dd>@Person.Longitude.ToString("0.0000")</dd>
+        <dt>Time zone</dt><dd>@(Person.IanaTimeZoneId ?? "—") (@Person.UtcOffset)</dd>
+        <dt>Ayanamsha</dt><dd>@Ayanamsha()</dd>
+        <dt>Sidereal time</dt><dd>@SiderealTime()</dd>
+        <dt>Engine</dt><dd>@Engine()</dd>
+    </dl>
+    <table class="bcp-methods">
+        <thead><tr><th>Chart</th><th>Varga method</th></tr></thead>
+        <tbody>
+            @foreach (var kv in Charts.OrderBy(k => k.Key))
+            {
+                <tr><td>@kv.Key</td><td>@(kv.Value.VargaMethod ?? "—")</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public BirthDetails Person { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, LoadedChart> Charts { get; set; }
+        = new Dictionary<string, LoadedChart>();
+
+    private LoadedChart? D1 => Charts.GetValueOrDefault("D1");
+    private string Ayanamsha() => D1?.AyanamshaDegrees is double d ? DmsFromDegrees(d) : "—";
+    private string SiderealTime() => D1?.SiderealTimeHours is double h ? HmsFromHours(h) : "—";
+    private string Engine() => D1?.EngineVersion is { Length: > 0 } e ? e : "—";
+
+    private static string DmsFromDegrees(double deg)
+    {
+        var d = (int)deg;
+        var mFull = (deg - d) * 60;
+        var m = (int)mFull;
+        var s = (int)Math.Round((mFull - m) * 60);
+        if (s == 60) { s = 0; m++; }
+        if (m == 60) { m = 0; d++; }
+        return $"{d}°{m:00}'{s:00}\"";
+    }
+
+    private static string HmsFromHours(double hours) =>
+        TimeSpan.FromHours(hours).ToString(@"hh\:mm\:ss");
+}

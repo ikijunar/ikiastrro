@@ -1,0 +1,7 @@
+.bcp { display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 13px; }
+.bcp-grid { display: grid; grid-template-columns: auto auto; gap: .2rem .8rem; margin: 0; }
+.bcp-grid dt { color: var(--muted-text); }
+.bcp-grid dd { margin: 0; color: var(--ink); }
+.bcp-methods { border-collapse: collapse; }
+.bcp-methods th, .bcp-methods td { padding: .15rem .5rem; border-bottom: 1px solid var(--paper-line); text-align: left; }
+.bcp-methods th { color: var(--muted-text); font-weight: 600; }
