@@ -1,339 +1,199 @@
 # Ikiastrro.Core — .NET engine map
 
-A D2 diagram of the calculation engine (`src/Ikiastrro.Core/`) plus a per-file
-reference, grouped by folder. Sibling projects (`Ikiastrro.Cli`, `Ikiastrro.Data`,
-`Ikiastrro.Web`) are **not** shown — Core has no dependency on them; they consume it.
+Generated map of the calculation engine (`src/Ikiastrro.Core/`), grouped by **engine**.
+Regenerated 2026-09-03 for the Plan 1 layout (`Engines/<Name>/`, one namespace per engine).
+Sibling projects (`Ikiastrro.Cli`, `Ikiastrro.Data`, `Ikiastrro.Web`) consume Core and are not
+detailed here.
 
-> `d2` **is** installed (`C:\Program Files\D2\d2`, v0.8.2) and the block below is
-> verified to compile with it. `d2` does not read fenced blocks out of Markdown,
-> so first copy the diagram into a `.d2` file (or `sed -n` the fence range), then
-> `d2 that-file.d2 out.svg`.
+![dotnet_engine_map](diagrams/dotnet_engine_map.svg)
 
-Folders beyond the seven originally requested: **`Jaimini/`** and **`SpecialPoints/`**
-were added 2026-09-01 (Chara Karakas + special points) and are included so the map is
-complete.
-
----
-
-## Diagram
+<details><summary>D2 source</summary>
 
 ```d2
 direction: down
 
-title: Ikiastrro.Core - engine data flow { shape: text; near: top-center; style.font-size: 24 }
+title: Ikiastrro.Core - engine stack (Plan 1, 2026-09-03) { shape: text; near: top-center; style.font-size: 22 }
 
-# ============================ containers ============================
+# ---- cross-cutting (left) ----
+Models: "Models\n(DB-row shapes: BirthDetails, ChartResult,\nChartKeyDetail, PlanetPosition, *Reference, ...)" { style.fill: "#f4f1ea" }
+Reference: "Reference\n(TerminologyCatalog, TerminologyCode)" { style.fill: "#f1eef4" }
+Presentation: "Presentation (ChartViewModel)" { style.fill: "#f4f1ea" }
+Geocoding: "Geocoding\n(IPlaceResolver -> Nominatim / Manual)" { style.fill: "#eaf1f4" }
 
-Models: {
-  style.fill: "#f4f1ea"
-  BirthDetails
-  ChartResult
-  ChartKeyDetail
-  PlanetPosition
-  VargaScheme
-  DTOs: "+ 14 reference / result DTOs" { style.multiple: true }
-}
-
-Geocoding: {
-  style.fill: "#eaf1f4"
-  IPlaceResolver
-  NominatimPlaceResolver
-  ManualPlaceResolver
-}
-
-Astro: {
+# ---- the engine stack, bottom-up ----
+Engines: {
   style.fill: "#eef4ea"
-  SwissEphemerisProvider: "SwissEphemerisProvider\n(swe_calc / swe_rise_trans)"
-  AstroMath
-  AstroIds
-  VargaSignRuleFactory
-  IVargaSignRule
-  SignRules: "17 IVargaSignRule impls\n(D2..D60 + D2-US)" { style.multiple: true }
-  Enums: "ZodiacName · ConstellationName · PlanetName" { style.multiple: true }
+  Astronomy: "Astronomy\nJD - Ayanamsa - graha positions - Asc - sunrise/sunset"
+  Position: "Position\nassemble D1 Rasi chart"
+  DivisionalCharts: "DivisionalCharts\nD2..D60 (17 SignRule) + LINEAR/GRID/BAND interpreters"
+  Houses: "Houses\nHouseEngine (whole-sign, house->lord) + LagnaFunctionalNature"
+  Nakshatras: "Nakshatras\nNakshatraEngine (nak / pada / Vimsottari / KP sub)"
+  Dignity: "Dignity\nDignityEngine (9-tier Panchadha Maitri)"
+  Karakas: "Karakas\nChara Karakas + special points (AL/Arudhas/HL/Gulika/Maandi)"
+  PlanetaryStates: "PlanetaryStates\nAgeState (Baaladi) + WakefulnessState (Jagradadi)"
+  Relationships: "Relationships\nRelationshipEngine (Yuti/Drsti) + CombustionEngine"
+  Dasha: "Dasha\nVimshottari (3-level)"
+  Dispositors: "Dispositors  [IDispositorEngine - reserved, Plan 2]" { style.stroke-dash: 4 }
+  Strength: "Strength  [IStrengthEngine - reserved, Plan 3]" { style.stroke-dash: 4 }
+  Yoga: "Yoga  [IYogaEngine - reserved, Plan 4]" { style.stroke-dash: 4 }
+
+  Astronomy -> Position -> DivisionalCharts
+  DivisionalCharts -> Houses
+  DivisionalCharts -> Nakshatras
+  Houses -> Dignity
+  Position -> Karakas
+  Dignity -> PlanetaryStates
+  Houses -> Relationships
 }
 
-Calculators: {
+Pipeline: {
   style.fill: "#f4eeea"
-  BirthMomentFactory
-  ChartCalculationOrchestrator
-  IChartCalculator
-  D1RasiCalculator
-  VargaCalculator
-  D1ChartComputer
-  VargaChartComputer
-  ChartAnalysisInput
-  ChartAnalyzer
-  ClassicalDignity
-  ClassicalRelationships
-  ClassicalCombustion
-  LagnaFunctionalNature
-  PlanetAvasthaComputer
-  BaaladiAvastha
-  JagradadiAvastha
-  ChartViewModel
+  ChartPipeline: "ChartPipeline.Run(BirthDetails) -> ChartBundle  (no DB / no I/O)"
+  ChartAnalyzer: "ChartAnalyzer (thin composer) -> KeyDetails/HouseLords/Conjunctions/Aspects"
+  Orchestrator: "ChartCalculationOrchestrator + IChartCalculator"
 }
 
-SpecialPoints: {
-  style.fill: "#f0eaf4"
-  SpecialPointCalculator
-  ArudhaCalculator
-  HoraLagnaCalculator
-  UpagrahaCalculator
-  SpecialPointSeed
-  SpecialPointProjector
-}
+Geocoding -> Engines.Astronomy: "lat/long/zone"
+Engines -> Pipeline.ChartPipeline: "every engine's output"
+Pipeline.ChartAnalyzer -> Models: "row shapes"
+Engines.DivisionalCharts -> Reference: "concept codes"
 
-Jaimini: {
-  style.fill: "#f4eaf0"
-  CharaKarakaCalculator
-  CharaKaraka
-}
+Data: "Ikiastrro.Data\nChartGenerationService -> repositories -> SQL Server" { style.fill: "#eaeaf4" }
+Cli: "Ikiastrro.Cli\ncompute-* / verify-* (schema, vargas, jaimini, avastha,\nsources, pipeline, terminology, rules) / seed-*" { style.fill: "#eaeaf4" }
+Web: "Ikiastrro.Web (Blazor Server workspace)" { style.fill: "#eaeaf4" }
 
-Dasha: {
-  style.fill: "#eaf4f0"
-  VimshottariDashaCalculator
-  DashaPeriod
-  DashaPeriodRecord
-  LifeWeek
-}
-
-Transits: {
-  style.fill: "#f4f4ea"
-  PlanetTransitEventFinder
-}
-
-LifeAreas: {
-  style.fill: "#eaeef4"
-  LifeAreaMap
-}
-
-# ============================ flow ============================
-
-Models.BirthDetails -> Geocoding.NominatimPlaceResolver: "\"City, Country\""
-Geocoding.IPlaceResolver -> Geocoding.NominatimPlaceResolver: impl
-Geocoding.IPlaceResolver -> Geocoding.ManualPlaceResolver: impl
-Geocoding.NominatimPlaceResolver -> Calculators.BirthMomentFactory: lat / long / offset
-Calculators.BirthMomentFactory -> Astro.SwissEphemerisProvider: local moment
-
-Astro.SwissEphemerisProvider -> Calculators.D1ChartComputer: sidereal longitudes
-Astro.SwissEphemerisProvider -> Calculators.VargaChartComputer: sidereal longitudes
-Astro.VargaSignRuleFactory -> Astro.IVargaSignRule: builds
-Astro.IVargaSignRule <- Astro.SignRules: implements
-Astro.IVargaSignRule -> Calculators.VargaChartComputer: varga sign
-
-Calculators.ChartCalculationOrchestrator -> Calculators.IChartCalculator: drives all
-Calculators.D1RasiCalculator -> Calculators.IChartCalculator: impl
-Calculators.VargaCalculator -> Calculators.IChartCalculator: impl
-Calculators.D1RasiCalculator -> Calculators.D1ChartComputer
-Calculators.VargaCalculator -> Calculators.VargaChartComputer
-Calculators.D1ChartComputer -> Calculators.ChartAnalysisInput
-Calculators.VargaChartComputer -> Calculators.ChartAnalysisInput
-Calculators.ChartAnalysisInput -> Calculators.ChartAnalyzer
-Calculators.ChartAnalyzer -> Calculators.ClassicalDignity
-Calculators.ChartAnalyzer -> Calculators.ClassicalRelationships
-Calculators.ChartAnalyzer -> Calculators.ClassicalCombustion
-Calculators.ChartAnalyzer -> Models.ChartKeyDetail: "KeyDetail / HouseLord / Conjunction / Aspect rows"
-Calculators.PlanetAvasthaComputer -> Calculators.BaaladiAvastha
-Calculators.PlanetAvasthaComputer -> Calculators.JagradadiAvastha
-Calculators.ChartAnalyzer -> Calculators.PlanetAvasthaComputer: "via ChartGenerationService"
-
-Calculators.ChartCalculationOrchestrator -> SpecialPoints.SpecialPointCalculator: seed once per person
-SpecialPoints.SpecialPointCalculator -> SpecialPoints.ArudhaCalculator
-SpecialPoints.SpecialPointCalculator -> SpecialPoints.HoraLagnaCalculator
-SpecialPoints.SpecialPointCalculator -> SpecialPoints.UpagrahaCalculator
-SpecialPoints.HoraLagnaCalculator -> Astro.SwissEphemerisProvider: GetSunTimes
-SpecialPoints.UpagrahaCalculator -> Astro.SwissEphemerisProvider: GetSunTimes
-SpecialPoints.SpecialPointCalculator -> SpecialPoints.SpecialPointSeed
-SpecialPoints.SpecialPointSeed -> SpecialPoints.SpecialPointProjector
-SpecialPoints.SpecialPointProjector -> Astro.IVargaSignRule: reuses per chart
-SpecialPoints.SpecialPointProjector -> Calculators.ChartAnalysisInput: "SpecialPoints list"
-
-Jaimini.CharaKarakaCalculator -> Jaimini.CharaKaraka: "ranks, then labels"
-Jaimini.CharaKarakaCalculator -> Models.ChartKeyDetail: "CharaKaraka label (via ChartGenerationService)"
-
-Astro.SwissEphemerisProvider -> Dasha.VimshottariDashaCalculator: Moon position
-Dasha.VimshottariDashaCalculator -> Dasha.DashaPeriod: tree
-Dasha.DashaPeriod -> Dasha.DashaPeriodRecord: "flattened in Data"
-Dasha.DashaPeriodRecord -> Dasha.LifeWeek: "tvf in Data"
-
-Astro.SwissEphemerisProvider -> Transits.PlanetTransitEventFinder: day-walk + bisection
-
-Calculators.ChartViewModel -> LifeAreas.LifeAreaMap: groups charts for the Web workspace
-Astro.AstroIds -> Models.ChartKeyDetail: PlanetId / SignId FKs
-Astro.AstroMath <- Calculators.D1ChartComputer: sign / degree / nakshatra / house
-Astro.AstroMath <- Astro.SignRules: GetXSign helpers
+Pipeline -> Data
+Data -> Cli
+Data -> Web
 ```
 
----
+</details>
 
-## Astro/ — raw astronomy + sidereal math (25 files)
-
-The only folder that talks to the ephemeris. Everything downstream consumes its
-outputs (`SiderealPositions`, `SunTimes`) or its pure helpers.
-
-| File | Type | Purpose |
-|---|---|---|
-| `SwissEphemerisProvider.cs` | static + `record SiderealPositions` / `record SunTimes` | Wraps **SwissEphNet** (Moshier, Lahiri sidereal). `GetSiderealPositions` → Ascendant + 9 graha longitudes / latitudes / speeds + ayanamsha + LST. `GetSunTimes` (`swe_rise_trans`) → the Vedic-day sunrise / sunset / next-sunrise frame + night-birth flag. Replaced VedAstro.Library. |
-| `AstroMath.cs` | static | Pure classical math on a sidereal longitude: sign, D-M-S formatting, nakshatra + pada, `GetNavamsaSign` / `GetDasamsaSign` / `GetShashtamsaSign` / …, `GetVargaLongitude` (`Normalize(lon × N)`), `Normalize`, `CountFromSignToSign` (Whole-Sign house count), `GetNakshatraLord` / sub-lord, canonical nakshatra names. |
-| `AstroIds.cs` | static | Core enum → reference-table PK: `PlanetId = (int)PlanetName + 1`, `SignId = (int)ZodiacName + 1`. Write-path source of truth for the integer FK columns. |
-| `VargaSignRuleFactory.cs` | static | `For(signRuleKey, divisionFactor)` → the matching `IVargaSignRule`. One `switch`; its cases are the contract with `tbl_Rule_VargaScheme` seed data. |
-| `IVargaSignRule.cs` | interface | `ZodiacName SignFor(double siderealLongitude)` — maps a real longitude to its sign in one divisional chart. One impl per varga scheme. |
-| `LinearVargaSignRule.cs` | sealed class | The "l-th part, `stride` signs forward from the rasi sign" family — D3 (3, 4), D4 (4, 3), D12 (12, 1), D60 (60, 1); also the D1 identity `(1, 1)`. |
-| `HoraD2ClassicSignRule.cs` | sealed class | D2 classical two-sign Hora (odd 1st-half → Leo, 2nd → Cancer; even reversed). |
-| `HoraD2UmaShambuSignRule.cs` | sealed class | D2 "Uma Shambu" — JHora's default D2 (`D-2 (US)`), PyJHora `__parivritti_even_reverse`. |
-| `NavamsaD9SignRule.cs` | sealed class | D9 — wraps `AstroMath.GetNavamsaSign`. |
-| `DasamsaD10SignRule.cs` | sealed class | D10 — wraps `AstroMath.GetDasamsaSign` (odd from self, even from 9th). |
-| `RudramsaD11SignRule.cs` | sealed class | D11 — wraps `AstroMath.GetRudramsaSign` (Sanjay Rath method). |
-| `ShashtamsaD6SignRule.cs` | sealed class | D6 — wraps `AstroMath.GetShashtamsaSign`. |
-| `PanchamsaD5SignRule.cs` | sealed class | D5 — five 6° parts; odd / even signs map the l-th part to a fixed sign list. |
-| `SaptamsaD7SignRule.cs` | sealed class | D7 — odd signs count from the sign itself, even from the 7th. |
-| `AshtamsaD8SignRule.cs` | sealed class | D8 — movable / fixed / dual signs count the l-th part from Aries / Leo / Sagittarius. |
-| `ShodasamsaD16SignRule.cs` | sealed class | D16 (Kalamsa) — movable / fixed / dual start points. |
-| `VimsamsaD20SignRule.cs` | sealed class | D20 — movable / dual / fixed start points. |
-| `SiddhamsaD24SignRule.cs` | sealed class | D24 (Chaturvimsamsa) — odd from Leo, even from Cancer. |
-| `NakshatramsaD27SignRule.cs` | sealed class | D27 (Bhamsa) — fire / earth / air / water signs start from Aries / Cancer / Libra / Capricorn. |
-| `TrimsamsaD30SignRule.cs` | sealed class | D30 — the classical **unequal** five-part scheme (5 / 5 / 8 / 7 / 5°). |
-| `KhavedamsaD40SignRule.cs` | sealed class | D40 (Chatvarimsamsa) — odd signs from Aries, even from Libra. |
-| `AkshavedamsaD45SignRule.cs` | sealed class | D45 — movable / fixed / dual from Aries / Leo / Sagittarius. |
-| `PlanetName.cs` | enum + `PlanetNames.All9` | The 7 grahas + Rahu + Ketu, VedAstro spelling / order. |
-| `ZodiacName.cs` | enum | 12 rasis, Aries-first; `Capricornus` (Latin) kept for stored-data compatibility. |
-| `ConstellationName.cs` | enum | 27 nakshatras, index-only (display names come from `AstroMath.NakshatraCanonicalNames`). |
+Regenerate: `d2 --theme 0 --pad 20 docs/artifacts/diagrams/dotnet_engine_map.d2 docs/artifacts/diagrams/dotnet_engine_map.svg`
 
 ---
 
-## Calculators/ — chart assembly + classical analysis (17 files)
+## Engines (`src/Ikiastrro.Core/Engines/<Name>/` — namespace `Ikiastrro.Core.Engines.<Name>`)
 
-The pipeline: `IChartCalculator` impls turn a `BirthDetails` into a `ChartAnalysisInput`;
-`ChartAnalyzer` turns that into the derived-table rows.
+### Astronomy (7 files) — JD, Ayanāṁśa, sidereal graha positions, Ascendant, sunrise/sunset
 
-| File | Type | Purpose |
-|---|---|---|
-| `BirthMomentFactory.cs` | internal static | `BirthDetails` → local-offset `DateTimeOffset` for the astro engine. |
-| `IChartCalculator.cs` | interface | `ChartType`, `ComputeAnalysisInput(bd, specialPoints?)`, `BuildResult(bd, input)` — the plug-in point for every chart type. |
-| `ChartCalculationOrchestrator.cs` | class | Holds every registered `IChartCalculator`. `CreateDefault(schemes)` = `D1RasiCalculator` + one `VargaCalculator` per `tbl_Rule_VargaScheme` row. `CalculateAll` computes the special-point seeds once, then runs every calculator. |
-| `D1RasiCalculator.cs` | class : `IChartCalculator` | D1 — delegates to `D1ChartComputer`, serialises `ResultJson`. |
-| `VargaCalculator.cs` | sealed class : `IChartCalculator` | One instance per varga scheme row; delegates to `VargaChartComputer` + the scheme's `IVargaSignRule`; stamps `ChartResult.VargaMethod`. Replaced the 6 bespoke D2/D6/D9/D10/D11 calculators. |
-| `D1ChartComputer.cs` | static | The actual D1 computation: Ascendant + 9 grahas' sign / degree / nakshatra / house from `SwissEphemerisProvider`; projects the special-point seeds with the identity rule. |
-| `VargaChartComputer.cs` | static | Any divisional chart from an injected division factor + `IVargaSignRule`: real longitude + varga longitude + Whole-Sign house from the varga Lagna; projects the special points with that chart's rule. |
-| `ChartAnalysisInput.cs` | record | The one shape every calculator hands to `ChartAnalyzer`: `ChartType`, `AscendantSign`, `List<PlanetPosition> Planets`, `IReadOnlyList<PlanetPosition> SpecialPoints`. |
-| `ChartAnalyzer.cs` | static | Chart-type-agnostic. Builds `ChartKeyDetail` / `ChartHouseLord` / `ChartConjunction` / `ChartAspect` rows — dignity, house-lordship (3 reckonings), conjunctions, aspects — plus position-only rows for the special points (`PointKind ≠ Graha`). |
-| `ClassicalDignity.cs` | static + `record DignityResult` | Panchadha Maitri: own / exaltation / debilitation / Moolatrikona sign+range, sign lord, and the 9-tier `DignityStatus`. `GetSignLord`, `GetHouseSign`. |
-| `ClassicalRelationships.cs` | static + `record ConjunctionResult` / aspect result | Graha Yuti (same sign) + Graha Drishti (7th always; Mars 4/8, Jupiter 5/9, Saturn 3/10; Rahu/Ketu Jupiter-style). Pure rules on `ChartAnalysisInput`. |
-| `ClassicalCombustion.cs` | static + `record CombustionResult` | Asta orbs (BPHS / Phaladeepika) for the 6 applicable grahas, narrowed when retrograde; evaluated in the chart's own zodiac (real longitude for D1, varga longitude otherwise). |
-| `LagnaFunctionalNature.cs` | static | Parashari functional Benefic / Malefic / Neutral / Yogakaraka of a planet w.r.t. a Lagna, from house-lordship. Sole source (the `tbl_Dim_LagnaFunctionalNature` mirror was removed). |
-| `PlanetAvasthaComputer.cs` | static | Builds `tbl_Fact_PlanetAvastha` rows from the `ChartKeyDetail` list — Baaladi (D1 only) + Jagradadi (every chart); skips Ascendant and non-Graha rows. |
-| `BaaladiAvastha.cs` | static | Planet "age" from degree-within-sign: Baala / Kumara / Yuva / Vriddha / Mrita (odd signs forward, even reversed) + effect fraction. Data-driven from `tbl_Rule_BaaladiState`. |
-| `JagradadiAvastha.cs` | static | Planet "waking state" from `DignityStatus`: Jagrat / Swapna / Sushupti. Data-driven from `tbl_Rule_JagradadiState`. |
-| `ChartViewModel.cs` | static + `record PlanetRow` | Presentation helpers for the Web/CLI: `PlanetGlyph` ("Su", "Mo", …), `DignityToken`, `BuildPlanetRows`, `BuildAspectedByGlyphs`. |
+| File | Role |
+|---|---|
+| `SwissEphemerisProvider.cs` | `swe_calc` / `swe_rise_trans` wrapper; produces `SiderealPositions`, `SunTimes` (in this file) |
+| `AstroMath.cs` | pure sidereal math — Normalize, nakshatra/pada helpers, the closed-form varga helpers (`GetNavamsaSign` etc.), DMS formatting |
+| `AstroIds.cs` | name ↔ `tbl_*` id lookups (`PlanetId`, `SignId`) |
+| `PlanetName.cs` / `ZodiacName.cs` / `ConstellationName.cs` | the graha / rāśi (Capricorn member = `Capricornus`) / nakshatra enums |
+| `BirthMomentFactory.cs` | birth details + place → the resolved astronomical moment |
 
----
+### Position (2 files) — assemble the D1 Rāśi chart
 
-## SpecialPoints/ — Jaimini Arudhas + special lagnas + upagrahas (6 files, 2026-09-01)
+| File | Role |
+|---|---|
+| `D1ChartComputer.cs` | sign / degree-in-sign / retro / house-from-Lagna per graha + Ascendant |
+| `D1RasiCalculator.cs` | `IChartCalculator` for D1 (registered first in `ChartCalculationOrchestrator`) |
 
-Each point is one D1 longitude (`SpecialPointSeed`), then projected into all 21 vargas
-by `SpecialPointProjector` using the same `IVargaSignRule` a planet uses.
+### DivisionalCharts (26 files) — D2–D60 + the portable interpreters
 
-| File | Type | Purpose |
-|---|---|---|
-| `SpecialPointSeed.cs` | sealed record | `(string Code, string PointKind, double NirayanaLongitudeDegrees)` — a point's D1 longitude before any varga projection. `PointKind` ∈ `Arudha` / `SpecialLagna` / `Upagraha`. |
-| `SpecialPointCalculator.cs` | static | `ComputeSeeds(bd)` — the façade: Arudhas from the D1 chart + HL + Gulika + Maandi (the latter three via `GetSunTimes`). |
-| `ArudhaCalculator.cs` | static | AL + the 12 Bhava Arudhas (Parashari: `n` signs from the house lord; 1st/7th exception → 10th; placed at the natal Lagna degree). |
-| `HoraLagnaCalculator.cs` | static | Hora Lagna — Sun's longitude at the Vedic day's opening sunrise + 0.5°/clock-minute of time-of-day since it (negative for a night birth). |
-| `UpagrahaCalculator.cs` | static | Gulika + Maandi — day/night arc ÷ 8; the Ascendant at the **start** of Saturn's part is Gulika, at its **middle** is Maandi; weekday is the Vedic day's. |
-| `SpecialPointProjector.cs` | static | `Project(seeds, rule, divisionFactor, lagnaSign)` → `List<PlanetPosition>` (sign / varga longitude / house). Shared by `D1ChartComputer` and `VargaChartComputer`. |
+| File | Role |
+|---|---|
+| `IVargaSignRule.cs`, `VargaSignRuleFactory.cs` | the rule contract + the `SignRuleKey` → rule switch (20 keys) |
+| `LinearVargaSignRule.cs` + 16 `*SignRule.cs` (`HoraD2Classic`, `HoraD2UmaShambu`, `PanchamsaD5`, `SaptamsaD7`, `AshtamsaD8`, `NavamsaD9`, `DasamsaD10`, `RudramsaD11`, `ShashtamsaD6`, `ShodasamsaD16`, `VimsamsaD20`, `SiddhamsaD24`, `NakshatramsaD27`, `TrimsamsaD30`, `KhavedamsaD40`, `AkshavedamsaD45`) | the 17 divisional sign rules (the live compute path) |
+| `VargaChartComputer.cs`, `VargaCalculator.cs` | apply a rule across all grahas → a varga `ChartAnalysisInput` |
+| `IVargaMethodInterpreter.cs`, `VargaMethodInterpreterFactory.cs` | the portable-rule contract + `"method"` → interpreter |
+| `LinearVargaInterpreter.cs` (`LINEAR_VARGA` `{factor,stride}`), `GridVargaInterpreter.cs` (`GRID_VARGA` — `parts × 12` sampled sign grid), `BandVargaInterpreter.cs` (`BAND_VARGA` — D30 unequal bands) | reconstruct a varga sign from `tbl_Rule_VargaScheme.RuleParametersJson`; proven equal to the C# rule over 360° by `verify-rules` |
 
----
+### Houses (2 files) — whole-sign houses + functional nature
 
-## Jaimini/ — Chara Karakas (2 files, 2026-09-01)
+| File | Role |
+|---|---|
+| `HouseEngine.cs` | `GetHouseSign` / `GetSignLord` + `BuildHouseLords` (the `tbl_Chart_HouseLords` rows); extracted verbatim from `ChartAnalyzer` |
+| `LagnaFunctionalNature.cs` | Parāśari functional benefic / malefic by Lagna |
 
-| File | Type | Purpose |
-|---|---|---|
-| `CharaKaraka.cs` | enum | `AK, AmK, BK, MK, PiK, PK, GK, DK` — the 8 movable significators, ranked (AK strongest). |
-| `CharaKarakaCalculator.cs` | static | `Assign(degreeInSignByPlanet)` — rank Sun…Saturn + Rahu by degree-within-sign descending; **Rahu keyed `30 − deg`**; Ketu unranked. Highest → AK, lowest → DK. |
+### Nakshatras (1 file)
 
----
+| File | Role |
+|---|---|
+| `NakshatraEngine.cs` | `ForLongitude` → nakshatra index / lord / KP sub-lord / overall pāda index (wraps the `AstroMath` helpers); extracted from `ChartAnalyzer` |
 
-## Dasha/ — Vimshottari periods (4 files)
+### Dignity (1 file)
 
-| File | Type | Purpose |
-|---|---|---|
-| `VimshottariDashaCalculator.cs` | static | Classical 3-level Maha / Antar / Pratyantar sequence from the Moon's nakshatra position; all 3 levels correctly partial-at-birth. |
-| `DashaPeriod.cs` | class | One period at any level — a **tree** (`Children` = next level down). The write-side shape `VimshottariDashaRepository` flattens into `tbl_Chart_DashaPeriods`. |
-| `DashaPeriodRecord.cs` | class | The **read-back** shape from `tbl_Chart_DashaPeriods` — flat (Dapper-friendly), with `Id` / `ParentDashaPeriodId` so `BuildTree` rebuilds the hierarchy for the UI. |
-| `LifeWeek.cs` | class | One row of `tvf_Chart_LifeWeeks` — week 1–4000 with its active Maha/Antar/Pratyantar lord. Backs `LifeWeeks.razor`. |
+| File | Role |
+|---|---|
+| `DignityEngine.cs` | exaltation / debilitation / Mūlatrikoṇa / own-sign + 9-tier `DignityStatus` (Pañchadhā Maitrī); was `ClassicalDignity`. Holds `DignityResult` |
 
----
+### Karakas (10 files) — Jaimini Chara Karakas + special points
 
-## Geocoding/ — place → lat/long/offset (3 files)
+| File | Role |
+|---|---|
+| `CharaKaraka.cs`, `CharaKarakaCalculator.cs` | the 8-karaka enum + Aṣṭa assignment (Rahu keyed `30 − deg`) |
+| `ArudhaCalculator.cs` | Arudha Lagna + the 12 Bhāva Arudhas |
+| `HoraLagnaCalculator.cs` | Horā Lagna |
+| `UpagrahaCalculator.cs` | Gulika / Maandi (day/night-part ruler arrays) |
+| `SpecialPointSeed.cs`, `SpecialPointProjector.cs`, `SpecialPointCalculator.cs` | D1 longitude of each special point, projected into every varga's own zodiac |
+| `ISthiraKarakaSource.cs`, `INaisargikaKarakaSource.cs` | **interface only** — Sthira / Naisargika Karaka, built in Plan 2 |
 
-| File | Type | Purpose |
-|---|---|---|
-| `IPlaceResolver.cs` | interface + `record ResolvedPlace` | `"City, Country" + birth date` → `(Latitude, Longitude, IanaTimeZoneId, UtcOffset)`. Kept behind an interface so the strategy can be swapped. |
-| `NominatimPlaceResolver.cs` | class : `IPlaceResolver` | OpenStreetMap Nominatim geocode (no key), then offline lat/long + date → IANA zone → **historical** UTC offset via GeoTimeZone + TimeZoneConverter. |
-| `ManualPlaceResolver.cs` | class : `IPlaceResolver` | Offline fallback — the caller supplies lat / long / offset directly. |
+### PlanetaryStates (4 files) — the "avastha" engine (renamed from `Calculators`/`Models`)
 
----
+| File | Role |
+|---|---|
+| `AgeStateCalculator.cs` | Bālādi (age) state from within-sign degree; was `BaaladiAvastha` |
+| `WakefulnessStateCalculator.cs` | Jāgradādi (waking) state from dignity; was `JagradadiAvastha` |
+| `PlanetaryStateComputer.cs` | builds the `tbl_Fact_PlanetaryState` rows; was `PlanetAvasthaComputer` |
+| `PlanetaryStateModels.cs` | `PlanetaryStateRow` / `AgeStateRuleRow` / `WakefulnessStateRuleRow` / `PlanetaryStateRuleSet` / `PlanetaryStateFact`; was `Models/AvasthaModels.cs` |
 
-## Transits/ — slow-planet sign crossings (1 file)
+Migration 16 renamed the backing tables (`tbl_Dim_PlanetaryState`, `tbl_Rule_AgeState`, `tbl_Rule_WakefulnessState`, `tbl_Fact_PlanetaryState`); every `StateName` / `AvasthaSystem` row value is unchanged — the English glosses (`Infant`, `Awake`, …) live as `en` rows in `tbl_Astro_Terminology`.
 
-| File | Type | Purpose |
-|---|---|---|
-| `PlanetTransitEventFinder.cs` | class + `record PlanetTransitEvent` | Day-walk + bisection to find every Saturn / Jupiter / Rahu sign-boundary crossing (incl. retrograde re-entries) 1930–2060. Feeds `tbl_PlanetSignTransitEvents`. |
+### Relationships (2 files)
 
----
+| File | Role |
+|---|---|
+| `RelationshipEngine.cs` | Yuti (conjunction) + Dṛṣṭi (aspect): `FindConjunctions`/`FindAspects` + `BuildConjunctionRows`/`BuildAspectRows`; was `ClassicalRelationships` + the row-mapping extracted from `ChartAnalyzer` |
+| `CombustionEngine.cs` | Asta (combustion) orbs, narrower when retrograde; was `ClassicalCombustion`. Holds `CombustionResult` |
 
-## LifeAreas/ — Web workspace grouping (1 file)
+### Dasha (4 files)
 
-| File | Type | Purpose |
-|---|---|---|
-| `LifeAreaMap.cs` | static + `enum LifeArea` | The four life-area groupings (`PersonalityHealth`, `Relationships`, `Career`, `Money`) the Web workspace organises charts around. Interpretation stays out of scope. |
+| File | Role |
+|---|---|
+| `VimshottariDashaCalculator.cs` | 3-level Vimśottari, partial-at-birth |
+| `DashaPeriod.cs`, `DashaPeriodRecord.cs`, `LifeWeek.cs` | the period tree + life-in-weeks row shape |
 
----
+### Dispositors / Strength / Yoga — reserved seams (interfaces only, built in Plans 2–4)
 
-## Models/ — DTOs & DB row shapes (19 files)
-
-Plain data. No behaviour. Populated by `Calculators` / `SpecialPoints` / `Dasha`,
-persisted by `Ikiastrro.Data`.
-
-| File | Type | Purpose |
-|---|---|---|
-| `BirthDetails.cs` | class | The input record — name / DOB / TOB / place. Never changes shape as chart types are added. |
-| `ChartResult.cs` | class | One computed chart/calculation artifact for a `BirthDetails`; `ChartType` string + numeric `AyanamshaDegrees` / `SiderealTimeHours` / `VargaMethod` + `ResultJson` (frozen audit snapshot). |
-| `PlanetPosition.cs` | class | One point's placement within a computed chart — sign, degrees, nirayana + varga longitude, latitude / speed, house, `IsRetrograde`, `PointKind`. |
-| `ChartKeyDetail.cs` | class | One row of `tbl_Chart_KeyDetails` — flattened position + dignity + nakshatra + combustion + aspects, plus `PointKind` (row discriminator) + `CharaKaraka` label. |
-| `ChartHouseLord.cs` | class | One row of `tbl_Chart_HouseLords` — house → sign → lord → where the lord sits (3 reckonings + dignity). |
-| `ChartConjunction.cs` | class | One row of `tbl_Chart_Conjunctions` — a canonical (`Planet1Id < Planet2Id`) graha pair sharing a sign; `DegreeSeparation` D1-only. |
-| `ChartAspect.cs` | class | One row of `tbl_Chart_Aspects` — one directional Graha Drishti; target is a graha or `"Ascendant"`. |
-| `AvasthaModels.cs` | records | `AvasthaStateRow` / `BaaladiRuleRow` / `JagradadiRuleRow` / `AvasthaRuleSet` — the `tbl_Dim_AvasthaState` + `tbl_Rule_*` shapes the avastha computers read. |
-| `VargaScheme.cs` | record | One row of `tbl_Rule_VargaScheme` — `DivisionFactor`, `MethodCode`, `SignRuleKind`, `SignRuleKey`, `RuleSetId`. D1 not represented (identity). |
-| `ChartTypeRow.cs` | record | One row of `tbl_Dim_ChartType` — controlled vocabulary for `ChartResults.ChartTypeId`. |
-| `GenerationReport.cs` | record | Outcome of a `ChartGenerationService` run — what was (re)written, whether Dasha ran, what was skipped. |
-| `SadeSatiPeriod.cs` | record | One row of `tvf_Chart_SadeSatiPeriods` — a Saturn-from-natal-Moon affliction window (Dhaiya / Kantaka / Ashtama). |
-| `PlanetTransitSnapshot.cs` | record | Where a slow planet sits sidereally as of a date + when it next changes sign. |
-| `HouseNakshatraSpanRow.cs` | record | One row of `vw_Chart_HouseNakshatraSpan` — a house → sign → nakshatra-pada slice. |
-| `PlanetReference.cs` | record | One row of `tbl_Planets` (static graha reference — Vimshottari years / order, natural nature). |
-| `SignAttributeReference.cs` | record | One row of `tbl_SignAttributes` (element, chara/sthira/dwiswabhava, exaltation/debilitation). |
-| `NakshatraReference.cs` | record | One row of `tbl_Nakshatras` (ruling planet, primary rasi, boundary-straddle flag). |
-| `NakshatraPadaReference.cs` | record | One row of `tbl_NakshatraPadas` — the four 3°20′ padas of each nakshatra (1:1 with navamsa). |
-| `NakshatraSubLordReference.cs` | record | One row of `tbl_NakshatraSubLords` — KP Vimshottari sub-lord hierarchy, levels 1–2 only. |
+| File | Role |
+|---|---|
+| `Dispositors/IDispositorEngine.cs`, `DispositorChain.cs` | sign-lord traversal, final dispositor, mutual reception — Plan 2 |
+| `Strength/IStrengthEngine.cs`, `ShadbalaResult.cs`, `VimsopakaResult.cs` | Ṣaḍbala + Vimśopaka — Plan 3 |
+| `Yoga/IYogaEngine.cs`, `YogaResult.cs` | yoga detection (`PREDICATE_SET`) — Plan 4 |
 
 ---
 
-## Cross-folder dependency summary
+## Cross-cutting namespaces
 
-| From | Depends on | Why |
+### `Ikiastrro.Core.Pipeline` (6 files)
+
+| File | Role |
+|---|---|
+| `ChartPipeline.cs`, `ChartBundle.cs` | `Run(BirthDetails) → ChartBundle` — every engine, no DB, no I/O beyond the Swiss Ephemeris files. One consumer today: `verify-pipeline`. Not yet wired into `ChartGenerationService.GenerateAll` |
+| `ChartAnalyzer.cs` | thin composer — the `keyDetails` loop + calls into House / Nakshatra / Relationship / Dignity / Combustion engines; returns `(KeyDetails, HouseLords, Conjunctions, Aspects)` |
+| `ChartCalculationOrchestrator.cs`, `IChartCalculator.cs`, `ChartAnalysisInput.cs` | D1 + one `VargaCalculator` per `tbl_Rule_VargaScheme` row |
+
+### `Ikiastrro.Core.Reference` (4 files) — terminology types only
+
+| File | Role |
+|---|---|
+| `TerminologyCatalog.cs` | loaded-once lookup over `tbl_Astro_Terminology` (+`_Text`): `Label` / `Traditional` / `Describe` / `Meta`, default language `sa` → `en` → the code |
+| `TerminologyCode.cs` | `const string` per Code the C# names (planets, signs, karakas); the full 236-concept set lives in the DB |
+| `TerminologyRow.cs`, `TerminologyTextRow.cs` | the two DB-row record shapes |
+
+### Other
+
+| Namespace | Files | Role |
 |---|---|---|
-| `Calculators` | `Astro` | longitudes (`SwissEphemerisProvider`), sign math (`AstroMath`), sign rules (`IVargaSignRule`), FK ids (`AstroIds`) |
-| `Calculators` | `Models` | produces `ChartKeyDetail` / `ChartHouseLord` / `ChartConjunction` / `ChartAspect`; consumes `PlanetPosition` |
-| `SpecialPoints` | `Astro` + `Calculators` | `GetSunTimes`, `IVargaSignRule`, `D1ChartComputer`, `ClassicalDignity.GetSignLord` |
-| `Jaimini` | `Astro` | `PlanetName` only (pure ranking) |
-| `Dasha` | `Astro` | Moon position from `SwissEphemerisProvider` (via the CLI/Data caller) |
-| `Transits` | `Astro` | repeated `SwissEphemerisProvider` calls in a day-walk |
-| `LifeAreas` | *(none in Core)* | consumed by `Ikiastrro.Web` only |
-| `Models` | `Astro` | enum types (`ZodiacName`, `PlanetName`) in some DTOs |
-| `Astro` | *(nothing in Core)* | leaf layer — only SwissEphNet + BCL |
+| `Ikiastrro.Core.Presentation` | `ChartViewModel.cs` | Web-facing view model |
+| `Ikiastrro.Core.Models` | 18 files | DB-row / DTO shapes — `BirthDetails`, `ChartResult`, `ChartKeyDetail`, `PlanetPosition`, `VargaScheme`, the 5 `*Reference` records, `GenerationReport`, transit / Sade-Sati shapes. Kept plural; `PlanetPosition` + the `*Reference` records deliberately stayed here |
+| `Ikiastrro.Core.Geocoding` | 3 files | `IPlaceResolver` → `NominatimPlaceResolver` / `ManualPlaceResolver` |
+| `Ikiastrro.Core.LifeAreas` | `LifeAreaMap.cs` | Web workspace grouping |
+| `Ikiastrro.Core.Transits` | `PlanetTransitEventFinder.cs` | slow-planet sign-crossing history (feeds Sade Sati, not the birth-chart pipeline) |
 
-Orchestration and persistence live **outside** this project: `ChartCalculationOrchestrator`
-is driven by `Ikiastrro.Data.ChartGenerationService`, which also owns the
-`CharaKarakaCalculator` → `ChartKeyDetail.CharaKaraka` stamping and the
-`PlanetAvasthaComputer` call.
+The old namespaces `Ikiastrro.Core.{Astro, Calculators, Jaimini, SpecialPoints}` and the top-level
+`Ikiastrro.Core.Dasha` are **retired**.

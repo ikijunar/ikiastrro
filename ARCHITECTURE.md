@@ -11,6 +11,61 @@ plus Vimshottari Dasha, classical dignity, house-lordship, conjunctions, aspects
 retrograde/combustion, Sade Sati and Lagna functional benefic/malefic — via a CLI and a
 Blazor Server web workspace. (Renamed from `vedic_horo_gen` / `VedicHoroGen` on 2026-08-30.)
 
+## Engine stack (2026-09-03, Plan 1 — supersedes the folder layout in the dated sections below)
+
+`Ikiastrro.Core` is layered into named **engines**, one folder + one namespace each
+(`src/Ikiastrro.Core/Engines/<Name>/` → `Ikiastrro.Core.Engines.<Name>`), so "which engine is
+wrong" is answerable at a glance. Build order is bottom-up; a higher engine only calls down.
+
+| Engine | Namespace | Owns | Status |
+|---|---|---|---|
+| Astronomy | `…Engines.Astronomy` | Julian Day, Ayanāṁśa, sidereal graha positions, Ascendant, sunrise/sunset; `SwissEphemerisProvider`, `AstroMath`, `AstroIds`, `PlanetName`/`ZodiacName`/`ConstellationName`, `SiderealPositions`, `SunTimes`, `BirthMomentFactory` | built |
+| Position | `…Engines.Position` | assemble the D1 Rāśi chart; `D1ChartComputer`, `D1RasiCalculator` | built |
+| DivisionalCharts | `…Engines.DivisionalCharts` | D2–D60 (17 `*SignRule` + `VargaSignRuleFactory` + `VargaChartComputer`/`VargaCalculator`); + the portable interpreters (`LINEAR_VARGA`/`GRID_VARGA`/`BAND_VARGA` + `VargaMethodInterpreterFactory`) | built |
+| Houses | `…Engines.Houses` | whole-sign houses, house→sign→lord, functional nature; `HouseEngine` (extracted from `ChartAnalyzer`), `LagnaFunctionalNature` | built |
+| Nakshatras | `…Engines.Nakshatras` | nakshatra / pāda / Vimśottari lord / KP sub-lord; `NakshatraEngine` (extracted) | built |
+| Dignity | `…Engines.Dignity` | exaltation / debilitation / Mūlatrikoṇa / own-sign, 9-tier `DignityStatus`; `DignityEngine` (was `ClassicalDignity`) | built |
+| Karakas | `…Engines.Karakas` | Chara Karakas (8-fold), special points (AL, 12 Bhāva Arudhas, HL, Gulika, Maandi); `ISthiraKarakaSource`/`INaisargikaKarakaSource` reserved | built (Sthira/Naisargika reserved) |
+| PlanetaryStates | `…Engines.PlanetaryStates` | `AgeStateCalculator` (Bālādi, was `BaaladiAvastha`), `WakefulnessStateCalculator` (Jāgradādi, was `JagradadiAvastha`), `PlanetaryStateComputer` | 2 of 5 states built |
+| Relationships | `…Engines.Relationships` | Yuti + Dṛṣṭi (`RelationshipEngine`, was `ClassicalRelationships`), combustion (`CombustionEngine`, was `ClassicalCombustion`) | core built |
+| Dasha | `…Engines.Dasha` | Vimśottari; `VimshottariDashaCalculator`, `DashaPeriod(Record)`, `LifeWeek` | Vimśottari only |
+| Dispositors | `…Engines.Dispositors` | `IDispositorEngine` + `DispositorChain` — **interface only** | reserved (Plan 2) |
+| Strength | `…Engines.Strength` | `IStrengthEngine`, `ShadbalaResult`, `VimsopakaResult` — **interface only** | reserved (Plan 3) |
+| Yoga | `…Engines.Yoga` | `IYogaEngine`, `YogaResult` — **interface only** | reserved (Plan 4) |
+
+Cross-cutting namespaces: `Ikiastrro.Core.Pipeline` (`ChartPipeline`, `ChartBundle`, `ChartAnalyzer`
+— now a thin composer, `ChartCalculationOrchestrator`, `IChartCalculator`, `ChartAnalysisInput`);
+`Ikiastrro.Core.Reference` (`TerminologyCatalog`, `TerminologyCode` — terminology types only);
+`Ikiastrro.Core.Presentation` (`ChartViewModel`); `Ikiastrro.Core.Models` (DB-row shapes, incl.
+`PlanetPosition` and the `*Reference` records — kept here, not moved). The old namespaces
+`Ikiastrro.Core.{Astro, Calculators, Jaimini, SpecialPoints}` and top-level `.Dasha` are retired.
+
+**`ChartPipeline` / `ChartBundle`** — a DB-free façade: `ChartPipeline.Run(BirthDetails) → ChartBundle`
+runs every engine and returns everything computed (positions, sun times, per-varga
+`ChartAnalysisInput`, Chara Karakas, planetary states) with no I/O beyond the Swiss Ephemeris
+files. `verify-pipeline` exercises the whole chain against seed person 1 without touching a
+persisted row. It is not yet wired into `ChartGenerationService.GenerateAll` (the bundle would
+need per-chart `ChartResult` rows first) — that adoption is a follow-on.
+
+**Rule-table portability** — every `tbl_Rule_*` table carries a portability tail
+(`MethodCode`, `RuleParametersJson`, `CalculationNarrative`, `SourceRefCode`, `IsActive`), and
+`dbo.tbl_Rule_Catalog` is the one-page index of "what a port must reimplement": per table, the
+consuming engine, the `MethodCode` families its rows use, and where it was introduced. For the
+divisional charts, `RuleParametersJson` carries a `"method"` key (`LINEAR_VARGA` `{factor,stride}`
+· `GRID_VARGA` a `parts × 12` sampled sign grid · `BAND_VARGA` `{edges, map}` for D30) plus the
+parameters — a non-C# port copies the table data and reimplements three small interpreters
+instead of 20 rule classes. `verify-rules` proves every `RuleParametersJson` round-trips to its
+C# rule's output over the full 360°. `tbl_Rule_VargaScheme.MethodCode` still names the classical
+scheme (`ParasaraTraditional`, `SanjayRath`, …), not the interpreter.
+
+**Terminology** — `tbl_Astro_Terminology` (+ `tbl_Astro_TerminologyText`) is the single source of
+truth for every concept's name + description across languages: 236 concepts seeded `sa`+`en`
+(Latin script); Tamil (`ta`/`Taml`) and Devanāgarī (`sa`/`Deva`) are pure inserts later, no
+schema change. `Ikiastrro.Core.Reference.TerminologyCatalog.Label/Traditional/Describe/Meta`
+reads it; `verify-terminology` asserts coverage. Migrations 16 (avastha → planetary-state
+rename), 17 (terminology tables), 18 (portability tail + `tbl_Rule_Catalog` + 5 reserved rule
+tables) landed here and are folded into `db/ikiastrro.sql`.
+
 ## Reference specs
 
 > **Full doc index:** [`master_ikiastrro.md`](master_ikiastrro.md) — every project `.md`, grouped by category, with purpose / path / date / status. The naming convention is STANDARDS §M.1.

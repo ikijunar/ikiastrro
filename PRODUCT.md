@@ -22,7 +22,8 @@ ladder: `Planned → Designed → DB → Core → Verified → Web → Done`. Co
 | DASHA | 2 | 90% | 0 | 0 | 0 | 0 | 0 |
 | YOGA | 1 | 0% | 1 | 1 | 1 | 1 | 1 |
 | TRANSIT | 2 | 80% | 0 | 0 | 0 | 1 | 0 |
-| TERM | 1 | 0% | 1 | 1 | 1 | 1 | 1 |
+| ENGINE | 2 | 90% | 0 | 0 | 0 | 1 | 0 |
+| TERM | 1 | 80% | 0 | 0 | 0 | 1 | 0 |
 | INFRA | 1 | 80% | 0 | 0 | 0 | 1 | 0 |
 | DOCS | 1 | 100% | 0 | 0 | 0 | 0 | 0 |
 
@@ -125,9 +126,19 @@ ladder: `Planned → Designed → DB → Core → Verified → Web → Done`. Co
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
 
 ### TERM
-- **FEAT-TERM-01 · Terminology catalogue (Sanskrit / English / Tamil)** — Designed · 0%
-  Spec `2026-09-02-engine-organization-terminology-design` · Plan — (Plan 1) · Research: complete
-  DB [ ] · Core [ ] · Verify [ ] · Web [ ] · Docs [ ]
+- **FEAT-TERM-01 · Terminology catalogue (Sanskrit / English / Tamil)** — Verified · 80%
+  Verify `verify-terminology` · Spec `2026-09-02-engine-organization-terminology-design` §8 · Plan `2026-09-02-engine-organization-terminology` · Research: complete
+  DB [x] (`tbl_Astro_Terminology` + `_Text`, migration 17) · Core [x] (`Ikiastrro.Core.Reference.TerminologyCatalog`) · Verify [x] · Web [ ] · Docs [x]
+  236 concepts seeded `sa`+`en` (`Latn`); Tamil (`ta`/`Taml`) + Devanagari (`sa`/`Deva`) are pure inserts later — schema needs no rework.
+
+### ENGINE
+- **FEAT-ENGINE-01 · Engine-stack layering (`Engines/<Name>/`)** — Verified · 80%
+  Verify `verify-schema` + `verify-pipeline` · Spec `2026-09-02-engine-organization-terminology-design` §4–§7 · Plan `2026-09-02-engine-organization-terminology` · Research: complete
+  DB [x] (migration 16 avastha→planetary-state rename) · Core [x] (13 engines + `ChartPipeline`/`ChartBundle`; `ChartAnalyzer` split into House/Nakshatra/Relationship engines, behaviour-preserving) · Verify [x] · Web [ ] · Docs [x]
+  Reserved seams only (interfaces): Dispositor, Strength, Yoga, Sthira/Naisargika Karaka. `ChartGenerationService.GenerateAll` pipeline adoption deferred.
+- **FEAT-ENGINE-02 · Rule-table portability (`tbl_Rule_Catalog` + interpreters)** — Verified · 80%
+  Verify `verify-rules` · Spec `2026-09-02-engine-organization-terminology-design` §9 · Plan `2026-09-02-engine-organization-terminology` · Research: complete
+  DB [x] (portability tail on 7 `tbl_Rule_*`; `tbl_Rule_Catalog` + 12-row index; 5 reserved rule tables — migration 18) · Core [x] (3 `IVargaMethodInterpreter` families: `LINEAR_VARGA` / `GRID_VARGA` / `BAND_VARGA`; `seed-rule-params` backfills all 20 `RuleParametersJson`) · Verify [x] (every scheme round-trips to its C# rule over the full circle) · Web [x] (n/a) · Docs [x]
 
 ### INFRA
 - **FEAT-INFRA-01 · Multi-environment config (dev/stage/uat/prod)** — Verified · 80%

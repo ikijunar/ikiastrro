@@ -1,0 +1,55 @@
+direction: down
+
+title: Ikiastrro.Core - engine stack (Plan 1, 2026-09-03) { shape: text; near: top-center; style.font-size: 22 }
+
+# ---- cross-cutting (left) ----
+Models: "Models\n(DB-row shapes: BirthDetails, ChartResult,\nChartKeyDetail, PlanetPosition, *Reference, ...)" { style.fill: "#f4f1ea" }
+Reference: "Reference\n(TerminologyCatalog, TerminologyCode)" { style.fill: "#f1eef4" }
+Presentation: "Presentation (ChartViewModel)" { style.fill: "#f4f1ea" }
+Geocoding: "Geocoding\n(IPlaceResolver -> Nominatim / Manual)" { style.fill: "#eaf1f4" }
+
+# ---- the engine stack, bottom-up ----
+Engines: {
+  style.fill: "#eef4ea"
+  Astronomy: "Astronomy\nJD - Ayanamsa - graha positions - Asc - sunrise/sunset"
+  Position: "Position\nassemble D1 Rasi chart"
+  DivisionalCharts: "DivisionalCharts\nD2..D60 (17 SignRule) + LINEAR/GRID/BAND interpreters"
+  Houses: "Houses\nHouseEngine (whole-sign, house->lord) + LagnaFunctionalNature"
+  Nakshatras: "Nakshatras\nNakshatraEngine (nak / pada / Vimsottari / KP sub)"
+  Dignity: "Dignity\nDignityEngine (9-tier Panchadha Maitri)"
+  Karakas: "Karakas\nChara Karakas + special points (AL/Arudhas/HL/Gulika/Maandi)"
+  PlanetaryStates: "PlanetaryStates\nAgeState (Baaladi) + WakefulnessState (Jagradadi)"
+  Relationships: "Relationships\nRelationshipEngine (Yuti/Drsti) + CombustionEngine"
+  Dasha: "Dasha\nVimshottari (3-level)"
+  Dispositors: "Dispositors  [IDispositorEngine - reserved, Plan 2]" { style.stroke-dash: 4 }
+  Strength: "Strength  [IStrengthEngine - reserved, Plan 3]" { style.stroke-dash: 4 }
+  Yoga: "Yoga  [IYogaEngine - reserved, Plan 4]" { style.stroke-dash: 4 }
+
+  Astronomy -> Position -> DivisionalCharts
+  DivisionalCharts -> Houses
+  DivisionalCharts -> Nakshatras
+  Houses -> Dignity
+  Position -> Karakas
+  Dignity -> PlanetaryStates
+  Houses -> Relationships
+}
+
+Pipeline: {
+  style.fill: "#f4eeea"
+  ChartPipeline: "ChartPipeline.Run(BirthDetails) -> ChartBundle  (no DB / no I/O)"
+  ChartAnalyzer: "ChartAnalyzer (thin composer) -> KeyDetails/HouseLords/Conjunctions/Aspects"
+  Orchestrator: "ChartCalculationOrchestrator + IChartCalculator"
+}
+
+Geocoding -> Engines.Astronomy: "lat/long/zone"
+Engines -> Pipeline.ChartPipeline: "every engine's output"
+Pipeline.ChartAnalyzer -> Models: "row shapes"
+Engines.DivisionalCharts -> Reference: "concept codes"
+
+Data: "Ikiastrro.Data\nChartGenerationService -> repositories -> SQL Server" { style.fill: "#eaeaf4" }
+Cli: "Ikiastrro.Cli\ncompute-* / verify-* (schema, vargas, jaimini, avastha,\nsources, pipeline, terminology, rules) / seed-*" { style.fill: "#eaeaf4" }
+Web: "Ikiastrro.Web (Blazor Server workspace)" { style.fill: "#eaeaf4" }
+
+Pipeline -> Data
+Data -> Cli
+Data -> Web

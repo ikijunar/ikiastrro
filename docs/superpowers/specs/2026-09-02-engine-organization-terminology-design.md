@@ -1,6 +1,6 @@
 # Project foundations + engine organization + terminology + rule-table portability — design
 
-**Status:** draft (for plan) · **Created:** 2026-09-02 · **Branch:** `feat/ikiastrro-workspace-ui`
+**Status:** executed — Plan 0 merged; Plan 1 complete 2026-09-03 (`feat/ikiastrro-workspace-ui`, commits `2271eec`..`dd2ad67`). §9 interpreter table reconciled below to what shipped (`GRID_VARGA`). · **Created:** 2026-09-02 · **Branch:** `feat/ikiastrro-workspace-ui`
 **Supersedes nothing.** Consumes the divisional-chart, avastha, and Jaimini work already merged.
 **Sequencing:** Plan 0 (foundations — docs standard, citation registry, `INFRASTRUCTURE.md`,
 env-agnostic data access) → Plan 1 (engine reorg + terminology + rule portability) →
@@ -320,14 +320,17 @@ text; no orphan `ParentCode`.
   IsActive             BIT           NOT NULL CONSTRAINT ... DEFAULT 1
 ```
 
-**The fixed interpreter set** (`MethodCode` values — what a port reimplements):
+**The fixed interpreter set** — what a port reimplements. The per-rule tag is a top-level
+`"method"` key **inside `RuleParametersJson`**, not a column: `tbl_Rule_VargaScheme.MethodCode`
+keeps its existing meaning (the classical scheme — `ClassicalTwoSign` / `UmaShambu` /
+`ParasaraTraditional` / `SanjayRath`). `tbl_Rule_Catalog.MethodCodes` lists the tags a table's
+rows use.
 
-| `MethodCode` | Meaning | Used by |
+| tag | Meaning | Used by |
 |---|---|---|
-| `LINEAR_VARGA` | `sign = (rasi + floor(degInSign / (30/factor)) * stride) mod 12` | D3, D4, D12, D60, D1-identity |
-| `TABLE_VARGA` | `RuleParametersJson` holds the explicit part→sign map | D2, D2-US, D5, D7, D8, D16, D20, D24, D27, D40, D45 |
-| `BAND_VARGA` | unequal degree bands → sign | D30 |
-| `WRAPPED_VARGA` | defers to a named closed-form (`GetNavamsaSign`, `GetDasamsaSign`, `GetShashtamsaSign`, `GetRudramsaSign`) | D6, D9, D10, D11 |
+| `LINEAR_VARGA` | `sign = (rasi + floor(degInSign / (30/factor)) * stride) mod 12`; params `{factor, stride}` | D3, D4, D12, D60 (D1 is the identity, not in `tbl_Rule_VargaScheme`) |
+| `GRID_VARGA` | params `{parts, map:[[12 sign indices] × parts]}` — a full `parts × 12` grid `map[part][rasiSign] → sign`, sampled from the C# rule at each part's midpoint. Subsumes the plan's original `TABLE_VARGA` (odd/even part→sign map) **and** `WRAPPED_VARGA` (named closed-form): a 12-column grid also captures the movable/fixed/dual (D9) and elemental (D27) branchings, and a `{"closedForm":"GetNavamsaSign"}` pointer is not executable by a non-C# port. | D2, D2-US, D5, D6, D7, D8, D9, D10, D11, D16, D20, D24, D27, D40, D45 |
+| `BAND_VARGA` | unequal degree bands → sign; params `{edges, map:[[12] × bands]}` (edges = the union of the odd/even breakpoints; `map[band][rasiSign] → sign`) | D30 |
 | `BAND_LOOKUP` | `(key, degree-band) → value` | Age (Bālādi) state |
 | `MAP_LOOKUP` | `key → value` | Wakefulness (Jāgradādi) state, natural relationship |
 | `OFFSET_LIST` | `planet → [house offsets]` | aspect offsets |
@@ -336,13 +339,17 @@ text; no orphan `ParentCode`.
 | `WEIGHT_TABLE` | `key → weight / max` | Vimśopaka weights, Ṣaḍbala component weights (P3) |
 | `PREDICATE_SET` | ordered boolean predicates + result | Yoga rules (P4) |
 
-Wrappers `GetNavamsaSign` etc. stay in C# — they are closed-form and already textbook-cited in
-their XML docs; the narrative + citation columns carry the "how" for a port.
+The C# closed-forms `GetNavamsaSign` etc. still exist and drive the live compute path; `GRID_VARGA`
+is the portable serialization of their output, proven equal by `verify-rules` over the full circle.
+Only `LINEAR_VARGA`, `GRID_VARGA`, `BAND_VARGA` have concrete interpreter classes in Plan 1
+(`IVargaMethodInterpreter` + `VargaMethodInterpreterFactory`); the lookup/weight/predicate tags are
+reserved for P2–P4 rule tables.
 
-The `SourceCitation` column named in the tail is `SourceRefCode VARCHAR(30) NULL` — an FK-style
-key into `tbl_Ref_Source` (Plan 0, §16). Author / text / edition strings appear **only** in
-`tbl_Ref_Source` and its mirror `docs/research/reference-sources.md`, never inline in a rule row,
-a diagram, or an artifact.
+The `SourceRefCode VARCHAR(40) NULL` column (portability tail) is validated by a
+`CHECK (… LIKE 'SRC[_]%')` and resolved by `verify-sources` against `tbl_Dim_Source`
+(shipped as `tbl_Dim_Source`, not the spec's earlier `tbl_Ref_Source`) and its mirror
+`docs/research/reference-sources.md`. Author / text / edition strings appear **only** there,
+never inline in a rule row, a diagram, or an artifact.
 
 **Existing tables — Plan 1 changes:**
 
