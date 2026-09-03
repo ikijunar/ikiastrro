@@ -19,7 +19,13 @@ public record PlanetRow(
     string? DignityStatus,
     string? RulesHouseNumbers,
     string? AspectsCast,
-    string? AspectedBy);
+    string? AspectedBy,
+    string? CharaKaraka,
+    string? NakshatraSubLordPlanet,
+    double? SpeedLongitudeDegPerDay,
+    double? EclipticLatitudeDegrees,
+    double VargaLongitudeDegrees,
+    string PointKind);
 
 /// <summary>
 /// Builds display-ready chart data from the raw rows already stored per-BirthDetail (KeyDetails,
@@ -65,7 +71,13 @@ public static class ChartViewModel
                 k.DignityStatus,
                 rules.Count > 0 ? string.Join(", ", rules) : null,
                 castAspects.Count > 0 ? string.Join(", ", castAspects) : null,
-                k.AspectingPlanets);
+                k.AspectingPlanets,
+                k.CharaKaraka,
+                k.NakshatraSubLordPlanet,
+                k.SpeedLongitudeDegPerDay,
+                k.EclipticLatitudeDegrees,
+                k.VargaLongitudeDegrees,
+                k.PointKind);
         }).ToList();
     }
 
