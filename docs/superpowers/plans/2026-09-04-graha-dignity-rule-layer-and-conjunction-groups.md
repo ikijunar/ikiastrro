@@ -48,20 +48,21 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [ ] `dotnet build`; `verify-sources` + `verify-rules` + `verify-schema` `ALL PASS`.
 - [ ] Commit.
 
-## Task 2: `verify-dignity` CLI mode
-**Files:** Modify `src/Ikiastrro.Cli/Program.cs` · Create `src/Ikiastrro.Cli/fixtures/dignity-fixture.json` (or inline)
-**Interfaces:** Consumes `tbl_Rule_GrahaDignity`, `tbl_SignAttributes`, `tbl_Rule_WakefulnessState`; produces `verify-dignity` pass/fail
-- [ ] New `verify-dignity` branch, same shape as `verify-rules`.
-- [ ] **Tiling** — for each `RuleSetId` and each (PlanetId, SignId) that has rows, segments tile `[StartDegree, EndDegree)` with no gap / no overlap. (A planet's other 8 signs have no axis-A row — expected.)
-- [ ] **Coverage** — each classical planet (1–7) has exactly one whole-sign `EXALTED` and one `DEBILITATED` row in both rule-sets; 1–2 `OWN` signs; MT on exactly one sign.
-- [ ] **Dignity score map** — every `tbl_Rule_GrahaDignity` row's `DignityScore` = its `DignityTypeCode` canonical value (`EXALTED +4`, `MOOLATRIKONA +3`, `OWN +2` on **every** own row, `DEBILITATED −2`).
-- [ ] **Relationship score map** — `tbl_Rule_CompoundRelationship` has all 6 (natural × temporary) combos, `RelationshipScore` per the ladder (`ADHIMITRA +2 · MITRA +1 · SAMA 0 · SHATRU −1 · ADHISHATRU −2`), `EnglishName` ∈ the 5 Maitrī `DignityStatus` labels, and `CombineToPanchadha` output = a lookup on it for all 6 cases.
-- [ ] **Metadata constancy** — `Mood`/`InterpretationTendency`/`Analogy` single-valued per `DignityTypeCode`; `DignityRationale` non-NULL only on `PVR_INTEGRATED`.
-- [ ] **Vocabulary unchanged** — the distinct `DignityStatus` strings `DignityEngine` can emit are exactly the 9 keyed in `tbl_Rule_WakefulnessState` (every one has a wakefulness row).
-- [ ] **Fixture** — a committed fixture chart's expected `DignityStatus` + `DignityScore` for all 9 grahas matches `DignityEngine.Evaluate` (passes against BPHS values now; re-checked after Task 5 — gate the active-set checks on `IsActive`).
-- [ ] **Seed cross-check** — `tbl_SignAttributes.ExaltedDegree` / `DebilitatedDegree` / `MooltrikonaRange*` agree with the active-set classical-seven rows (nodes exempt).
-- [ ] Register `verify-dignity` in `db/README.md`, `PRODUCT.md` verify column, any "run all verify" helper.
-- [ ] `dotnet build`; `verify-dignity` `ALL PASS`.
+## Task 2: `verify-dignity` CLI mode  · **DONE**
+**Files:** Modify `src/Ikiastrro.Cli/Program.cs` (inline fixture — no separate JSON), `db/README.md`, `docs/techstack-details.md`, `ARCHITECTURE.md`
+**Interfaces:** Consumes `tbl_Rule_GrahaDignity`, `tbl_Rule_CompoundRelationship`, `tbl_SignAttributes`, `tbl_Rule_WakefulnessState`; produces `verify-dignity` pass/fail
+- [x] New `verify-dignity` branch, same shape as `verify-rules` (28 checks).
+- [x] **Tiling** — per (`RuleSetId`, `PlanetId`, `SignId`) with rows, segments tile `[0,30)` gap-/overlap-free (`LEAD` window).
+- [x] **Coverage** — classical seven, both sets: `EXALTED` on exactly one sign, one whole-sign `DEBILITATED`, `MOOLATRIKONA` on ≤ 1 sign (BPHS mirror legitimately omits Moon/Mercury MT), `OWN` 1–2 signs; + set 2 has all 7 MT signs; nodes: set 2 all four types, set 3 only `EXALTED`/`DEBILITATED`.
+- [x] **DeepDegree placement** — `EXALTED`/`DEBILITATED` only; present for 1–7, NULL for nodes.
+- [x] **Dignity score map** — `DignityScore` = `+4/+3/+2/−2` per `DignityTypeCode` on every row.
+- [x] **Relationship score map** — `tbl_Rule_CompoundRelationship`: all 6 combos, ladder `+2/+1/0/−1/−2`, `EnglishName` ∈ the 5 Maitrī labels, 6 rows reproduce `CombineToPanchadha`'s truth table.
+- [x] **Metadata constancy** — `Mood`/`InterpretationTendency`/`Analogy` single-valued per `DignityTypeCode`; `DignityRationale` non-NULL only on `PVR_INTEGRATED` (set 2).
+- [x] **Vocabulary unchanged** — the engine's 9 `DignityStatus` strings ⇔ `tbl_Rule_WakefulnessState` keys (bidirectional).
+- [x] **Fixture** — inline 9-graha chart, all placements axis-A; asserts `DignityEngine.Evaluate` (BPHS behaviour today; Task 5 re-baselines the node rows).
+- [x] **Seed cross-check** — active-set (`RuleSetId 2`) `EXALTED`/`DEBILITATED` sign + deep degree strict vs `tbl_SignAttributes`; MT range strict for Su/Ma/Ju/Ve/Sa; the 2 PVR divergences (Moon MT 3° vs seed NULL, Mercury MT 15° vs seed 16°) reported `[KNOWN]`, not failed. **`tbl_SignAttributes` still carries the BPHS Moon/Mercury MT values — a later cleanup migration could align it once Phase 2 lands.**
+- [x] Registered in `db/README.md` (new Verification section), `docs/techstack-details.md` mode table, `ARCHITECTURE.md`.
+- [x] `dotnet build src/Ikiastrro.Cli -warnaserror` 0/0; `verify-dignity` `ALL PASS`; `verify-schema`/`verify-rules`/`verify-sources`/`verify-avastha` still `ALL PASS`.
 - [ ] Commit.
 
 ## Task 3: Migration `24` — `tbl_Rule_CompoundRelationship`

@@ -8,6 +8,7 @@ using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.PlanetaryStates;
 using Ikiastrro.Core.Engines.Dasha;
+using Ikiastrro.Core.Engines.Dignity;
 using Ikiastrro.Core.Engines.Houses;
 using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Geocoding;
@@ -836,6 +837,245 @@ if (args.Length > 0 && args[0] == "verify-schema")
             ) x WHERE x.n <> 12"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
+    Environment.Exit(failures == 0 ? 0 : 1);
+}
+
+// --- One-off check: `dotnet run -- verify-dignity` ---
+// Gate for the axis-A dignity rule layer (migration 23, tbl_Rule_GrahaDignity) + the
+// compound-relationship matrix (migration 24, tbl_Rule_CompoundRelationship). Asserts the
+// seeded segments tile 0-30 per (rule-set, planet, sign); the DignityScore (+4/+3/+2/-2)
+// and RelationshipScore (+2/+1/0/-1/-2) ladders hold on every row; the per-type
+// Mood/Tendency/Analogy metadata is constant; the 9-value DignityStatus vocabulary the
+// engine emits is exactly what tbl_Rule_WakefulnessState is keyed on (axis B / verify-avastha
+// untouched); and the active PVR set's classical-seven exalt/debil deep degrees agree with
+// the tbl_SignAttributes seed. The two documented PVR moolatrikona divergences (Moon 3 deg,
+// Mercury 15 deg vs the BPHS 4/16 in the seed) are reported, not failed. The inline fixture
+// pins today's DignityEngine.Evaluate output -- a tripwire for the Phase 2 PVR switch.
+if (args.Length > 0 && args[0] == "verify-dignity")
+{
+    using var conn = connectionFactory.CreateOpenConnection();
+    var failures = 0;
+    void Check(string label, long violations)
+    {
+        var ok = violations == 0;
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {label}: {violations} violation(s)");
+        if (!ok) failures++;
+    }
+    void Note(string label) => Console.WriteLine($"  [KNOWN] {label}");
+    long Count(string sql) => conn.ExecuteScalar<long>(sql);
+
+    const int PvrSet = 2;   // tbl_Rule_Sets.Id -- PVR-Dignity-Integrated (rows IsActive = 1)
+    const int BphsSet = 3;  // BPHS-Dignity-Parashari mirror (rows IsActive = 0)
+
+    // 1. tbl_Rule_Catalog indexes both new rule tables.
+    Check("tbl_Rule_Catalog has tbl_Rule_GrahaDignity + tbl_Rule_CompoundRelationship",
+        Count(@"SELECT 2 - COUNT(*) FROM dbo.tbl_Rule_Catalog
+                WHERE RuleTableName IN ('tbl_Rule_GrahaDignity','tbl_Rule_CompoundRelationship')"));
+
+    // 2. Tiling -- per (RuleSetId, PlanetId, SignId) with rows, the [Start,End) segments
+    //    tile [0,30) with no gap / no overlap.
+    Check("dignity segments tile 0-30 per (rule-set, planet, sign)",
+        Count(@"
+            WITH seg AS (
+                SELECT RuleSetId, PlanetId, SignId, StartDegree, EndDegree,
+                       LEAD(StartDegree) OVER (PARTITION BY RuleSetId, PlanetId, SignId ORDER BY StartDegree) AS NextStart,
+                       MIN(StartDegree)  OVER (PARTITION BY RuleSetId, PlanetId, SignId) AS MinStart,
+                       MAX(EndDegree)    OVER (PARTITION BY RuleSetId, PlanetId, SignId) AS MaxEnd
+                FROM dbo.tbl_Rule_GrahaDignity)
+            SELECT COUNT(*) FROM seg
+            WHERE MinStart <> 0 OR MaxEnd <> 30 OR (NextStart IS NOT NULL AND NextStart <> EndDegree)"));
+
+    // 3. Coverage -- classical seven (Id 1-7), both rule-sets.
+    foreach (var setId in new[] { PvrSet, BphsSet })
+    {
+        Check($"[set {setId}] each classical planet is EXALTED on exactly one sign",
+            Count($@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id BETWEEN 1 AND 7
+                     AND 1 <> (SELECT COUNT(DISTINCT d.SignId) FROM dbo.tbl_Rule_GrahaDignity d
+                               WHERE d.RuleSetId = {setId} AND d.PlanetId = p.Id AND d.DignityTypeCode = 'EXALTED')"));
+        Check($"[set {setId}] each classical planet has one whole-sign DEBILITATED",
+            Count($@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id BETWEEN 1 AND 7
+                     AND 1 <> (SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity d
+                               WHERE d.RuleSetId = {setId} AND d.PlanetId = p.Id
+                                 AND d.DignityTypeCode = 'DEBILITATED' AND d.StartDegree = 0 AND d.EndDegree = 30)"));
+        Check($"[set {setId}] each classical planet has MOOLATRIKONA on at most one sign",
+            Count($@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id BETWEEN 1 AND 7
+                     AND 1 < (SELECT COUNT(DISTINCT d.SignId) FROM dbo.tbl_Rule_GrahaDignity d
+                              WHERE d.RuleSetId = {setId} AND d.PlanetId = p.Id AND d.DignityTypeCode = 'MOOLATRIKONA')"));
+        Check($"[set {setId}] each classical planet OWNs 1-2 signs",
+            Count($@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id BETWEEN 1 AND 7
+                     AND (SELECT COUNT(DISTINCT d.SignId) FROM dbo.tbl_Rule_GrahaDignity d
+                          WHERE d.RuleSetId = {setId} AND d.PlanetId = p.Id AND d.DignityTypeCode = 'OWN') NOT BETWEEN 1 AND 2"));
+    }
+    // PVR is the active set: every classical planet must actually have an MT sign there
+    // (the BPHS mirror legitimately omits MT for Moon/Mercury -- their exaltation sign
+    // wins the whole sign, so they sit at 0 MT signs in set 3).
+    Check("[set 2] all 7 classical planets have a MOOLATRIKONA sign",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id BETWEEN 1 AND 7
+                AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_GrahaDignity d
+                                WHERE d.RuleSetId = 2 AND d.PlanetId = p.Id AND d.DignityTypeCode = 'MOOLATRIKONA')"));
+
+    // Nodes: PVR set gives all four dignity types; the BPHS mirror gives only EXALTED + DEBILITATED.
+    Check("[set 2] Rahu & Ketu each carry all four dignity types",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Planets p WHERE p.Id IN (8,9)
+                AND 4 <> (SELECT COUNT(DISTINCT d.DignityTypeCode) FROM dbo.tbl_Rule_GrahaDignity d
+                          WHERE d.RuleSetId = 2 AND d.PlanetId = p.Id)"));
+    Check("[set 3] Rahu & Ketu carry only EXALTED + DEBILITATED",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity d
+                WHERE d.RuleSetId = 3 AND d.PlanetId IN (8,9)
+                  AND d.DignityTypeCode NOT IN ('EXALTED','DEBILITATED')"));
+
+    // 4. DeepDegree placement -- EXALTED/DEBILITATED only, present for classical seven, NULL for nodes.
+    Check("only EXALTED/DEBILITATED rows carry DeepDegree",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity
+                WHERE DignityTypeCode IN ('OWN','MOOLATRIKONA') AND DeepDegree IS NOT NULL"));
+    Check("EXALTED/DEBILITATED carry DeepDegree for classical seven, NULL for nodes",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity
+                WHERE DignityTypeCode IN ('EXALTED','DEBILITATED')
+                  AND ((PlanetId BETWEEN 1 AND 7 AND DeepDegree IS NULL)
+                    OR (PlanetId IN (8,9) AND DeepDegree IS NOT NULL))"));
+
+    // 5. Dignity score map -- every row's DignityScore is the canonical value for its type.
+    Check("DignityScore matches the +4/+3/+2/-2 ladder on every row",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity
+                WHERE DignityScore <> CASE DignityTypeCode
+                    WHEN 'EXALTED' THEN 4 WHEN 'MOOLATRIKONA' THEN 3
+                    WHEN 'OWN' THEN 2 WHEN 'DEBILITATED' THEN -2 END"));
+
+    // 6. Relationship score map -- the compound (Panchadha Maitri) matrix.
+    Check("tbl_Rule_CompoundRelationship has all 6 natural x temporary combos",
+        Count(@"SELECT 6 - COUNT(*) FROM (
+                    SELECT DISTINCT NaturalRelation, IsTemporaryFriend
+                    FROM dbo.tbl_Rule_CompoundRelationship WHERE RuleSetId = 1) x"));
+    Check("RelationshipScore matches the +2/+1/0/-1/-2 ladder",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_CompoundRelationship
+                WHERE RelationshipScore <> CASE CompoundCode
+                    WHEN 'ADHIMITRA' THEN 2 WHEN 'MITRA' THEN 1 WHEN 'SAMA' THEN 0
+                    WHEN 'SHATRU' THEN -1 WHEN 'ADHISHATRU' THEN -2 END"));
+    Check("compound EnglishName is one of the 5 Maitri DignityStatus labels",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_CompoundRelationship
+                WHERE EnglishName NOT IN ('Great Friend','Friend','Neutral','Enemy','Great Enemy')"));
+    // The 6 rows must reproduce DignityEngine.CombineToPanchadha's truth table.
+    var truth = new (string Nat, bool Tf, string Expected)[]
+    {
+        ("Friend",  true,  "Great Friend"),
+        ("Friend",  false, "Neutral"),
+        ("Neutral", true,  "Friend"),
+        ("Neutral", false, "Enemy"),
+        ("Enemy",   true,  "Neutral"),
+        ("Enemy",   false, "Great Enemy"),
+    };
+    var matrixMismatch = 0;
+    foreach (var (nat, tf, expected) in truth)
+    {
+        var got = conn.ExecuteScalar<string?>(
+            "SELECT EnglishName FROM dbo.tbl_Rule_CompoundRelationship " +
+            "WHERE RuleSetId = 1 AND NaturalRelation = @nat AND IsTemporaryFriend = @tf",
+            new { nat, tf });
+        if (got != expected)
+        {
+            matrixMismatch++;
+            Console.WriteLine($"    {nat}+{(tf ? "TF" : "TE")}: table={got ?? "(none)"} expected={expected}");
+        }
+    }
+    Check("compound matrix reproduces CombineToPanchadha", matrixMismatch);
+
+    // 7. Metadata constancy.
+    Check("Mood / InterpretationTendency / Analogy single-valued per DignityTypeCode",
+        Count(@"SELECT COUNT(*) FROM (
+                    SELECT DignityTypeCode
+                    FROM dbo.tbl_Rule_GrahaDignity
+                    GROUP BY DignityTypeCode
+                    HAVING COUNT(DISTINCT ISNULL(Mood,'~')) > 1
+                        OR COUNT(DISTINCT ISNULL(InterpretationTendency,'~')) > 1
+                        OR COUNT(DISTINCT ISNULL(CONVERT(NVARCHAR(400), Analogy),'~')) > 1) x"));
+    Check("DignityRationale non-NULL only on the PVR set",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity
+                WHERE DignityRationale IS NOT NULL AND RuleSetId <> 2"));
+
+    // 8. Vocabulary unchanged -- the DignityStatus strings DignityEngine can emit are
+    //    exactly the 9 keyed in tbl_Rule_WakefulnessState (RuleSetId 1).
+    var engineVocab = new[]
+    {
+        "Exalted", "Debilitated", "Moolatrikona", "Own Sign",
+        "Great Friend", "Friend", "Neutral", "Enemy", "Great Enemy",
+    };
+    var wakeKeys = conn.Query<string>(
+        "SELECT DignityStatus FROM dbo.tbl_Rule_WakefulnessState WHERE RuleSetId = 1")
+        .ToHashSet(StringComparer.Ordinal);
+    Check("every engine DignityStatus has a tbl_Rule_WakefulnessState row",
+        engineVocab.Count(v => !wakeKeys.Contains(v)));
+    Check("tbl_Rule_WakefulnessState has no DignityStatus beyond the engine's 9",
+        wakeKeys.Count(k => !engineVocab.Contains(k)));
+
+    // 9. Fixture -- pins today's DignityEngine.Evaluate output. Every placement lands in an
+    //    axis-A dignity, so the result is independent of the Panchadha Maitri path. Task 5
+    //    (PVR switch) deliberately re-baselines the Rahu/Ketu rows here.
+    var fixture = new (string Planet, ZodiacName Sign, double Deg, string Expected)[]
+    {
+        ("Sun",     ZodiacName.Aries,       10, "Exalted"),
+        ("Moon",    ZodiacName.Scorpio,     15, "Debilitated"),
+        ("Mars",    ZodiacName.Aries,        5, "Moolatrikona"),
+        ("Mercury", ZodiacName.Gemini,      10, "Own Sign"),
+        ("Jupiter", ZodiacName.Cancer,      20, "Exalted"),
+        ("Venus",   ZodiacName.Libra,       10, "Moolatrikona"),
+        ("Saturn",  ZodiacName.Capricornus, 25, "Own Sign"),
+        ("Rahu",    ZodiacName.Taurus,      12, "Exalted"),
+        ("Ketu",    ZodiacName.Scorpio,     12, "Exalted"),
+    };
+    var allSigns = fixture.ToDictionary(f => f.Planet, f => f.Sign, StringComparer.Ordinal);
+    var fixtureMismatch = 0;
+    foreach (var (planet, sign, deg, expected) in fixture)
+    {
+        var r = DignityEngine.Evaluate(planet, sign, deg, allSigns);
+        if (r.DignityStatus != expected)
+        {
+            fixtureMismatch++;
+            Console.WriteLine($"    {planet} {sign} {deg}: got {r.DignityStatus ?? "(null)"} expected {expected}");
+        }
+    }
+    Check("fixture chart reproduces DignityEngine.Evaluate (BPHS behaviour)", fixtureMismatch);
+
+    // 10. Seed cross-check -- active PVR set's classical seven vs the tbl_SignAttributes seed.
+    Check("active-set EXALTED (sign + deep degree) agrees with tbl_SignAttributes",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity d
+                WHERE d.RuleSetId = 2 AND d.PlanetId BETWEEN 1 AND 7 AND d.DignityTypeCode = 'EXALTED'
+                  AND NOT EXISTS (SELECT 1 FROM dbo.tbl_SignAttributes s
+                                  WHERE s.Id = d.SignId AND s.ExaltedPlanetId = d.PlanetId
+                                    AND s.ExaltedDegree = d.DeepDegree)"));
+    Check("active-set DEBILITATED (sign + deep degree) agrees with tbl_SignAttributes",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Rule_GrahaDignity d
+                WHERE d.RuleSetId = 2 AND d.PlanetId BETWEEN 1 AND 7 AND d.DignityTypeCode = 'DEBILITATED'
+                  AND NOT EXISTS (SELECT 1 FROM dbo.tbl_SignAttributes s
+                                  WHERE s.Id = d.SignId AND s.DebilitatedPlanetId = d.PlanetId
+                                    AND s.DebilitatedDegree = d.DeepDegree)"));
+    // Moolatrikona range: strict for Su/Ma/Ju/Ve/Sa; the two PVR divergences (Moon 3 deg vs
+    // seed 4/NULL, Mercury 15 deg vs seed 16) are documented in
+    // docs/research/dignity-pvr-integrated.md "Divergence" -- reported, not failed.
+    var mtRows = conn.Query<(int PlanetId, string Planet, decimal Start, decimal End, decimal? SeedStart, decimal? SeedEnd, int? SeedPlanet)>(
+        @"SELECT CAST(d.PlanetId AS INT), p.PlanetName, d.StartDegree, d.EndDegree,
+                 s.MooltrikonaRangeStart, s.MooltrikonaRangeEnd, CAST(s.MooltrikonaPlanetId AS INT)
+          FROM dbo.tbl_Rule_GrahaDignity d
+          JOIN dbo.tbl_Planets p ON p.Id = d.PlanetId
+          LEFT JOIN dbo.tbl_SignAttributes s ON s.Id = d.SignId
+          WHERE d.RuleSetId = 2 AND d.PlanetId BETWEEN 1 AND 7 AND d.DignityTypeCode = 'MOOLATRIKONA'").ToList();
+    var mtDivergence = 0;
+    var knownMt = new HashSet<string>(StringComparer.Ordinal) { "Moon", "Mercury" };
+    foreach (var m in mtRows)
+    {
+        var agrees = m.SeedPlanet == m.PlanetId && m.SeedStart == m.Start && m.SeedEnd == m.End;
+        if (agrees) continue;
+        var seedText = m.SeedStart is { } ss ? $"{ss:0.#}-{m.SeedEnd:0.#}" : "(none)";
+        if (knownMt.Contains(m.Planet))
+            Note($"MT {m.Planet}: rule {m.Start:0.#}-{m.End:0.#} vs seed {seedText} -- documented PVR divergence");
+        else
+        {
+            mtDivergence++;
+            Console.WriteLine($"    MT {m.Planet}: rule {m.Start:0.#}-{m.End:0.#} vs seed {seedText}");
+        }
+    }
+    Check("active-set MOOLATRIKONA range agrees with tbl_SignAttributes (bar 2 known)", mtDivergence);
+
+    Console.WriteLine(failures == 0 ? "\nverify-dignity: ALL PASS" : $"\nverify-dignity: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }
 

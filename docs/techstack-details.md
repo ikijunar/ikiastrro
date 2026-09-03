@@ -142,6 +142,7 @@ computes D1/D2/D6/D9/D10/D11 + Dasha via `ChartGenerationService`, stores, print
 | `list-rule-sets` / `show-rules <id>` | Inspect the `tbl_Rule_*` layer |
 | `verify-vargas` | Worked-example assertions for the divisional-chart math (exit 1 on FAIL) |
 | `verify-functional-nature` | Worked-example assertions for `LagnaFunctionalNature` |
+| `verify-dignity` | `tbl_Rule_GrahaDignity` tiling + `DignityScore`/`RelationshipScore` ladders + `DignityStatus` vocab + `tbl_SignAttributes` cross-check |
 | `compare-functional-nature` | Print where the computed heuristic diverges from `tbl_Dim_LagnaFunctionalNature` |
 
 These `verify-*` modes are the regression suite for the engine + DB. The one
