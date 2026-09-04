@@ -7,26 +7,32 @@
 -- underscore after the infix), Dim names plural, Rule names singular, PK
 -- column is Id.
 --
---   tbl_Dim_SubPlanets              - the 11-row master. Two calculation
---                                     families: SUN_LONGITUDE (Dhuma,
---                                     Vyatipata, Parivesha, Indrachapa,
---                                     Upaketu) and DAY_NIGHT_TIME (Kaala,
---                                     Mrityu, Ardhaprahara, Yamaghantaka,
---                                     Gulika, Maandi). AssociatedPlanetId
---                                     is the interpretive analogy planet,
---                                     NOT identity - a sub-planet is never
---                                     one of the nine grahas.
+--   tbl_Dim_SubPlanets             - the 11-row master. Two calculation
+--                                    families: SUN_LONGITUDE (Dhuma,
+--                                    Vyatipata, Parivesha, Indrachapa,
+--                                    Upaketu) and DAY_NIGHT_TIME (Kaala,
+--                                    Mrityu, Ardhaprahara, Yamaghantaka,
+--                                    Gulika, Maandi). AssociatedPlanetId
+--                                    is the interpretive analogy planet,
+--                                    NOT identity.
 --   tbl_Rule_SubPlanetSunLongitude - the 5-step longitude chain off the
---                                     Sun. Seeded (calc not built in C#).
---   tbl_Rule_SubPlanetTime         - per weekday / day-night rising-value
---                                     table for the four time-based points
---                                     whose calc is NOT built. Gulika and
---                                     Maandi already ship (the 8-part arc
---                                     in Core/Engines/Karakas/UpagrahaCalculator.cs)
---                                     so they get NO rows here yet; the
---                                     Method column + PartOffset are in
---                                     place for a later migration to fold
---                                     that method in without a schema change.
+--                                    Sun. Seeded (calc not built in C#).
+--   tbl_Rule_SubPlanetPartRuler    - PVR "Table 10": which of the 9 grahas
+--                                    (or none) rules each of the 8 equal
+--                                    parts of the day / night arc, per
+--                                    weekday. 112 rows. This is the exact
+--                                    table in "Vedic Astrology: An
+--                                    Integrated Approach" p.43-44.
+--   tbl_Rule_SubPlanetTime        - the 6 time-based sub-planets: each
+--                                    rises at a fraction (0 = start,
+--                                    0.5 = middle) of the 1/8 part ruled
+--                                    by a specific graha. PVR: Kaala mid
+--                                    of Sun's part, Mrityu mid of Mars's,
+--                                    Ardhaprahara mid of Mercury's,
+--                                    Yamaghantaka mid of Jupiter's, Gulika
+--                                    mid of Saturn's, Maandi START of
+--                                    Saturn's. The rising Ascendant at that
+--                                    instant is the sub-planet longitude.
 --
 -- No varga projection here - D1 rule data only (deferred per rammyps).
 -- RuleSetId 1 (Parashari-Classical), SourceRefCode SRC_PVR_INTEGRATED on
@@ -80,10 +86,10 @@ IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_SubPlanets)
         ( 5,'UPAKETU',     'Upaketu',     N'Sub-Ketu',     'SUN_LONGITUDE', 'Sun',    'Malefic',  5, N'Chain identity: Upaketu + 30 deg = Sun.'),
         ( 6,'KAALA',       'Kaala',       N'Time',         'DAY_NIGHT_TIME','Sun',    'Malefic',  6, NULL),
         ( 7,'MRITYU',      'Mrityu',      N'Death',        'DAY_NIGHT_TIME','Mars',   'Malefic',  7, NULL),
-        ( 8,'ARDHAPRAHARA','Ardhaprahara',N'Half-prahara', 'DAY_NIGHT_TIME','Mercury', NULL,      8, N'BPHS names Mercury''s day/night portion Ardhaprahara.'),
+        ( 8,'ARDHAPRAHARA','Ardhaprahara',N'Half-prahara', 'DAY_NIGHT_TIME','Mercury', NULL,      8, N'PVR text spells it "Artha Praharaka" / "Artha Prahara". BPHS: Mercury''s day/night portion.'),
         ( 9,'YAMAGHANTAKA','Yamaghantaka',N'Yama''s bell', 'DAY_NIGHT_TIME','Jupiter', NULL,      9, N'BPHS names Jupiter''s day/night portion Yamaghantaka.'),
-        (10,'GULIKA',      'Gulika',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 10, N'Ships today via the 8-part arc method in UpagrahaCalculator.cs (start of Saturn''s 1/8 part). No tbl_Rule_SubPlanetTime row yet.'),
-        (11,'MAANDI',      'Maandi',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 11, N'Ships today via the 8-part arc method (middle of Saturn''s 1/8 part). Often treated as the same Saturn upagraha as Gulika.')
+        (10,'GULIKA',      'Gulika',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 10, N'Ships today via UpagrahaCalculator.cs. See tbl_Rule_SubPlanetTime for the start-vs-middle divergence between the PVR text and the shipped (JHora) convention.'),
+        (11,'MAANDI',      'Maandi',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 11, N'Ships today via UpagrahaCalculator.cs. Often treated as the same Saturn upagraha as Gulika.')
     ) v (Id, SubPlanetCode, SubPlanetName, EnglishMeaning, CalculationType, AssocPlanetName, NaturalNature, SortOrder, Notes)
     JOIN dbo.tbl_Planets p ON p.PlanetName = v.AssocPlanetName;
 GO
@@ -136,7 +142,75 @@ IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetSunLongitude)
     LEFT JOIN dbo.tbl_Dim_SubPlanets inp ON inp.SubPlanetCode = v.InputCode;
 GO
 
--- --- Batch 3: tbl_Rule_SubPlanetTime ---
+-- --- Batch 3: tbl_Rule_SubPlanetPartRuler (PVR "Table 10") ---
+-- The day arc (sunrise->sunset) or night arc (sunset->next sunrise) is split
+-- into 8 equal parts. DAY: part 1 is ruled by the weekday lord, then the
+-- grahas in weekday order (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn);
+-- the part right AFTER Saturn's is lord-less, then the sequence wraps to Sun.
+-- NIGHT: part 1 is ruled by the 5th graha from the weekday lord (counting the
+-- lord as 1), same sequence afterwards. Weekday is the Vedic day (opens at
+-- sunrise); Weekday 0 = Sunday to match C# (int)DayOfWeek.
+IF OBJECT_ID('dbo.tbl_Rule_SubPlanetPartRuler', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_SubPlanetPartRuler (
+        Id                   INT IDENTITY(1,1) NOT NULL
+                                 CONSTRAINT PK_Rule_SubPlanetPartRuler PRIMARY KEY,
+        RuleSetId            TINYINT      NOT NULL
+                                 CONSTRAINT FK_Rule_SubPlanetPartRuler_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        DayNight             VARCHAR(5)   NOT NULL,          -- DAY | NIGHT
+        Weekday              TINYINT      NOT NULL,          -- 0 = Sunday ((int)DayOfWeek)
+        PartNumber           TINYINT      NOT NULL,          -- 1..8
+        RulingPlanetId       TINYINT      NULL              -- NULL = the lord-less part (always the one after Saturn's)
+                                 CONSTRAINT FK_Rule_SubPlanetPartRuler_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        MethodCode           VARCHAR(30)  NULL,             -- 'PART_RULER_LOOKUP'
+        RuleParametersJson   NVARCHAR(MAX) NULL,
+        CalculationNarrative NVARCHAR(MAX) NULL,
+        SourceRefCode        VARCHAR(40)  NULL,
+        IsActive             BIT          NOT NULL CONSTRAINT DF_Rule_SubPlanetPartRuler_IsActive DEFAULT 1,
+        CONSTRAINT CK_Rule_SubPlanetPartRuler_DN   CHECK (DayNight IN ('DAY','NIGHT')),
+        CONSTRAINT CK_Rule_SubPlanetPartRuler_WD   CHECK (Weekday BETWEEN 0 AND 6),
+        CONSTRAINT CK_Rule_SubPlanetPartRuler_Part CHECK (PartNumber BETWEEN 1 AND 8),
+        CONSTRAINT CK_Rule_SubPlanetPartRuler_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_Rule_SubPlanetPartRuler_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_SubPlanetPartRuler UNIQUE (RuleSetId, DayNight, Weekday, PartNumber)
+    );
+    CREATE NONCLUSTERED INDEX IX_Rule_SubPlanetPartRuler_Lookup
+        ON dbo.tbl_Rule_SubPlanetPartRuler (RuleSetId, DayNight, Weekday)
+        INCLUDE (PartNumber, RulingPlanetId);
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetPartRuler)
+    INSERT dbo.tbl_Rule_SubPlanetPartRuler
+        (RuleSetId, DayNight, Weekday, PartNumber, RulingPlanetId, MethodCode, SourceRefCode, IsActive)
+    SELECT 1, t.DayNight, t.Weekday, x.PartNumber, p.Id, 'PART_RULER_LOOKUP', 'SRC_PVR_INTEGRATED', 1
+    FROM (VALUES
+        --  DN       WD  P1      P2      P3      P4      P5      P6      P7      P8
+        ('DAY',   0, 'Sun',    'Moon',   'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL),
+        ('DAY',   1, 'Moon',   'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun'),
+        ('DAY',   2, 'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon'),
+        ('DAY',   3, 'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars'),
+        ('DAY',   4, 'Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury'),
+        ('DAY',   5, 'Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury','Jupiter'),
+        ('DAY',   6, 'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury','Jupiter','Venus'),
+        ('NIGHT', 0, 'Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury'),
+        ('NIGHT', 1, 'Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury','Jupiter'),
+        ('NIGHT', 2, 'Saturn', NULL,     'Sun',    'Moon',   'Mars',   'Mercury','Jupiter','Venus'),
+        ('NIGHT', 3, 'Sun',    'Moon',   'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL),
+        ('NIGHT', 4, 'Moon',   'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun'),
+        ('NIGHT', 5, 'Mars',   'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon'),
+        ('NIGHT', 6, 'Mercury','Jupiter','Venus',  'Saturn', NULL,     'Sun',    'Moon',   'Mars')
+    ) t (DayNight, Weekday, P1, P2, P3, P4, P5, P6, P7, P8)
+    CROSS APPLY (VALUES
+        (CONVERT(TINYINT,1), t.P1), (2, t.P2), (3, t.P3), (4, t.P4),
+        (5, t.P5), (6, t.P6), (7, t.P7), (8, t.P8)
+    ) x (PartNumber, PlanetName)
+    LEFT JOIN dbo.tbl_Planets p ON p.PlanetName = x.PlanetName;
+GO
+
+-- --- Batch 4: tbl_Rule_SubPlanetTime (the 6 time-based sub-planets) ---
+-- Each rises at PartFraction of the 1/8 arc part ruled (per Table 10) by
+-- RisesInPlanetId; the Ascendant at that instant is the sub-planet longitude.
+--   instant = arcStart + (arcEnd - arcStart) * (partIndex + PartFraction) / DivisionCount
 IF OBJECT_ID('dbo.tbl_Rule_SubPlanetTime', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.tbl_Rule_SubPlanetTime (
@@ -146,110 +220,96 @@ BEGIN
                                  CONSTRAINT FK_Rule_SubPlanetTime_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
         SubPlanetId          TINYINT      NOT NULL
                                  CONSTRAINT FK_Rule_SubPlanetTime_SubPlanet FOREIGN KEY REFERENCES dbo.tbl_Dim_SubPlanets (Id),
-        AssociatedPlanetId   TINYINT      NOT NULL
+        RisesInPlanetId      TINYINT      NOT NULL          -- the graha whose 1/8 part this sub-planet rises in
                                  CONSTRAINT FK_Rule_SubPlanetTime_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
-        DayNight             VARCHAR(5)   NOT NULL,          -- DAY | NIGHT
-        Weekday              TINYINT      NOT NULL,          -- 0 = Sunday ((int)DayOfWeek); the Vedic day opens at sunrise
-        RisingValue          TINYINT      NULL,              -- RISING_VALUE method: parts of DivisionBase from the anchor
-        DivisionBase         TINYINT      NOT NULL CONSTRAINT DF_Rule_SubPlanetTime_Div DEFAULT 32,
-        Anchor               VARCHAR(8)   NOT NULL,          -- SUNRISE (day) | SUNSET (night)
-        Method               VARCHAR(20)  NOT NULL CONSTRAINT DF_Rule_SubPlanetTime_Method DEFAULT 'RISING_VALUE',
-        PartOffset           DECIMAL(3,2) NULL,              -- EIGHTH_PART_ARC only: 0.00 start / 0.50 mid of the ruler's 1/8 part
-        MethodCode           VARCHAR(30)  NULL,
+        PartFraction         DECIMAL(3,2) NOT NULL,         -- 0.00 = start of that part, 0.50 = middle
+        DivisionCount        TINYINT      NOT NULL CONSTRAINT DF_Rule_SubPlanetTime_Div DEFAULT 8,
+        MethodCode           VARCHAR(30)  NULL,             -- 'EIGHTH_PART_RULER'
         RuleParametersJson   NVARCHAR(MAX) NULL,
         CalculationNarrative NVARCHAR(MAX) NULL,
         SourceRefCode        VARCHAR(40)  NULL,
         IsActive             BIT          NOT NULL CONSTRAINT DF_Rule_SubPlanetTime_IsActive DEFAULT 1,
-        CONSTRAINT CK_Rule_SubPlanetTime_DN     CHECK (DayNight IN ('DAY','NIGHT')),
-        CONSTRAINT CK_Rule_SubPlanetTime_WD     CHECK (Weekday BETWEEN 0 AND 6),
-        CONSTRAINT CK_Rule_SubPlanetTime_Anchor CHECK (Anchor IN ('SUNRISE','SUNSET')),
-        CONSTRAINT CK_Rule_SubPlanetTime_Div    CHECK (DivisionBase > 0),
-        CONSTRAINT CK_Rule_SubPlanetTime_Method CHECK (Method IN ('RISING_VALUE','EIGHTH_PART_ARC')),
-        CONSTRAINT CK_Rule_SubPlanetTime_Shape  CHECK ((Method = 'RISING_VALUE'    AND RisingValue IS NOT NULL AND PartOffset IS NULL)
-                                                    OR (Method = 'EIGHTH_PART_ARC' AND PartOffset IS NOT NULL)),
-        CONSTRAINT CK_Rule_SubPlanetTime_Rise   CHECK (RisingValue IS NULL OR RisingValue BETWEEN 0 AND 32),
-        CONSTRAINT CK_Rule_SubPlanetTime_Json   CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
-        CONSTRAINT CK_Rule_SubPlanetTime_Src    CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
-        CONSTRAINT UQ_Rule_SubPlanetTime UNIQUE (RuleSetId, SubPlanetId, DayNight, Weekday, Method)
+        CONSTRAINT CK_Rule_SubPlanetTime_Frac CHECK (PartFraction >= 0 AND PartFraction < 1),
+        CONSTRAINT CK_Rule_SubPlanetTime_Div  CHECK (DivisionCount > 0),
+        CONSTRAINT CK_Rule_SubPlanetTime_Json CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_Rule_SubPlanetTime_Src  CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_SubPlanetTime UNIQUE (RuleSetId, SubPlanetId)
     );
-    CREATE NONCLUSTERED INDEX IX_Rule_SubPlanetTime_Lookup
-        ON dbo.tbl_Rule_SubPlanetTime (RuleSetId, SubPlanetId, DayNight, Weekday)
-        INCLUDE (RisingValue, DivisionBase, Anchor, Method);
 END
 GO
--- Rising-value table (PVR / classical Parashari): 1/32 parts of the arc from
--- the anchor. Instant  =  Anchor + ArcDuration * RisingValue / DivisionBase,
---   ArcDuration = Sunset - Sunrise (DAY, anchor SUNRISE)
---               = NextSunrise - Sunset (NIGHT, anchor SUNSET)
--- Sub-planet longitude = the sidereal Ascendant rising at that instant.
--- Only the four points whose calc is NOT yet built are seeded here; Gulika
--- and Maandi ship via the 8-part arc method and are intentionally omitted.
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetTime)
     INSERT dbo.tbl_Rule_SubPlanetTime
-        (RuleSetId, SubPlanetId, AssociatedPlanetId, DayNight, Weekday, RisingValue,
-         DivisionBase, Anchor, Method, MethodCode, SourceRefCode, IsActive)
-    SELECT 1, sp.Id, sp.AssociatedPlanetId, r.DayNight, w.Weekday,
-           CONVERT(TINYINT,
-               CASE w.Weekday WHEN 0 THEN r.V0 WHEN 1 THEN r.V1 WHEN 2 THEN r.V2 WHEN 3 THEN r.V3
-                              WHEN 4 THEN r.V4 WHEN 5 THEN r.V5 ELSE r.V6 END),
-           32,
-           CASE r.DayNight WHEN 'DAY' THEN 'SUNRISE' ELSE 'SUNSET' END,
-           'RISING_VALUE', 'RISING_VALUE', 'SRC_PVR_INTEGRATED', 1
+        (RuleSetId, SubPlanetId, RisesInPlanetId, PartFraction, DivisionCount, MethodCode, CalculationNarrative, SourceRefCode, IsActive)
+    SELECT 1, sp.Id, p.Id, CONVERT(DECIMAL(3,2), v.PartFraction), 8, 'EIGHTH_PART_RULER',
+           v.Narrative, 'SRC_PVR_INTEGRATED', 1
     FROM (VALUES
-        --  Code            DN       W0  W1  W2  W3  W4  W5  W6
-        ('KAALA',        'DAY',    2, 30, 26, 22, 18, 14, 10),
-        ('KAALA',        'NIGHT', 14, 10,  6,  2, 30, 26, 22),
-        ('MRITYU',       'DAY',   10,  6,  2, 30, 26, 22, 18),
-        ('MRITYU',       'NIGHT', 22, 18, 14, 10,  6,  2, 30),
-        ('ARDHAPRAHARA', 'DAY',   14, 10,  6,  2, 30, 26, 22),
-        ('ARDHAPRAHARA', 'NIGHT', 26, 22, 18, 14, 10,  6,  2),
-        ('YAMAGHANTAKA', 'DAY',   18, 14, 10,  6,  2, 30, 26),
-        ('YAMAGHANTAKA', 'NIGHT',  2, 30, 26, 22, 18, 14, 10)
-    ) r (SubPlanetCode, DayNight, V0, V1, V2, V3, V4, V5, V6)
-    JOIN dbo.tbl_Dim_SubPlanets sp ON sp.SubPlanetCode = r.SubPlanetCode
-    CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6)) w (Weekday);
+        ('KAALA',        'Sun',     0.50, N'Kaala rises at the middle of the Sun-ruled 1/8 part.'),
+        ('MRITYU',       'Mars',    0.50, N'Mrityu rises at the middle of the Mars-ruled 1/8 part.'),
+        ('ARDHAPRAHARA', 'Mercury', 0.50, N'Ardhaprahara (PVR: "Artha Praharaka") rises at the middle of the Mercury-ruled 1/8 part.'),
+        ('YAMAGHANTAKA', 'Jupiter', 0.50, N'Yamaghantaka rises at the middle of the Jupiter-ruled 1/8 part.'),
+        ('GULIKA',       'Saturn',  0.50, N'PVR text: Gulika rises at the MIDDLE of Saturn''s 1/8 part. NOTE: the shipped UpagrahaCalculator.cs follows the JHora convention and puts Gulika at the START of Saturn''s part (and Maandi at the middle) - the two are swapped relative to this row. verify-jaimini is pinned to the shipped output.'),
+        ('MAANDI',       'Saturn',  0.00, N'PVR text: Maandi rises at the BEGINNING of Saturn''s 1/8 part. NOTE: the shipped UpagrahaCalculator.cs puts Maandi at the middle - swapped relative to this row (see Gulika).')
+    ) v (SubPlanetCode, PlanetName, PartFraction, Narrative)
+    JOIN dbo.tbl_Dim_SubPlanets sp ON sp.SubPlanetCode = v.SubPlanetCode
+    JOIN dbo.tbl_Planets        p  ON p.PlanetName     = v.PlanetName;
 GO
 
--- --- Batch 4: tbl_Rule_Catalog registration ---
+-- --- Batch 5: tbl_Rule_Catalog registration ---
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Rule_SubPlanetSunLongitude')
     INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
     VALUES ('tbl_Rule_SubPlanetSunLongitude', 'SUBPLANET', 'SUN_LONGITUDE_CHAIN',
             'Sun-longitude-derived sub-planets (Dhuma, Vyatipata, Parivesha, Indrachapa, Upaketu): an ordered ADD / COMPLEMENT_360 chain off the Sun''s nirayana longitude. Reference data - engine not yet built.',
             '27_add_subplanet_rule_layer.sql');
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Rule_SubPlanetPartRuler')
+    INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+    VALUES ('tbl_Rule_SubPlanetPartRuler', 'SUBPLANET', 'PART_RULER_LOOKUP',
+            'PVR "Table 10": the ruling graha (or none) of each of the 8 equal parts of the day / night arc, per weekday. Feeds the EIGHTH_PART_RULER method for the time-based sub-planets; also the ruler sequence for Gulika/Maandi.',
+            '27_add_subplanet_rule_layer.sql');
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Rule_SubPlanetTime')
     INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
-    VALUES ('tbl_Rule_SubPlanetTime', 'SUBPLANET', 'RISING_VALUE,EIGHTH_PART_ARC',
-            'Time-based sub-planets (Kaala, Mrityu, Ardhaprahara, Yamaghantaka; Gulika/Maandi later): rising-value / 32 of the day or night arc from sunrise/sunset -> Ascendant at that instant. Reference data for the four unbuilt points; Gulika/Maandi ship via the 8-part arc in UpagrahaCalculator.cs.',
+    VALUES ('tbl_Rule_SubPlanetTime', 'SUBPLANET', 'EIGHTH_PART_RULER',
+            'Time-based sub-planets (Kaala, Mrityu, Ardhaprahara, Yamaghantaka, Gulika, Maandi): each rises at PartFraction (0 = start, 0.5 = middle) of the 1/8 arc part ruled by a specific graha; the rising Ascendant at that instant is the longitude. Reference data - only Gulika/Maandi are built in C# (and with start/middle swapped vs this text per JHora).',
             '27_add_subplanet_rule_layer.sql');
 GO
 
--- --- Batch 5: ledger + summary ---
+-- --- Batch 6: ledger + summary ---
 INSERT dbo.SchemaMigrations (ScriptName, Note)
 SELECT '27_add_subplanet_rule_layer.sql',
-       'tbl_Dim_SubPlanets (11) + tbl_Rule_SubPlanetSunLongitude (5) + tbl_Rule_SubPlanetTime (56); 2 tbl_Rule_Catalog rows. D1 reference data, engines not built.'
+       'tbl_Dim_SubPlanets(11) + tbl_Rule_SubPlanetSunLongitude(5) + tbl_Rule_SubPlanetPartRuler(112, PVR Table 10) + tbl_Rule_SubPlanetTime(6); 3 catalog rows. D1 reference data, engines not built.'
 WHERE NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '27_add_subplanet_rule_layer.sql');
 GO
 
 DECLARE @master INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_SubPlanets);
 DECLARE @sun    INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetSunLongitude);
+DECLARE @ruler  INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetPartRuler);
 DECLARE @time   INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetTime);
 DECLARE @sunmiss INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_SubPlanets sp
     WHERE sp.CalculationType = 'SUN_LONGITUDE'
       AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetSunLongitude r WHERE r.SubPlanetId = sp.Id));
-DECLARE @timebad INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetTime r
-    JOIN dbo.tbl_Dim_SubPlanets sp ON sp.Id = r.SubPlanetId
-    WHERE sp.CalculationType <> 'DAY_NIGHT_TIME');
-DECLARE @timecov INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_SubPlanets sp
-    WHERE sp.CalculationType = 'DAY_NIGHT_TIME' AND sp.SubPlanetCode NOT IN ('GULIKA','MAANDI')
-      AND (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetTime r WHERE r.SubPlanetId = sp.Id) <> 14);
+DECLARE @timemiss INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_SubPlanets sp
+    WHERE sp.CalculationType = 'DAY_NIGHT_TIME'
+      AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetTime r WHERE r.SubPlanetId = sp.Id));
+-- Table 10 shape: exactly one lord-less part per (DayNight, Weekday), and it is
+-- the part immediately after Saturn's.
+DECLARE @lordless INT = (SELECT COUNT(*) FROM (
+    SELECT DayNight, Weekday FROM dbo.tbl_Rule_SubPlanetPartRuler WHERE RulingPlanetId IS NULL
+    GROUP BY DayNight, Weekday HAVING COUNT(*) <> 1) z);
+DECLARE @notafterSat INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetPartRuler g
+    WHERE g.RulingPlanetId IS NULL
+      AND NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetPartRuler s
+                      JOIN dbo.tbl_Planets p ON p.Id = s.RulingPlanetId AND p.PlanetName = 'Saturn'
+                      WHERE s.DayNight = g.DayNight AND s.Weekday = g.Weekday AND s.PartNumber = g.PartNumber - 1));
 DECLARE @badsrc INT = (
-    SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetSunLongitude WHERE SourceRefCode <> 'SRC_PVR_INTEGRATED')
-  + (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetTime         WHERE SourceRefCode <> 'SRC_PVR_INTEGRATED');
-PRINT '27 applied: ' + CAST(@master AS VARCHAR(10)) + ' master rows (expect 11), '
-    + CAST(@sun AS VARCHAR(10)) + ' sun-chain rows (expect 5), '
-    + CAST(@time AS VARCHAR(10)) + ' time rows (expect 56), '
-    + CAST(@sunmiss AS VARCHAR(10)) + ' SUN_LONGITUDE points with no chain (expect 0), '
-    + CAST(@timebad AS VARCHAR(10)) + ' time rows on a non-time point (expect 0), '
-    + CAST(@timecov AS VARCHAR(10)) + ' unbuilt time points not covering 14 rows (expect 0), '
+    (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetSunLongitude WHERE SourceRefCode <> 'SRC_PVR_INTEGRATED')
+  + (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetPartRuler     WHERE SourceRefCode <> 'SRC_PVR_INTEGRATED')
+  + (SELECT COUNT(*) FROM dbo.tbl_Rule_SubPlanetTime          WHERE SourceRefCode <> 'SRC_PVR_INTEGRATED'));
+PRINT '27 applied: ' + CAST(@master AS VARCHAR(10)) + ' master (expect 11), '
+    + CAST(@sun AS VARCHAR(10)) + ' sun-chain (expect 5), '
+    + CAST(@ruler AS VARCHAR(10)) + ' part-ruler (expect 112), '
+    + CAST(@time AS VARCHAR(10)) + ' time (expect 6), '
+    + CAST(@sunmiss AS VARCHAR(10)) + ' SUN_LONGITUDE points w/o a chain (expect 0), '
+    + CAST(@timemiss AS VARCHAR(10)) + ' DAY_NIGHT_TIME points w/o a time row (expect 0), '
+    + CAST(@lordless AS VARCHAR(10)) + ' (DayNight,Weekday) w/o exactly one lord-less part (expect 0), '
+    + CAST(@notafterSat AS VARCHAR(10)) + ' lord-less parts not right after Saturn (expect 0), '
     + CAST(@badsrc AS VARCHAR(10)) + ' seeded rows not SRC_PVR_INTEGRATED (expect 0).';
 GO
