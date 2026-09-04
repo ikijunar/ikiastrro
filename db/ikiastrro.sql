@@ -3231,6 +3231,62 @@ WHEN NOT MATCHED THEN INSERT (TerminologyId, LanguageCode, Script, Name, Traditi
     VALUES (src.TerminologyId, src.LanguageCode, src.Script, src.Name, src.TraditionalName, src.ShortDescription);
 GO
 -- <<< END TERMINOLOGY SEED <<<
+
+-- ---------------------------------------------------------------------
+-- Terminology ADDENDUM - special lagnas (migration 29). Hand-maintained;
+-- NOT yet emitted by TerminologySeed.cs - fold these into the generator
+-- on its next pass. Same MERGE shape as the generated block above.
+-- SPT_* rows keep EngineCode 'KARAKA' to match the sibling SPT_ rows.
+-- ---------------------------------------------------------------------
+MERGE dbo.tbl_Astro_Terminology AS tgt
+USING (VALUES
+  ('SpecialPoint','SPT_BL',NULL,'KARAKA',NULL,901),
+  ('SpecialPoint','SPT_HL',NULL,'KARAKA',NULL,902),
+  ('SpecialPoint','SPT_GL',NULL,'KARAKA',NULL,903),
+  ('SpecialPoint','SPT_SL',NULL,'KARAKA',NULL,904),
+  ('Concept','CALC_TIME_FROM_SUNRISE',NULL,'SPECIALLAGNA',NULL,905),
+  ('Concept','CALC_NAKSHATRA_FRACTION',NULL,'SPECIALLAGNA',NULL,906),
+  ('Concept','ANCHOR_SUN_AT_SUNRISE',NULL,'SPECIALLAGNA',NULL,907),
+  ('Concept','ANCHOR_NATAL_LAGNA',NULL,'SPECIALLAGNA',NULL,908),
+  ('Concept','BASIS_NAKSHATRA_SPAN',NULL,'SPECIALLAGNA',NULL,909)
+) AS src (Category, Code, ParentCode, EngineCode, NumericKey, DisplayOrder)
+ON tgt.Code = src.Code
+WHEN MATCHED THEN UPDATE SET Category = src.Category, ParentCode = src.ParentCode,
+    EngineCode = src.EngineCode, NumericKey = src.NumericKey, DisplayOrder = src.DisplayOrder, IsActive = 1
+WHEN NOT MATCHED THEN INSERT (Category, Code, ParentCode, EngineCode, NumericKey, DisplayOrder, IsActive)
+    VALUES (src.Category, src.Code, src.ParentCode, src.EngineCode, src.NumericKey, src.DisplayOrder, 1);
+GO
+MERGE dbo.tbl_Astro_TerminologyText AS tgt
+USING (
+  SELECT t.TerminologyId, v.LanguageCode, v.Script, v.Name, v.TraditionalName, v.ShortDescription
+  FROM (VALUES
+   ('SPT_BL','sa','Latn',N'Bhaava Lagna',N'Bhaava Lagna',NULL),
+   ('SPT_BL','en','Latn',N'Bhaava Lagna',NULL,N'Special lagna at the Sun''s sunrise longitude, advancing one sign per two hours. Defined for completeness; not used in PVR''s Integrated Approach.'),
+   ('SPT_HL','sa','Latn',N'Hora Lagna',N'Hora Lagna',NULL),
+   ('SPT_HL','en','Latn',N'Hora Lagna',NULL,N'Special lagna advancing one sign per hora (hour) from the Sun''s sunrise longitude. Shows the self with respect to wealth and money; weighed when timing prosperity periods (PVR sec 5.3 / 5.6).'),
+   ('SPT_GL','sa','Latn',N'Ghati Lagna',N'Ghati Lagna',NULL),
+   ('SPT_GL','en','Latn',N'Ghati Lagna',NULL,N'Special lagna advancing one sign per ghati (24 minutes) from the Sun''s sunrise longitude; also called Ghatika Lagna. Shows the self with respect to power, authority and fame; weighed when timing public-life periods (PVR sec 5.4 / 5.6).'),
+   ('SPT_SL','sa','Latn',N'Sree Lagna',N'Sree Lagna',NULL),
+   ('SPT_SL','en','Latn',N'Sree Lagna',NULL,N'The natal lagna plus the Moon''s fraction through its nakshatra scaled to the whole zodiac. Signifies prosperity; the reference point from which Sudasa is reckoned (PVR sec 5.7).'),
+   ('CALC_TIME_FROM_SUNRISE','sa','Latn',N'Time from sunrise',N'Time from sunrise',NULL),
+   ('CALC_TIME_FROM_SUNRISE','en','Latn',N'Time from sunrise',NULL,N'Special-lagna calculation family: a fixed angular rate per minute elapsed since the day''s opening sunrise, added to the Sun''s sunrise longitude (Bhaava, Hora, Ghati).'),
+   ('CALC_NAKSHATRA_FRACTION','sa','Latn',N'Nakshatra fraction',N'Nakshatra fraction',NULL),
+   ('CALC_NAKSHATRA_FRACTION','en','Latn',N'Nakshatra fraction',NULL,N'Special-lagna calculation family: the Moon''s fractional progress through its nakshatra, scaled to 360 degrees and added to the natal lagna (Sree Lagna).'),
+   ('ANCHOR_SUN_AT_SUNRISE','sa','Latn',N'Sun at sunrise',N'Sun at sunrise',NULL),
+   ('ANCHOR_SUN_AT_SUNRISE','en','Latn',N'Sun at sunrise',NULL,N'Base longitude for the time-rate special lagnas: the Sun''s nirayana longitude at the day''s opening sunrise.'),
+   ('ANCHOR_NATAL_LAGNA','sa','Latn',N'Natal lagna',N'Natal lagna',NULL),
+   ('ANCHOR_NATAL_LAGNA','en','Latn',N'Natal lagna',NULL,N'Base longitude for Sree Lagna: the ascendant of the birth (rasi) chart.'),
+   ('BASIS_NAKSHATRA_SPAN','sa','Latn',N'Nakshatra span',N'Nakshatra span',NULL),
+   ('BASIS_NAKSHATRA_SPAN','en','Latn',N'Nakshatra span',NULL,N'The 13 degrees 20 minutes extent of one nakshatra - the denominator when taking the Moon''s fractional progress for Sree Lagna.')
+  ) AS v (Code, LanguageCode, Script, Name, TraditionalName, ShortDescription)
+  JOIN dbo.tbl_Astro_Terminology t ON t.Code = v.Code
+) AS src
+ON tgt.TerminologyId = src.TerminologyId AND tgt.LanguageCode = src.LanguageCode AND tgt.Script = src.Script
+WHEN MATCHED THEN UPDATE SET Name = src.Name, TraditionalName = src.TraditionalName, ShortDescription = src.ShortDescription
+WHEN NOT MATCHED THEN INSERT (TerminologyId, LanguageCode, Script, Name, TraditionalName, ShortDescription)
+    VALUES (src.TerminologyId, src.LanguageCode, src.Script, src.Name, src.TraditionalName, src.ShortDescription);
+GO
+
 -- tbl_ChartResults -> tbl_Rule_Sets / tbl_Dim_ChartType foreign keys
 -- (folded from db/06_add_chartfact_constraints.sql). Declared here rather than inline in the
 -- tbl_ChartResults CREATE TABLE because both referenced tables are created later in this script.
@@ -4360,32 +4416,55 @@ BEGIN
                             CONSTRAINT UQ_Dim_SpecialLagnas_Abbr UNIQUE,
         LagnaName       VARCHAR(30)   NOT NULL
                             CONSTRAINT UQ_Dim_SpecialLagnas_Name UNIQUE,
-        CalculationType VARCHAR(20)   NOT NULL,
-        UsedInBook      BIT           NOT NULL,
-        Significations  NVARCHAR(300) NULL,
-        SortOrder       TINYINT       NOT NULL,
-        IsActive        BIT           NOT NULL CONSTRAINT DF_Dim_SpecialLagnas_IsActive DEFAULT 1,
-        Notes           NVARCHAR(400) NULL,
-        CONSTRAINT CK_Dim_SpecialLagnas_CalcType CHECK (CalculationType IN ('TIME_FROM_SUNRISE','NAKSHATRA_FRACTION'))
+        CalculationType     VARCHAR(20)   NOT NULL,
+        UsedInBook          BIT           NOT NULL,
+        Significations      NVARCHAR(300) NULL,
+        SortOrder           TINYINT       NOT NULL,
+        IsActive            BIT           NOT NULL CONSTRAINT DF_Dim_SpecialLagnas_IsActive DEFAULT 1,
+        Notes               NVARCHAR(400) NULL,
+        -- usage / varga correlation (migration 29)
+        LifeAreaFocus       VARCHAR(24)   NULL,                                  -- Wealth | PowerAndFame | Prosperity; NULL = none
+        UsageContext        NVARCHAR(400) NULL,                                  -- PVR sec 5.6: when to bring this lagna in
+        HouseReferenceScope VARCHAR(20)   NOT NULL
+                                CONSTRAINT DF_Dim_SpecialLagnas_HouseRefScope DEFAULT 'AnyChart',
+        DasaLinkage         VARCHAR(30)   NULL,                                  -- 'Sudasa' for Sree Lagna
+        RelatedVargaChartId TINYINT       NULL                                   -- soft PVR sec 6.3 pairing, not a ch-5 rule
+                                CONSTRAINT FK_Dim_SpecialLagnas_RelatedVarga FOREIGN KEY REFERENCES dbo.tbl_Dim_ChartType (Id),
+        CONSTRAINT CK_Dim_SpecialLagnas_CalcType CHECK (CalculationType IN ('TIME_FROM_SUNRISE','NAKSHATRA_FRACTION')),
+        CONSTRAINT CK_Dim_SpecialLagnas_HouseRefScope CHECK (HouseReferenceScope IN ('AnyChart','RasiChartOnly','NotUsed'))
     );
 END
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_SpecialLagnas)
     INSERT dbo.tbl_Dim_SpecialLagnas
-        (Id, LagnaCode, Abbreviation, LagnaName, CalculationType, UsedInBook, Significations, SortOrder, Notes)
-    VALUES
-        (1, 'BHAAVA_LAGNA', 'BL', 'Bhaava Lagna', 'TIME_FROM_SUNRISE',  0,
-            N'Defined for the sake of completeness; PVR does not use Bhaava Lagna further in the book.', 1,
-            N'PVR sec 5.2 gives contradictory rates - see the tbl_Rule_SpecialLagnaTimeRate Bhaava row. Seeded per the stated "one rasi per 2 hours".'),
+        (Id, LagnaCode, Abbreviation, LagnaName, CalculationType, UsedInBook, Significations, SortOrder, Notes,
+         LifeAreaFocus, UsageContext, HouseReferenceScope, DasaLinkage, RelatedVargaChartId)
+    SELECT v.Id, v.LagnaCode, v.Abbreviation, v.LagnaName, v.CalculationType, v.UsedInBook, v.Significations, v.SortOrder, v.Notes,
+           v.LifeAreaFocus, v.UsageContext, v.HouseReferenceScope, v.DasaLinkage, ct.Id
+    FROM (VALUES
+        (1, 'BHAAVA_LAGNA', 'BL', 'Bhaava Lagna', 'TIME_FROM_SUNRISE',  CONVERT(BIT,0),
+            N'Defined for the sake of completeness; PVR does not use Bhaava Lagna further in the book.', CONVERT(TINYINT,1),
+            N'PVR sec 5.2 gives contradictory rates - see the tbl_Rule_SpecialLagnaTimeRate Bhaava row. Seeded per the stated "one rasi per 2 hours".',
+            CONVERT(VARCHAR(24),NULL), N'PVR does not use Bhaava Lagna in the Integrated Approach; it is defined only for completeness (sec 5.2).',
+            'NotUsed', CONVERT(VARCHAR(30),NULL), CONVERT(VARCHAR(20),NULL)),
         (2, 'HORA_LAGNA',   'HL', 'Hora Lagna',   'TIME_FROM_SUNRISE',  1,
             N'Self with respect to money, wealth and prosperity; weighed heavily when timing periods for a businessman (PVR sec 5.6).', 2,
-            N'The only special lagna built in C# today (HoraLagnaCalculator.cs).'),
+            N'The only special lagna built in C# today (HoraLagnaCalculator.cs).',
+            'Wealth', N'Bring in when timing wealth / money / prosperity periods - PVR sec 5.6 weighs it heavily for someone whose life runs on business or trade. Read houses from HL and cross-check the D2 (Hora) chart.',
+            'AnyChart', NULL, 'D2'),
         (3, 'GHATI_LAGNA',  'GL', 'Ghati Lagna',  'TIME_FROM_SUNRISE',  1,
             N'Self with respect to fame, power and authority; weighed heavily when timing periods for a politician (PVR sec 5.6). Also called Ghatika Lagna.', 3,
-            N'PVR sec 5.5: a 1-minute birthtime error shifts GL by 1 deg 15 min, so GL is more birthtime-sensitive than the normal lagna, especially in vargas.'),
+            N'PVR sec 5.5: a 1-minute birthtime error shifts GL by 1 deg 15 min, so GL is more birthtime-sensitive than the normal lagna, especially in vargas.',
+            'PowerAndFame', N'Bring in when timing fame / power / authority periods - PVR sec 5.6 weighs it heavily for someone in politics or public office. Read houses from GL and cross-check the D10 (Dasamsa) chart. sec 5.5: GL shifts 1 deg 15 min per birthtime minute, so correct the birthtime before trusting it in vargas.',
+            'AnyChart', NULL, 'D10'),
         (4, 'SREE_LAGNA',   'SL', 'Sree Lagna',   'NAKSHATRA_FRACTION', 1,
             N'Prosperity (Sree = wealth / Lakshmi). The reference point for Sudasa ("Sree Lagna Kendradi Rasi Dasa") (PVR sec 5.7).', 4,
-            N'PVR sec 5.8: Sree Lagna moves at about twice the rate of the normal lagna; watch rasi-border cases.');
+            N'PVR sec 5.8: Sree Lagna moves at about twice the rate of the normal lagna; watch rasi-border cases.',
+            'Prosperity', N'The seed point for Sudasa ("Sree Lagna Kendradi Rasi Dasa") - dasas start from the sign holding Sree Lagna (PVR sec 5.7 and the Sudasa chapter). Not read as a chart of its own.',
+            'RasiChartOnly', 'Sudasa', CONVERT(VARCHAR(20),NULL))
+    ) v (Id, LagnaCode, Abbreviation, LagnaName, CalculationType, UsedInBook, Significations, SortOrder, Notes,
+         LifeAreaFocus, UsageContext, HouseReferenceScope, DasaLinkage, VargaCode)
+    LEFT JOIN dbo.tbl_Dim_ChartType ct ON ct.Code = v.VargaCode;
 GO
 IF OBJECT_ID('dbo.tbl_Rule_SpecialLagnaTimeRate', 'U') IS NULL
 BEGIN
