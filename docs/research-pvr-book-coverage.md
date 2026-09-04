@@ -1,6 +1,6 @@
 ---
 last_updated: 2026-09-04
-reflects: master @ 802e673 + branch feat/graha-dignity-rule-layer (migrations 22–30, unpushed)
+reflects: master @ 802e673 + branch feat/graha-dignity-rule-layer (migrations 22–31, unpushed)
 ---
 
 # PVR book coverage & reconciliation map
@@ -32,7 +32,7 @@ unverified against the book · **diverges** = built but deliberately differs (se
 | 4 | **Upagrahas (41)** — Table 9 (Sun-based), Table 10 (day/night ruler), §4.3 rise points | migration 27: `tbl_Dim_SubPlanets`, `tbl_Rule_SubPlanetSunLongitude`, `tbl_Rule_SubPlanetPartRuler` (Table 10, 112 rows), `tbl_Rule_SubPlanetTime`. `UpagrahaCalculator.cs` = Gulika/Maandi only | aligned (DB) / diverges (code) | DB verified row-for-row vs Tables 9 & 10 + the 6 rise-point rules + the "similar-to" planet analogies. **Divergence:** `UpagrahaCalculator.cs` follows JHora — Gulika at the START of Saturn's part, Maandi at the middle — **swapped vs §4.3 (5)/(6)**. Book-alignment ⇒ swap the two in code + re-baseline `verify-jaimini`. Then build engines for the other 9 (5 Sun-based + Kaala/Mrityu/Arthaprahara/Yamaghantaka). |
 | 5 | Special Lagnas (45) — Bhaava, Hora, Ghati, Sree | migrations 28–30: `tbl_Dim_SpecialLagnas` (4, + usage/varga columns, `LifeAreaId` FK), `tbl_Rule_SpecialLagnaTimeRate` (BL/HL/GL), `tbl_Rule_SpecialLagnaFraction` (SL); taxonomy `SPT_BL/HL/GL/SL` + calc-vocabulary concepts (sa/en). Engines: `HoraLagnaCalculator` ✓ only; Bhaava / Ghati / Sree **not built** | partial (DB layer added) | DB rule layer seeded vs §5.2–5.7 + §5.6 usage. **Varga correlation:** HL→Wealth/D2, GL→Fame-Power/**D5** (corrected from D10 in migration 30 — D5 Panchamsa *is* GL's own signification; D10 stays a secondary read), SL→Wealth (Sudasa, rasi — no varga), BL none. Special lagnas are *reference points* projected into every varga, not charts (§7.1) — the pairing is a reading hint, not a rule. **Divergence:** BL `DegreesPerMinute` = 0.25 (§5.2 stated rate / classical `ishtakāla ÷ 5` / JHora); §5.2's method step + Example 7 imply 1.0 — book erratum, recorded in the BL row narrative (`UsedInBook = 0`). **Next:** build BhaavaLagna / GhatiLagna / SreeLagna engines; fold the taxonomy addenda into `TerminologySeed.cs`. |
 | 6 | Divisional Charts (51) — 6.2 computing, **6.3 significations (Table 11)**, 6.4 planes, 6.6 varga grouping & amsabala | migrations 10–13, `tbl_Rule_VargaScheme`, 21 position chart types, `VargaChartComputer`; **migration 30: `tbl_Dim_LifeArea` (20, Table 11) + `tbl_Dim_ChartType.PrimaryLifeAreaId` (all 21 mapped) + §6.4 plane concepts** | partial | §6.3 Table 11 now modelled — every chart type has a `PrimaryLifeAreaId`, `PlaneOfExistence` per §6.4, `WorkspaceGroupCode` rolls the fine areas onto the 4 Web tabs. **Still:** reconcile the 21 varga sign-rules against §6.2; **§6.6 Varga Grouping + Amsabala not built** (feeds Vimsopaka, Ch 15). |
-| 7 | Houses (67) — bhava significations | `tbl_Rule_HouseSignification` **reserved / empty**; `reference-house-lagna-significations.md` is Raman-sourced | reference-only (empty) | populate `tbl_Rule_HouseSignification` from §7 under `SRC_PVR_INTEGRATED` |
+| 7 | Houses (67) — §7.2 significations, §7.3 references, §7.4 special categories | **migration 31:** `tbl_Dim_House` (12-bhava master — Sanskrit name, purushartha §7.4.1, visible/invisible half §7.4.5, Kala Purusha limb §7.2, the 7 §7.4 category bits + `IsMaraka`); `tbl_Dim_HouseCategory` (8 — kendra/trikona/panaphara/apoklima/upachaya/dusthana/chaturasra + maraka, §7.4.6 effect + deity); `tbl_Rule_HouseSignification` **populated** (121 rows from §7.2, RuleSetId 1, `SRC_PVR_INTEGRATED`; + `SignificationText`/`SignificationCategory`/`DisplayOrder`, `RuleSetId` INT→TINYINT+FK); `tbl_Dim_HouseAttribute`(3)/`tbl_Rule_HouseAttribute`(24 — `GENERAL_CHARACTER` + `CATEGORY_EFFECT`) mirror the graha attribute pair (migr. 26); taxonomy `Category 'HouseCategory'` + 8 `HCAT_*` + 4 `PURUSHARTHA_*` + 2 `ZHALF_*` concepts (sa/en, addendum). `reference-house-lagna-significations.md` (Raman) kept as a cross-check | partial (significations + attributes + categories) | **migration 32:** §7.3 reference points — `tbl_Dim_HouseReference` (Chandra/Ravi/Paaka/Arudha/Karakamsa lagnas + 7 graha lagnas), `tbl_Rule_HouseReferenceMatter` (Table 12), empty `tbl_Fact_HouseFromReference` (narrow, star-schema). Then fold the migr. 29–31 taxonomy addenda into `TerminologySeed.cs`; wire `NATURAL_SIGNIFICATOR` from Table 12; reconcile `LifeAreaMap.cs` house lists |
 | 8 | Karakas (79) — chara, sthira, naisargika | `CharaKarakaCalculator` (Ashta) ✓; `tbl_Rule_Karaka` **reserved / empty**; Sthira/Naisargika hard-coded in `LifeAreaMap` only | partial | populate `tbl_Rule_Karaka` from §8; build Sthira + Naisargika karaka engines (Plan 2) |
 | 9 | Arudha Padas (85) — AL, bhava arudhas, graha arudhas | `ArudhaCalculator` — AL + 12 bhava arudhas ✓ | partial | reconcile vs §9 (exception rules for the 1st/7th, same-sign/opposite); check whether graha arudhas are wanted |
 | 10 | Aspects & Argalas (100) — graha drishti, rasi drishti, argala | `tbl_Rule_AspectOffset` (graha drishti) ✓; **rasi drishti + argala not built** | partial | build rasi-drishti (movable→fixed etc.) + argala + virodha-argala per §10 |
@@ -75,6 +75,19 @@ _(append one line per chapter as it is reconciled: date · chapter · what chang
   after the generated `TERMINOLOGY SEED` block — **`TerminologySeed.cs` does not yet emit
   these; fold on its next pass.** From-empty rebuild clean; verify-terminology / -rules /
   -sources / -schema / -jaimini ALL PASS.
+- 2026-09-04 — Ch 7 (Houses), migration 31: house model on the graha pattern. `tbl_Dim_House`
+  (12-bhava master, 1:1 invariant facts + the seven §7.4 category bits + `IsMaraka`);
+  `tbl_Dim_HouseCategory` (8 rows, §7.4.6 quick-summary effect + presiding deity). Reserved
+  `tbl_Rule_HouseSignification` **populated** — 121 bhava karatvas from §7.2, one row per
+  matter, categorised Matter/Person/BodyPart/DerivedHouse, RuleSetId 1, `SRC_PVR_INTEGRATED`;
+  `RuleSetId` tightened INT→TINYINT + FK, + `SignificationText`/`SignificationCategory`/
+  `DisplayOrder`. `tbl_Dim_HouseAttribute` (3) + `tbl_Rule_HouseAttribute` (24: `GENERAL_CHARACTER`
+  ×12 + `CATEGORY_EFFECT` ×12) mirror `tbl_Dim_GrahaAttribute`/`tbl_Rule_GrahaAttribute`;
+  `NATURAL_SIGNIFICATOR` catalogued, seeded in migr. 32 from Table 12. Taxonomy: `Category
+  'HouseCategory'` added to the CK; 8 `HCAT_*` + 4 `PURUSHARTHA_*` + 2 `ZHALF_*` concepts + 28
+  sa/en text rows (addendum — not in `TerminologySeed.cs` yet). §7.3 reference points deferred
+  to migration 32. From-empty rebuild clean; verify-schema / -sources / -rules (22/22 catalog) /
+  -terminology / -dignity / -avastha ALL PASS.
 - 2026-09-04 — Ch 5 / Ch 6 (life-area taxonomy), migration 30: PVR Table 11 (§6.3) modelled
   as `tbl_Dim_LifeArea` (20 spheres, `PlaneOfExistence` per §6.4, `WorkspaceGroupCode` rolling
   onto the 4 planned Web tabs). `tbl_Dim_ChartType += PrimaryLifeAreaId` — all 21 chart types
