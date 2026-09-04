@@ -151,7 +151,7 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [x] 14 new `verify-schema` checks: every pair linked; both pair planets are group members; `PlanetCount` = member count = distinct grahas in that sign; `PlanetCount >= 2`; `MemberKey` = ascending PlanetId CSV; `MemberKey` entry count = `PlanetCount`; D1 `LongitudeSpanDegrees` non-null `= max−min` member longitude (varga null); D1 member `OrbFromGroupCenterDegrees` non-null `<= span` (varga null); D1 member `DegreesInSign`/`NirayanaLongitude` non-null in-range; member `DignityStatus` = KeyDetails `DignityStatus`.
 - [x] `dotnet build -warnaserror` Debug 0/0 · every `verify-*` (`schema` `vargas` `functional-nature` `jaimini` `avastha` `sources` `pipeline` `terminology` `rules` `dignity`) `ALL PASS`, before **and** after `recompute-keydetails`.
 - [ ] Web smoke `/charts/1` → 200 — **pending manual (VS F5)**; Web project builds clean, only change is one DI registration.
-- [ ] Commit.
+- [x] Commit — `4248ee1` (Tasks 8–11 + plan/spec/PRODUCT.md doc updates in one commit).
 
 ## Task 12: Docs + ledger
 **Files:** Modify `PRODUCT.md`, `research_ikiastrro.md`, `docs/superpowers/specs/2026-09-04-...-design.md` (status), create `.superpowers/sdd/2026-09-04-graha-dignity-rule-layer/progress.md`, update memory
