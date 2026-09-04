@@ -118,6 +118,7 @@ var chartGenerationService = new ChartGenerationService(
     new ChartKeyDetailsRepository(connectionFactory),
     new ChartHouseLordsRepository(connectionFactory),
     new ChartConjunctionsRepository(connectionFactory),
+    new ChartMultiGrahaConjunctionRepository(connectionFactory),
     new ChartAspectsRepository(connectionFactory),
     new PlanetaryStateRuleRepository(connectionFactory),
     new PlanetaryStateRepository(connectionFactory),
@@ -835,6 +836,71 @@ if (args.Length > 0 && args[0] == "verify-schema")
                 WHERE cr.CalculationKind = 'PositionChart'
                 GROUP BY cr.Id
             ) x WHERE x.n <> 12"));
+
+    // -- multi-graha conjunction group layer (migration 22 + Phase 3 wiring) --
+    Check("every pair conjunction is linked to a group",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_Conjunctions WHERE MultiGrahaConjunctionId IS NULL"));
+    Check("both planets of a pair are members of its group",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_Conjunctions c
+                WHERE c.MultiGrahaConjunctionId IS NOT NULL
+                  AND (NOT EXISTS (SELECT 1 FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                                   WHERE m.MultiGrahaConjunctionId = c.MultiGrahaConjunctionId AND m.PlanetId = c.Planet1Id)
+                    OR NOT EXISTS (SELECT 1 FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                                   WHERE m.MultiGrahaConjunctionId = c.MultiGrahaConjunctionId AND m.PlanetId = c.Planet2Id))"));
+    Check("group PlanetCount = member count = distinct grahas in that sign",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction g
+                WHERE g.PlanetCount <> (SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                                        WHERE m.MultiGrahaConjunctionId = g.Id)
+                   OR g.PlanetCount <> (SELECT COUNT(*) FROM dbo.tbl_Chart_KeyDetails kd
+                                        WHERE kd.ChartResultId = g.ChartResultId AND kd.SignId = g.SignId
+                                          AND kd.PointKind = 'Graha' AND kd.PlanetId IS NOT NULL AND kd.Planet <> 'Ascendant')"));
+    Check("group PlanetCount >= 2",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction WHERE PlanetCount < 2"));
+    Check("MemberKey is the ascending PlanetId CSV of its members",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction g
+                WHERE g.MemberKey <> (SELECT STRING_AGG(CAST(m.PlanetId AS VARCHAR(2)), ',') WITHIN GROUP (ORDER BY m.PlanetId)
+                                      FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                                      WHERE m.MultiGrahaConjunctionId = g.Id)"));
+    Check("MemberKey entry count = PlanetCount",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction
+                WHERE LEN(MemberKey) - LEN(REPLACE(MemberKey, ',', '')) + 1 <> PlanetCount"));
+    Check("D1 groups: LongitudeSpanDegrees non-null and = max-min member NirayanaLongitude",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction g
+                JOIN dbo.tbl_ChartResults cr ON cr.Id = g.ChartResultId
+                WHERE cr.ChartTypeId = 1
+                  AND (g.LongitudeSpanDegrees IS NULL
+                    OR ABS(g.LongitudeSpanDegrees - (SELECT MAX(m.NirayanaLongitude) - MIN(m.NirayanaLongitude)
+                                                     FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                                                     WHERE m.MultiGrahaConjunctionId = g.Id)) > 0.001)"));
+    Check("varga groups: LongitudeSpanDegrees is null",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunction g
+                JOIN dbo.tbl_ChartResults cr ON cr.Id = g.ChartResultId
+                WHERE cr.ChartTypeId <> 1 AND g.LongitudeSpanDegrees IS NOT NULL"));
+    Check("D1 members: OrbFromGroupCenterDegrees non-null and <= group span",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                JOIN dbo.tbl_Chart_MultiGrahaConjunction g ON g.Id = m.MultiGrahaConjunctionId
+                JOIN dbo.tbl_ChartResults cr ON cr.Id = g.ChartResultId
+                WHERE cr.ChartTypeId = 1
+                  AND (m.OrbFromGroupCenterDegrees IS NULL
+                    OR m.OrbFromGroupCenterDegrees > g.LongitudeSpanDegrees + 0.001)"));
+    Check("varga members: OrbFromGroupCenterDegrees is null",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                JOIN dbo.tbl_Chart_MultiGrahaConjunction g ON g.Id = m.MultiGrahaConjunctionId
+                JOIN dbo.tbl_ChartResults cr ON cr.Id = g.ChartResultId
+                WHERE cr.ChartTypeId <> 1 AND m.OrbFromGroupCenterDegrees IS NOT NULL"));
+    Check("D1 members: DegreesInSign + NirayanaLongitude non-null and in range",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                JOIN dbo.tbl_Chart_MultiGrahaConjunction g ON g.Id = m.MultiGrahaConjunctionId
+                JOIN dbo.tbl_ChartResults cr ON cr.Id = g.ChartResultId
+                WHERE cr.ChartTypeId = 1
+                  AND (m.DegreesInSign IS NULL OR m.DegreesInSign < 0 OR m.DegreesInSign >= 30
+                    OR m.NirayanaLongitude IS NULL OR m.NirayanaLongitude < 0 OR m.NirayanaLongitude >= 360)"));
+    Check("member DignityStatus matches that planet's KeyDetails row for the same chart",
+        Count(@"SELECT COUNT(*) FROM dbo.tbl_Chart_MultiGrahaConjunctionMember m
+                JOIN dbo.tbl_Chart_MultiGrahaConjunction g ON g.Id = m.MultiGrahaConjunctionId
+                JOIN dbo.tbl_Chart_KeyDetails kd
+                     ON kd.ChartResultId = g.ChartResultId AND kd.PlanetId = m.PlanetId AND kd.PointKind = 'Graha'
+                WHERE ISNULL(m.DignityStatus, '~') <> ISNULL(kd.DignityStatus, '~')"));
 
     Console.WriteLine(failures == 0 ? "\nverify-schema: ALL PASS" : $"\nverify-schema: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);

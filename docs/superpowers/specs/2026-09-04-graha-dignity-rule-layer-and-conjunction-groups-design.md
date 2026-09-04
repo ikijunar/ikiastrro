@@ -11,7 +11,8 @@
   - `tbl_Chart_MultiGrahaConjunctionMember` (was `tbl_Chart_ConjunctionGroupMembers`)
   - `tbl_Chart_Conjunctions.MultiGrahaConjunctionId` (was `ConjunctionGroupId`)
   - Backfilled: 268 groups / 675 members / all pair rows linked; `verify-schema` `ALL PASS`; folded into `db/ikiastrro.sql`.
-  - **Still pending** from Phase 3: the engine/repo/`verify-schema`-additions tasks (plan Tasks 8–11).
+  - **Engine/repo/`verify-schema` wiring landed 2026-09-04** (plan Tasks 8–11, branch `feat/graha-dignity-rule-layer`): `RelationshipEngine.BuildMultiGrahaConjunctions` derives the groups from the built graha `ChartKeyDetail` rows (Task 9's dignity "stitch" folds in — the rows already carry `DignityStatus`/`IsCombust`); `ChartMultiGrahaConjunctionRepository` + `ChartGenerationService.PersistAnalytics` (order per §4.7) + `BirthDetailDeletionService` + both composition roots; 14 group-layer invariants added to `verify-schema`. `ChartAnalyzer.cs` and `BuildConjunctionRows` were **not** modified — the pair→group link is a `(ChartResultId, SignId)` SQL join. `recompute-keydetails` on the dev DB re-derived 268 groups / 675 members identically; every `verify-*` `ALL PASS`.
+  - **Phase 1–2 (dignity rule layer) status:** Phase 1 migrations 23–26 + `verify-dignity` delivered; **Phase 2 (data-driven `DignityEngine` + PVR active-set switch + golden-record re-baseline) deferred** per rammyps (2026-09-04) — `tbl_Rule_GrahaDignity` stays reference-only, the engine keeps its hard-coded BPHS dicts.
 - **Phase 1 is revised below** per the 2026-09-04 discussion:
   - **No `tbl_Dim_DignityType`** (rammyps: "not create a new table"). Dignity-type metadata (`Mood` / `InterpretationTendency` / `Analogy`) and the new `DignityScore` are **columns on `tbl_Rule_GrahaDignity`**.
   - `tbl_Rule_GrahaDignity.DignityTypeCode` is a **4-value** set — `EXALTED / MOOLATRIKONA / OWN / DEBILITATED` — i.e. **axis A only** (see §4.2c). `FRIEND / NEUTRAL / ENEMY` are **not** in this table.

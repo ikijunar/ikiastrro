@@ -17,6 +17,7 @@ builder.Services.AddScoped<ChartResultsRepository>();
 builder.Services.AddScoped<ChartKeyDetailsRepository>();
 builder.Services.AddScoped<ChartHouseLordsRepository>();
 builder.Services.AddScoped<ChartConjunctionsRepository>();
+builder.Services.AddScoped<ChartMultiGrahaConjunctionRepository>();
 builder.Services.AddScoped<ChartAspectsRepository>();
 builder.Services.AddScoped<DashaPeriodsRepository>();
 builder.Services.AddScoped<SadeSatiRepository>();

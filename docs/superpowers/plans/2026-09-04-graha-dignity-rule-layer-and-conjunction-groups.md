@@ -127,43 +127,30 @@ Status: [x] complete   [ ] partial   [ ] not started
 - [x] Backfill groups + members + pair-link; `INSERT dbo.SchemaMigrations`; fold into baseline.
 - [ ] **Deferred to Task 7b:** `GRAHA_SAMYOGA` terminology concept (`tbl_Astro_Terminology` + `_Text`, `sa`+`en`) — not in migration 22; add in a follow-up migration alongside Task 8.
 
-## Task 8: `RelationshipEngine` — group derivation
-**Files:** Modify `src/Ikiastrro.Core/Engines/Relationships/RelationshipEngine.cs` · Create `src/Ikiastrro.Core/Models/ChartMultiGrahaConjunction.cs`, `ChartMultiGrahaConjunctionMember.cs`
-**Interfaces:** Consumes `ChartAnalysisInput`; produces group + member row models
-- [ ] `MultiGrahaConjunctionResult` record + `FindMultiGrahaConjunctions(ChartAnalysisInput)` — grahas grouped by sign, `Count >= 2`, each carrying its members' `PlanetPosition`s.
-- [ ] `BuildMultiGrahaConjunctionRows` / `BuildMultiGrahaConjunctionMemberRows` — canonical member order by `PlanetId`; `MemberKey` = ascending `PlanetId` CSV; `PlanetCount` set; member `DegreesInSign` = `NirayanaLongitudeDegrees % 30` (D1) or `VargaLongitudeDegrees % 30` (varga), `NirayanaLongitude` / `VargaLongitude` / `IsRetrograde` from `PlanetPosition`.
-- [ ] D1 only: group `LongitudeSpanDegrees` = `max−min` of member `NirayanaLongitudeDegrees`; member `OrbFromGroupCenterDegrees` = `|memberLon − mean(memberLon)|`. Both null for varga (discrete bucket — same rule as `ChartConjunction.DegreeSeparation`).
-- [ ] `BuildConjunctionRows` — also emit each pair's owning `MemberKey` so persistence can resolve `MultiGrahaConjunctionId`. Pair rows are the only persisted subset; triples/quads are left for the Yoga engine to enumerate from `MemberKey` (spec §4.5).
-- [ ] `dotnet build -warnaserror`.
-- [ ] Commit.
+## Task 8: `RelationshipEngine` — group derivation  · **DONE**
+**Files:** `src/Ikiastrro.Core/Engines/Relationships/RelationshipEngine.cs` · `src/Ikiastrro.Core/Models/ChartMultiGrahaConjunction.cs`, `ChartMultiGrahaConjunctionMember.cs` (new)
+- [x] `RelationshipEngine.BuildMultiGrahaConjunctions(ChartAnalysisInput input, IReadOnlyList<ChartKeyDetail> keyDetails)` — grahas grouped by `SignId`, `Count >= 2`. **Deviation:** takes the already-built `keyDetails` graha rows (not a fresh `PlanetPosition` walk) — they already carry the stitched `DignityStatus`/`IsCombust`, so Task 9's "stitch" collapses into this one call with no `DignityEngine` plumbing.
+- [x] Canonical member order by `PlanetId`; `MemberKey` = ascending `PlanetId` CSV; `PlanetCount` set; member `DegreesInSign` from `DegreesInSignDecimal`, `NirayanaLongitude` / `VargaLongitude` / `IsRetrograde` / `DignityStatus` / `IsCombust` from the KeyDetail row.
+- [x] D1 only (`input.ChartType == "D1"`): group `LongitudeSpanDegrees` = `max−min` member real longitude; member `OrbFromGroupCenterDegrees` = `|memberLon − mean(memberLon)|`. Both null for varga.
+- [x] **Deviation:** `BuildConjunctionRows` **not** touched — the pair→group link is resolved in persistence by a `(ChartResultId, SignId)` SQL join (same as the migration-22 backfill), so no `MemberKey` plumbing through `ChartConjunction` was needed.
+- [x] `dotnet build -warnaserror` Debug — 0/0.
 
-## Task 9: `ChartAnalyzer` — stitch member dignity
-**Files:** Modify `src/Ikiastrro.Core/Pipeline/ChartAnalyzer.cs`
-**Interfaces:** Consumes the per-planet `DignityResult` already computed in the same pass; produces group members with `DignityStatus`
-- [ ] After computing `DignityResult` per planet, set each `ChartMultiGrahaConjunctionMember.DignityStatus` from the matching planet's result (`DignityStatus`; `IsCombust` from the existing combustion pass).
-- [ ] Ensure groups/members are emitted into whatever bundle `ChartAnalyzer` returns to the generation service.
-- [ ] `dotnet build -warnaserror`.
-- [ ] Commit.
+## Task 9: stitch member dignity  · **DONE (folded into Task 8)**
+- [x] Member `DignityStatus` + `IsCombust` come straight from the matching planet's `ChartKeyDetail` row (built by `ChartAnalyzer.Compute` in the same pass) — no change to `ChartAnalyzer.cs`, no new dignity computation. `verify-schema` asserts `member.DignityStatus == kd.DignityStatus` for the same `ChartResultId`.
 
-## Task 10: Persistence + lifecycle
-**Files:** Create `src/Ikiastrro.Data/ChartMultiGrahaConjunctionRepository.cs` · Modify `src/Ikiastrro.Data/ChartConjunctionsRepository.cs` (write `MultiGrahaConjunctionId`), `src/Ikiastrro.Core/.../ChartGenerationService.cs` (RecomputeAnalytics), `BirthDetailDeletionService`, `src/Ikiastrro.Cli/Program.cs` (composition root)
-**Interfaces:** Consumes group/member rows; produces persisted rows + pair-link update
-- [ ] `ChartMultiGrahaConjunctionRepository` — `InsertAll(groups)`, `InsertAllMembers(members)`, `GetByBirthDetailId`, `DeleteByChartResultId`, `DeleteByBirthDetailId` (mirror `ChartConjunctionsRepository`).
-- [ ] `RecomputeAnalytics` — derive + insert groups → members, then `UPDATE tbl_Chart_Conjunctions SET MultiGrahaConjunctionId` by `(ChartResultId, SignId)`; order per spec §4.7; one transaction per `ChartResultId`.
-- [ ] `BirthDetailDeletionService` — delete groups by birth-detail (members cascade).
-- [ ] Wire the new repo into the CLI composition root next to `ChartConjunctionsRepository`.
-- [ ] `dotnet build -warnaserror` Debug + Release; `recompute-analytics` on dev DB.
-- [ ] Commit.
+## Task 10: Persistence + lifecycle  · **DONE**
+**Files:** `src/Ikiastrro.Data/ChartMultiGrahaConjunctionRepository.cs` (new) · `ChartGenerationService.cs` · `BirthDetailDeletionService.cs` · `src/Ikiastrro.Cli/Program.cs` + `src/Ikiastrro.Web/Program.cs` (composition roots)
+- [x] `ChartMultiGrahaConjunctionRepository` — `InsertAll(groups)` (per-group `OUTPUT INSERTED.Id`, then its members), `LinkPairRows(chartResultId)` (the `(ChartResultId, SignId)` UPDATE join), `GetByBirthDetailId` (groups + stitched members), `DeleteByChartResultId`, `DeleteByBirthDetailId`.
+- [x] `ChartGenerationService.PersistAnalytics` — order per spec §4.7: KeyDetails → HouseLords → Conjunctions → **Groups → Members** → Aspects, then `LinkPairRows`. Delete calls added to `GenerateAll` (by birth-detail) + `RecomputeAnalytics` (by ChartResultId), **after** the pair-row delete (pair rows FK the groups). No cross-repo transaction — same as the rest of the service.
+- [x] `BirthDetailDeletionService` — group delete inserted after `_conjunctionsRepo.DeleteByBirthDetailId`; members cascade via FK.
+- [x] Wired into the CLI `new ChartGenerationService(...)` and Web `AddScoped<ChartMultiGrahaConjunctionRepository>()`.
+- [x] `dotnet build -warnaserror` Debug (Core/Data/Cli/Web/Tests) — 0/0; `recompute-keydetails` on dev DB → 268 groups / 675 members, 0 pairs unlinked.
 
-## Task 11: `verify-schema` additions + full verification
-**Files:** Modify `src/Ikiastrro.Cli/Program.cs`
-**Interfaces:** Produces the group-layer invariants in `verify-schema`
-- [ ] Every `tbl_Chart_Conjunctions` row has non-null `MultiGrahaConjunctionId`; `Planet1Id` and `Planet2Id` are both in `tbl_Chart_MultiGrahaConjunctionMember` for that group.
-- [ ] `tbl_Chart_MultiGrahaConjunction.PlanetCount` = member count = distinct `PointKind='Graha'` planets in that sign per `tbl_Chart_KeyDetails`.
-- [ ] `MemberKey` ascending-sorted; entry count = `PlanetCount`.
-- [ ] D1 groups: `LongitudeSpanDegrees` non-null, `= max−min` member `NirayanaLongitude`; every member `OrbFromGroupCenterDegrees` non-null and `≤` the group span. Varga groups: both null.
-- [ ] D1 members: non-null in-range `DegreesInSign` + `NirayanaLongitude`; member `DignityStatus` = that planet's `tbl_Chart_KeyDetails.DignityStatus` for the same `ChartResultId`.
-- [ ] `dotnet build -warnaserror` Debug + Release · **all** `verify-*` (`schema`, `vargas`, `functional-nature`, `jaimini`, `avastha`, `sources`, `pipeline`, `terminology`, `rules`, `dignity`) `ALL PASS` · Web smoke `/charts/1` → 200.
+## Task 11: `verify-schema` additions + full verification  · **DONE**
+**Files:** `src/Ikiastrro.Cli/Program.cs`
+- [x] 14 new `verify-schema` checks: every pair linked; both pair planets are group members; `PlanetCount` = member count = distinct grahas in that sign; `PlanetCount >= 2`; `MemberKey` = ascending PlanetId CSV; `MemberKey` entry count = `PlanetCount`; D1 `LongitudeSpanDegrees` non-null `= max−min` member longitude (varga null); D1 member `OrbFromGroupCenterDegrees` non-null `<= span` (varga null); D1 member `DegreesInSign`/`NirayanaLongitude` non-null in-range; member `DignityStatus` = KeyDetails `DignityStatus`.
+- [x] `dotnet build -warnaserror` Debug 0/0 · every `verify-*` (`schema` `vargas` `functional-nature` `jaimini` `avastha` `sources` `pipeline` `terminology` `rules` `dignity`) `ALL PASS`, before **and** after `recompute-keydetails`.
+- [ ] Web smoke `/charts/1` → 200 — **pending manual (VS F5)**; Web project builds clean, only change is one DI registration.
 - [ ] Commit.
 
 ## Task 12: Docs + ledger

@@ -66,8 +66,14 @@ ladder: `Planned → Designed → DB → Core → Verified → Web → Done`. Co
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
 
 ### RELATIONSHIP
-- **FEAT-RELATIONSHIP-01 · Conjunctions (Yuti)** — Done · 100% · Verify `verify-schema`
+- **FEAT-RELATIONSHIP-01 · Conjunctions (Yuti) + multi-graha conjunction (Graha Saṃyoga) groups** — Done · 100% · Verify `verify-schema`
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
+  Pair rows (`tbl_Chart_Conjunctions`) + an explicit ≥ 2-graha group/member layer
+  (`tbl_Chart_MultiGrahaConjunction` / `…Member`, migration 22) carrying per-planet
+  degree / longitude / dignity / retrograde / combust once, D1 span + per-member orb,
+  and `MemberKey` for yoga-subset matching. Engine derivation
+  (`RelationshipEngine.BuildMultiGrahaConjunctions`) + persistence + `verify-schema`
+  invariants wired 2026-09-04; groundwork for FEAT-YOGA-01.
 - **FEAT-RELATIONSHIP-02 · Aspects (Graha Dṛṣṭi)** — Done · 100% · Verify `verify-schema`
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
 - **FEAT-RELATIONSHIP-03 · Combustion (Asta)** — Done · 100% · Verify `verify-schema`

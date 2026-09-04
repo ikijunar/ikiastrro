@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.PlanetaryStates;
+using Ikiastrro.Core.Engines.Relationships;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.Dasha;
 using Ikiastrro.Core.Engines.Karakas;
@@ -25,6 +26,7 @@ public class ChartGenerationService
     private readonly ChartKeyDetailsRepository _keyDetailsRepo;
     private readonly ChartHouseLordsRepository _houseLordsRepo;
     private readonly ChartConjunctionsRepository _conjunctionsRepo;
+    private readonly ChartMultiGrahaConjunctionRepository _multiGrahaConjunctionsRepo;
     private readonly ChartAspectsRepository _aspectsRepo;
     private readonly PlanetaryStateRuleRepository _planetaryStateRuleRepo;
     private readonly PlanetaryStateRepository _planetaryStateRepo;
@@ -39,6 +41,7 @@ public class ChartGenerationService
         ChartCalculationOrchestrator orchestrator, VimshottariDashaService dashaService,
         ChartResultsRepository chartResultsRepo, ChartKeyDetailsRepository keyDetailsRepo,
         ChartHouseLordsRepository houseLordsRepo, ChartConjunctionsRepository conjunctionsRepo,
+        ChartMultiGrahaConjunctionRepository multiGrahaConjunctionsRepo,
         ChartAspectsRepository aspectsRepo,
         PlanetaryStateRuleRepository planetaryStateRuleRepo, PlanetaryStateRepository planetaryStateRepo,
         RuleSetRepository ruleSetRepo, ChartTypeRepository chartTypeRepo)
@@ -49,6 +52,7 @@ public class ChartGenerationService
         _keyDetailsRepo = keyDetailsRepo;
         _houseLordsRepo = houseLordsRepo;
         _conjunctionsRepo = conjunctionsRepo;
+        _multiGrahaConjunctionsRepo = multiGrahaConjunctionsRepo;
         _aspectsRepo = aspectsRepo;
         _planetaryStateRuleRepo = planetaryStateRuleRepo;
         _planetaryStateRepo = planetaryStateRepo;
@@ -68,6 +72,7 @@ public class ChartGenerationService
         _keyDetailsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _houseLordsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _conjunctionsRepo.DeleteByBirthDetailId(birthDetails.Id);
+        _multiGrahaConjunctionsRepo.DeleteByBirthDetailId(birthDetails.Id);  // after pair rows (they FK the groups)
         _aspectsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _planetaryStateRepo.DeleteByBirthDetailId(birthDetails.Id);
         foreach (var calc in _orchestrator.Calculators)
@@ -140,6 +145,7 @@ public class ChartGenerationService
             _keyDetailsRepo.DeleteByChartResultId(result.Id);
             _houseLordsRepo.DeleteByChartResultId(result.Id);
             _conjunctionsRepo.DeleteByChartResultId(result.Id);
+            _multiGrahaConjunctionsRepo.DeleteByChartResultId(result.Id);  // after pair rows (they FK the groups)
             _aspectsRepo.DeleteByChartResultId(result.Id);
             _planetaryStateRepo.DeleteByChartResultId(result.Id);
             PersistAnalytics(result.Id, input, CharaKarakaByPlanet(ctx));
@@ -194,14 +200,28 @@ public class ChartGenerationService
             if (r.PointKind == "Graha" && charaKarakaByPlanet.TryGetValue(r.Planet, out var ck))
                 r.CharaKaraka = ck;
         var planetaryStates = PlanetaryStateComputer.Compute(input, keyDetails, PlanetaryStateRules);
-        foreach (var r in keyDetails)    r.ChartResultId = chartResultId;
-        foreach (var r in houseLords)    r.ChartResultId = chartResultId;
-        foreach (var r in conjunctions)  r.ChartResultId = chartResultId;
-        foreach (var r in aspects)       r.ChartResultId = chartResultId;
+
+        // Multi-graha conjunction groups: derived from the built graha KeyDetail rows (which already
+        // carry the stitched DignityStatus / IsCombust). The 2-planet case is a group too.
+        var multiGrahaGroups = RelationshipEngine.BuildMultiGrahaConjunctions(input, keyDetails);
+
+        foreach (var r in keyDetails)      r.ChartResultId = chartResultId;
+        foreach (var r in houseLords)      r.ChartResultId = chartResultId;
+        foreach (var r in conjunctions)    r.ChartResultId = chartResultId;
+        foreach (var r in aspects)         r.ChartResultId = chartResultId;
         foreach (var r in planetaryStates) r.ChartResultId = chartResultId;
+        foreach (var g in multiGrahaGroups) g.ChartResultId = chartResultId;
+
+        // Order per spec §4.7: KeyDetails -> HouseLords -> Conjunctions -> Groups -> GroupMembers
+        // -> Aspects, then a pass to link each pair row to its group by (ChartResultId, SignId).
         _keyDetailsRepo.InsertAll(keyDetails);
         _houseLordsRepo.InsertAll(houseLords);
         if (conjunctions.Count > 0) _conjunctionsRepo.InsertAll(conjunctions);
+        if (multiGrahaGroups.Count > 0)
+        {
+            _multiGrahaConjunctionsRepo.InsertAll(multiGrahaGroups);
+            _multiGrahaConjunctionsRepo.LinkPairRows(chartResultId);
+        }
         if (aspects.Count > 0) _aspectsRepo.InsertAll(aspects);
         if (planetaryStates.Count > 0) _planetaryStateRepo.InsertAll(planetaryStates);
     }

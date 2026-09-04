@@ -77,6 +77,70 @@ public static class RelationshipEngine
         return results;
     }
 
+    /// <summary>
+    /// Multi-graha conjunction (Graha Saṃyoga) groups for this chart: one per rāśi holding ≥ 2 real
+    /// grahas, each carrying its members' per-planet degree / longitude / dignity / retrograde /
+    /// combust once (not per pair). Derived from the already-built <paramref name="keyDetails"/> graha
+    /// rows — they already carry the stitched <see cref="ChartKeyDetail.DignityStatus"/> /
+    /// <see cref="ChartKeyDetail.IsCombust"/>, so no dignity recomputation happens here. The 2-planet
+    /// case is a group with <c>PlanetCount = 2</c>; triples and larger subsets are left for the Yoga
+    /// engine to enumerate from <c>MemberKey</c> and are not materialised.
+    ///
+    /// D1 only: <c>LongitudeSpanDegrees</c> = <c>max − min</c> member real longitude, and each
+    /// member's <c>OrbFromGroupCenterDegrees</c> = <c>|memberLon − mean(memberLon)|</c>. Both null
+    /// for a varga chart (discrete sign bucket — same rule as <see cref="ChartConjunction.DegreeSeparation"/>).
+    /// The pair-row → group link is resolved in persistence by <c>(ChartResultId, SignId)</c>.
+    /// </summary>
+    public static List<ChartMultiGrahaConjunction> BuildMultiGrahaConjunctions(
+        ChartAnalysisInput input, IReadOnlyList<ChartKeyDetail> keyDetails)
+    {
+        var isRasiChart = input.ChartType == "D1";
+
+        var grahaRows = keyDetails
+            .Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant"
+                        && k.PlanetId is not null && k.SignId is not null)
+            .ToList();
+
+        var groups = new List<ChartMultiGrahaConjunction>();
+        foreach (var bySign in grahaRows.GroupBy(k => k.SignId!.Value).OrderBy(g => g.Key))
+        {
+            var members = bySign.OrderBy(k => k.PlanetId!.Value).ToList();
+            if (members.Count < 2) continue;
+
+            var meanLon = members.Average(m => m.NirayanaLongitudeDegrees);
+            var span = isRasiChart
+                ? (decimal?)Math.Round(
+                    (decimal)(members.Max(m => m.NirayanaLongitudeDegrees)
+                              - members.Min(m => m.NirayanaLongitudeDegrees)), 4)
+                : null;
+
+            var group = new ChartMultiGrahaConjunction
+            {
+                SignId = bySign.Key,
+                HouseNumberFromLagna = members[0].HouseNumberFromLagna,
+                PlanetCount = members.Count,
+                MemberKey = string.Join(",", members.Select(m => m.PlanetId!.Value)),
+                LongitudeSpanDegrees = span,
+                Members = members.Select(m => new ChartMultiGrahaConjunctionMember
+                {
+                    PlanetId = m.PlanetId!.Value,
+                    DegreesInSign = m.DegreesInSignDecimal,
+                    NirayanaLongitude = m.NirayanaLongitudeDegrees,
+                    VargaLongitude = Math.Round((decimal)m.VargaLongitudeDegrees, 6),
+                    OrbFromGroupCenterDegrees = isRasiChart
+                        ? (decimal?)Math.Round((decimal)Math.Abs(m.NirayanaLongitudeDegrees - meanLon), 4)
+                        : null,
+                    DignityStatus = m.DignityStatus,
+                    IsRetrograde = m.IsRetrograde,
+                    IsCombust = m.IsCombust
+                }).ToList()
+            };
+            groups.Add(group);
+        }
+
+        return groups;
+    }
+
     /// <summary>Aspects: directional, planet-to-(planet-or-Ascendant), per the classical house-offset rules above.</summary>
     public static List<AspectResult> FindAspects(ChartAnalysisInput input)
     {
