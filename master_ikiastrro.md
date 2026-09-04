@@ -41,6 +41,7 @@ maintained · `superseded` = replaced, kept for history.
 | [`docs/research-horoscope-software-compare.md`](docs/research-horoscope-software-compare.md) | UI/UX & feature comparison of existing Vedic software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow/avoid, mapped to our components | 2026-08-30 | snapshot |
 | [`docs/research-top5-vedic-software.md`](docs/research-top5-vedic-software.md) | Competitive benchmark of the top 5 Vedic astrology tools | 2026-08-31 | snapshot |
 | [`docs/research/reference-sources.md`](docs/research/reference-sources.md) | `SRC_*` citation master — one bibliographic entry per source key; mirrors `tbl_Dim_Source` (STANDARDS §M.4) | 2026-09-02 | living |
+| [`docs/research-pvr-book-coverage.md`](docs/research-pvr-book-coverage.md) | Chapter-by-chapter map of P.V.R. Narasimha Rao's *Integrated Approach* (the canonical source, `SRC_PVR_INTEGRATED`) → project artifact → aligned / diverges / not built, + a reconciliation log | 2026-09-04 | living |
 
 ## Rationale — why we chose what
 

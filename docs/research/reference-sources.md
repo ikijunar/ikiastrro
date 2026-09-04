@@ -5,8 +5,19 @@ The single place classical texts, libraries, and external exports are named. Eve
 author inline (`STANDARDS.md §M.4`). Mirrored into `dbo.tbl_Dim_Source` by
 `db/15_create_dim_source.sql` / the `seed-sources` path; keep the two in sync.
 
+**Primary reference (2026-09-04, rammyps): `SRC_PVR_INTEGRATED`.** The project is being
+reconciled chapter-by-chapter against P.V.R. Narasimha Rao's *Vedic Astrology: An Integrated
+Approach* — it is the canonical spine for engine behaviour, rule values, and terminology, and
+its `SRC_*` code is what a `tbl_Rule_*` row cites for the whole PVR corpus even where the same
+material appears in a derivative (a worksheet, JHora, a later article). Other `SRC_*` rows stay
+as cross-checks or for areas the book doesn't cover. Where the shipped code deliberately differs
+from the book, that is called out at the divergence (row `CalculationNarrative`, or a spec
+note), never left silent. Coverage / reconciliation status per chapter:
+`docs/research-pvr-book-coverage.md`.
+
 | Code | Title | Author | Edition / Version | Tradition | Used by | Notes |
 |---|---|---|---|---|---|---|
+| `SRC_PVR_INTEGRATED` | Vedic Astrology: An Integrated Approach | P. V. R. Narasimha Rao | 1st ed. 2000, freely-released 2010 PDF | PVR Integrated (Parāśari, holistic) | **primary** — dignity, relationships, graha characters, upagrahas, special lagnas, vargas, houses, karakas, arudhas, aspects/argalas, yogas, strength, dasas | PDF `D:\Vedic Astrology\Vedic Astology Books\1_PVR_NarasimhaRao.pdf`; raw text extract `D:\@ClaudeSpace\BookExtracts\pvr-integrated-approach-raw.txt`. PVR's own 2010 "Looking Back" note says he has since refined several calculations — treat as canonical baseline, not infallible. Distinct from `SRC_JHORA` (same author, desktop software). |
 | `SRC_BPHS` | Brihat Parashara Hora Shastra | Parāśara (attrib.) | — | Parāśari | dignity, aspects, vargas, avasthas | umbrella; prefer a chapter-scoped code below when known |
 | `SRC_BPHS_26` | BPHS ch. 26 — Graha Dṛṣṭi | — | — | Parāśari | `tbl_Rule_AspectOffset` | 7th full; Mars 4/8, Jupiter 5/9, Saturn 3/10 |
 | `SRC_BPHS_27` | BPHS ch. 27 — Ṣaḍbala | — | — | Parāśari | Strength engine (Plan 3) | lookup tables need a specific edition — see `research-topic-coverage.md` |
