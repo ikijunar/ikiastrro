@@ -1,6 +1,6 @@
 ---
 last_updated: 2026-09-04
-reflects: master @ 802e673 + branch feat/graha-dignity-rule-layer (migrations 22–27, unpushed)
+reflects: master @ 802e673 + branch feat/graha-dignity-rule-layer (migrations 22–28, unpushed)
 ---
 
 # PVR book coverage & reconciliation map
@@ -30,7 +30,7 @@ unverified against the book · **diverges** = built but deliberately differs (se
 | 2 | Rasis (21) — 2.2 characteristics, 2.3 indications | `tbl_SignAttributes` + classification/research fields (migr. 19–21) | partial | reconcile the classification + "indications" columns against §2.2/§2.3; `RisingType` still NULL |
 | 3 | Planets (28) — 3.2 characteristics, **3.3 dignities (Table 6 + 7 notes)**, 3.4 relationships | `tbl_Rule_GrahaAttribute` (26), `tbl_Rule_GrahaDignity` RuleSetId 2 (23), `tbl_Rule_NaturalRelationship` + `tbl_Rule_CompoundRelationship` (24–25) | partial / diverges | (a) `tbl_Rule_GrahaDignity` RuleSetId 2 vs Table 6 — **verify node own-signs** (migration has Rahu OWN=Aquarius / Ketu OWN=Scorpio; Table 6 print appears to say Rahu OWN=Scorpio); Mars MT typo already handled. (b) `dignity-pvr-integrated.md` §Divergence (Moon/Mercury MT vs `tbl_SignAttributes`) — confirm against the book's notes 2 & 4. (c) `tbl_Rule_GrahaAttribute` was seeded from a *consolidated worksheet* (`graha-characters-pvr.md`), not §3.2 verbatim — reconcile. (d) `DignityEngine` still hard-coded BPHS (Phase 2 deferred) — book alignment needs Phase 2 to flip the active set to RuleSetId 2. |
 | 4 | **Upagrahas (41)** — Table 9 (Sun-based), Table 10 (day/night ruler), §4.3 rise points | migration 27: `tbl_Dim_SubPlanets`, `tbl_Rule_SubPlanetSunLongitude`, `tbl_Rule_SubPlanetPartRuler` (Table 10, 112 rows), `tbl_Rule_SubPlanetTime`. `UpagrahaCalculator.cs` = Gulika/Maandi only | aligned (DB) / diverges (code) | DB verified row-for-row vs Tables 9 & 10 + the 6 rise-point rules + the "similar-to" planet analogies. **Divergence:** `UpagrahaCalculator.cs` follows JHora — Gulika at the START of Saturn's part, Maandi at the middle — **swapped vs §4.3 (5)/(6)**. Book-alignment ⇒ swap the two in code + re-baseline `verify-jaimini`. Then build engines for the other 9 (5 Sun-based + Kaala/Mrityu/Arthaprahara/Yamaghantaka). |
-| 5 | Special Lagnas (45) — Bhaava, Hora, Ghati, Sree | `Core/SpecialPoints/`: `HoraLagnaCalculator` ✓. Bhaava / Ghati / Sree Lagna **not built** | partial | build BhaavaLagna, GhatiLagna, SreeLagna per §5.2/§5.4/§5.7; §5.5 comments on when each applies |
+| 5 | Special Lagnas (45) — Bhaava, Hora, Ghati, Sree | migration 28: `tbl_Dim_SpecialLagnas` (4), `tbl_Rule_SpecialLagnaTimeRate` (BL/HL/GL), `tbl_Rule_SpecialLagnaFraction` (SL). Engines: `HoraLagnaCalculator` ✓ only; Bhaava / Ghati / Sree **not built** | partial (DB layer added) | DB rule layer seeded vs §5.2–5.7. **Divergence:** BL `DegreesPerMinute` seeded 0.25 (§5.2 stated rate / classical `ishtakāla ÷ 5` / JHora); §5.2's method step + Example 7 imply 1.0 — treated as a book erratum, recorded in the BL row narrative (BL is `UsedInBook = 0`). **Next:** build BhaavaLagna / GhatiLagna / SreeLagna engines off the rule rows; §5.5 birthtime-sensitivity note for GL in vargas. |
 | 6 | Divisional Charts (51) — 6.2 computing, 6.3 significations, 6.6 varga grouping & amsabala | migrations 10–13, `tbl_Rule_VargaScheme`, 21 position chart types, `VargaChartComputer` | partial | reconcile the 21 varga sign-rules against §6.2; **§6.6 Varga Grouping + Amsabala not built** (feeds Vimsopaka, Ch 15) |
 | 7 | Houses (67) — bhava significations | `tbl_Rule_HouseSignification` **reserved / empty**; `reference-house-lagna-significations.md` is Raman-sourced | reference-only (empty) | populate `tbl_Rule_HouseSignification` from §7 under `SRC_PVR_INTEGRATED` |
 | 8 | Karakas (79) — chara, sthira, naisargika | `CharaKarakaCalculator` (Ashta) ✓; `tbl_Rule_Karaka` **reserved / empty**; Sthira/Naisargika hard-coded in `LifeAreaMap` only | partial | populate `tbl_Rule_Karaka` from §8; build Sthira + Naisargika karaka engines (Plan 2) |
@@ -59,3 +59,10 @@ _(append one line per chapter as it is reconciled: date · chapter · what chang
 - 2026-09-04 — Ch 4 (Upagrahas): migration 27 rebuilt to the book's Table 10 + §4.3 rise
   points (`tbl_Rule_SubPlanetPartRuler` + `EIGHTH_PART_RULER`), commit `a3c9225`. DB aligned;
   `UpagrahaCalculator.cs` Gulika/Maandi start-vs-middle still on the JHora convention — open.
+- 2026-09-04 — Ch 5 (Special Lagnas): migration 28 adds the DB rule layer —
+  `tbl_Dim_SpecialLagnas` (4) + `tbl_Rule_SpecialLagnaTimeRate` (Bhaava/Hora/Ghati, one
+  `DegreesPerMinute` each: 0.25 / 0.5 / 1.25) + `tbl_Rule_SpecialLagnaFraction` (Sree =
+  natal lagna + Moon's nakshatra fraction × 360). BL seeded 0.25/min per §5.2's stated rate
+  (its method step + Example 7 give a contradictory 1.0 — recorded as a book erratum in the
+  row narrative). HL row pins the shipped `HoraLagnaCalculator.cs` 0.5. Bhaava/Ghati/Sree
+  engines still to build. verify-rules / verify-sources / verify-schema / verify-jaimini ALL PASS.

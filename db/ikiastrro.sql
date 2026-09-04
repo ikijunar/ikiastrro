@@ -3478,7 +3478,9 @@ VALUES
     ('tbl_Rule_DigBala',                    'STRENGTH',     'HOUSE_LOOKUP',  'Directional-strength (Dig Bala) reference house per graha - the bhava of full digbala (Lagna=1 / 4th / 7th / 10th). One strength input, not overall planetary strength.', '26_add_rule_graha_attributes.sql'),
     ('tbl_Rule_SubPlanetSunLongitude',      'SUBPLANET',    'SUN_LONGITUDE_CHAIN', 'Sun-longitude-derived sub-planets (Dhuma, Vyatipata, Parivesha, Indrachapa, Upaketu): an ordered ADD / COMPLEMENT_360 chain off the Sun''s nirayana longitude. Reference data - engine not yet built.', '27_add_subplanet_rule_layer.sql'),
     ('tbl_Rule_SubPlanetPartRuler',         'SUBPLANET',    'PART_RULER_LOOKUP', 'PVR "Table 10": the ruling graha (or none) of each of the 8 equal parts of the day / night arc, per weekday. Feeds the EIGHTH_PART_RULER method for the time-based sub-planets; also the ruler sequence for Gulika/Maandi.', '27_add_subplanet_rule_layer.sql'),
-    ('tbl_Rule_SubPlanetTime',              'SUBPLANET',    'EIGHTH_PART_RULER', 'Time-based sub-planets (Kaala, Mrityu, Ardhaprahara, Yamaghantaka, Gulika, Maandi): each rises at PartFraction (0 = start, 0.5 = middle) of the 1/8 arc part ruled by a specific graha; the rising Ascendant at that instant is the longitude. Reference data - only Gulika/Maandi are built in C# (start/middle swapped vs this text per JHora).', '27_add_subplanet_rule_layer.sql');
+    ('tbl_Rule_SubPlanetTime',              'SUBPLANET',    'EIGHTH_PART_RULER', 'Time-based sub-planets (Kaala, Mrityu, Ardhaprahara, Yamaghantaka, Gulika, Maandi): each rises at PartFraction (0 = start, 0.5 = middle) of the 1/8 arc part ruled by a specific graha; the rising Ascendant at that instant is the longitude. Reference data - only Gulika/Maandi are built in C# (start/middle swapped vs this text per JHora).', '27_add_subplanet_rule_layer.sql'),
+    ('tbl_Rule_SpecialLagnaTimeRate',       'SPECIALLAGNA', 'TIME_RATE_FROM_SUNRISE', 'Bhaava / Hora / Ghati Lagna: each is the Sun''s sunrise longitude plus a fixed DegreesPerMinute advance for every minute since the day''s opening sunrise (Bhaava 0.25, Hora 0.5, Ghati 1.25), mod 360. Reference data - only Hora Lagna is built in C#.', '28_add_special_lagna_rule_layer.sql'),
+    ('tbl_Rule_SpecialLagnaFraction',       'SPECIALLAGNA', 'LAGNA_PLUS_NAK_FRACTION', 'Sree Lagna: natal lagna longitude plus the Moon''s fraction through its nakshatra scaled to 360 deg, mod 360. Reference point for Sudasa. Reference data - engine not yet built.', '28_add_special_lagna_rule_layer.sql');
 GO
 
 -- =====================================================================
@@ -4333,6 +4335,139 @@ IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SubPlanetTime)
     ) v (SubPlanetCode, PlanetName, PartFraction, Narrative)
     JOIN dbo.tbl_Dim_SubPlanets sp ON sp.SubPlanetCode = v.SubPlanetCode
     JOIN dbo.tbl_Planets        p  ON p.PlanetName     = v.PlanetName;
+GO
+
+-- =====================================================================
+-- 28 - Special Lagna reference layer (PVR ch 5). Folded from
+-- db/28_add_special_lagna_rule_layer.sql. tbl_Dim_SpecialLagnas (4) +
+-- tbl_Rule_SpecialLagnaTimeRate (Bhaava/Hora/Ghati) + tbl_Rule_SpecialLagnaFraction
+-- (Sree). Two calculation families: TIME_FROM_SUNRISE (a fixed deg/minute
+-- advance of the Sun's sunrise longitude) and NAKSHATRA_FRACTION (natal
+-- lagna + Moon's nakshatra fraction x 360). Bhaava DegreesPerMinute is
+-- 0.25 per PVR sec 5.2's stated rate (its method step / Example 7 give a
+-- contradictory 1.0 - a book erratum; see the row narrative). RuleSetId 1,
+-- SourceRefCode SRC_PVR_INTEGRATED. Catalog rows are in the tbl_Rule_Catalog
+-- seed above. D1 reference data; only Hora Lagna is built in C#.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Dim_SpecialLagnas', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Dim_SpecialLagnas (
+        Id              TINYINT       NOT NULL
+                            CONSTRAINT PK_Dim_SpecialLagnas PRIMARY KEY,
+        LagnaCode       VARCHAR(16)   NOT NULL
+                            CONSTRAINT UQ_Dim_SpecialLagnas_Code UNIQUE,
+        Abbreviation    VARCHAR(4)    NOT NULL
+                            CONSTRAINT UQ_Dim_SpecialLagnas_Abbr UNIQUE,
+        LagnaName       VARCHAR(30)   NOT NULL
+                            CONSTRAINT UQ_Dim_SpecialLagnas_Name UNIQUE,
+        CalculationType VARCHAR(20)   NOT NULL,
+        UsedInBook      BIT           NOT NULL,
+        Significations  NVARCHAR(300) NULL,
+        SortOrder       TINYINT       NOT NULL,
+        IsActive        BIT           NOT NULL CONSTRAINT DF_Dim_SpecialLagnas_IsActive DEFAULT 1,
+        Notes           NVARCHAR(400) NULL,
+        CONSTRAINT CK_Dim_SpecialLagnas_CalcType CHECK (CalculationType IN ('TIME_FROM_SUNRISE','NAKSHATRA_FRACTION'))
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_SpecialLagnas)
+    INSERT dbo.tbl_Dim_SpecialLagnas
+        (Id, LagnaCode, Abbreviation, LagnaName, CalculationType, UsedInBook, Significations, SortOrder, Notes)
+    VALUES
+        (1, 'BHAAVA_LAGNA', 'BL', 'Bhaava Lagna', 'TIME_FROM_SUNRISE',  0,
+            N'Defined for the sake of completeness; PVR does not use Bhaava Lagna further in the book.', 1,
+            N'PVR sec 5.2 gives contradictory rates - see the tbl_Rule_SpecialLagnaTimeRate Bhaava row. Seeded per the stated "one rasi per 2 hours".'),
+        (2, 'HORA_LAGNA',   'HL', 'Hora Lagna',   'TIME_FROM_SUNRISE',  1,
+            N'Self with respect to money, wealth and prosperity; weighed heavily when timing periods for a businessman (PVR sec 5.6).', 2,
+            N'The only special lagna built in C# today (HoraLagnaCalculator.cs).'),
+        (3, 'GHATI_LAGNA',  'GL', 'Ghati Lagna',  'TIME_FROM_SUNRISE',  1,
+            N'Self with respect to fame, power and authority; weighed heavily when timing periods for a politician (PVR sec 5.6). Also called Ghatika Lagna.', 3,
+            N'PVR sec 5.5: a 1-minute birthtime error shifts GL by 1 deg 15 min, so GL is more birthtime-sensitive than the normal lagna, especially in vargas.'),
+        (4, 'SREE_LAGNA',   'SL', 'Sree Lagna',   'NAKSHATRA_FRACTION', 1,
+            N'Prosperity (Sree = wealth / Lakshmi). The reference point for Sudasa ("Sree Lagna Kendradi Rasi Dasa") (PVR sec 5.7).', 4,
+            N'PVR sec 5.8: Sree Lagna moves at about twice the rate of the normal lagna; watch rasi-border cases.');
+GO
+IF OBJECT_ID('dbo.tbl_Rule_SpecialLagnaTimeRate', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_SpecialLagnaTimeRate (
+        Id                   INT IDENTITY(1,1) NOT NULL
+                                 CONSTRAINT PK_Rule_SpecialLagnaTimeRate PRIMARY KEY,
+        RuleSetId            TINYINT      NOT NULL
+                                 CONSTRAINT FK_Rule_SpecialLagnaTimeRate_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        SpecialLagnaId       TINYINT      NOT NULL
+                                 CONSTRAINT FK_Rule_SpecialLagnaTimeRate_Lagna FOREIGN KEY REFERENCES dbo.tbl_Dim_SpecialLagnas (Id),
+        AnchorPoint          VARCHAR(20)  NOT NULL,
+        DegreesPerMinute     DECIMAL(9,6) NOT NULL,
+        NormalizationMethod  VARCHAR(12)  NOT NULL CONSTRAINT DF_Rule_SpecialLagnaTimeRate_Norm DEFAULT 'MOD_360',
+        MethodCode           VARCHAR(30)  NULL,
+        RuleParametersJson   NVARCHAR(MAX) NULL,
+        CalculationNarrative NVARCHAR(MAX) NULL,
+        SourceRefCode        VARCHAR(40)  NULL,
+        IsActive             BIT          NOT NULL CONSTRAINT DF_Rule_SpecialLagnaTimeRate_IsActive DEFAULT 1,
+        CONSTRAINT CK_Rule_SpecialLagnaTimeRate_Anchor CHECK (AnchorPoint IN ('SUN_AT_SUNRISE')),
+        CONSTRAINT CK_Rule_SpecialLagnaTimeRate_Rate   CHECK (DegreesPerMinute > 0),
+        CONSTRAINT CK_Rule_SpecialLagnaTimeRate_Json   CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_Rule_SpecialLagnaTimeRate_Src    CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_SpecialLagnaTimeRate UNIQUE (RuleSetId, SpecialLagnaId)
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SpecialLagnaTimeRate)
+    INSERT dbo.tbl_Rule_SpecialLagnaTimeRate
+        (RuleSetId, SpecialLagnaId, AnchorPoint, DegreesPerMinute, NormalizationMethod,
+         MethodCode, CalculationNarrative, SourceRefCode, IsActive)
+    SELECT 1, l.Id, v.AnchorPoint, CONVERT(DECIMAL(9,6), v.DegreesPerMinute), 'MOD_360',
+           'TIME_RATE_FROM_SUNRISE', v.Narrative, 'SRC_PVR_INTEGRATED', 1
+    FROM (VALUES
+        ('BHAAVA_LAGNA', 'SUN_AT_SUNRISE', 0.250000,
+            N'Bhaava Lagna (BL) = Sun''s nirayana longitude at the day''s opening sunrise + 0.25 deg per minute elapsed since that sunrise, mod 360. 0.25 deg/min = 15 deg/hour = one rasi per 2 hours, per PVR sec 5.2''s stated rate, the classical ishtakaala/5 rule, and JHora / PyJHora. ERRATUM NOTE: PVR sec 5.2''s method step (2) and worked Example 7 both take the minutes-since-sunrise value directly as degrees (i.e. 1.0 deg/min), which contradicts the same section''s rate by a factor of 4; that reading is treated as a book erratum (rammyps, 2026-09-04). BL carries UsedInBook = 0 - PVR defines it "only for the sake of completeness".'),
+        ('HORA_LAGNA', 'SUN_AT_SUNRISE', 0.500000,
+            N'Hora Lagna (HL) = Sun''s nirayana longitude at the day''s opening sunrise + 0.5 deg per minute elapsed since that sunrise, mod 360 (one rasi per hour). PVR sec 5.3. Matches the shipped HoraLagnaCalculator.cs and its verify-jaimini golden value (23 Pi 55'' 08'').'),
+        ('GHATI_LAGNA', 'SUN_AT_SUNRISE', 1.250000,
+            N'Ghati Lagna (GL) = Sun''s nirayana longitude at the day''s opening sunrise + 1.25 deg per minute elapsed since that sunrise, mod 360 (one rasi per ghati = 24 minutes; PVR''s step multiplies the minute difference by 5 and divides by 4). PVR sec 5.4.')
+    ) v (LagnaCode, AnchorPoint, DegreesPerMinute, Narrative)
+    JOIN dbo.tbl_Dim_SpecialLagnas l ON l.LagnaCode = v.LagnaCode;
+GO
+IF OBJECT_ID('dbo.tbl_Rule_SpecialLagnaFraction', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_SpecialLagnaFraction (
+        Id                    INT IDENTITY(1,1) NOT NULL
+                                  CONSTRAINT PK_Rule_SpecialLagnaFraction PRIMARY KEY,
+        RuleSetId             TINYINT      NOT NULL
+                                  CONSTRAINT FK_Rule_SpecialLagnaFraction_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        SpecialLagnaId        TINYINT      NOT NULL
+                                  CONSTRAINT FK_Rule_SpecialLagnaFraction_Lagna FOREIGN KEY REFERENCES dbo.tbl_Dim_SpecialLagnas (Id),
+        AnchorPoint           VARCHAR(20)  NOT NULL,
+        IncrementBodyPlanetId TINYINT      NOT NULL
+                                  CONSTRAINT FK_Rule_SpecialLagnaFraction_Body FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        FractionBasis         VARCHAR(16)  NOT NULL,
+        ScaleDegrees          DECIMAL(9,6) NOT NULL,
+        NormalizationMethod   VARCHAR(12)  NOT NULL CONSTRAINT DF_Rule_SpecialLagnaFraction_Norm DEFAULT 'MOD_360',
+        MethodCode            VARCHAR(30)  NULL,
+        RuleParametersJson    NVARCHAR(MAX) NULL,
+        CalculationNarrative  NVARCHAR(MAX) NULL,
+        SourceRefCode         VARCHAR(40)  NULL,
+        IsActive              BIT          NOT NULL CONSTRAINT DF_Rule_SpecialLagnaFraction_IsActive DEFAULT 1,
+        CONSTRAINT CK_Rule_SpecialLagnaFraction_Anchor CHECK (AnchorPoint IN ('NATAL_LAGNA')),
+        CONSTRAINT CK_Rule_SpecialLagnaFraction_Basis  CHECK (FractionBasis IN ('NAKSHATRA')),
+        CONSTRAINT CK_Rule_SpecialLagnaFraction_Scale  CHECK (ScaleDegrees > 0),
+        CONSTRAINT CK_Rule_SpecialLagnaFraction_Json   CHECK (RuleParametersJson IS NULL OR ISJSON(RuleParametersJson) = 1),
+        CONSTRAINT CK_Rule_SpecialLagnaFraction_Src    CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%'),
+        CONSTRAINT UQ_Rule_SpecialLagnaFraction UNIQUE (RuleSetId, SpecialLagnaId)
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_SpecialLagnaFraction)
+    INSERT dbo.tbl_Rule_SpecialLagnaFraction
+        (RuleSetId, SpecialLagnaId, AnchorPoint, IncrementBodyPlanetId, FractionBasis, ScaleDegrees,
+         NormalizationMethod, MethodCode, CalculationNarrative, SourceRefCode, IsActive)
+    SELECT 1, l.Id, 'NATAL_LAGNA', p.Id, 'NAKSHATRA', CONVERT(DECIMAL(9,6), 360.000000), 'MOD_360',
+           'LAGNA_PLUS_NAK_FRACTION',
+           N'Sree Lagna (SL), PVR sec 5.7: (1) find the nakshatra occupied by the Moon; (2) find the fraction of that nakshatra the Moon has traversed; (3) take the same fraction of 360 deg; (4) add it to the natal lagna longitude, mod 360. Example 10: Moon 13 Li 06 in Swati (6 deg 40 min - 20 deg 00 min Li), fraction (6 deg 26 min)/(13 deg 20 min) = 0.4825, x 360 = 173 deg 42 min, + lagna 25 Vi 05 (175 deg 05 min) = 348 deg 47 min = 18 Pi 47.',
+           'SRC_PVR_INTEGRATED', 1
+    FROM dbo.tbl_Dim_SpecialLagnas l
+    JOIN dbo.tbl_Planets p ON p.PlanetName = 'Moon'
+    WHERE l.LagnaCode = 'SREE_LAGNA';
 GO
 
 -- =====================================================================
