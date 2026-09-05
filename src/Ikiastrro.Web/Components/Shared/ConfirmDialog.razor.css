@@ -36,7 +36,7 @@
 .dialog-actions button {
     min-height: 40px;
     padding: 0.5rem 1.1rem;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
@@ -57,7 +57,7 @@
 .btn-confirm {
     background: var(--danger);
     border-color: var(--danger-line);
-    color: #1a0e0c;
+    color: var(--danger-fg);
 }
 
 .btn-confirm:hover:not(:disabled) {

@@ -12,7 +12,7 @@ public class ChartTypeRepository
 
     public IReadOnlyList<ChartTypeRow> GetAll()
     {
-        const string sql = "SELECT CAST(Id AS INT) AS Id, Code, DisplayName, CAST(DivisionalFactor AS INT) AS DivisionalFactor, Category, CAST(DisplayOrder AS INT) AS DisplayOrder FROM dbo.tbl_Dim_ChartType ORDER BY DisplayOrder";
+        const string sql = "SELECT CAST(Id AS INT) AS Id, Code, DisplayName, CAST(DivisionalFactor AS INT) AS DivisionalFactor, Category, CAST(DisplayOrder AS INT) AS DisplayOrder, Description, ChartShortDescription, CAST(PrimaryLifeAreaId AS INT) AS PrimaryLifeAreaId FROM dbo.tbl_Dim_ChartType ORDER BY DisplayOrder";
         using var connection = _connectionFactory.CreateOpenConnection();
         return connection.Query<ChartTypeRow>(sql).ToList();
     }

@@ -1,0 +1,105 @@
+/* Reads --tmpl-* custom properties from the page's own .page-scoped wrapper (SouthIndianTemplate.razor.css)
+   — CSS custom-property inheritance follows the real DOM tree, not Blazor's per-component CSS-isolation
+   scope, same cross-scope reasoning SouthIndianGrid.razor.css documents for --paper/--ink.
+
+   Font sizes and the chart's max-width were bumped up across this file (2026-09-05 legibility pass,
+   then bumped further + switched to clamp()-based fluid sizing in the 2026-09-05 responsive/size
+   follow-up, then bumped substantially again in the same day's "very big" pass — rammyps's call:
+   the whole card reads better zoomed in this large, not just less-cramped) — cells grew to give the
+   bigger text (and the Dg(±N) dignity score) room without wrapping, and every size now scales
+   continuously with viewport width instead of jumping at a single breakpoint. */
+
+* { box-sizing: border-box; }
+
+.tmpl-chart {
+    width: 100%;
+    max-width: 1760px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 0;
+    background: var(--tmpl-paper);
+    border: 2px solid var(--tmpl-border-strong);
+}
+
+.tcell {
+    background: var(--tmpl-paper);
+    border: 1px solid var(--tmpl-line);
+    padding: clamp(12px, 1.4vw, 20px) clamp(13px, 1.6vw, 22px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    min-height: clamp(190px, 22vw, 260px);
+    position: relative;
+}
+.tcell.center { background: var(--tmpl-paper); padding: 0; align-items: stretch; justify-content: flex-start; }
+.tcell.asc { box-shadow: inset 0 0 0 3px var(--tmpl-orange); }
+
+.thead {
+    font-size: clamp(18px, 0.8rem + 0.6vw, 22px);
+    font-weight: 700;
+    color: var(--tmpl-thead-fg);
+    background: var(--tmpl-thead-bg);
+    border: 1px solid var(--tmpl-line);
+    text-align: center;
+    margin: clamp(-12px, -1.4vw, -20px) clamp(-13px, -1.6vw, -22px) 3px;
+    padding: 4px 0;
+}
+/* Ras(L) only — its own dark-orange banner, distinct from Hor(L)'s shared maroon one above.
+   Light theme only (rammyps's call, 2026-09-05): dark theme leaves --tmpl-rashi-highlight equal
+   to --tmpl-thead-bg, so Ras(L)/Hor(L) stay identical there. */
+.thead-rashi { background: var(--tmpl-rashi-highlight); }
+
+.tpoints { display: flex; flex-wrap: wrap; gap: 6px; }
+.tpoint {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: clamp(16px, 0.7rem + 0.5vw, 19px); font-weight: 600; color: var(--tmpl-ink);
+    border: 1px solid var(--tmpl-line); border-radius: 2px; padding: 2px 6px;
+}
+.tpoint b { font-size: inherit; font-weight: 700; }
+.tpoint b.lagna { color: var(--tmpl-lagna-text); }
+.tpoint b.moon { color: var(--tmpl-moon-text); }
+
+.tsign {
+    font-size: clamp(21px, 1rem + 0.9vw, 27px); font-weight: 700; color: var(--tmpl-ink);
+    display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+}
+/* Per-cell house-number badges (2026-09-05, rammyps's call) — house counted from the Sun and
+   from the Moon, next to the sign name. Two colors/backgrounds so the axes read apart at a
+   glance, the same idea tokens.css's SouthIndianGrid house-number badges already use for
+   Lagna/Moon (see D1TemplateGrid.razor's own doc comment for why this template uses Sun instead
+   of Lagna as the first axis — Lagna's house count already has its own row above, per point). */
+.thousenums { display: inline-flex; gap: 4px; }
+.thouse-num {
+    font-size: clamp(12px, 0.5rem + 0.4vw, 15px); font-weight: 700;
+    border-radius: 3px; padding: 1px 6px; line-height: 1.5; min-width: 1.4em; text-align: center;
+}
+.thouse-num.from-sun { color: var(--tmpl-housesun-fg); background: var(--tmpl-housesun-bg); }
+.thouse-num.from-moon { color: var(--tmpl-housemoon-fg); background: var(--tmpl-housemoon-bg); }
+.tasc {
+    align-self: flex-start;
+    font-size: clamp(16px, 0.7rem + 0.4vw, 19px); font-weight: 700; letter-spacing: 0.05em;
+    color: var(--tmpl-orange-fg); background: var(--tmpl-orange);
+    padding: 2px 8px; border-radius: 2px;
+}
+
+.tplanets { display: flex; flex-direction: column; gap: 4px; }
+.tplanet { font-size: clamp(19px, 0.85rem + 0.9vw, 25px); font-weight: 600; color: var(--tmpl-ink); }
+/* Planet identity color (--tmpl-planet-<key>, set inline per glyph) — only the glyph itself is
+   colored, degrees/retrograde-parens/combust stay in --tmpl-ink so the color reads as identity,
+   not a mood/emphasis signal (same restraint PlanetChip.razor already documents). */
+.pglyph { font-weight: 700; }
+
+/* Dg(+N)/Dg(-N) dignity score (2026-09-05) — muted relative to the degree/combust text ahead of
+   it, same "annotation, not part of the glyph itself" treatment SouthIndianGrid's own direction
+   suffix uses. */
+.tdignity { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); font-weight: 600; color: var(--tmpl-ink-soft); }
+
+.tupagraha { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); color: var(--tmpl-ink-soft); }
+
+.tasp { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); color: var(--tmpl-ink-soft); margin-top: auto; border-top: 1px dashed var(--tmpl-line); padding-top: 4px; }
+
+@media (max-width: 480px) {
+    .tcell { min-height: 150px; }
+}

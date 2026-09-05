@@ -1,6 +1,6 @@
 .seg { display: inline-flex; border: 1px solid var(--paper-line); border-radius: .4rem; overflow: hidden; }
 .seg-item {
-    padding: .3rem .8rem; font-size: 13px; text-decoration: none;
+    padding: .3rem .8rem; font-size: 15px; text-decoration: none;
     color: var(--ink-soft); background: var(--paper-raised);
 }
 .seg-item + .seg-item { border-left: 1px solid var(--paper-line); }

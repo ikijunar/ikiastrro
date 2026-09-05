@@ -13,7 +13,7 @@ p { color: var(--ink-soft); max-width: 560px; }
 .home-row:hover { border-color: var(--accent); }
 .home-meta { display: flex; flex-direction: column; gap: .15rem; }
 .home-meta b { color: var(--ink); }
-.home-meta span { color: var(--ink-soft); font-size: 13px; }
+.home-meta span { color: var(--ink-soft); font-size: 15px; }
 .btn-add {
     margin-top: 1.25rem; padding: .5rem .9rem; background: var(--accent); color: var(--nav-btn-fg);
     border: 0; border-radius: .4rem; font: inherit; font-weight: 600; cursor: pointer;

@@ -13,11 +13,7 @@
     <table class="bcp-methods">
         <thead><tr><th>Chart</th><th>Varga method</th></tr></thead>
         <tbody>
-            @foreach (var kv in Charts.OrderBy(k =>
-            {
-                var i = VargaBundles.RailOrder.ToList().IndexOf(k.Key);
-                return i < 0 ? int.MaxValue : i;
-            }))
+            @foreach (var kv in Charts.OrderBy(k => RailIndex(k.Key)))
             {
                 <tr><td>@kv.Key</td><td>@(kv.Value.VargaMethod ?? "—")</td></tr>
             }
@@ -29,6 +25,24 @@
     [Parameter, EditorRequired] public BirthDetails Person { get; set; } = null!;
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, LoadedChart> Charts { get; set; }
         = new Dictionary<string, LoadedChart>();
+
+    /// <summary>tbl_Dim_ChartType rows — feeds VargaBundles.RailOrder, computed once per render
+    /// rather than inside the OrderBy comparator (2026-09-05).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<ChartTypeRow> ChartTypes { get; set; }
+        = Array.Empty<ChartTypeRow>();
+
+    /// <summary>tbl_Dim_LifeArea rows (migration 30) — feeds VargaBundles.RailOrder alongside
+    /// <see cref="ChartTypes"/>.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<LifeAreaRow> LifeAreas { get; set; }
+        = Array.Empty<LifeAreaRow>();
+
+    private List<string>? _railOrder;
+    private int RailIndex(string code)
+    {
+        _railOrder ??= VargaBundles.RailOrder(ChartTypes, LifeAreas).ToList();
+        var i = _railOrder.IndexOf(code);
+        return i < 0 ? int.MaxValue : i;
+    }
 
     private LoadedChart? D1 => Charts.GetValueOrDefault("D1");
     private string Ayanamsha() => D1?.AyanamshaDegrees is double d ? DmsFromDegrees(d) : "—";

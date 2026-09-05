@@ -1,0 +1,258 @@
+/*
+ * Two "chart card" palettes for the South Indian chart template, both declared as --tmpl-*
+ * custom properties on this page's own top-level wrapper — D1TemplateGrid.razor.css /
+ * DashaRoundBox.razor.css read them via var(...) despite being separate CSS-isolation scopes,
+ * the same cross-scope trick SouthIndianGrid.razor.css documents for --paper/--ink.
+ *
+ * Dark = the app's own existing dark theme (tokens.css's --paper/--ink/--accent/--planet-* etc.,
+ * the "earlier dark version" this app already had before this template existed) — reused as-is,
+ * not reinvented, via var(--paper) and friends.
+ *
+ * Light = a "temple manuscript" re-tune (2026-09-05, replacing the original cream/black-grid/
+ * bright-orange first draft): warm parchment paper, bronze/umber grid lines instead of stark
+ * black, a deep maroon accent (title border, ascendant glow, ASP/aspect emphasis) in place of the
+ * bright orange, marigold gold for the "current Round" highlight, and deep indigo for the karaka
+ * strip — a paper/ink/accent triad rather than the near-black-on-cream, single-accent look of the
+ * original. Planet identity colors (--tmpl-planet-*) are untouched: they were already re-tuned for
+ * contrast against this same light ground and aren't part of the "which colors get used for chrome"
+ * question this pass addresses.
+ *
+ * Contrast re-tune, 2026-09-05 follow-up: the Ras(L)/Hor(L) header tags and the karaka strip
+ * both read too close to --tmpl-paper in light mode. They now use their own dedicated
+ * --tmpl-thead-bg/--tmpl-thead-fg and --tmpl-karaka-bg/--tmpl-karaka-fg tokens tuned to stand
+ * out — a maroon banner for Ras(L)/Hor(L), a marigold gold panel for the karaka strip. Dark
+ * mode gets an equally bold mapping so both stand out on the app's real dark surface too.
+ *
+ * Toggle: the "🌙 Dark"/"☀ Light" button in the header just flips data-theme on .tmpl-root.
+ */
+.tmpl-root {
+    /* ---- light theme (default) ---- */
+    --tmpl-paper: #f7f1e1;
+    --tmpl-ink: #2a2118;
+    --tmpl-ink-soft: #6b5a41;
+    --tmpl-line: #a3763e;
+    --tmpl-border-strong: #5c3a1e;
+
+    --tmpl-orange: #8c2f39;
+    --tmpl-orange-fg: #fbeee7;
+
+    --tmpl-gold: #c9932b;
+    --tmpl-gold-ink: #2a2118;
+
+    /* Ras(L)'s own dark-orange banner (2026-09-05, rammyps's call) — light theme only; see
+       --tmpl-thead-bg below for the maroon banner Hor(L) keeps in both themes. */
+    --tmpl-rashi-highlight: #b5560f;
+
+    /* Ras(L)/Hor(L) header tags — the same bold maroon as the title border/ascendant highlight,
+       so the tag reads as a clear banner instead of blending into the cell's own paper background. */
+    --tmpl-thead-bg: var(--tmpl-orange);
+    --tmpl-thead-fg: var(--tmpl-orange-fg);
+
+    /* Karaka ("Planet Sign") strip — marigold gold panel, dark ink text. A dedicated pair, not
+       an alias of --tmpl-gold/--tmpl-gold-ink, so the Round-highlight gold and this panel's gold
+       can be retuned independently even though they start at a related hue. */
+    --tmpl-karaka-bg: #e2b03f;
+    --tmpl-karaka-fg: #2a2118;
+
+    --tmpl-badge-bg: #2a2118;
+    --tmpl-badge-fg: #f6ecd6;
+
+    /* House-from-Lagna / house-from-Moon text colors for D1TemplateGrid's point-triplet row —
+       a dedicated pair (not reusing --tmpl-gold/--tmpl-navy) because those two roles don't both
+       need to stay dark-on-light or light-on-dark together the way this text-on-cell-background
+       role does; conflating them made the Moon number unreadable in dark mode (2026-09-05 fix). */
+    --tmpl-lagna-text: #8c2f39;
+    --tmpl-moon-text: #1f3a5f;
+
+    /* Per-cell house-number badge pair, next to each sign name (2026-09-05, rammyps's call) — from
+       the Sun (copper, matches --tmpl-planet-sun) and from the Moon (gold, matches tokens.css's
+       app-wide --house-moon), so the two axes read as distinct at a glance the same way
+       tokens.css's SouthIndianGrid Lagna/Moon badges already do. */
+    --tmpl-housesun-bg: #a8531a;
+    --tmpl-housesun-fg: #fbeee7;
+    --tmpl-housemoon-bg: #c9932b;
+    --tmpl-housemoon-fg: #2a2118;
+
+    /* Planet identity colors, re-tuned for ~4.5:1+ contrast against --tmpl-paper above — same hue
+       family as tokens.css's --planet-* (dark-surface-tuned), just darkened/desaturated for a
+       light ground. Sun/Mars/Mercury/Venus/Saturn/Ketu darken their hue; Moon/Rahu (silver/smoke
+       grey identities) become a dark slate instead of trying to force a pale grey to read on
+       cream; Jupiter's gold becomes a dark mustard since pure yellow-on-cream has near-zero
+       contrast either direction. */
+    --tmpl-planet-sun: #a8531a;
+    --tmpl-planet-moon: #5b5f6b;
+    --tmpl-planet-mars: #a3271e;
+    --tmpl-planet-mercury: #2c7a3d;
+    --tmpl-planet-jupiter: #8a6a00;
+    --tmpl-planet-venus: #a13e78;
+    --tmpl-planet-saturn: #2c4f9e;
+    --tmpl-planet-rahu: #55586a;
+    --tmpl-planet-ketu: #7a4a22;
+
+    background: var(--tmpl-paper);
+    color: var(--tmpl-ink);
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ---- dark theme: this template's own standalone dark alternate ----
+   Used to alias tokens.css's dark palette directly (var(--paper) etc.) since the app was
+   dark-only. tokens.css went light-only app-wide (2026-09-05, rammyps's call) — this block still
+   needs a real dark palette for its own "🌙 Dark" toggle to mean anything, so it now carries its
+   own literal values instead: exactly what tokens.css's dark palette held before that reskin.
+   This is the one deliberate exception to "read tokens via var(...), never hard-code a hex" —
+   there is no app-wide dark token set left to read. */
+.tmpl-root[data-theme='dark'] {
+    --tmpl-paper: #14132a;
+    --tmpl-ink: #ece2cb;
+    --tmpl-ink-soft: #b3a9cf;
+    --tmpl-line: #322f57;
+    --tmpl-border-strong: #c99a4e;
+
+    --tmpl-orange: #e2ad4f;
+    --tmpl-orange-fg: #14132a;
+
+    --tmpl-gold: rgba(226, 173, 79, 0.16);
+    --tmpl-gold-ink: #ece2cb;
+
+    /* Solid gold banner/panel (not the translucent --asc-glow used for the Round highlight) so
+       both emphasis elements stay legible against the app's near-black paper. */
+    --tmpl-thead-bg: #e2ad4f;
+    --tmpl-thead-fg: #14132a;
+
+    /* Ras(L)'s light-mode-only highlight — equal to the shared banner here, so dark theme leaves
+       Ras(L)/Hor(L) identical (rammyps's call, 2026-09-05). */
+    --tmpl-rashi-highlight: #e2ad4f;
+
+    --tmpl-karaka-bg: #e2ad4f;
+    --tmpl-karaka-fg: #14132a;
+
+    --tmpl-badge-bg: #1c1a3a;
+    --tmpl-badge-fg: #ece2cb;
+
+    /* Same two-axis idea SouthIndianGrid's own house-number badges used to use on this same
+       dark surface, before tokens.css went light-only. */
+    --tmpl-lagna-text: #e2ad4f;
+    --tmpl-moon-text: #c7c8d4;
+    --tmpl-housesun-bg: #e08a2e;
+    --tmpl-housesun-fg: #14132a;
+    --tmpl-housemoon-bg: #c8ccd6;
+    --tmpl-housemoon-fg: #14132a;
+
+    /* tokens.css's old dark-surface planet identity colors, before it went light-only. */
+    --tmpl-planet-sun: #e08a2e;
+    --tmpl-planet-moon: #c8ccd6;
+    --tmpl-planet-mars: #d64c42;
+    --tmpl-planet-mercury: #4aa95c;
+    --tmpl-planet-jupiter: #e3c045;
+    --tmpl-planet-venus: #de86b6;
+    --tmpl-planet-saturn: #4f79d8;
+    --tmpl-planet-rahu: #8b8fa0;
+    --tmpl-planet-ketu: #a9713f;
+}
+
+.tmpl-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.tmpl-title h1 {
+    margin: 0;
+    padding: 12px 20px;
+    border: 2px solid var(--tmpl-orange);
+    color: var(--tmpl-orange);
+    font-family: Georgia, 'Iowan Old Style', serif;
+    font-size: clamp(24px, 1.3rem + 1.8vw, 42px);
+    font-weight: 700;
+    line-height: 1.3;
+    flex: 1 1 320px;
+}
+.tmpl-dash { font-weight: 400; }
+
+.tmpl-theme-toggle {
+    flex: none;
+    padding: 9px 16px;
+    font-size: clamp(14px, 0.85rem + 0.3vw, 17px);
+    font-weight: 600;
+    color: var(--tmpl-ink);
+    background: var(--tmpl-paper);
+    border: 2px solid var(--tmpl-border-strong);
+    border-radius: 4px;
+    cursor: pointer;
+}
+.tmpl-theme-toggle:hover { opacity: 0.8; }
+
+.tmpl-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Center cell content, top to bottom: Round-ONE (mostly-completed cycle) then the chart heading
+   and karaka/Planet-Sign strip, both centered in the middle, then Round-TWO/THREE side by side
+   (2026-09-05 restructure — the heading and karaka strip used to sit above all 3 Rounds in a row;
+   now the center cell reads as one vertical stack with its own heading in the middle, matching a
+   South Indian chart's usual convention of naming the chart in its center cell). */
+.center-stack {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.center-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    border-top: 2px solid var(--tmpl-border-strong);
+    border-bottom: 2px solid var(--tmpl-border-strong);
+}
+
+.center-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: clamp(8px, 1.5vw, 16px) 6px;
+    text-align: center;
+    background: var(--tmpl-paper);
+}
+.center-heading-main {
+    font-family: Georgia, 'Iowan Old Style', serif;
+    font-weight: 700;
+    font-size: clamp(22px, 1.1rem + 1.5vw, 36px);
+    letter-spacing: 0.04em;
+    color: var(--tmpl-orange);
+}
+.center-heading-sub {
+    font-size: clamp(14px, 0.7rem + 0.4vw, 18px);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--tmpl-ink-soft);
+}
+
+.karaka-strip { background: var(--tmpl-karaka-bg); color: var(--tmpl-karaka-fg); padding: 12px 4px; }
+.karaka-line { display: flex; justify-content: space-around; gap: 8px; padding: 5px 0; flex-wrap: wrap; }
+.karaka { font-size: clamp(17px, 0.7rem + 0.9vw, 22px); font-weight: 600; white-space: nowrap; }
+.karaka b { font-weight: 700; margin-right: 3px; color: var(--tmpl-karaka-fg); }
+
+/* Round-ONE/TWO/THREE stacked, one below another, below the heading+karaka block (2026-09-05
+   "stacked rows" pass — see DashaRoundBox.razor's doc comment). Full-width rows are trivially
+   equal-width; flex:1 1 0 on a column also divides the center-stack's remaining height evenly
+   across the 3, so they read as the same size top to bottom too. Divided by DashaRoundBox's own
+   top border (was a left border back when these sat side by side as 3 columns). */
+.round-group {
+    display: flex;
+    flex-direction: column;
+}
+.round-group > * { flex: 1 1 0; min-width: 0; }
+
+@media (max-width: 700px) {
+    .tmpl-row { flex-direction: column; align-items: stretch; }
+}

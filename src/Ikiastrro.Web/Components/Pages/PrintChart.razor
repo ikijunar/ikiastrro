@@ -6,6 +6,7 @@
 @inject ChartAspectsRepository ChartAspectsRepo
 @inject ChartConjunctionsRepository ChartConjunctionsRepo
 @inject ChartTypeRepository ChartTypeRepo
+@inject LifeAreaReferenceRepository LifeAreaRepo
 @inject DashaPeriodsRepository DashaPeriodsRepo
 @inject SadeSatiRepository SadeSatiRepo
 @inject GocharaRepository GocharaRepo
@@ -52,7 +53,7 @@ else
         <section class="print-sec">
             <h2>All vargas</h2>
             <div class="print-minis">
-                @foreach (var vc in VargaBundles.RailOrder)
+                @foreach (var vc in VargaBundles.RailOrder(_data.ChartTypes, _lifeAreas))
                 {
                     @if (_data.Charts.TryGetValue(vc, out var lc))
                     {
@@ -101,11 +102,13 @@ else
     private IReadOnlyList<DashaPeriodRecord> _dasha = Array.Empty<DashaPeriodRecord>();
     private IReadOnlyList<SadeSatiPeriod> _sadeSati = Array.Empty<SadeSatiPeriod>();
     private IReadOnlyList<PlanetTransitSnapshot> _gochara = Array.Empty<PlanetTransitSnapshot>();
+    private IReadOnlyList<LifeAreaRow> _lifeAreas = Array.Empty<LifeAreaRow>();
 
     protected override void OnParametersSet()
     {
         _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
             ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_lifeAreas.Count == 0) _lifeAreas = LifeAreaRepo.GetAll();
         if (_data is null || !_data.Charts.ContainsKey("D1")) { _data = null; return; }
         _dasha = DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
         _sadeSati = SadeSatiRepo.GetByBirthDetailId(Id);

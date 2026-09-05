@@ -1,0 +1,181 @@
+@page "/charts/{Id:int}/south-indian-template"
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartTypeRepository ChartTypeRepo
+@inject SadeSatiRepository SadeSatiRepo
+@using Ikiastrro.Web.Components.Workspace
+
+@*
+    Standalone "South Indian chart template" — a dense, single-page D1 card (title bar, an 8-karaka
+    strip, and all 3 chronological Sade-Sati "Round" boxes together in the grid's center cell, plus
+    a richer per-cell content set) built from a reference design, kept separate from the app's
+    existing SouthIndianGrid/Workspace views (2026-09-05; see
+    docs/superpowers/specs/2026-09-05-southindian-chart-template-design.md). Standalone route only
+    for now — no nav link yet.
+
+    All 3 Rounds moved into the center cell together (2026-09-05 follow-up) — they used to flank the
+    grid (ONE left, THREE right) with only Round TWO centered; every Sade-Sati period now reads from
+    one place instead of three.
+
+    Major-size + equal-Rounds pass (2026-09-05, rammyps's call): the whole template scaled up
+    substantially for legibility, and Round ONE/TWO/THREE briefly sat as 3 equal columns in one
+    .round-group row below the heading (previously ONE rendered alone, full-width, above the
+    heading+karaka block, so it never matched TWO/THREE's size). The Ras(L) header tag also gets
+    its own dark-orange highlight, distinct from Hor(L)'s shared maroon banner — light theme only,
+    per that same call; dark theme keeps Ras(L)/Hor(L) identical.
+
+    Stacked-Rounds follow-up (2026-09-05, same day): Round ONE/TWO/THREE now stack one below
+    another instead — 3 equal-width rows in one .round-group column, still below the heading.
+    D1TemplateGrid's cells also gained a per-sign house-number badge pair (from Sun / from Moon),
+    the same "two colored badges" idea SouthIndianGrid already uses for Lagna/Moon.
+*@
+<PageTitle>D1 template — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
+
+@if (_data is null || !_data.Charts.TryGetValue("D1", out var d1))
+{
+    <EmptyState Message="No D1 chart found for this person." />
+}
+else
+{
+    <div class="tmpl-root" data-theme="@(_dark ? "dark" : "light")">
+        <header class="tmpl-title">
+            <h1>
+                @(_data.Person.Name.ToUpperInvariant()) <span class="tmpl-dash">– </span>@(d1.ChartType) CHART
+                @if (!string.IsNullOrWhiteSpace(_chartTypeDescription))
+                {
+                    <span class="tmpl-dash">– </span>@_chartTypeDescription
+                }
+            </h1>
+            <button type="button" class="tmpl-theme-toggle" @onclick="() => _dark = !_dark">@(_dark ? "☀ Light" : "🌙 Dark")</button>
+        </header>
+
+        <div class="tmpl-row">
+            <D1TemplateGrid AscendantSign="@d1.AscendantSign"
+                            SunSign="@SignOf(d1, "Sun")"
+                            MoonSign="@SignOf(d1, "Moon")"
+                            PlanetsBySign="PlanetsBySign(d1)"
+                            PointsBySign="PointsBySign(d1)"
+                            AspectsBySign="ChartViewModel.BuildAspectedByPlain(d1.KeyDetails, d1.Aspects)"
+                            UpagrahasBySign="UpagrahasBySign(d1)">
+                <CenterContent>
+                    <div class="center-stack">
+                        <div class="center-mid">
+                            <div class="center-heading">
+                                <span class="center-heading-main">@d1.SanskritName.ToUpperInvariant()</span>
+                                <span class="center-heading-sub">@d1.ChartType@(string.IsNullOrWhiteSpace(_chartShortDescription) ? "" : $" · {_chartShortDescription}")</span>
+                            </div>
+                            <div class="karaka-strip">
+                                @foreach (var row in KarakaRows(d1))
+                                {
+                                    <div class="karaka-line">
+                                        @foreach (var pair in row)
+                                        {
+                                            <span class="karaka"><b>@pair.Code</b> <span style="color:var(--tmpl-planet-@(pair.Key))">@pair.Glyph</span></span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="round-group">
+                            <DashaRoundBox Label="ONE" Round="RoundAt(0)" BirthDate="_birthDate" />
+                            <DashaRoundBox Label="TWO" Round="RoundAt(1)" BirthDate="_birthDate" />
+                            <DashaRoundBox Label="THREE" Round="RoundAt(2)" BirthDate="_birthDate" />
+                        </div>
+                    </div>
+                </CenterContent>
+            </D1TemplateGrid>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private WorkspaceData? _data;
+    private DateTime _birthDate;
+    private IReadOnlyList<SadeSatiRounds.Round> _rounds = Array.Empty<SadeSatiRounds.Round>();
+
+    /// <summary>tbl_Dim_ChartType.Description for whichever chart is loaded (D1 today) — drives the
+    /// dynamic page heading instead of the hardcoded "Personality, Expression, Logic" string this
+    /// used to carry. Null (heading falls back to just "<Name> – <Code> CHART") until a chart type
+    /// other than D1 gets a Description seeded (see migration 22).</summary>
+    private string? _chartTypeDescription;
+
+    /// <summary>tbl_Dim_ChartType.ChartShortDescription for whichever chart is loaded (D1 today) — a
+    /// short "Primary Domain" tag (e.g. "Self / Overall Life"), distinct from
+    /// <see cref="_chartTypeDescription"/>. Shown next to the chart code in the grid's center-cell
+    /// heading. Null for any chart type not yet given one (see migrations 23/24).</summary>
+    private string? _chartShortDescription;
+
+    /// <summary>Manual light/dark toggle (2026-09-05) — defaults to light (the originally-approved
+    /// design). Dark reuses the app's real tokens.css palette; light is that palette's paper/ink
+    /// (and planet-color) role-inverse — see SouthIndianTemplate.razor.css.</summary>
+    private bool _dark;
+
+    protected override void OnParametersSet()
+    {
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
+            ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_data is null || !_data.Charts.ContainsKey("D1")) { _data = null; return; }
+
+        _birthDate = _data.Person.DateOfBirth.ToDateTime(_data.Person.EffectiveTimeOfBirth);
+        _rounds = SadeSatiRounds.BuildRounds(SadeSatiRepo.GetByBirthDetailId(Id), _birthDate, DateTime.Now);
+        var chartType = ChartTypeRepo.GetAll()
+            .FirstOrDefault(t => string.Equals(t.Code, _data.Charts["D1"].ChartType, StringComparison.OrdinalIgnoreCase));
+        _chartTypeDescription = chartType?.Description;
+        _chartShortDescription = chartType?.ChartShortDescription;
+    }
+
+    private SadeSatiRounds.Round? RoundAt(int i) => i < _rounds.Count ? _rounds[i] : null;
+
+    /// <summary>The sign a named graha sits in — feeds D1TemplateGrid's SunSign/MoonSign
+    /// parameters (2026-09-05, per-cell house-number badges).</summary>
+    private static string SignOf(LoadedChart lc, string planet) =>
+        lc.Grahas.First(k => k.Planet == planet).Sign;
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<TemplatePlanetLine>> PlanetsBySign(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant").GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TemplatePlanetLine>)g.Select(k => new TemplatePlanetLine(
+                ChartViewModel.PlanetGlyph(k.Planet),
+                k.Planet.ToLowerInvariant(),
+                (int)(k.DegreesInSignDecimal ?? 0),
+                k.IsRetrograde ?? false,
+                k.IsCombust ?? false,
+                ChartViewModel.DignityScore(k.DignityStatus))).ToList());
+
+    /// <summary>Ras(L)/Hor(L) row: chara-karaka-bearing grahas + special-lagna points (AL/A2..A12/HL) —
+    /// Gulika/Maandi are excluded here and shown in their own upagraha row instead (below).</summary>
+    private static IReadOnlyDictionary<string, IReadOnlyList<TemplatePointLine>> PointsBySign(LoadedChart lc)
+    {
+        var karakaLines = lc.Grahas.Where(k => k.CharaKaraka is not null)
+            .Select(k => (k.Sign, Line: new TemplatePointLine(k.CharaKaraka!, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
+        var lagnaLines = lc.SpecialPoints.Where(k => k.Planet is not ("Gulika" or "Maandi"))
+            .Select(k => (k.Sign, Line: new TemplatePointLine(k.Planet, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
+
+        return karakaLines.Concat(lagnaLines).GroupBy(x => x.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TemplatePointLine>)g.Select(x => x.Line).ToList());
+    }
+
+    /// <summary>Only Gulika ("Gk") + Maandi ("Md") today — the other 9 classical upagrahas have no
+    /// calculator in this codebase yet (out of scope for this template, see the design spec).</summary>
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> UpagrahasBySign(LoadedChart lc) =>
+        lc.SpecialPoints.Where(k => k.Planet is "Gulika" or "Maandi")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet == "Gulika" ? "Gk" : "Md").ToList());
+
+    /// <summary>The 8 Jaimini chara karakas as 2 rows of 4, in CharaKaraka rank order (AK strongest
+    /// .. DK weakest) — matches the reference image's "AK Ra AmK Ve BK Sa MK Ju" / "PiK Su PK Mo GK
+    /// Ma DK Me" layout.</summary>
+    private static IReadOnlyList<IReadOnlyList<(string Code, string Glyph, string Key)>> KarakaRows(LoadedChart lc)
+    {
+        var byCode = lc.Grahas.Where(k => k.CharaKaraka is not null)
+            .ToDictionary(k => k.CharaKaraka!, k => (Glyph: ChartViewModel.PlanetGlyph(k.Planet), Key: k.Planet.ToLowerInvariant()));
+        var order = new[] { "AK", "AmK", "BK", "MK", "PiK", "PK", "GK", "DK" };
+        var pairs = order.Where(byCode.ContainsKey).Select(c => (Code: c, Glyph: byCode[c].Glyph, Key: byCode[c].Key)).ToList();
+        return new IReadOnlyList<(string, string, string)>[] { pairs.Take(4).ToList(), pairs.Skip(4).Take(4).ToList() };
+    }
+}

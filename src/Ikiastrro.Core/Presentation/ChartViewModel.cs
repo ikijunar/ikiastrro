@@ -118,7 +118,21 @@ public static class ChartViewModel
 
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildAspectedByGlyphs(
         IReadOnlyList<ChartKeyDetail> keyDetails,
-        IReadOnlyList<ChartAspect> aspects)
+        IReadOnlyList<ChartAspect> aspects) =>
+        BuildAspectedBy(keyDetails, aspects, FormatAspectChip);
+
+    /// <summary>Plain "Ju-3" style label (no "(a)", the house number always shown, unlike
+    /// FormatAspectChip's default-7th omission) for the South Indian chart template's "ASP:" row —
+    /// same per-sign grouping as BuildAspectedByGlyphs above, just a different label shape.</summary>
+    public static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildAspectedByPlain(
+        IReadOnlyList<ChartKeyDetail> keyDetails,
+        IReadOnlyList<ChartAspect> aspects) =>
+        BuildAspectedBy(keyDetails, aspects, FormatAspectPlain);
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildAspectedBy(
+        IReadOnlyList<ChartKeyDetail> keyDetails,
+        IReadOnlyList<ChartAspect> aspects,
+        Func<string, string, string> formatChip)
     {
         var signByPlanet = keyDetails.ToDictionary(k => k.Planet, k => k.Sign);
 
@@ -131,9 +145,12 @@ public static class ChartViewModel
                 g => (IReadOnlyList<string>)g
                     .GroupBy(a => a.AspectingPlanet) // same aspecting planet can hit >1 target in this sign — one chip each, not one per target
                     .OrderBy(pg => Array.IndexOf(PlanetOrder, pg.Key))
-                    .Select(pg => FormatAspectChip(pg.Key, pg.First().AspectType)) // same source offset -> same AspectType for every target in the group
+                    .Select(pg => formatChip(pg.Key, pg.First().AspectType)) // same source offset -> same AspectType for every target in the group
                     .ToList());
     }
+
+    private static string FormatAspectPlain(string aspectingPlanet, string aspectType) =>
+        $"{PlanetGlyph(aspectingPlanet)}-{new string(aspectType.TakeWhile(char.IsDigit).ToArray())}";
 
     /// <summary>"(D)"/"(R)" direction label — null (the Ascendant; no retrograde concept) renders as "—".</summary>
     public static string DirectionLabel(bool? isRetrograde) => isRetrograde switch
@@ -158,6 +175,24 @@ public static class ChartViewModel
         "Great Enemy" => "great-enemy",
         "Debilitated" => "debilitated",
         _ => "neutral"
+    };
+
+    /// <summary>Maps a classical DignityStatus label to a signed strength score on a symmetric,
+    /// evenly-spaced -4..+4 scale across the same 9 tiers DignityToken collapses to 7 CSS tokens —
+    /// Exalted at the top (+4) down to Debilitated at the bottom (-4). Backs the "Dg(+N)" label
+    /// D1TemplateGrid prints after each planet's combust icon (rammyps's decision, 2026-09-05).</summary>
+    public static int DignityScore(string? dignityStatus) => dignityStatus switch
+    {
+        "Exalted" => 4,
+        "Moolatrikona" => 3,
+        "Own Sign" => 2,
+        "Great Friend" => 1,
+        "Friend" => 0,
+        "Neutral" => -1,
+        "Enemy" => -2,
+        "Great Enemy" => -3,
+        "Debilitated" => -4,
+        _ => 0
     };
 
     /// <summary>Short glyph for the South Indian grid cells (2 letters, Sanskrit-flavored for Jupiter/Rahu/Ketu per this project's convention).</summary>

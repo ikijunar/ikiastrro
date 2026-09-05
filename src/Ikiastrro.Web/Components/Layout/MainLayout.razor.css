@@ -10,7 +10,7 @@
 .site-nav .brand {
     font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
     color: var(--ink-faint);
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 0.04em;
     margin-right: auto;
     display: flex;
@@ -20,7 +20,7 @@
 
 .site-nav .brand-name {
     color: var(--accent);
-    font-size: 18px;
+    font-size: 21px;
     letter-spacing: 0.06em;
 }
 

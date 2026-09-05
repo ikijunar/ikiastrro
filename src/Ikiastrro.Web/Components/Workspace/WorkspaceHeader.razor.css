@@ -1,7 +1,7 @@
 .ws-header { border-bottom: 1px solid var(--paper-line); padding-bottom: .75rem; margin-bottom: 1rem; }
 .ws-header h1 { margin: 0 0 .2rem; }
 .ws-sub { margin: 0 0 .4rem; color: var(--ink-soft); }
-.ws-karakas { margin: 0 0 .5rem; display: flex; flex-wrap: wrap; gap: .5rem; font-size: 13px; }
+.ws-karakas { margin: 0 0 .5rem; display: flex; flex-wrap: wrap; gap: .5rem; font-size: 15px; }
 .ws-karakas-lbl { color: var(--muted-text); }
 .ws-karaka { color: var(--ink-soft); }
 .ws-karaka b { color: var(--ink); }

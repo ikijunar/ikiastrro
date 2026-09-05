@@ -2,4 +2,4 @@
 .gp th, .gp td { padding: .35rem .6rem; border-bottom: 1px solid var(--paper-line); text-align: left; white-space: nowrap; }
 .gp th { color: var(--muted-text); font-weight: 600; }
 .gp .mono { font-variant-numeric: tabular-nums; }
-.gp-dir { color: var(--muted-text); font-size: 12px; }
+.gp-dir { color: var(--muted-text); font-size: 14px; }

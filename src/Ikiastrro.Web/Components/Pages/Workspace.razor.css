@@ -9,7 +9,7 @@
 .ws-print {
     color: var(--accent);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .ws-actions {
@@ -43,7 +43,7 @@
     align-self: flex-end;
     color: var(--accent);
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .ws-rail {
@@ -65,7 +65,7 @@
 .ws-ppt-head h2 {
     font-family: Georgia, 'Iowan Old Style', serif;
     font-weight: 400;
-    font-size: 18px;
+    font-size: 21px;
     margin: 0;
 }
 
@@ -76,7 +76,7 @@
 .ws-dasha-head h3 {
     font-family: Georgia, serif;
     font-weight: 400;
-    font-size: 15px;
+    font-size: 18px;
     color: var(--accent);
     margin: 0;
 }
@@ -84,7 +84,7 @@
 .ws-dasha-head a {
     color: var(--accent);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 @media (max-width: 900px) {

@@ -6,6 +6,7 @@
 @inject ChartAspectsRepository ChartAspectsRepo
 @inject ChartConjunctionsRepository ChartConjunctionsRepo
 @inject ChartTypeRepository ChartTypeRepo
+@inject LifeAreaReferenceRepository LifeAreaRepo
 @using Ikiastrro.Web.Components.Workspace
 
 <PageTitle>@Code — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
@@ -78,18 +79,26 @@ else
     private bool Tech => TechParam == "1";
     private bool ShowAspects => AspectsParam == "1";
 
-    protected override void OnParametersSet() =>
+    protected override void OnParametersSet()
+    {
         _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo,
             ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
+        if (_lifeAreas.Count == 0) _lifeAreas = LifeAreaRepo.GetAll();
+    }
+
+    /// <summary>tbl_Dim_LifeArea rows — static reference data, loaded once (2026-09-05, feeds
+    /// VargaBundles.RailOrder for Prev/Next).</summary>
+    private IReadOnlyList<LifeAreaRow> _lifeAreas = Array.Empty<LifeAreaRow>();
 
     private string? Prev()
     {
-        var i = VargaBundles.RailOrder.ToList().IndexOf(Code);
-        return i > 0 ? VargaBundles.RailOrder[i - 1] : null;
+        var order = VargaBundles.RailOrder(_data?.ChartTypes ?? Array.Empty<ChartTypeRow>(), _lifeAreas).ToList();
+        var i = order.IndexOf(Code);
+        return i > 0 ? order[i - 1] : null;
     }
     private string? Next()
     {
-        var order = VargaBundles.RailOrder.ToList();
+        var order = VargaBundles.RailOrder(_data?.ChartTypes ?? Array.Empty<ChartTypeRow>(), _lifeAreas).ToList();
         var i = order.IndexOf(Code);
         return i >= 0 && i < order.Count - 1 ? order[i + 1] : null;
     }

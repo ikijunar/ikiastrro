@@ -6,9 +6,11 @@
 @inject ChartAspectsRepository ChartAspectsRepo
 @inject ChartConjunctionsRepository ChartConjunctionsRepo
 @inject ChartTypeRepository ChartTypeRepo
+@inject LifeAreaReferenceRepository LifeAreaRepo
 @inject DashaPeriodsRepository DashaPeriodsRepo
 @inject BirthDetailDeletionService DeletionService
 @inject NavigationManager Nav
+@using Ikiastrro.Core.Models
 @using Ikiastrro.Web.Components.Workspace
 
 <PageTitle>@(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
@@ -31,7 +33,7 @@ else
                      OnToggleComputation="v => _compOpen = v" />
     @if (_compOpen)
     {
-        <div class="ws-comp"><BirthComputationPanel Person="_data.Person" Charts="_data.Charts" /></div>
+        <div class="ws-comp"><BirthComputationPanel Person="_data.Person" Charts="_data.Charts" ChartTypes="_data.ChartTypes" LifeAreas="_lifeAreas" /></div>
     }
 
     <div class="ws-cols">
@@ -67,7 +69,7 @@ else
         </div>
 
         <div class="ws-rail">
-            <VargaRail PersonId="Id" Charts="_data.Charts" />
+            <VargaRail PersonId="Id" Charts="_data.Charts" ChartTypes="_data.ChartTypes" LifeAreas="_lifeAreas" />
         </div>
     </div>
 
@@ -114,6 +116,10 @@ else
     private bool ShowAspects => AspectsParam == "1";
     private LoadedChart D1 => _data!.Charts["D1"];
 
+    /// <summary>tbl_Dim_LifeArea rows — static reference data, loaded once (2026-09-05, feeds
+    /// VargaRail/BirthComputationPanel's life-area grouping).</summary>
+    private IReadOnlyList<LifeAreaRow> _lifeAreas = Array.Empty<LifeAreaRow>();
+
     protected override void OnParametersSet()
     {
         _confirmingDelete = false;
@@ -121,6 +127,7 @@ else
             ChartHouseLordsRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartTypeRepo.GetAll());
         if (_data is not null && !_data.Charts.ContainsKey("D1")) _data = null; // no D1 → treat as not found
         _dashaRoots = _data is null ? Array.Empty<DashaPeriodRecord>() : DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
+        if (_lifeAreas.Count == 0) _lifeAreas = LifeAreaRepo.GetAll();
     }
 
     private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;

@@ -1,6 +1,6 @@
 .wheel { width: 100%; max-width: 320px; height: auto; }
 .wheel-outer, .wheel-inner { fill: var(--paper-raised); stroke: var(--wheel-ring); stroke-width: 1; }
 .wheel-spoke { stroke: var(--wheel-ring); stroke-width: 1; }
-.wheel-signlabel { fill: var(--wheel-tick); font-size: 9px; }
-.wheel-marker { font-size: 12px; font-weight: 700; }
+.wheel-signlabel { fill: var(--wheel-tick); font-size: 11px; }
+.wheel-marker { font-size: 14px; font-weight: 700; }
 .wheel-chord { stroke-width: 1; opacity: .35; }

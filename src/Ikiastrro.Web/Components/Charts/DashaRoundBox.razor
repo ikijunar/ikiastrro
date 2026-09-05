@@ -1,0 +1,39 @@
+@*
+    One Sade-Sati "Round" panel — that chronological cycle's Sade Sati / Kantaka Shani / Ashtama
+    Shani windows (SadeSatiRounds.Round, Ikiastrro.Core.Presentation). All 3 chronological Rounds
+    now render together, side by side, inside the grid's center cell as one .round-group row
+    (rammyps's call, 2026-09-05: Round ONE/THREE used to flank the grid and only Round TWO sat
+    centered — moved together so every Sade-Sati period reads from one place instead of three).
+    Whichever Round SadeSatiRounds.BuildRounds flagged nearest today (Round.ShowDates) renders real
+    calendar dates and gets its title highlighted gold; the other two render age ranges in the
+    plain title style.
+
+    "Same size" follow-up (2026-09-05, rammyps's call): ONE/TWO/THREE were briefly 3 equal columns
+    in one .round-group row; a further follow-up the same day stacked them instead — one below
+    another, 3 equal-width rows in a .round-group column (ONE used to render alone, full-width,
+    above the heading before either of those passes).
+*@
+<div class="rbox">
+    <div class="rtitle @(Round?.ShowDates == true ? "current" : "")">Round - @Label</div>
+    @if (Round is null)
+    {
+        <div class="rline muted">Not yet reached</div>
+    }
+    else
+    {
+        @if (Round.SadeSati is { } ss) { <div class="rline"><span class="rname">SS@(Round.Index)</span> <span class="rval">@Value(ss)</span></div> }
+        @if (Round.Kantaka is { } kan) { <div class="rline"><span class="rname">KAN</span> <span class="rval">@Value(kan)</span></div> }
+        @if (Round.Ashtama is { } ash) { <div class="rline"><span class="rname">ASH</span> <span class="rval">@Value(ash)</span></div> }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public SadeSatiRounds.Round? Round { get; set; }
+    [Parameter, EditorRequired] public DateTime BirthDate { get; set; }
+
+    /// <summary>"Age 1–9" for the two non-nearest Rounds, "Nov 2011 – Jan 2020" for the one
+    /// SadeSatiRounds.BuildRounds flagged nearest today.</summary>
+    private string Value(SadeSatiRounds.Window w) =>
+        Round!.ShowDates ? SadeSatiRounds.FormatLine(w, BirthDate, true) : $"Age {SadeSatiRounds.FormatLine(w, BirthDate, false)}";
+}

@@ -8,7 +8,7 @@
 .mini-cell { background: var(--cell-fill); padding: 2px 3px; overflow: hidden; }
 .mini-cell.lagna { background: var(--lagna-fill); }
 .mini-center { background: var(--paper); }
-.mini-sign { font-size: 8px; color: var(--sign-text); }
+.mini-sign { font-size: 9px; color: var(--sign-text); }
 .mini-planets { display: flex; flex-wrap: wrap; gap: 1px; }
-.mini-g { font-size: 9px; color: var(--ink); font-weight: 600; }
-.mini-caption { font-size: 11px; color: var(--muted-text); text-align: center; }
+.mini-g { font-size: 11px; color: var(--ink); font-weight: 600; }
+.mini-caption { font-size: 13px; color: var(--muted-text); text-align: center; }

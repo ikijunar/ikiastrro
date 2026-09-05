@@ -9,7 +9,7 @@ table.ppt {
     border-collapse: collapse;
     width: 100%;
     min-width: 780px;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 table.ppt th, table.ppt td {
@@ -20,7 +20,7 @@ table.ppt th, table.ppt td {
 }
 
 table.ppt th {
-    font-size: 10px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.11em;
     color: var(--ink-faint);
@@ -47,7 +47,7 @@ table.ppt .mono {
 table.ppt .asp {
     color: var(--aspect-faint);
     white-space: normal;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 table.ppt .muted {

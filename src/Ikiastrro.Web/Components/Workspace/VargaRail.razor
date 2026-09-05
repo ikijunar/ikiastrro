@@ -1,7 +1,11 @@
-@* The 4 classical strength bundles + Extra vargas, each a Disclosure of MiniGrid tiles.
-   A varga appears once, in its smallest bundle. Missing chart -> EmptyState tile. *@
+@using Ikiastrro.Core.Models
+@* The 5 DB-sourced life-area categories (tbl_Dim_ChartType.PrimaryLifeAreaId ->
+   tbl_Dim_LifeArea.WorkspaceGroupCode, migration 30), each a Disclosure of MiniGrid tiles —
+   replaces the old hardcoded classical Shadvarga/Saptavarga/Dasavarga/Shodasavarga/Extra-vargas
+   bundles (rammyps's call, 2026-09-05; see VargaBundles.cs). A varga appears once, in its one
+   life area. Missing chart -> EmptyState tile. *@
 <div class="rail">
-    @foreach (var (title, codes) in VargaBundles.Groups)
+    @foreach (var (title, codes) in VargaBundles.Groups(ChartTypes, LifeAreas))
     {
         <Disclosure Title="@title" Open="@(_open.Contains(title))" OnToggle="v => SetOpen(title, v)">
             <div class="rail-tiles">
@@ -11,7 +15,7 @@
                     {
                         <MiniGrid PlanetsBySign="GlyphsBySign(lc)" LagnaSign="@lc.AscendantSign"
                                   Href="@(code == "D1" ? $"/charts/{PersonId}" : $"/charts/{PersonId}/varga/{code}")"
-                                  Caption="@Caption(code, lc)" />
+                                  Caption="@Caption(code)" />
                     }
                     else
                     {
@@ -30,17 +34,43 @@
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, LoadedChart> Charts { get; set; }
         = new Dictionary<string, LoadedChart>();
 
-    private readonly HashSet<string> _open = new() { "Shadvarga (6)" };
+    /// <summary>tbl_Dim_ChartType rows — drives the life-area grouping (VargaBundles.Groups) and
+    /// each tile's caption, alongside <see cref="LifeAreas"/>.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<ChartTypeRow> ChartTypes { get; set; }
+        = Array.Empty<ChartTypeRow>();
+
+    /// <summary>tbl_Dim_LifeArea rows (migration 30) — resolves each chart type's
+    /// PrimaryLifeAreaId to a WorkspaceGroupCode (grouping) and AreaName (caption).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<LifeAreaRow> LifeAreas { get; set; }
+        = Array.Empty<LifeAreaRow>();
+
+    /// <summary>Open by default: whichever group D1 falls into ("Personality &amp; Health" as
+    /// seeded by migration 30) — was "Shadvarga (6)" back when groups were the classical bundles.</summary>
+    private HashSet<string> _open = new();
     private void SetOpen(string title, bool open) { if (open) _open.Add(title); else _open.Remove(title); }
+
+    protected override void OnParametersSet()
+    {
+        if (_open.Count == 0)
+        {
+            var d1Group = VargaBundles.Groups(ChartTypes, LifeAreas).FirstOrDefault(g => g.Codes.Contains("D1"));
+            if (d1Group.Title is not null) _open.Add(d1Group.Title);
+        }
+    }
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> GlyphsBySign(LoadedChart lc) =>
         lc.Grahas.Where(k => k.Planet != "Ascendant")
             .GroupBy(k => k.Sign)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
 
-    private static string Caption(string code, LoadedChart lc)
+    /// <summary>"D9 · Marriage and spouse" — code + the life area's AreaName (the DB-sourced
+    /// PVR Table 11 phrase), falling back to just the code when a chart type has no
+    /// PrimaryLifeAreaId (shouldn't happen — migration 30 mapped all 21).</summary>
+    private string Caption(string code)
     {
-        var method = lc.VargaMethod is { Length: > 0 } m ? $" · {m[0]}" : "";
-        return code == "D1" ? $"{code} · hero" : $"{code}{method}";
+        var areaName = ChartTypes.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase)) is { PrimaryLifeAreaId: int id }
+            ? LifeAreas.FirstOrDefault(a => a.Id == id)?.AreaName
+            : null;
+        return string.IsNullOrWhiteSpace(areaName) ? code : $"{code} · {areaName}";
     }
 }

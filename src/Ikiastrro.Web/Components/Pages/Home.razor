@@ -1,7 +1,5 @@
 @page "/"
 @inject BirthDetailsRepository BirthDetailsRepo
-@inject ChartResultsRepository ChartResultsRepo
-@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
 @inject NavigationManager Nav
 
 <PageTitle>ikiastrro</PageTitle>
@@ -17,14 +15,13 @@ else
 {
     <input class="home-search" type="search" placeholder="Filter by name…" @bind="_filter" @bind:event="oninput" />
     <div class="home-rows">
-        @foreach (var row in Filtered())
+        @foreach (var person in Filtered())
         {
-            <a class="home-row" href="@($"/charts/{row.Person.Id}")">
-                <MiniGrid PlanetsBySign="row.Glyphs" LagnaSign="@row.Lagna" />
+            <a class="home-row" href="@($"/charts/{person.Id}")">
                 <span class="home-meta">
-                    <b>@row.Person.Name</b>
-                    <span>@row.Person.DateOfBirth.ToString("d MMM yyyy") · @row.Person.EffectiveTimeOfBirth.ToString("h:mm tt")</span>
-                    <span>@row.Person.PlaceCity, @row.Person.PlaceCountry</span>
+                    <b>@person.Name</b>
+                    <span>@person.DateOfBirth.ToString("d MMM yyyy") · @person.EffectiveTimeOfBirth.ToString("h:mm tt")</span>
+                    <span>@person.PlaceCity, @person.PlaceCountry</span>
                 </span>
             </a>
         }
@@ -34,30 +31,16 @@ else
 <button class="btn-add" type="button" @onclick='() => Nav.NavigateTo("/add")'>＋ Add someone</button>
 
 @code {
-    private record Row(BirthDetails Person, string Lagna, IReadOnlyDictionary<string, IReadOnlyList<string>> Glyphs);
-
-    private readonly List<Row> _people = new();
+    // No chart thumbnail in this list any more (2026-09-05, rammyps's call: "no need to have the
+    // chart component to the left of the Name") — so this page no longer needs a D1 lookup per
+    // person, just BirthDetailsRepo.GetAll(). ChartResultsRepo/ChartKeyDetailsRepo (only ever used
+    // to build that thumbnail) are dropped along with it.
+    private List<BirthDetails> _people = new();
     private string _filter = "";
 
-    protected override void OnInitialized()
-    {
-        foreach (var p in BirthDetailsRepo.GetAll())
-        {
-            var d1 = ChartResultsRepo.GetByBirthDetailId(p.Id).FirstOrDefault(r => r.ChartType == "D1");
-            if (d1 is null) { _people.Add(new Row(p, "", Empty)); continue; }
-            var kd = ChartKeyDetailsRepo.GetByChartResultId(d1.Id);
-            var lagna = kd.FirstOrDefault(k => k.Planet == "Ascendant")?.Sign ?? "";
-            var glyphs = kd.Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant")
-                .GroupBy(k => k.Sign)
-                .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet).ToList());
-            _people.Add(new Row(p, lagna, glyphs));
-        }
-    }
+    protected override void OnInitialized() => _people = BirthDetailsRepo.GetAll().ToList();
 
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> Empty =
-        new Dictionary<string, IReadOnlyList<string>>();
-
-    private IEnumerable<Row> Filtered() => string.IsNullOrWhiteSpace(_filter)
+    private IEnumerable<BirthDetails> Filtered() => string.IsNullOrWhiteSpace(_filter)
         ? _people
-        : _people.Where(r => r.Person.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase));
+        : _people.Where(p => p.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase));
 }

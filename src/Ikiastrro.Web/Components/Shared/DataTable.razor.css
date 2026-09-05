@@ -7,4 +7,4 @@
     cursor: pointer; padding: .4rem .6rem; display: inline-flex; gap: .3rem; align-items: center;
 }
 .dt-sort.on { color: var(--ink); }
-.dt-arrow { color: var(--accent); font-size: 10px; }
+.dt-arrow { color: var(--accent); font-size: 12px; }

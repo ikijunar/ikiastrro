@@ -17,7 +17,7 @@
     background: var(--paper-raised);
     border-radius: 4px;
     padding: 1px 5px;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 header {
@@ -31,7 +31,7 @@ header h1 {
 
 .section-note {
     color: var(--ink-soft);
-    font-size: 14px;
+    font-size: 17px;
     margin: 0 0 14px;
 }
 

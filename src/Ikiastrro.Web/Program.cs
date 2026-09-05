@@ -27,6 +27,7 @@ builder.Services.AddScoped<PlanetSignTransitEventsRepository>();
 builder.Services.AddScoped<GocharaRepository>();
 builder.Services.AddScoped<RuleSetRepository>();
 builder.Services.AddScoped<ChartTypeRepository>();
+builder.Services.AddScoped<LifeAreaReferenceRepository>();
 builder.Services.AddScoped<VargaSchemeRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();
 builder.Services.AddScoped<ChartGenerationService>();

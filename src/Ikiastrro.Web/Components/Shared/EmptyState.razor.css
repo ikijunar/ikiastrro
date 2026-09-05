@@ -3,9 +3,9 @@
     padding: 1.5rem 1rem; text-align: center; color: var(--muted-text);
     border: 1px dashed var(--paper-line); border-radius: .4rem;
 }
-.empty-icon { font-size: 1.6rem; color: var(--ink-faint); }
+.empty-icon { font-size: 1.89rem; color: var(--ink-faint); }
 .empty-msg { margin: 0; }
 .empty-cli code {
     background: var(--paper); padding: 2px 6px; border-radius: 3px;
-    font-size: 11px; color: var(--ink-soft);
+    font-size: 13px; color: var(--ink-soft);
 }

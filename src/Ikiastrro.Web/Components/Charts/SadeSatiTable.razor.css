@@ -1,7 +1,7 @@
 table.sst {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 table.sst th, table.sst td {
@@ -12,7 +12,7 @@ table.sst th, table.sst td {
 }
 
 table.sst th {
-    font-size: 10px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--ink-faint);
@@ -27,13 +27,13 @@ table.sst .mono {
 }
 
 table.sst .sub {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--ink-faint);
     margin-top: 1px;
 }
 
 table.sst tr.now td {
-    background: rgba(226, 173, 79, 0.10);
+    background: var(--asc-glow);
 }
 
 table.sst .muted {

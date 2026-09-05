@@ -41,7 +41,7 @@ p {
 .field ::deep select {
     width: 100%;
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: 19px;
     padding: 0.5rem;
     background: var(--paper-raised);
     border: 1px solid var(--paper-line);
@@ -51,13 +51,13 @@ p {
 
 .field-error {
     color: var(--danger);
-    font-size: 0.9rem;
+    font-size: 1.06rem;
 }
 
 .alert-warning {
     width: 100%;
     box-sizing: border-box;
-    background: rgba(226, 173, 79, 0.12);
+    background: var(--asc-glow);
     border: 1px solid var(--accent-line);
     color: var(--ink);
     padding: 0.75rem 1rem;
@@ -69,12 +69,12 @@ p {
 .btn {
     padding: 0.6rem 1.25rem;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 19px;
     min-height: 44px;
     background: var(--accent);
     border: 1px solid var(--accent-line);
     border-radius: 6px;
-    color: #1a1408;
+    color: var(--accent-fg);
     cursor: pointer;
 }
 

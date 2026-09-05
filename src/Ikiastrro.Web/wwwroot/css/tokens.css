@@ -12,112 +12,107 @@
  * This keeps every page visually consistent with the parchment/serif chart look (the one
  * piece of this app that got real design attention).
  *
- * Dark-only (2026-08-28, rammyps's explicit call): this app used to switch these tokens via
- * `prefers-color-scheme: dark`, with the light values as the :root default. Both the light
- * value set and the media query are gone — the values below (what used to be the dark-mode
- * override) are now the only theme, everywhere, regardless of OS preference.
+ * Light-only, "temple manuscript" palette (2026-09-05, rammyps's explicit call): this app was
+ * dark-only from 2026-08-28 (see git history) — that palette is gone. Every token below is the
+ * South Indian chart template's V3 light palette (SouthIndianTemplate.razor.css's --tmpl-*
+ * custom properties), lifted onto these app-wide names so every existing page/component re-themes
+ * automatically through the same var(...) indirection, with no per-component reskin needed. Same
+ * "light-only, no toggle, no media query" shape as the dark-only rule it replaces — this is the
+ * one and only theme now, regardless of OS preference.
  */
 
 :root {
-    --paper: #14132a;
-    --paper-raised: #1c1a3a;
-    --paper-line: #322f57;
-    --ink: #ece2cb;
-    --ink-soft: #b3a9cf;
-    --ink-faint: #7c7398;
-    --accent: #e2ad4f;
-    --accent-line: #c99a4e;
-    --asc-glow: rgba(226, 173, 79, 0.16);
-    --shadow: rgba(0, 0, 0, 0.35);
+    --paper: #f7f1e1;
+    --paper-raised: #efe4cb;
+    --paper-line: #a3763e;
+    --ink: #2a2118;
+    --ink-soft: #6b5a41;
+    --ink-faint: #8d7c62;
+    --accent: #8c2f39;
+    --accent-fg: #fbeee7;
+    --accent-line: #5c3a1e;
+    --asc-glow: rgba(140, 47, 57, 0.14);
+    --shadow: rgba(90, 70, 40, 0.22);
 
     /* House-number badges on every South Indian grid cell (SouthIndianGrid): the house counted
-       from the Lagna reads gold, the house counted from the natal Moon reads silver — two axes,
-       two colours, so a glance separates them. --house-lagna deliberately equals --accent. */
-    --house-lagna: #e2ad4f;
-    --house-lagna-fg: #1a1730;
-    --house-moon: #c7c8d4;
-    --house-moon-fg: #1a1730;
+       from the Lagna reads maroon (= --accent), the house counted from the natal Moon reads gold —
+       two axes, two colours, so a glance separates them. */
+    --house-lagna: #8c2f39;
+    --house-lagna-fg: #fbeee7;
+    --house-moon: #c9932b;
+    --house-moon-fg: #2a2118;
 
     /* Destructive-action color (Delete buttons/icons, the confirm dialog) — one shared token
-       instead of the one-off #b00020 that used to live in Home.razor's inline <style> (2026-08-28
-       UI cleanup). Matches --dignity-debilitated so "danger" reads consistently across the app. */
-    --danger: #f0564a;
-    --danger-line: #c23f35;
+       instead of a one-off hex. A deeper, more saturated red than --accent's maroon so "danger"
+       still reads as its own signal next to the app's own accent. */
+    --danger: #b3261e;
+    --danger-fg: #fbeee7;
+    --danger-line: #7d1a15;
 
-    --dignity-exalted: #5fbd72;
-    --dignity-good: #7cc98a;
-    --dignity-friend: #9bc296;
-    --dignity-neutral: #9a90b8;
-    --dignity-enemy: #d98f5e;
-    --dignity-great-enemy: #e07268;
-    --dignity-debilitated: #f0564a;
+    --dignity-exalted: #2f7a42;
+    --dignity-good: #4c8a52;
+    --dignity-friend: #6b8f5e;
+    --dignity-neutral: #8a7f5e;
+    --dignity-enemy: #a5652f;
+    --dignity-great-enemy: #b3402c;
+    --dignity-debilitated: #96271e;
 
     /* Faint "ghost" chip color for the South Indian grid's Aspected-by strip (e.g. "Ma(a)-3")
        — deliberately its own token, not --ink-faint (used elsewhere for labels/captions), so an
-       aspecting-but-not-present planet reads as visually distinct from ordinary muted text.
-       Tuned for legibility against --paper on this dark-only palette (2026-08-28). */
-    --aspect-faint: #6a6488;
+       aspecting-but-not-present planet reads as visually distinct from ordinary muted text. */
+    --aspect-faint: #b0a488;
 
     /* Vimshottari Dasha lord categorical palette (9 slots — one per graha), for the life-in-weeks
        grid (Components/Pages/LifeWeeks.razor). Ordered to match the FIXED classical Mahadasha
        cycle (Ketu -> Venus -> Sun -> Moon -> Mars -> Rahu -> Jupiter -> Saturn -> Mercury -> wraps
-       to Ketu) — that fixed order is exactly which two lords can ever sit visually adjacent in the
-       grid, so this is what got validated (dataviz skill's validate_palette.js, adjacent pairs +
-       the Mercury/Ketu wrap pair checked separately), not an arbitrary 9-hue set. 8 slots are the
-       skill's own documented categorical hues, reordered; --dasha-mercury is a 9th hue (ochre/brown)
-       added because Vimshottari has a fixed 9-lord domain that can't fold a member into "Other" the
-       way the skill's default 8-hue guidance assumes. All-pairs CVD separation does NOT clear past
-       3 hues at 9 slots (expected per the skill — see palette.md) — color here is a scan aid only;
-       every rendering also carries a text label (legend + hover tooltip), never color alone. */
-    --dasha-ketu: #9085e9;
-    --dasha-venus: #d95926;
-    --dasha-sun: #199e70;
-    --dasha-moon: #c98500;
-    --dasha-mars: #d55181;
-    --dasha-rahu: #008300;
-    --dasha-jupiter: #e66767;
-    --dasha-saturn: #3987e5;
-    --dasha-mercury: #c17f2e;
+       to Ketu) — same hue family as the prior dark-surface set, darkened/desaturated for this
+       parchment ground (same "color is a scan aid only, always paired with a text label" caveat
+       as before — re-validating 9-slot CVD separation is out of scope for this reskin). */
+    --dasha-ketu: #6a5cc9;
+    --dasha-venus: #b8481f;
+    --dasha-sun: #15764f;
+    --dasha-moon: #9c6800;
+    --dasha-mars: #a83f66;
+    --dasha-rahu: #2e6b2e;
+    --dasha-jupiter: #b34747;
+    --dasha-saturn: #2c5fb8;
+    --dasha-mercury: #8c5e1e;
 
-    /* Planet identity palette (9 grahas), for PlanetChip / CombinedD1D9Grid. Traditional-leaning
-       hues: Sun copper, Moon silver, Mars red, Mercury green, Jupiter gold, Venus rose, Saturn
-       blue, Rahu smoke-grey, Ketu earth-brown. Each -bg is 20% of the solid mixed into --paper.
-       Same caveat as --dasha-* above: a fixed 9-member domain can't fold to "Other", so the
-       dataviz skill's validate_palette.js FAILs the 9-slot battery (dark surface #14132a):
-       lightness band, chroma floor (Moon/Rahu read grey — deliberate, those planets ARE grey),
-       CVD/normal-vision separation on the closest pairs (worst all-pairs ΔE ~10 normal). This is
-       expected past 3 categorical hues — color here is a scan aid ONLY. Identity is always
-       carried by the 2-letter glyph ("Su", "Mo", …) plus PlanetChip's border-left accent, never
-       colour alone. Contrast vs surface PASSes for all 9 (>= 3:1). */
-    --planet-sun:     #e08a2e;  --planet-sun-bg:     #3d2b2b;
-    --planet-moon:    #c8ccd6;  --planet-moon-bg:    #38384c;
-    --planet-mars:    #d64c42;  --planet-mars-bg:    #3b1e2f;
-    --planet-mercury: #4aa95c;  --planet-mercury-bg: #1f3134;
-    --planet-jupiter: #e3c045;  --planet-jupiter-bg: #3d362f;
-    --planet-venus:   #de86b6;  --planet-venus-bg:   #3c2a46;
-    --planet-saturn:  #4f79d8;  --planet-saturn-bg:  #20274d;
-    --planet-rahu:    #8b8fa0;  --planet-rahu-bg:    #2c2c42;
-    --planet-ketu:    #a9713f;  --planet-ketu-bg:    #32262e;
+    /* Planet identity palette (9 grahas), for PlanetChip / CombinedD1D9Grid — the same values the
+       chart template's --tmpl-planet-* already uses, already tuned for ~4.5:1+ contrast against
+       this exact parchment paper. Each -bg is a pale tint of the solid mixed into --paper.
+       Traditional-leaning hues: Sun copper, Moon slate, Mars red, Mercury green, Jupiter mustard,
+       Venus rose, Saturn blue, Rahu smoke-grey, Ketu earth-brown. Identity is always carried by the
+       2-letter glyph ("Su", "Mo", …) plus PlanetChip's border-left accent, never colour alone. */
+    --planet-sun:     #a8531a;  --planet-sun-bg:     #f3e3d2;
+    --planet-moon:    #5b5f6b;  --planet-moon-bg:    #e7e7ec;
+    --planet-mars:    #a3271e;  --planet-mars-bg:    #f4ddd8;
+    --planet-mercury: #2c7a3d;  --planet-mercury-bg: #ddeee0;
+    --planet-jupiter: #8a6a00;  --planet-jupiter-bg: #f1e8c8;
+    --planet-venus:   #a13e78;  --planet-venus-bg:   #f2e0eb;
+    --planet-saturn:  #2c4f9e;  --planet-saturn-bg:  #dde4f4;
+    --planet-rahu:    #55586a;  --planet-rahu-bg:    #e6e6ec;
+    --planet-ketu:    #7a4a22;  --planet-ketu-bg:    #ece0d2;
 
     /* Nav pills (MainLayout) — filled Home / Saved Charts buttons. --nav-btn is --accent. */
-    --nav-btn: #e2ad4f;
-    --nav-btn-fg: #1a1730;
+    --nav-btn: #8c2f39;
+    --nav-btn-fg: #fbeee7;
 
     /* Semantic South-Indian grid tokens — so SouthIndianGrid/MiniGrid stop reading --paper/--ink
        directly (DESIGN.md: name the role, not the raw surface). Values equal the existing
        surfaces today; kept separate so the grid can be retuned without touching page chrome. */
-    --cell-fill: #1c1a3a;      /* = --paper-raised */
-    --lagna-fill: #262247;     /* --paper-raised lifted ~6% toward --accent for the Lagna cell */
-    --grid-stroke: #322f57;    /* = --paper-line */
-    --sign-text: #b3a9cf;      /* = --ink-soft */
-    --muted-text: #7c7398;     /* = --ink-faint */
+    --cell-fill: #efe4cb;      /* = --paper-raised */
+    --lagna-fill: #f1ddd9;     /* --paper-raised lifted toward --accent for the Lagna cell */
+    --grid-stroke: #a3763e;    /* = --paper-line */
+    --sign-text: #6b5a41;      /* = --ink-soft */
+    --muted-text: #8d7c62;     /* = --ink-faint */
 
     /* VargottamaStrip lit state — a graha whose Dn sign equals its D1 sign. Alias of --dignity-good. */
-    --vargottama: #7cc98a;
+    --vargottama: #4c8a52;
 
     /* PolarWheel ring + degree ticks. */
-    --wheel-ring: #322f57;     /* = --paper-line */
-    --wheel-tick: #7c7398;     /* = --ink-faint */
+    --wheel-ring: #a3763e;     /* = --paper-line */
+    --wheel-tick: #8d7c62;     /* = --ink-faint */
 }
 
 /* App-wide base look, shared by every page (scoped-CSS components keep their own copies of

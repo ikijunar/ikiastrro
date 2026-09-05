@@ -1,0 +1,35 @@
+/* Reads --tmpl-* from the page's wrapper — see D1TemplateGrid.razor.css's cross-scope note.
+   Round-ONE/TWO/THREE stack one below another in the page's own .round-group flex column
+   (SouthIndianTemplate.razor.css, 2026-09-05 "stacked rows" pass — was a 3-across row before;
+   full-width stacked rows are trivially equal-width, and flex:1 there divides the remaining
+   height evenly too). Text bumped up alongside the rest of the template (2026-09-05 legibility
+   pass, then switched to clamp()-based fluid sizing in the responsive/size follow-up, then bumped
+   again in the same day's "very big" pass). */
+
+.rbox {
+    display: flex;
+    flex-direction: column;
+    background: var(--tmpl-paper);
+    min-width: 0;
+}
+.rbox + .rbox { border-top: 2px solid var(--tmpl-border-strong); }
+
+.rtitle {
+    font-size: clamp(17px, 0.75rem + 0.6vw, 21px);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: clamp(7px, 1vw, 10px) 8px;
+    border-bottom: 2px solid var(--tmpl-border-strong);
+    color: var(--tmpl-ink);
+}
+/* The one Round nearest today (real calendar dates, not an age range) — gold so it reads as
+   "you are here" among three otherwise-identical panels. */
+.rtitle.current { background: var(--tmpl-gold); color: var(--tmpl-gold-ink); }
+
+.rline { display: flex; justify-content: space-between; gap: 10px; font-size: clamp(16px, 0.65rem + 0.55vw, 20px); color: var(--tmpl-ink); border-bottom: 1px solid var(--tmpl-line); padding: clamp(4px, 0.7vw, 8px) 11px; }
+.rline.muted { opacity: 0.7; justify-content: center; border-bottom: none; }
+
+.rname { font-weight: 700; }
+.rval { white-space: nowrap; }

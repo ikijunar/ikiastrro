@@ -1,7 +1,7 @@
 .vgs { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-.vgs-lbl { color: var(--muted-text); font-size: 13px; }
+.vgs-lbl { color: var(--muted-text); font-size: 15px; }
 .vgs-chip {
-    font-size: 12px; font-weight: 600; padding: .1rem .4rem; border-radius: .3rem;
+    font-size: 14px; font-weight: 600; padding: .1rem .4rem; border-radius: .3rem;
     border: 1px solid var(--paper-line); color: var(--ink-faint);
 }
 .vgs-chip.lit { border-color: var(--vargottama); color: var(--ink); background: color-mix(in srgb, var(--vargottama) 18%, transparent); }

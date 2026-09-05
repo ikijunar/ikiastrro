@@ -28,69 +28,16 @@
     [Parameter, EditorRequired] public DateTime BirthDate { get; set; }
     [Parameter] public DateTime AsOf { get; set; } = DateTime.Now;
 
-    private record Window(string Label, string Detail, DateTime Start, DateTime? End);
+    private List<SadeSatiRounds.Window> _windows = new();
 
-    private List<Window> _windows = new();
+    // Grouping/age logic lives in SadeSatiRounds (Core.Presentation) — shared with the South
+    // Indian chart template's "Round" panels (2026-09-05), not duplicated here.
+    protected override void OnParametersSet() =>
+        _windows = SadeSatiRounds.BuildWindows(Periods, BirthDate).ToList();
 
-    protected override void OnParametersSet()
-    {
-        // The transit log starts in 1930, so tvf_Chart_SadeSatiPeriods returns windows from
-        // decades before birth — keep only those that reach into this person's lifetime.
-        bool InLife((DateTime start, DateTime? end, string sign) g) => (g.end ?? DateTime.MaxValue) >= BirthDate;
-
-        var sadeSati = GroupContiguous(Periods
-                .Where(p => p.PeriodType.StartsWith("SadeSati_Dhaiya") && p.StartDateTimeUtc is not null)
-                .OrderBy(p => p.StartDateTimeUtc).ToList())
-            .Where(InLife).ToList();
-
-        _windows = new List<Window>();
-        for (var i = 0; i < sadeSati.Count; i++)
-            _windows.Add(new Window($"Sade Sati {i + 1}", "12th → 2nd from Moon", sadeSati[i].start, sadeSati[i].end));
-
-        foreach (var g in GroupContiguous(Periods.Where(p => p.PeriodType == "KantakaShani" && p.StartDateTimeUtc is not null).OrderBy(p => p.StartDateTimeUtc).ToList()).Where(InLife))
-            _windows.Add(new Window("Kantaka Shani", $"4th from Moon · {g.sign}", g.start, g.end));
-
-        foreach (var g in GroupContiguous(Periods.Where(p => p.PeriodType == "AshtamaShani" && p.StartDateTimeUtc is not null).OrderBy(p => p.StartDateTimeUtc).ToList()).Where(InLife))
-            _windows.Add(new Window("Ashtama Shani", $"8th from Moon · {g.sign}", g.start, g.end));
-
-        _windows = _windows.OrderBy(w => w.Start).ToList();
-    }
-
-    /// <summary>Folds rows separated by ≤ 400 days into one window (retrograde re-entry gaps are months; the gap to the next occurrence is ~decades).</summary>
-    private static IEnumerable<(DateTime start, DateTime? end, string sign)> GroupContiguous(List<SadeSatiPeriod> rows)
-    {
-        if (rows.Count == 0) yield break;
-        var start = rows[0].StartDateTimeUtc!.Value;
-        var end = rows[0].EndDateTimeUtc;
-        var sign = rows[0].SaturnSign;
-
-        for (var i = 1; i < rows.Count; i++)
-        {
-            var r = rows[i];
-            var gapFrom = end ?? start;
-            if ((r.StartDateTimeUtc!.Value - gapFrom).TotalDays > 400)
-            {
-                yield return (start, end, sign);
-                start = r.StartDateTimeUtc.Value;
-                end = r.EndDateTimeUtc;
-                sign = r.SaturnSign;
-            }
-            else if (r.EndDateTimeUtc is null || (end is not null && r.EndDateTimeUtc > end))
-            {
-                end = r.EndDateTimeUtc;
-            }
-        }
-        yield return (start, end, sign);
-    }
-
-    private bool IsActive(Window w) => AsOf >= w.Start && (w.End is null || AsOf <= w.End.Value);
+    private bool IsActive(SadeSatiRounds.Window w) => AsOf >= w.Start && (w.End is null || AsOf <= w.End.Value);
 
     private static string Fmt(DateTime d) => d.ToString("MMM yyyy");
 
-    private string Age(Window w)
-    {
-        var a0 = (int)((w.Start - BirthDate).TotalDays / 365.2425);
-        var a1 = w.End is null ? a0 : (int)((w.End.Value - BirthDate).TotalDays / 365.2425);
-        return a0 == a1 ? a0.ToString() : $"{a0}–{a1}";
-    }
+    private string Age(SadeSatiRounds.Window w) => SadeSatiRounds.FormatAge(BirthDate, w.Start, w.End);
 }

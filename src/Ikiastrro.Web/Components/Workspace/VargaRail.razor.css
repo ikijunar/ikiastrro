@@ -1,3 +1,13 @@
 .rail { display: flex; flex-direction: column; gap: .5rem; }
-.rail-tiles { display: flex; flex-wrap: wrap; gap: .75rem; padding-top: .5rem; }
-.rail-missing { width: 132px; }
+.rail-tiles { display: flex; flex-wrap: wrap; gap: 1rem; padding-top: .5rem; }
+.rail-missing { width: 200px; }
+
+/* Fixed, bigger tile size for this rail only (2026-09-05, rammyps's call: the varga tiles were
+   132px — same size as MiniGrid's other, denser uses in Home/SavedCharts — and too small to read
+   at a glance here). ::deep reaches into MiniGrid's own CSS-isolation scope; see
+   SouthIndianGrid.razor.css's cross-scope note for why this works. Home/SavedCharts keep
+   MiniGrid's own 132px default untouched. */
+.rail-tiles ::deep .mini-chart { width: 200px; height: 200px; }
+.rail-tiles ::deep .mini-sign { font-size: 14px; }
+.rail-tiles ::deep .mini-g { font-size: 15px; }
+.rail-tiles ::deep .mini-caption { font-size: 15px; }

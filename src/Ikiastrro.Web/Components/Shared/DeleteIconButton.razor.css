@@ -15,5 +15,5 @@
 .delete-icon-btn:hover,
 .delete-icon-btn:focus-visible {
     color: var(--danger);
-    background: rgba(240, 86, 74, 0.12);
+    background: rgba(179, 38, 30, 0.12);
 }

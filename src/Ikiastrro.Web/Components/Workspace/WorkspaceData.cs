@@ -22,6 +22,14 @@ public sealed class WorkspaceData
     public required IReadOnlyDictionary<string, LoadedChart> Charts { get; init; }
     public bool HasAnyChart => Charts.Count > 0;
 
+    /// <summary>tbl_Dim_ChartType rows, kept alongside Charts (2026-09-05) so the varga rail can
+    /// group by life-area (PrimaryLifeAreaId -> a separately-loaded LifeAreaRow list ->
+    /// WorkspaceGroupCode) and caption tiles with AreaName — DB-sourced, replacing VargaBundles'
+    /// old hardcoded classical bundles. tbl_Dim_LifeArea itself isn't threaded through here since
+    /// only the rail/prev-next actually need it — those callers load it directly via
+    /// LifeAreaReferenceRepository instead of every WorkspaceData.Load caller carrying it.</summary>
+    public required IReadOnlyList<ChartTypeRow> ChartTypes { get; init; }
+
     public static WorkspaceData? Load(
         int id,
         BirthDetailsRepository people,
@@ -69,6 +77,6 @@ public sealed class WorkspaceData
                 h.AyanamshaDegrees, h.SiderealTimeHours, h.EngineVersion);
         }
 
-        return new WorkspaceData { Person = person, Charts = charts };
+        return new WorkspaceData { Person = person, Charts = charts, ChartTypes = chartTypes };
     }
 }
