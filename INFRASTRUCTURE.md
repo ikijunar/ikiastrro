@@ -1,7 +1,19 @@
+---
+last_updated: 2026-09-04
+---
+
 # ikiastrro — Infrastructure
 
 How this project is configured and deployed across environments. Companion to
 `db/README.md` (migration-script contract) and `scripts/iis-setup.ps1` (IIS host).
+
+**Instance name note (2026-09-04):** this dev machine's SQL Server is a **named** instance,
+`SQLSERVER2025` — there is no default/unnamed instance, so a bare `localhost` server name does
+not resolve. Every `localhost` below means `localhost\SQLSERVER2025` in practice; that's the
+actual value in `SqlConnectionFactory`'s default and `appsettings.json`. Found and fixed
+2026-09-04 after the SQL Server install was found reinstalled (version regressed to RTM,
+instance renamed from the previously-documented `SQL2025`) and the `ikiastrro` database gone —
+rebuilt from `db/ikiastrro.sql`, all `verify-*` checks pass.
 
 ## Environments
 
@@ -30,18 +42,18 @@ How this project is configured and deployed across environments. Companion to
 
 | Layer | Holds | Committed? |
 |---|---|---|
-| `src/Ikiastrro.Web/appsettings.json` | dev default — `ConnectionStrings:Ikiastrro = Server=localhost;Database=ikiastrro;Integrated Security=True;TrustServerCertificate=True;` | yes |
+| `src/Ikiastrro.Web/appsettings.json` | dev default — `ConnectionStrings:Ikiastrro = Server=localhost\SQLSERVER2025;Database=ikiastrro;Integrated Security=True;TrustServerCertificate=True;` | yes |
 | `src/Ikiastrro.Web/appsettings.{Environment}.json` | non-secret per-env overrides (server host) | yes — **no credentials** |
 | env var `ConnectionStrings__Ikiastrro` (Web) / `IKIASTRRO_CONNECTION` (CLI) | stage/uat/prod full connection string incl. credentials | **no** — set on the host / Key Vault / user-secrets |
 | CLI `--db <name>` | one-off catalog targeting (scratch checks, a stage smoke) | n/a |
 
 `ASPNETCORE_ENVIRONMENT` / `DOTNET_ENVIRONMENT` selects the `appsettings.{Environment}.json`
 layer for the Web app. `SqlConnectionFactory.Create` precedence: explicit string →
-`IKIASTRRO_CONNECTION` → `Server=localhost;Database={--db | IKIASTRRO_DB | ikiastrro};…`.
+`IKIASTRRO_CONNECTION` → `Server=localhost\SQLSERVER2025;Database={--db | IKIASTRRO_DB | ikiastrro};…`.
 
 ## Migration application
 
-- **dev:** `sqlcmd -S localhost -E -b -i db/ikiastrro.sql` for a fresh install; the numbered
+- **dev:** `sqlcmd -S "localhost\SQLSERVER2025" -E -b -i db/ikiastrro.sql` for a fresh install; the numbered
   `db/NN_*.sql` for an incremental change. A from-empty rebuild check (`db/ikiastrro.sql`
   against a throwaway `ikiastrro_scratch`):
   - **go-sqlcmd** (v1.x, `winget install sqlcmd`) honours the override —

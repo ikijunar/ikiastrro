@@ -14,7 +14,9 @@ public class SqlConnectionFactory
     /// Resolves the connection string, in order:
     /// 1. <paramref name="connectionString"/> if given (Web passes ConnectionStrings:Ikiastrro);
     /// 2. env var <c>IKIASTRRO_CONNECTION</c> (stage/uat/prod);
-    /// 3. a Windows-Auth string against <c>localhost</c>, catalog =
+    /// 3. a Windows-Auth string against <c>localhost\SQLSERVER2025</c> (the named instance on
+    ///    this dev machine — there is no default/unnamed instance, so a bare "localhost" server
+    ///    name does not resolve; see INFRASTRUCTURE.md), catalog =
     ///    <paramref name="dbNameOverride"/> (CLI <c>--db</c>) ?? env <c>IKIASTRRO_DB</c> ?? <c>ikiastrro</c>.
     /// No environment token ever appears in a schema object name — only the catalog / server
     /// differs per environment (see INFRASTRUCTURE.md).
@@ -32,10 +34,10 @@ public class SqlConnectionFactory
                  ?? Environment.GetEnvironmentVariable("IKIASTRRO_DB")
                  ?? DefaultDb;
         return new SqlConnectionFactory(
-            $"Server=localhost;Database={db};Integrated Security=True;TrustServerCertificate=True;");
+            $"Server=localhost\\SQLSERVER2025;Database={db};Integrated Security=True;TrustServerCertificate=True;");
     }
 
-    /// <summary>Back-compat: the historical default (Windows Auth, localhost, <c>ikiastrro</c>).</summary>
+    /// <summary>Back-compat: the historical default (Windows Auth, localhost\SQLSERVER2025, <c>ikiastrro</c>).</summary>
     public static SqlConnectionFactory CreateDefault() => Create();
 
     public SqlConnection CreateOpenConnection()

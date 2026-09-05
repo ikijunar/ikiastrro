@@ -1,7 +1,17 @@
+---
+last_updated: 2026-09-04
+---
+
 # Database scripts
 
 `db/ikiastrro.sql` is the **from-scratch baseline** (SMO script-out of the full schema
 + reference/seed data). A fresh machine runs only this file.
+
+**Instance name:** this dev machine's SQL Server has no default/unnamed instance — the
+named instance is `SQLSERVER2025`. `-S localhost` alone will not connect; use
+`-S "localhost\SQLSERVER2025"` (matches `SqlConnectionFactory`'s default — see
+`INFRASTRUCTURE.md`). Confirmed 2026-09-04 after the instance was found reinstalled
+(version regressed RTM, `ikiastrro` DB gone) — rebuilt from this baseline the same day.
 
 ## Migrations
 
@@ -9,7 +19,7 @@ Incremental changes are numbered scripts `NN_<verb>_<noun>.sql`, applied in asce
 `NN` order against an existing `ikiastrro` database:
 
 ```
-sqlcmd -S localhost -E -d ikiastrro -i db/NN_<name>.sql
+sqlcmd -S "localhost\SQLSERVER2025" -E -d ikiastrro -i db/NN_<name>.sql
 ```
 
 Rules:
@@ -24,6 +34,17 @@ Rules:
   stays the last object in the baseline (it reads tables defined above it).
 
 The historical `db/00_*.sql` one-offs predate this ledger and are not recorded in it.
+
+## Inspection scripts
+
+`db/checks/` holds **read-only, un-numbered** SQL for eyeballing table contents at
+different levels (orientation → **chart inputs** → rule layer → per-chart facts →
+conjunction deep-dive → sub-planet layer → row-count rollup). Level 0i enumerates
+every table whose values feed chart generation: `tbl_BirthDetails` is the only
+user-entered input; the rest are engine config (`tbl_Rule_Sets`), the chart-type /
+varga catalogue, and static reference / rule masters. These are not migrations, are
+never recorded in `dbo.SchemaMigrations`, and write nothing. Run them interactively
+in SSMS / ADS.
 
 ## Verifying a migrated / rebuilt DB
 
