@@ -1,0 +1,119 @@
+name: 🎯 Feature / opportunity
+description: Propose a new calculation, technique, chart type, or product capability. Feeds the Opportunity Backlog + ICE scoring.
+title: "[FEAT] <short name>"
+labels: ["type: feature", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for anything that would become a `FEAT-<AREA>-<NN>` row in [`PRODUCT.md`](../blob/master/PRODUCT.md).
+        Prioritisation model is **ICE** (Impact / Confidence / Ease), theme-based Now / Next / Later — see
+        [`ROADMAP.md`](../blob/master/ROADMAP.md) and `methods_prodmag.md`.
+
+  - type: input
+    id: opportunity
+    attributes:
+      label: Opportunity
+      description: One line — what capability, and for whom.
+      placeholder: "Selectable ayanamsa (not fixed to Lahiri)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Engine area
+      description: Closest existing `FEAT-<AREA>` bucket in PRODUCT.md (pick NEW-AREA if none fit).
+      options:
+        - ASTRO_CALC
+        - POSITION
+        - VARGA
+        - HOUSE
+        - NAKSHATRA
+        - DIGNITY
+        - RELATIONSHIP
+        - KARAKA
+        - AVASTHA
+        - DISPOSITOR
+        - STRENGTH
+        - DASHA
+        - YOGA
+        - TRANSIT
+        - ENGINE
+        - TERM
+        - INFRA
+        - DOCS
+        - NEW-AREA (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / job it serves
+      description: The Job-to-be-Done this addresses. "When [situation], I want to [motivation], so I can [outcome]."
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / source
+      description: Why this matters now — competitive benchmark, a known limitation, a manual-verification finding, or a classical source. Cite the doc / `SRC_*` key.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (v1 cut) and explicit non-goals
+      description: What's in for a first slice, and what is deliberately deferred.
+      value: |
+        **In (v1):**
+        -
+
+        **Out of scope (deferred):**
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Classical / technical decisions to resolve before coding
+      description: Ambiguities this project has repeatedly hit — ayanamsa list, mean vs true node, which dasha levels, which cited edition, house-system assumptions.
+    validations:
+      required: false
+
+  - type: input
+    id: done-when
+    attributes:
+      label: Done when
+      description: Observable, testable condition — ideally naming the `verify-*` script or reference tolerance.
+      placeholder: "verify-ayanamsa passes for all SE_SIDM_* modes; D1 longitudes match JHora to < 1 arcmin"
+    validations:
+      required: true
+
+  - type: textarea
+    id: ice
+    attributes:
+      label: ICE estimate (optional — draft is fine)
+      description: Impact / Confidence / Ease, each 1–10. Score = average. Owner re-scores at triage.
+      value: |
+        - Impact (value if shipped):
+        - Confidence (certainty of that impact + effort estimate):
+        - Ease (inverse of effort):
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: touches
+    attributes:
+      label: Expected footprint
+      description: Which PRODUCT.md dimensions this is likely to move.
+      options:
+        - label: DB (new migration + `dbo.SchemaMigrations` row)
+        - label: Core (engine / pipeline code)
+        - label: Verify (new or extended `verify-*` script)
+        - label: Web (Blazor UI)
+        - label: Docs (reference / spec / citation)

@@ -1,0 +1,72 @@
+name: 🐛 Bug report
+description: Something is broken in the build, CLI, database layer, or web UI (not a calculation-accuracy issue — use "Calculation discrepancy" for those).
+title: "[BUG] <short summary>"
+labels: ["type: bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check [`ARCHITECTURE.md`](../blob/master/ARCHITECTURE.md) "known limitations" first — an intentionally-unimplemented
+        area is a feature request, not a bug.
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options:
+        - Build / solution (`Ikiastrro.slnx`)
+        - Core engine (`Ikiastrro.Core.*`)
+        - Database / migration
+        - CLI / scripts
+        - Web UI (`Ikiastrro.Web`, Blazor)
+        - Verification (`verify-*` script)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output / stack trace
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      value: |
+        - Commit / tag:
+        - Branch:
+        - Environment (dev / stage / uat / prod) + DB name:
+        - .NET SDK version:
+        - OS:
+    validations:
+      required: true
+
+  - type: input
+    id: regression
+    attributes:
+      label: Last known-good commit / tag
+      description: If this used to work.
+    validations:
+      required: false

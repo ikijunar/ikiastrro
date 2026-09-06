@@ -26,6 +26,8 @@ maintained · `superseded` = replaced, kept for history.
 | [`PRODUCT.md`](PRODUCT.md) | Feature catalogue + completion tracker — what the software does and how much of each part is done (STANDARDS §M.3) | 2026-09-02 | living |
 | [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) | Environments, database-naming rule, config & secrets layering, migration policy (STANDARDS §M.1) | 2026-09-02 | living |
 | [`CHANGELOG.md`](CHANGELOG.md) | Per-release change log — a release = a push to `origin/master` tagged `vX.Y.Z`; drafted by `scripts/release.ps1`, grouped by `FEAT-<AREA>-<NN>` | 2026-09-04 | living |
+| [`ROADMAP.md`](ROADMAP.md) | Public Now / Next / Later, theme-based; how ICE priority is decided. Mirrors `PRODUCT.md` state | 2026-09-06 | living |
+| [`.github/`](.github/) | GitHub-native PM templates — issue forms (feature/opportunity, calculation discrepancy, bug, research/sourcing) + PR checklist wired to `PRODUCT.md` ladder | 2026-09-06 | living |
 | [`../ikiastrro.md`](../ikiastrro.md) | Full running build/decision **history**, dated sections, every session's "what changed and why" | 2026-08-24 | living |
 | [`../methods_prodmag.md`](../methods_prodmag.md) | Reusable product-management process (Vision → JTBD → ICE → roadmap) — read before picking the next feature | 2026-08-27 | living |
 | [`../STANDARDS.md`](../STANDARDS.md) | Workspace-wide naming/structure conventions this project follows | — | living |

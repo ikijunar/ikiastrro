@@ -1,0 +1,57 @@
+name: 📚 Research / sourcing task
+description: A calculation or reference table needs a cited source, a resolved convention, or a documented edition before it can be built.
+title: "[RESEARCH] <topic>"
+labels: ["type: research", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tracks the "Research: partial / not started" state that gates a `FEAT-*` row. Citation rules: `STANDARDS.md §M.4`,
+        registry keyed by `SRC_*`.
+
+  - type: input
+    id: feature
+    attributes:
+      label: Blocks feature
+      description: The `FEAT-<AREA>-<NN>` (or proposed name) that can't proceed without this.
+      placeholder: "FEAT-STRENGTH-01 · Ṣaḍbala"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What needs to be resolved
+      description: The specific rule, table, band boundary, orb, or convention in question.
+    validations:
+      required: true
+
+  - type: textarea
+    id: candidates
+    attributes:
+      label: Candidate sources
+      description: Books / editions / implementations considered, and any existing `SRC_*` keys.
+      value: |
+        - Source:
+        - Edition / version:
+        - `SRC_*` key (if registered):
+        - Coverage: full / partial / not in this source
+    validations:
+      required: true
+
+  - type: textarea
+    id: gaps
+    attributes:
+      label: Known gaps / cells to flag
+      description: Values the source genuinely does not give (to be seeded NULL / flagged, not guessed).
+    validations:
+      required: false
+
+  - type: input
+    id: output
+    attributes:
+      label: Output artifact
+      description: Where the resolved research will land.
+      placeholder: "docs/reference-<slug>.md + migration NNN"
+    validations:
+      required: true

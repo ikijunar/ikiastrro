@@ -1,0 +1,105 @@
+name: 🔬 Calculation discrepancy
+description: A computed value disagrees with a reference implementation, a classical source, or a hand calculation.
+title: "[CALC] <what disagrees> — <area>"
+labels: ["type: calc-discrepancy", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the project's core failure mode. Give enough that the result can be **reproduced and independently checked** —
+        see the contribution rules in [`README.md`](../blob/master/README.md#contributing).
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Engine area
+      options:
+        - ASTRO_CALC
+        - POSITION
+        - VARGA
+        - HOUSE
+        - NAKSHATRA
+        - DIGNITY
+        - RELATIONSHIP
+        - KARAKA
+        - AVASTHA
+        - DASHA
+        - YOGA
+        - TRANSIT
+        - TERM
+        - Other / unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: birth-data
+    attributes:
+      label: Input (birth data + place)
+      description: Date, time, timezone/offset, latitude, longitude. Use a shareable example, not private data.
+      placeholder: |
+        1981-03-14  09:42:00  +05:30
+        Chennai  13.0827 N  80.2707 E
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Anything that changes the answer.
+      value: |
+        - Ayanamsa:
+        - House system:
+        - Node type (mean / true):
+        - Divisional method (if varga):
+        - Environment (dev / stage / uat / prod) + DB name:
+        - Commit / tag:
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected vs. computed
+      description: The two values side by side, with units and precision.
+      value: |
+        | Quantity | ikiastrro | Reference | Delta |
+        |---|---|---|---|
+        |  |  |  |  |
+    validations:
+      required: true
+
+  - type: input
+    id: reference
+    attributes:
+      label: Reference authority
+      description: What you're comparing against, and its version/edition.
+      placeholder: "Jagannatha Hora 8.0 / AstroSage / Prokerala / BPHS (SRC_BPHS_27, <edition>) / hand calc"
+    validations:
+      required: true
+
+  - type: input
+    id: tolerance
+    attributes:
+      label: Tolerance
+      description: How close would count as "matches"? Is this inside or outside it?
+      placeholder: "< 1 arcmin for longitudes; exact for sign/nakshatra assignment"
+    validations:
+      required: true
+
+  - type: input
+    id: verify-script
+    attributes:
+      label: Related verify script
+      description: Which `verify-*` / `precheck-*` covers this (or "none yet").
+      placeholder: "verify-vargas"
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Analysis / suspected cause
+      description: Optional — rounding, convention mismatch, wrong rule row, ephemeris flag, etc.
+    validations:
+      required: false

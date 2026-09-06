@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion / research question
+    url: https://github.com/ikijunar/ikiastrro/discussions
+    about: Open-ended design, classical-rule interpretation, or "is this in scope" questions — not a tracked work item yet.
+  - name: 📐 Architecture & known limitations
+    url: https://github.com/ikijunar/ikiastrro/blob/master/ARCHITECTURE.md
+    about: Read current implementation status and documented limits before filing a bug.
+  - name: 🗺️ Roadmap (Now / Next / Later)
+    url: https://github.com/ikijunar/ikiastrro/blob/master/ROADMAP.md
+    about: Where a proposed feature would sit and how priority is decided (ICE).
