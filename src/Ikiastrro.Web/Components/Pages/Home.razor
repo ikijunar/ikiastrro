@@ -1,11 +1,20 @@
 @page "/"
 @inject BirthDetailsRepository BirthDetailsRepo
 @inject NavigationManager Nav
+@inject ReadingProfileState Profile
 
 <PageTitle>ikiastrro</PageTitle>
 
-<h1>ikiastrro</h1>
-<p>Pick a saved person to open their charts, or add someone new.</p>
+<div class="home-head">
+    <div>
+        <h1>ikiastrro</h1>
+        <p>Pick a saved person to open their charts, or add someone new.</p>
+    </div>
+    <button class="profile-trigger" type="button" @onclick="() => _profileOpen = true">
+        <span class="profile-trigger-label">Reading profile</span>
+        <span class="profile-trigger-value">@Profile.Summary</span>
+    </button>
+</div>
 
 @if (_people.Count == 0)
 {
@@ -30,6 +39,8 @@ else
 
 <button class="btn-add" type="button" @onclick='() => Nav.NavigateTo("/add")'>＋ Add someone</button>
 
+<ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
+
 @code {
     // No chart thumbnail in this list any more (2026-09-05, rammyps's call: "no need to have the
     // chart component to the left of the Name") — so this page no longer needs a D1 lookup per
@@ -37,6 +48,7 @@ else
     // to build that thumbnail) are dropped along with it.
     private List<BirthDetails> _people = new();
     private string _filter = "";
+    private bool _profileOpen;
 
     protected override void OnInitialized() => _people = BirthDetailsRepo.GetAll().ToList();
 

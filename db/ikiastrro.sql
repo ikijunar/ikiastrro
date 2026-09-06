@@ -1014,6 +1014,107 @@ CREATE NONCLUSTERED INDEX [IX_ChartResults_BirthDetailId_ChartType] ON [dbo].[tb
 	[ChartType] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+
+-- >>> BEGIN AYANAMSA RULE TABLE (migration 36 folded into baseline) >>>
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+IF OBJECT_ID('dbo.tbl_Rule_Ayanamsa', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_Ayanamsa
+    (
+        Id INT IDENTITY(1,1) CONSTRAINT PK_Rule_Ayanamsa PRIMARY KEY,
+        RuleSetId TINYINT NOT NULL CONSTRAINT FK_Rule_Ayanamsa_RuleSet FOREIGN KEY REFERENCES dbo.tbl_Rule_Sets (Id),
+        Code VARCHAR(40) NOT NULL, DisplayName NVARCHAR(160) NOT NULL,
+        SwissSiderealMode INT NULL, IsTropical BIT NOT NULL CONSTRAINT DF_Rule_Ayanamsa_IsTropical DEFAULT 0,
+        IsImplemented BIT NOT NULL CONSTRAINT DF_Rule_Ayanamsa_IsImplemented DEFAULT 0,
+        IsDefault BIT NOT NULL CONSTRAINT DF_Rule_Ayanamsa_IsDefault DEFAULT 0,
+        CorrectionDirection VARCHAR(8) NOT NULL CONSTRAINT DF_Rule_Ayanamsa_CorrectionDirection DEFAULT 'Subtract',
+        CorrectionDegrees DECIMAL(12,8) NOT NULL CONSTRAINT DF_Rule_Ayanamsa_CorrectionDegrees DEFAULT 0,
+        SourceRefCode VARCHAR(40) NULL,
+        CONSTRAINT UQ_Rule_Ayanamsa_RuleSetCode UNIQUE (RuleSetId, Code),
+        CONSTRAINT CK_Rule_Ayanamsa_CorrectionDirection CHECK (CorrectionDirection IN ('Add','Subtract')),
+        CONSTRAINT CK_Rule_Ayanamsa_CorrectionDegrees CHECK (CorrectionDegrees >= 0 AND CorrectionDegrees <= 360),
+        CONSTRAINT CK_Rule_Ayanamsa_TropicalMode CHECK (IsTropical = 0 OR SwissSiderealMode IS NULL)
+    );
+END
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_Rule_Ayanamsa_Default' AND object_id = OBJECT_ID('dbo.tbl_Rule_Ayanamsa'))
+    CREATE UNIQUE INDEX UX_Rule_Ayanamsa_Default ON dbo.tbl_Rule_Ayanamsa (RuleSetId) WHERE IsDefault = 1;
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Ayanamsa)
+BEGIN
+    INSERT dbo.tbl_Rule_Ayanamsa (RuleSetId, Code, DisplayName, SwissSiderealMode, IsTropical, IsImplemented, IsDefault, SourceRefCode)
+    VALUES
+      (1,'AYANAMSA_TRUE_LAHIRI',N'True Lahiri/Chitrapaksha',27,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_LAHIRI',N'Traditional Lahiri',1,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_PUSHYA_PAKSHA',N'Pushya-paksha ayanamsa',29,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_RAMAN',N'Raman',3,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_KP',N'Krishnamoorthy (KP)',5,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_FIXED_STAR_CUSTOM',N'Fixed star based CUSTOM ayanamsa',NULL,0,0,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_JAGANNATHA',N'Jagannatha (Spica in the middle of Chitra always, fixed solar rotation plane)',26,0,1,1,'SRC_PYJHORA'),
+      (1,'AYANAMSA_ROHINI_PAKSHA',N'Rohini-paksha ayanamsa',NULL,0,0,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_SRI_SURYA_SIDDHANTA',N'Sri Surya Siddhanta',21,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_DEVA_DATTA',N'Deva-datta',NULL,0,0,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_USHA_SHASHI',N'Usha-Shashi',4,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_YUKTESHWAR',N'Yukteshwar',7,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_JN_BHASIN',N'JN Bhasin',8,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_CHANDRA_HARI',N'Chandra Hari',NULL,0,0,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_FAGAN',N'Fagan',0,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_DELUCE',N'Deluce',2,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_DJWHAL_KHUL',N'Djwhal Khul',6,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_ALDEBARAN_15_TAU',N'Aldebaran at 15Ta0',14,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_GALACTIC_CENTER',N'Galaxy center at 0Sg0',17,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_HIPPARCHOS',N'Hipparchos',15,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_SASSANIAN',N'Sassanian',16,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_TROPICAL',N'Tropical (sayana)',NULL,1,1,0,'SRC_PYJHORA');
+END
+GO
+-- >>> END AYANAMSA RULE TABLE >>>
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_ChartResults]') AND name = N'IX_ChartResults_BirthDetailId_CalculationKind_Id')
+CREATE NONCLUSTERED INDEX [IX_ChartResults_BirthDetailId_CalculationKind_Id] ON [dbo].[tbl_ChartResults]
+(
+    [BirthDetailId] ASC,
+    [CalculationKind] ASC,
+    [Id] DESC
+)
+INCLUDE ([ChartTypeId])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_HouseLords]') AND name = N'IX_Chart_HouseLords_ChartResultId_LordPlanetId')
+CREATE NONCLUSTERED INDEX [IX_Chart_HouseLords_ChartResultId_LordPlanetId] ON [dbo].[tbl_Chart_HouseLords]
+(
+    [ChartResultId] ASC,
+    [LordPlanetId] ASC
+)
+INCLUDE ([HouseNumber])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Aspects]') AND name = N'IX_Chart_Aspects_ChartResultId_AspectingPlanetId')
+CREATE NONCLUSTERED INDEX [IX_Chart_Aspects_ChartResultId_AspectingPlanetId] ON [dbo].[tbl_Chart_Aspects]
+(
+    [ChartResultId] ASC,
+    [AspectingPlanetId] ASC
+)
+INCLUDE ([AspectedTargetType], [AspectedPlanetId], [AspectType])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]') AND name = N'IX_Chart_Conjunctions_ChartResultId_Planet1Id')
+CREATE NONCLUSTERED INDEX [IX_Chart_Conjunctions_ChartResultId_Planet1Id] ON [dbo].[tbl_Chart_Conjunctions]
+(
+    [ChartResultId] ASC,
+    [Planet1Id] ASC
+)
+INCLUDE ([Planet2Id])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Chart_Conjunctions]') AND name = N'IX_Chart_Conjunctions_ChartResultId_Planet2Id')
+CREATE NONCLUSTERED INDEX [IX_Chart_Conjunctions_ChartResultId_Planet2Id] ON [dbo].[tbl_Chart_Conjunctions]
+(
+    [ChartResultId] ASC,
+    [Planet2Id] ASC
+)
+INCLUDE ([Planet1Id])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[tbl_Dim_LifeCalendar]') AND name = N'IX_Dim_LifeCalendar_MonthNumber')
 CREATE NONCLUSTERED INDEX [IX_Dim_LifeCalendar_MonthNumber] ON [dbo].[tbl_Dim_LifeCalendar]
 (
@@ -1258,6 +1359,18 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK__tbl_Naksh__SubSe__5D95E53A]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraSubLords]'))
 ALTER TABLE [dbo].[tbl_NakshatraSubLords]  WITH CHECK ADD CHECK  (([SubSequenceNumber]>=(1) AND [SubSequenceNumber]<=(9)))
 GO
+IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE name = N'CK_Nakshatras_DegreeSpan' AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Nakshatras]'))
+ALTER TABLE [dbo].[tbl_Nakshatras] WITH CHECK ADD CONSTRAINT [CK_Nakshatras_DegreeSpan]
+CHECK ([StartDegree] >= 0 AND [EndDegree] <= 360 AND [StartDegree] < [EndDegree])
+GO
+IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE name = N'CK_NakshatraPadas_DegreeSpan' AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraPadas]'))
+ALTER TABLE [dbo].[tbl_NakshatraPadas] WITH CHECK ADD CONSTRAINT [CK_NakshatraPadas_DegreeSpan]
+CHECK ([StartDegree] >= 0 AND [EndDegree] <= 360 AND [StartDegree] < [EndDegree])
+GO
+IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE name = N'CK_NakshatraSubLords_DegreeSpan' AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_NakshatraSubLords]'))
+ALTER TABLE [dbo].[tbl_NakshatraSubLords] WITH CHECK ADD CONSTRAINT [CK_NakshatraSubLords_DegreeSpan]
+CHECK ([StartDegree] >= 0 AND [EndDegree] <= 360 AND [StartDegree] < [EndDegree])
+GO
 IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK__tbl_Plane__Natur__30C33EC3]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Planets]'))
 ALTER TABLE [dbo].[tbl_Planets]  WITH CHECK ADD CHECK  (([NaturalNature]='Conditional' OR [NaturalNature]='Malefic' OR [NaturalNature]='Benefic'))
 GO
@@ -1302,6 +1415,20 @@ ALTER TABLE [dbo].[tbl_SignAttributes]  WITH CHECK ADD CHECK  (([type_house_elem
 GO
 IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[dbo].[CK__tbl_SignA__type___37703C52]') AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_SignAttributes]'))
 ALTER TABLE [dbo].[tbl_SignAttributes]  WITH CHECK ADD CHECK  (([type_house_keyattri]='Dwiswabhava' OR [type_house_keyattri]='Sthira' OR [type_house_keyattri]='Chara'))
+GO
+IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE name = N'CK_SignAttributes_DegreeRanges' AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_SignAttributes]'))
+ALTER TABLE [dbo].[tbl_SignAttributes] WITH CHECK ADD CONSTRAINT [CK_SignAttributes_DegreeRanges]
+CHECK (
+    ([ExaltedDegree] IS NULL OR ([ExaltedDegree] >= 0 AND [ExaltedDegree] < 30)) AND
+    ([DebilitatedDegree] IS NULL OR ([DebilitatedDegree] >= 0 AND [DebilitatedDegree] < 30)) AND
+    ([MooltrikonaRangeStart] IS NULL OR ([MooltrikonaRangeStart] >= 0 AND [MooltrikonaRangeStart] < 30)) AND
+    ([MooltrikonaRangeEnd] IS NULL OR ([MooltrikonaRangeEnd] > 0 AND [MooltrikonaRangeEnd] <= 30)) AND
+    ([MooltrikonaRangeStart] IS NULL OR [MooltrikonaRangeEnd] IS NULL OR [MooltrikonaRangeStart] < [MooltrikonaRangeEnd])
+)
+GO
+IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE name = N'CK_KeyDetails_EclipticLatitude' AND parent_object_id = OBJECT_ID(N'[dbo].[tbl_Chart_KeyDetails]'))
+ALTER TABLE [dbo].[tbl_Chart_KeyDetails] WITH CHECK ADD CONSTRAINT [CK_KeyDetails_EclipticLatitude]
+CHECK ([EclipticLatitudeDegrees] IS NULL OR ([EclipticLatitudeDegrees] >= -90 AND [EclipticLatitudeDegrees] <= 90))
 GO
 
 -- --------------------- REFERENCE DATA --------------------
@@ -4220,35 +4347,39 @@ BEGIN
                                CONSTRAINT UQ_Dim_SubPlanets_Name UNIQUE,
         EnglishMeaning     NVARCHAR(60)  NULL,
         CalculationType    VARCHAR(20)   NOT NULL,
+        CalculationFamilyCode VARCHAR(20) NOT NULL,
         AssociatedPlanetId TINYINT       NOT NULL
                                CONSTRAINT FK_Dim_SubPlanets_Planet FOREIGN KEY REFERENCES dbo.tbl_Planets (Id),
+        AssociationRole    VARCHAR(20)   NOT NULL,
         NaturalNature      VARCHAR(12)   NULL,
         SortOrder          TINYINT       NOT NULL,
         IsActive           BIT           NOT NULL CONSTRAINT DF_Dim_SubPlanets_IsActive DEFAULT 1,
         Notes              NVARCHAR(400) NULL,
         CONSTRAINT CK_Dim_SubPlanets_CalcType CHECK (CalculationType IN ('SUN_LONGITUDE','DAY_NIGHT_TIME')),
+        CONSTRAINT CK_Dim_SubPlanets_Family CHECK (CalculationFamilyCode IN ('SUN_BASED','TIME_BASED')),
+        CONSTRAINT CK_Dim_SubPlanets_AssociationRole CHECK (AssociationRole IN ('FORMULA_INPUT','PART_RULER','PLANETARY_ANALOG')),
         CONSTRAINT CK_Dim_SubPlanets_Nature   CHECK (NaturalNature IS NULL OR NaturalNature IN ('Malefic','Benefic','Neutral','Mixed'))
     );
 END
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_SubPlanets)
     INSERT dbo.tbl_Dim_SubPlanets
-        (Id, SubPlanetCode, SubPlanetName, EnglishMeaning, CalculationType, AssociatedPlanetId, NaturalNature, SortOrder, Notes)
-    SELECT v.Id, v.SubPlanetCode, v.SubPlanetName, v.EnglishMeaning, v.CalculationType,
-           p.Id, v.NaturalNature, v.SortOrder, v.Notes
+        (Id, SubPlanetCode, SubPlanetName, EnglishMeaning, CalculationType, CalculationFamilyCode, AssociatedPlanetId, AssociationRole, NaturalNature, SortOrder, Notes)
+    SELECT v.Id, v.SubPlanetCode, v.SubPlanetName, v.EnglishMeaning, v.CalculationType, v.CalculationFamilyCode,
+           p.Id, v.AssociationRole, v.NaturalNature, v.SortOrder, v.Notes
     FROM (VALUES
-        ( 1,'DHUMA',       'Dhuma',       N'Smoke',        'SUN_LONGITUDE', 'Sun',    'Malefic',  1, CONVERT(NVARCHAR(400),NULL)),
-        ( 2,'VYATIPATA',   'Vyatipata',   N'Calamity',     'SUN_LONGITUDE', 'Sun',    'Malefic',  2, NULL),
-        ( 3,'PARIVESHA',   'Parivesha',   N'Halo',         'SUN_LONGITUDE', 'Sun',    'Malefic',  3, N'Some traditions class Parivesha (halo) as benefic / neutral.'),
-        ( 4,'INDRACHAPA',  'Indrachapa',  N'Rainbow',      'SUN_LONGITUDE', 'Sun',    'Malefic',  4, N'Some traditions class Indrachapa (rainbow) as benefic / neutral.'),
-        ( 5,'UPAKETU',     'Upaketu',     N'Sub-Ketu',     'SUN_LONGITUDE', 'Sun',    'Malefic',  5, N'Chain identity: Upaketu + 30 deg = Sun.'),
-        ( 6,'KAALA',       'Kaala',       N'Time',         'DAY_NIGHT_TIME','Sun',    'Malefic',  6, NULL),
-        ( 7,'MRITYU',      'Mrityu',      N'Death',        'DAY_NIGHT_TIME','Mars',   'Malefic',  7, NULL),
-        ( 8,'ARDHAPRAHARA','Ardhaprahara',N'Half-prahara', 'DAY_NIGHT_TIME','Mercury', NULL,      8, N'PVR text spells it "Artha Praharaka" / "Artha Prahara". BPHS: Mercury''s day/night portion.'),
-        ( 9,'YAMAGHANTAKA','Yamaghantaka',N'Yama''s bell', 'DAY_NIGHT_TIME','Jupiter', NULL,      9, N'BPHS names Jupiter''s day/night portion Yamaghantaka.'),
-        (10,'GULIKA',      'Gulika',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 10, N'Ships today via UpagrahaCalculator.cs. See tbl_Rule_SubPlanetTime for the start-vs-middle divergence between the PVR text and the shipped (JHora) convention.'),
-        (11,'MAANDI',      'Maandi',      NULL,            'DAY_NIGHT_TIME','Saturn', 'Malefic', 11, N'Ships today via UpagrahaCalculator.cs. Often treated as the same Saturn upagraha as Gulika.')
-    ) v (Id, SubPlanetCode, SubPlanetName, EnglishMeaning, CalculationType, AssocPlanetName, NaturalNature, SortOrder, Notes)
+        ( 1,'DHUMA',       'Dhuma',       N'Smoke',        'SUN_LONGITUDE', 'SUN_BASED', 'Sun', 'FORMULA_INPUT', 'Malefic',  1, CONVERT(NVARCHAR(400),NULL)),
+        ( 2,'VYATIPATA',   'Vyatipata',   N'Calamity',     'SUN_LONGITUDE', 'SUN_BASED', 'Sun', 'FORMULA_INPUT', 'Malefic',  2, NULL),
+        ( 3,'PARIVESHA',   'Parivesha',   N'Halo',         'SUN_LONGITUDE', 'SUN_BASED', 'Sun', 'FORMULA_INPUT', 'Malefic',  3, N'Some traditions class Parivesha (halo) as benefic / neutral.'),
+        ( 4,'INDRACHAPA',  'Indrachapa',  N'Rainbow',      'SUN_LONGITUDE', 'SUN_BASED', 'Sun', 'FORMULA_INPUT', 'Malefic',  4, N'Some traditions class Indrachapa (rainbow) as benefic / neutral.'),
+        ( 5,'UPAKETU',     'Upaketu',     N'Sub-Ketu',     'SUN_LONGITUDE', 'SUN_BASED', 'Sun', 'FORMULA_INPUT', 'Malefic',  5, N'Chain identity: Upaketu + 30 deg = Sun.'),
+        ( 6,'KAALA',       'Kaala',       N'Time',         'DAY_NIGHT_TIME','TIME_BASED', 'Sun', 'PART_RULER', 'Malefic',  6, NULL),
+        ( 7,'MRITYU',      'Mrityu',      N'Death',        'DAY_NIGHT_TIME','TIME_BASED', 'Mars', 'PART_RULER', 'Malefic',  7, NULL),
+        ( 8,'ARDHAPRAHARA','Ardhaprahara',N'Half-prahara', 'DAY_NIGHT_TIME','TIME_BASED', 'Mercury', 'PART_RULER', NULL,      8, N'PVR text spells it "Artha Praharaka" / "Artha Prahara". BPHS: Mercury''s day/night portion.'),
+        ( 9,'YAMAGHANTAKA','Yamaghantaka',N'Yama''s bell', 'DAY_NIGHT_TIME','TIME_BASED', 'Jupiter', 'PART_RULER', NULL,      9, N'BPHS names Jupiter''s day/night portion Yamaghantaka.'),
+        (10,'GULIKA',      'Gulika',      NULL,            'DAY_NIGHT_TIME','TIME_BASED', 'Saturn', 'PART_RULER', 'Malefic', 10, N'PVR: middle of Saturn''s part.'),
+        (11,'MAANDI',      'Maandi',      NULL,            'DAY_NIGHT_TIME','TIME_BASED', 'Saturn', 'PART_RULER', 'Malefic', 11, N'PVR: beginning of Saturn''s part.')
+    ) v (Id, SubPlanetCode, SubPlanetName, EnglishMeaning, CalculationType, CalculationFamilyCode, AssocPlanetName, AssociationRole, NaturalNature, SortOrder, Notes)
     JOIN dbo.tbl_Planets p ON p.PlanetName = v.AssocPlanetName;
 GO
 IF OBJECT_ID('dbo.tbl_Rule_SubPlanetSunLongitude', 'U') IS NULL
@@ -4722,6 +4853,76 @@ ON tgt.TerminologyId = src.TerminologyId AND tgt.LanguageCode = src.LanguageCode
 WHEN MATCHED THEN UPDATE SET Name = src.Name, TraditionalName = src.TraditionalName, ShortDescription = src.ShortDescription
 WHEN NOT MATCHED THEN INSERT (TerminologyId, LanguageCode, Script, Name, TraditionalName, ShortDescription)
     VALUES (src.TerminologyId, src.LanguageCode, src.Script, src.Name, src.TraditionalName, src.ShortDescription);
+GO
+
+-- =====================================================================
+-- 38 — Divisional subject reference.  The D1 foundation remains the
+-- promise; the primary Varga supplies subject-specific confirmation.
+-- The four interpretation dimensions are shared by house-lord and Varga
+-- readings and are catalog metadata, not computed chart facts.
+-- =====================================================================
+IF OBJECT_ID('dbo.tbl_Dim_DivisionalSubject', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Dim_DivisionalSubject (
+        SubjectCode                VARCHAR(40)   NOT NULL CONSTRAINT PK_Dim_DivisionalSubject PRIMARY KEY,
+        SubjectName                NVARCHAR(80)  NOT NULL CONSTRAINT UQ_Dim_DivisionalSubject_Name UNIQUE,
+        D1Foundation               NVARCHAR(500) NOT NULL,
+        PrimaryConfirmationChartId TINYINT       NOT NULL CONSTRAINT FK_Dim_DivisionalSubject_Chart FOREIGN KEY REFERENCES dbo.tbl_Dim_ChartType (Id),
+        ConfirmationAdds           NVARCHAR(500) NOT NULL,
+        SortOrder                  TINYINT       NOT NULL,
+        SourceRefCode              VARCHAR(40)   NULL,
+        IsActive                   BIT           NOT NULL CONSTRAINT DF_Dim_DivisionalSubject_IsActive DEFAULT 1,
+        CONSTRAINT CK_Dim_DivisionalSubject_Source CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_DivisionalSubject)
+INSERT dbo.tbl_Dim_DivisionalSubject
+    (SubjectCode, SubjectName, D1Foundation, PrimaryConfirmationChartId, ConfirmationAdds, SortOrder, SourceRefCode)
+SELECT v.SubjectCode, v.SubjectName, v.D1Foundation, ct.Id, v.ConfirmationAdds, v.SortOrder, 'SRC_PVR_INTEGRATED'
+FROM (VALUES
+    ('OVERALL_STRENGTH_DHARMA', N'Overall strength and dharma', N'Lagna, Lagna lord, Sun, 9th house and their dignity, aspects and lordship.', 'D9', N'Planetary maturity, inner strength, dharma and the deeper expression of the D1 promise.', 1),
+    ('WEALTH', N'Wealth', N'2nd and 11th houses, their lords, Jupiter, Venus and links to income or assets.', 'D2', N'Capacity to accumulate, preserve and use money and resources.', 2),
+    ('SIBLINGS_COURAGE', N'Siblings and courage', N'3rd house, 3rd lord, Mars and effort-related combinations.', 'D3', N'Siblings, co-born relationships, courage, initiative and sustained effort.', 3),
+    ('PROPERTY_RESIDENCE', N'Property and residence', N'4th house, 4th lord, Moon and fixed-asset combinations.', 'D4', N'Residence, houses, land, property ownership and fortune connected with assets.', 4),
+    ('CHILDREN_PROGENY', N'Children and progeny', N'5th house, 5th lord, Jupiter and progeny combinations.', 'D7', N'Children, fertility, progeny and the relationship with children.', 5),
+    ('MOTHER_PARENTS', N'Mother and parental lineage', N'4th house and Moon for mother; 9th/10th and family factors for parents.', 'D12', N'Parents, ancestry and inherited family patterns; read with the D1 4th and 9th houses.', 6),
+    ('MARRIAGE_RELATIONSHIPS', N'Marriage and relationships', N'7th house, 7th lord, Venus and partnership combinations.', 'D9', N'Spouse, marriage quality, relationship dharma and long-term partnership.', 7),
+    ('CAREER_STATUS', N'Career and status', N'10th house, 10th lord, Sun, Saturn and public-action combinations.', 'D10', N'Profession, authority, achievements, recognition and activity in society.', 8),
+    ('VEHICLES_COMFORTS', N'Vehicles and comforts', N'4th house, Venus, Moon and comfort-related combinations.', 'D16', N'Vehicles, pleasures, comforts and the ability to enjoy material conveniences.', 9),
+    ('EDUCATION_LEARNING', N'Education and learning', N'4th, 5th and 9th houses; Mercury, Jupiter and knowledge combinations.', 'D24', N'Formal education, learning, scholarship, examinations and mastery.', 10),
+    ('KARMIC_ROOTS', N'Karmic roots', N'D1 promise, major life indicators and the condition of the relevant lords and karakas.', 'D60', N'Deep karmic causes and subtle confirmation of major life patterns; birth-time sensitive.', 11)
+) v (SubjectCode, SubjectName, D1Foundation, ChartCode, ConfirmationAdds, SortOrder)
+JOIN dbo.tbl_Dim_ChartType ct ON ct.Code = v.ChartCode;
+GO
+IF OBJECT_ID('dbo.tbl_Dim_InterpretationDimension', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Dim_InterpretationDimension (
+        DimensionCode VARCHAR(32)   NOT NULL CONSTRAINT PK_Dim_InterpretationDimension PRIMARY KEY,
+        DimensionName NVARCHAR(80)  NOT NULL CONSTRAINT UQ_Dim_InterpretationDimension_Name UNIQUE,
+        Description   NVARCHAR(400) NOT NULL,
+        SortOrder     TINYINT       NOT NULL,
+        SourceRefCode VARCHAR(40)   NULL,
+        IsActive      BIT           NOT NULL CONSTRAINT DF_Dim_InterpretationDimension_IsActive DEFAULT 1,
+        CONSTRAINT CK_Dim_InterpretationDimension_Source CHECK (SourceRefCode IS NULL OR SourceRefCode LIKE 'SRC[_]%')
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_InterpretationDimension)
+INSERT dbo.tbl_Dim_InterpretationDimension
+    (DimensionCode, DimensionName, Description, SortOrder, SourceRefCode)
+VALUES
+    ('PLANETARY_DIGNITY',       N'Planetary dignity',       N'Assess exaltation, debilitation, own sign, moolatrikona, friendship, combustion and other strength indicators in the chart under review.', 1, 'SRC_PVR_INTEGRATED'),
+    ('DISPOSITOR_RELATION',     N'Dispositor relation',     N'Follow the result through the lord of the sign occupied by the planet and evaluate that dispositor''s house, sign, dignity and relationships.', 2, 'SRC_PVR_INTEGRATED'),
+    ('HOUSE_LORD_COMBINATION',  N'House-lord combination',  N'Combine every house owned by a planet, then assess conjunction, aspect, exchange, kendra-trikona links and functional nature.', 3, 'SRC_PVR_INTEGRATED'),
+    ('DIVISIONAL_CONFIRMATION', N'Divisional confirmation', N'Confirm the D1 promise in the primary subject Varga by reading that Varga''s Lagna, houses, lords, karakas and planetary dignity.', 4, 'SRC_PVR_INTEGRATED');
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Dim_DivisionalSubject')
+    INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+    VALUES ('tbl_Dim_DivisionalSubject', 'VARGA_REFERENCE', 'SUBJECT_TO_VARGA', 'Reference mapping from a life subject to its D1 foundation and primary confirmation divisional chart.', '38_add_divisional_subject_reference.sql');
+IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Dim_InterpretationDimension')
+    INSERT dbo.tbl_Rule_Catalog (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+    VALUES ('tbl_Dim_InterpretationDimension', 'INTERPRETATION', 'DIMENSION_CATALOG', 'Shared interpretation dimensions applied to house-lord and divisional-chart readings.', '38_add_divisional_subject_reference.sql');
 GO
 
 -- =====================================================================
@@ -5364,6 +5565,30 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_Chart_Consolidated]'))
+CREATE VIEW dbo.vw_SubPlanetCatalog
+AS
+SELECT sp.Id, sp.SubPlanetCode, sp.SubPlanetName, sp.EnglishMeaning,
+       sp.CalculationFamilyCode, sp.CalculationType,
+       ap.PlanetName AS AssociatedPlanetName, sp.AssociationRole,
+       sp.NaturalNature, sp.SortOrder,
+       CASE WHEN sp.CalculationFamilyCode = 'SUN_BASED'
+            THEN 'tbl_Rule_SubPlanetSunLongitude' ELSE 'tbl_Rule_SubPlanetTime' END AS RuleTableName,
+       COALESCE(sl.MethodCode, tm.MethodCode) AS MethodCode,
+       COALESCE(sl.CalculationNarrative, tm.CalculationNarrative) AS CalculationNarrative,
+       COALESCE(sl.SourceRefCode, tm.SourceRefCode) AS SourceRefCode,
+       sp.Notes
+FROM dbo.tbl_Dim_SubPlanets sp
+JOIN dbo.tbl_Planets ap ON ap.Id = sp.AssociatedPlanetId
+OUTER APPLY (SELECT TOP (1) r.MethodCode, r.CalculationNarrative, r.SourceRefCode
+             FROM dbo.tbl_Rule_SubPlanetSunLongitude r
+             WHERE r.SubPlanetId = sp.Id AND r.IsActive = 1
+             ORDER BY r.RuleSetId DESC, r.SequenceNo) sl
+OUTER APPLY (SELECT TOP (1) r.MethodCode, r.CalculationNarrative, r.SourceRefCode
+             FROM dbo.tbl_Rule_SubPlanetTime r
+             WHERE r.SubPlanetId = sp.Id AND r.IsActive = 1
+             ORDER BY r.RuleSetId DESC) tm;
+GO
+
 EXEC dbo.sp_executesql @statement = N'CREATE VIEW [dbo].[vw_Chart_Consolidated] AS
 SELECT
     bd.Id                       AS BirthDetailId,

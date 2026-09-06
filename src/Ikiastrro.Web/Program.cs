@@ -2,6 +2,7 @@ using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Geocoding;
 using Ikiastrro.Data;
 using Ikiastrro.Web.Components;
+using Ikiastrro.Web.Components.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +27,12 @@ builder.Services.AddScoped<PlanetaryStateRepository>();
 builder.Services.AddScoped<PlanetSignTransitEventsRepository>();
 builder.Services.AddScoped<GocharaRepository>();
 builder.Services.AddScoped<RuleSetRepository>();
+builder.Services.AddScoped<AyanamsaRuleRepository>();
 builder.Services.AddScoped<ChartTypeRepository>();
 builder.Services.AddScoped<LifeAreaReferenceRepository>();
+builder.Services.AddScoped<ReadingProfileState>();
 builder.Services.AddScoped<VargaSchemeRepository>();
+builder.Services.AddScoped<SubPlanetRuleRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();
 builder.Services.AddScoped<ChartGenerationService>();
 builder.Services.AddScoped<BirthDetailDeletionService>();
@@ -36,7 +40,8 @@ builder.Services.AddScoped<IPlaceResolver, NominatimPlaceResolver>();
 builder.Services.AddScoped(sp =>
 {
     var schemes = sp.GetRequiredService<VargaSchemeRepository>().GetAll(1);
-    return ChartCalculationOrchestrator.CreateDefault(schemes);
+    return ChartCalculationOrchestrator.CreateDefault(schemes,
+        sp.GetRequiredService<SubPlanetRuleRepository>().GetAll(sp.GetRequiredService<RuleSetRepository>().GetActive().Id));
 });
 
 var app = builder.Build();

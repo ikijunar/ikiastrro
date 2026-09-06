@@ -7,6 +7,7 @@
 @inject ChartConjunctionsRepository ChartConjunctionsRepo
 @inject ChartTypeRepository ChartTypeRepo
 @inject LifeAreaReferenceRepository LifeAreaRepo
+@inject ReadingProfileState Profile
 @using Ikiastrro.Web.Components.Workspace
 
 <PageTitle>@Code — @(_data?.Person.Name ?? "Chart") — ikiastrro</PageTitle>
@@ -25,6 +26,8 @@ else
             <b>@Code · @dn.SanskritName · @(dn.VargaMethod ?? "—")</b>
             @if (Next() is string n) { <a href="@($"/charts/{Id}/varga/{n}?view={View}")">@n ›</a> }
         </span>
+        <button class="vv-profile-trigger" type="button" @onclick="() => _profileOpen = true">Reading profile <span>@Profile.Summary</span></button>
+        <a href="@($"/charts/{Id}/all-charts")">All charts</a>
     </div>
 
     <WorkspaceHeader Person="_data.Person" D1="@(_data.Charts["D1"])" ComputationOpen="false"
@@ -63,6 +66,8 @@ else
         <div style="height:1rem"></div>
         <ConjunctionsTable Rows="dn.Conjunctions" />
     </Disclosure>
+
+    <ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
 }
 
 @code {
@@ -73,11 +78,11 @@ else
     [Parameter, SupplyParameterFromQuery(Name = "aspects")] public string? AspectsParam { get; set; }
 
     private WorkspaceData? _data;
-    private bool _tablesOpen;
+    private bool _tablesOpen, _profileOpen;
 
     private string View => ViewParam == "wheel" ? "wheel" : "grid";
-    private bool Tech => TechParam == "1";
-    private bool ShowAspects => AspectsParam == "1";
+    private bool Tech => TechParam is null ? Profile.TechnicalMode : TechParam == "1";
+    private bool ShowAspects => AspectsParam is null ? Profile.ShowAspects : AspectsParam == "1";
 
     protected override void OnParametersSet()
     {

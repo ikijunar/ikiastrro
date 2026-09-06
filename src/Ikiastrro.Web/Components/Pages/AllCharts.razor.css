@@ -1,0 +1,73 @@
+.ac-back { margin-bottom: .5rem; }
+.ac-back a { color: var(--accent); text-decoration: none; }
+
+.ac-nav { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+.ac-nav a { color: var(--accent); text-decoration: none; }
+.ac-profile-trigger { display: grid; gap: .1rem; margin-left: auto; padding: .35rem .6rem; border: 1px solid var(--paper-line); border-radius: 4px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.ac-profile-trigger span { color: var(--ink-soft); font-size: 11px; }
+.ac-profile-trigger:hover { border-color: var(--accent); }
+
+/* "Print / Save PDF" — same quiet outline affordance as Workspace's .ws-print, pushed to the
+   right of the nav row. */
+.ac-print {
+    padding: .35rem .8rem;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+.ac-print:hover { background: var(--accent); color: var(--accent-fg); }
+
+.ac-group { margin-top: 2rem; }
+.ac-group h2 {
+    font-family: Georgia, 'Iowan Old Style', serif;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--accent);
+    margin: 0 0 1rem;
+}
+
+/* Full-detail pass (2026-09-06): one D1-template card per row instead of the old 3-up MiniGrid
+   thumbnails — each card carries the same per-cell detail as the Workspace hero, so it needs the
+   width. Capped so cells don't stretch on very wide screens, and left-aligned so a group reads as
+   a list top to bottom. */
+.ac-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.ac-tile {
+    display: block;
+    width: 100%;
+    max-width: 1000px;
+    text-decoration: none;
+    color: inherit;
+}
+.ac-tile:hover .ac-cap { text-decoration: underline; }
+.ac-tile:hover ::deep .tmpl-chart { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.ac-cap {
+    display: block;
+    margin-bottom: .5rem;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.ac-missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    max-width: 1000px;
+    border: 1px dashed var(--paper-line);
+    border-radius: 4px;
+}
+
+@media (max-width: 700px) {
+    .ac-list { gap: 1.25rem; }
+}

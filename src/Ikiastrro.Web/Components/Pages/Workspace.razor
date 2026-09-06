@@ -8,8 +8,10 @@
 @inject ChartTypeRepository ChartTypeRepo
 @inject LifeAreaReferenceRepository LifeAreaRepo
 @inject DashaPeriodsRepository DashaPeriodsRepo
+@inject SadeSatiRepository SadeSatiRepo
 @inject BirthDetailDeletionService DeletionService
 @inject NavigationManager Nav
+@inject ReadingProfileState Profile
 @using Ikiastrro.Core.Models
 @using Ikiastrro.Web.Components.Workspace
 
@@ -21,104 +23,172 @@
 }
 else
 {
-    <div class="ws-top">
-        <a class="ws-back" href="/charts">← All saved charts</a>
-        <div class="ws-actions">
-            <a class="ws-print" href="@($"/charts/{Id}/print")">Print / Save PDF</a>
-            <DeleteIconButton Title="@($"Delete {_data.Person.Name}'s chart")" OnClick="() => _confirmingDelete = true" />
-        </div>
-    </div>
-
-    <WorkspaceHeader Person="_data.Person" D1="D1" ComputationOpen="_compOpen"
-                     OnToggleComputation="v => _compOpen = v" />
-    @if (_compOpen)
-    {
-        <div class="ws-comp"><BirthComputationPanel Person="_data.Person" Charts="_data.Charts" ChartTypes="_data.ChartTypes" LifeAreas="_lifeAreas" /></div>
-    }
-
-    <div class="ws-cols">
-        <div class="ws-hero">
-            <ChartFrame View="@View" BaseHref="@($"/charts/{Id}")">
-                <GridContent>
-                    <SouthIndianGrid AscendantSign="@D1.AscendantSign" MoonSign="@D1.MoonSign"
-                                     PlanetsBySign="D1PlanetsBySign()"
-                                     AspectedByGlyphs="ChartViewModel.BuildAspectedByGlyphs(D1.KeyDetails, D1.Aspects)"
-                                     SpecialPointLabels="SpecialLabels(D1)"
-                                     CenterTitle="D1 · Rasi">
-                        <CenterMeta><b>Lagna</b> @Disp(D1.AscendantSign)</CenterMeta>
-                    </SouthIndianGrid>
-                </GridContent>
-                <WheelContent>
-                    <PolarWheel Points="WheelPoints(D1, varga: false)"
-                                Chords="@(ShowAspects ? ChordsFor(D1) : Array.Empty<PolarWheel.Chord>())" />
-                </WheelContent>
-            </ChartFrame>
-
-            @if (View == "wheel")
-            {
-                <a class="ws-aspects" href="@AspectsHref()">@(ShowAspects ? "hide aspects" : "show aspects")</a>
-            }
-
-            @if (_data.Charts.ContainsKey("D9"))
-            {
-                <Disclosure Title="D1 ⊕ D9 — combined" Open="_combinedOpen" OnToggle="v => _combinedOpen = v">
-                    <CombinedD1D9Grid D1KeyDetails="D1.KeyDetails" D9KeyDetails="@(_data.Charts["D9"].KeyDetails)"
-                                      LagnaSign="@D1.AscendantSign" />
-                </Disclosure>
-            }
+    <div class="ws-root" data-theme="@(Theme == "nocturne" ? "dark" : "light")">
+        <div class="ws-top">
+            <a class="ws-back" href="/charts">← All saved charts</a>
+            <div class="ws-actions">
+                <SegmentedToggle ActiveKey="@Theme" Segments="ThemeSegments()" />
+                <button class="ws-profile-trigger" type="button" @onclick="() => _profileOpen = true">Reading profile <span>@Profile.Summary</span></button>
+                <a class="ws-print" href="@($"/charts/{Id}/print")">Print / Save PDF</a>
+                <DeleteIconButton Title="@($"Delete {_data.Person.Name}'s chart")" OnClick="() => _confirmingDelete = true" />
+            </div>
         </div>
 
-        <div class="ws-rail">
-            <VargaRail PersonId="Id" Charts="_data.Charts" ChartTypes="_data.ChartTypes" LifeAreas="_lifeAreas" />
-        </div>
-    </div>
-
-    <section class="ws-ppt">
-        <div class="ws-ppt-head">
-            <h2>Planet positions — D1</h2>
-            <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
-        </div>
-        <PlanetPositionsTable Rows="D1Rows()" LagnaSign="@D1.AscendantSign" Variant="d1" ShowTechnical="Tech" />
-    </section>
-
-    <section class="ws-dasha">
-        <div class="ws-dasha-head">
-            <h3>Vimshottari Dasha</h3>
-            <a href="@($"/charts/{Id}/timing")">Full timing →</a>
-        </div>
-        @if (_dashaRoots.Count > 0)
+        <WorkspaceHeader Person="_data.Person" D1="D1" ComputationOpen="_compOpen"
+                         OnToggleComputation="v => _compOpen = v" />
+        @if (_compOpen)
         {
-            <DashaTimeline Roots="_dashaRoots" Compact="true" />
+            <div class="ws-comp"><BirthComputationPanel Person="_data.Person" Charts="_data.Charts" ChartTypes="_data.ChartTypes" LifeAreas="_lifeAreas" /></div>
         }
-        else
-        {
-            <EmptyState Message="No Dasha computed." Cli="@($"compute-dasha {_data.Person.Name}")" />
-        }
-    </section>
 
-    <ConfirmDialog IsOpen="_confirmingDelete"
-                   Message="@($"Delete {_data.Person.Name}'s chart and all computed data? This can't be undone.")"
-                   IsBusy="_isDeleting" OnConfirm="HandleDelete" OnCancel="() => _confirmingDelete = false" />
+        <div class="ws-areas">
+            <SegmentedToggle ActiveKey="@ActiveGroup.GroupCode" Segments="AreaSegments()" />
+            <a class="ws-all-link" href="@($"/charts/{Id}/all-charts")">See all charts →</a>
+        </div>
+
+        @{ var chipCodes = ActiveGroup.Codes.Where(c => c != "D1" && _data.Charts.ContainsKey(c)).ToList(); }
+        @if (chipCodes.Count > 0)
+        {
+            <div class="ws-chips">
+                @foreach (var code in chipCodes)
+                {
+                    <a class="ws-chip @(code == ActiveCode ? "active" : "")"
+                       href="@Href(area: ActiveGroup.GroupCode, chart: code)">@Caption(code)</a>
+                }
+            </div>
+        }
+
+        <div class="ws-body">
+            <section class="ws-dasha-rail">
+                <h3>Vimshottari Dasha</h3>
+                @if (_dashaRoots.Count > 0)
+                {
+                    <DashaTimeline Roots="_dashaRoots" />
+                }
+                else
+                {
+                    <EmptyState Message="No Dasha computed." Cli="@($"compute-dasha {_data.Person.Name}")" />
+                }
+                <a class="ws-full-timing" href="@($"/charts/{Id}/timing")">Full timing →</a>
+            </section>
+
+            <section class="ws-hero-col">
+                <div class="hero-card">
+                    <D1TemplateGrid AscendantSign="@ActiveChart.AscendantSign"
+                                    SunSign="@SignOf(ActiveChart, "Sun")"
+                                    MoonSign="@SignOf(ActiveChart, "Moon")"
+                                    PlanetsBySign="PlanetsBySign(ActiveChart)"
+                                    PointsBySign="PointsBySign(ActiveChart)"
+                                    AspectsBySign="ChartViewModel.BuildAspectedByPlain(ActiveChart.KeyDetails, ActiveChart.Aspects)"
+                                    UpagrahasBySign="UpagrahasBySign(ActiveChart)">
+                        <CenterContent>
+                            @if (ActiveCode == "D1")
+                            {
+                                <div class="center-stack">
+                                    <div class="center-mid">
+                                        <div class="center-heading">
+                                            <span class="center-heading-main">@ActiveChart.SanskritName.ToUpperInvariant()</span>
+                                            <span class="center-heading-sub">@ActiveChart.ChartType@(string.IsNullOrWhiteSpace(ShortDescriptionOf("D1")) ? "" : $" · {ShortDescriptionOf("D1")}")</span>
+                                        </div>
+                                        <div class="karaka-strip">
+                                            @foreach (var row in KarakaRows(ActiveChart))
+                                            {
+                                                <div class="karaka-line">
+                                                    @foreach (var pair in row)
+                                                    {
+                                                        <span class="karaka"><b>@pair.Code</b> <span style="color:var(--tmpl-planet-@(pair.Key))">@pair.Glyph</span></span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="round-group">
+                                        <DashaRoundBox Label="ONE" Round="RoundAt(0)" BirthDate="_birthDate" />
+                                        <DashaRoundBox Label="TWO" Round="RoundAt(1)" BirthDate="_birthDate" />
+                                        <DashaRoundBox Label="THREE" Round="RoundAt(2)" BirthDate="_birthDate" />
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="center-stack">
+                                    <div class="center-mid">
+                                        <div class="center-heading">
+                                            <span class="center-heading-main">@ActiveChart.SanskritName.ToUpperInvariant()</span>
+                                            <span class="center-heading-sub">@ActiveChart.ChartType@(string.IsNullOrWhiteSpace(ShortDescriptionOf(ActiveCode)) ? "" : $" · {ShortDescriptionOf(ActiveCode)}")</span>
+                                        </div>
+                                    </div>
+                                    <div class="center-lagna"><b>Lagna</b> @Disp(ActiveChart.AscendantSign)</div>
+                                </div>
+                            }
+                        </CenterContent>
+                    </D1TemplateGrid>
+                </div>
+
+                <div class="ws-ppt">
+                    <div class="ws-ppt-head">
+                        <h2>Planet positions — @ActiveCode</h2>
+                        <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
+                    </div>
+                    <PlanetPositionsTable Rows="ActiveRows()" LagnaSign="@ActiveChart.AscendantSign"
+                                          Variant="@(ActiveCode == "D1" ? "d1" : "varga")" ShowTechnical="Tech" />
+                </div>
+            </section>
+        </div>
+
+        <ConfirmDialog IsOpen="_confirmingDelete"
+                       Message="@($"Delete {_data.Person.Name}'s chart and all computed data? This can't be undone.")"
+                       IsBusy="_isDeleting" OnConfirm="HandleDelete" OnCancel="() => _confirmingDelete = false" />
+        <ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
+    </div>
 }
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter, SupplyParameterFromQuery(Name = "view")] public string? ViewParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "area")] public string? AreaParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "chart")] public string? ChartParam { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "theme")] public string? ThemeParam { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "tech")] public string? TechParam { get; set; }
-    [Parameter, SupplyParameterFromQuery(Name = "aspects")] public string? AspectsParam { get; set; }
 
     private WorkspaceData? _data;
     private IReadOnlyList<DashaPeriodRecord> _dashaRoots = Array.Empty<DashaPeriodRecord>();
-    private bool _compOpen, _combinedOpen, _confirmingDelete, _isDeleting;
+    private bool _compOpen, _confirmingDelete, _isDeleting, _profileOpen;
 
-    private string View => ViewParam == "wheel" ? "wheel" : "grid";
-    private bool Tech => TechParam == "1";
-    private bool ShowAspects => AspectsParam == "1";
+    /// <summary>Birth date/time and the 3 Sade-Sati "Round" windows — D1/Moon-specific, computed
+    /// once regardless of which chart is active (only rendered in the D1 center-cell branch).</summary>
+    private DateTime _birthDate;
+    private IReadOnlyList<SadeSatiRounds.Round> _rounds = Array.Empty<SadeSatiRounds.Round>();
+
+    private string Theme => ThemeParam is null ? Profile.Theme : (ThemeParam == "nocturne" ? "nocturne" : "orange");
+    private bool Tech => TechParam is null ? Profile.TechnicalMode : TechParam == "1";
     private LoadedChart D1 => _data!.Charts["D1"];
 
     /// <summary>tbl_Dim_LifeArea rows — static reference data, loaded once (2026-09-05, feeds
-    /// VargaRail/BirthComputationPanel's life-area grouping).</summary>
+    /// the Life Area tabs' grouping).</summary>
     private IReadOnlyList<LifeAreaRow> _lifeAreas = Array.Empty<LifeAreaRow>();
+
+    /// <summary>The active Life Area tab — from ?area=, falling back to whichever group contains
+    /// D1 when missing or unrecognized (2026-09-05, Workspace redesign).</summary>
+    private (string GroupCode, string Title, IReadOnlyList<string> Codes) ActiveGroup
+    {
+        get
+        {
+            var groups = VargaBundles.Groups(_data!.ChartTypes, _lifeAreas);
+            var preferredChart = ActiveCode;
+            var match = AreaParam is null ? default : groups.FirstOrDefault(g => g.GroupCode == AreaParam);
+            return match.Title is not null ? match : groups.FirstOrDefault(g => g.Codes.Contains(preferredChart))
+                is { Title: not null } preferred ? preferred : groups.FirstOrDefault(g => g.Codes.Contains("D1"));
+        }
+    }
+
+    /// <summary>The hero/positions-table chart — from ?chart=, falling back to "D1" when missing
+    /// or not actually computed for this person. Selecting a Life Area tab alone never changes
+    /// this; only picking one of its chips does (rammyps's call, 2026-09-05).</summary>
+    private string ActiveCode => ChartParam is not null && _data!.Charts.ContainsKey(ChartParam)
+        ? ChartParam
+        : _data!.Charts.ContainsKey(Profile.DefaultChart) ? Profile.DefaultChart : "D1";
+
+    private LoadedChart ActiveChart => _data!.Charts[ActiveCode];
 
     protected override void OnParametersSet()
     {
@@ -128,61 +198,105 @@ else
         if (_data is not null && !_data.Charts.ContainsKey("D1")) _data = null; // no D1 → treat as not found
         _dashaRoots = _data is null ? Array.Empty<DashaPeriodRecord>() : DashaPeriodsRepo.GetTreeByBirthDetailId(Id);
         if (_lifeAreas.Count == 0) _lifeAreas = LifeAreaRepo.GetAll();
+
+        if (_data is not null)
+        {
+            _birthDate = _data.Person.DateOfBirth.ToDateTime(_data.Person.EffectiveTimeOfBirth);
+            _rounds = SadeSatiRounds.BuildRounds(SadeSatiRepo.GetByBirthDetailId(Id), _birthDate, DateTime.Now);
+        }
     }
 
     private static string Disp(string s) => s == "Capricornus" ? "Capricorn" : s;
 
-    private IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> D1PlanetsBySign() =>
-        D1.Grahas.Where(k => k.Planet != "Ascendant")
+    /// <summary>The sign a named graha sits in for a given chart — generic over any LoadedChart
+    /// (D1TemplateGrid.SunSign/MoonSign params), not just D1.</summary>
+    private static string SignOf(LoadedChart lc, string planet) =>
+        lc.Grahas.First(k => k.Planet == planet).Sign;
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<TemplatePlanetLine>> PlanetsBySign(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant").GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TemplatePlanetLine>)g.Select(k => new TemplatePlanetLine(
+                ChartViewModel.PlanetGlyph(k.Planet),
+                k.Planet.ToLowerInvariant(),
+                (int)(k.DegreesInSignDecimal ?? 0),
+                k.IsRetrograde ?? false,
+                k.IsCombust ?? false,
+                ChartViewModel.DignityScore(k.DignityStatus))).ToList());
+
+    /// <summary>Ras(L)/Hor(L) row content: chara-karaka-bearing grahas + special-lagna points
+    /// (AL/A2..A12/HL) in that sign — for a non-D1 chart, CharaKaraka is unpopulated so this
+    /// naturally reduces to just the special-lagna points.</summary>
+    private static IReadOnlyDictionary<string, IReadOnlyList<TemplatePointLine>> PointsBySign(LoadedChart lc)
+    {
+        var karakaLines = lc.Grahas.Where(k => k.CharaKaraka is not null)
+            .Select(k => (k.Sign, Line: new TemplatePointLine(k.CharaKaraka!, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
+        var lagnaLines = lc.SpecialPoints.Where(k => k.PointKind != "Upagraha")
+            .Select(k => (k.Sign, Line: new TemplatePointLine(k.Planet, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
+
+        return karakaLines.Concat(lagnaLines).GroupBy(x => x.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TemplatePointLine>)g.Select(x => x.Line).ToList());
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> UpagrahasBySign(LoadedChart lc) =>
+        lc.SpecialPoints.Where(k => k.PointKind == "Upagraha")
             .GroupBy(k => k.Sign)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
-                k.Planet, ChartViewModel.DignityToken(k.DignityStatus),
-                k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch { "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet }).ToList());
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialLabels(LoadedChart lc) =>
-        lc.SpecialPoints.GroupBy(k => k.Sign)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch
-            {
-                "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet
-            }).ToList());
+    /// <summary>The 8 Jaimini chara karakas as 2 rows of 4 — D1-only (see the CenterContent
+    /// branch above), CharaKaraka is only populated for D1 in the DB.</summary>
+    private static IReadOnlyList<IReadOnlyList<(string Code, string Glyph, string Key)>> KarakaRows(LoadedChart lc)
+    {
+        var byCode = lc.Grahas.Where(k => k.CharaKaraka is not null)
+            .ToDictionary(k => k.CharaKaraka!, k => (Glyph: ChartViewModel.PlanetGlyph(k.Planet), Key: k.Planet.ToLowerInvariant()));
+        var order = new[] { "AK", "AmK", "BK", "MK", "PiK", "PK", "GK", "DK" };
+        var pairs = order.Where(byCode.ContainsKey).Select(c => (Code: c, Glyph: byCode[c].Glyph, Key: byCode[c].Key)).ToList();
+        return new IReadOnlyList<(string, string, string)>[] { pairs.Take(4).ToList(), pairs.Skip(4).Take(4).ToList() };
+    }
 
-    private IReadOnlyList<PlanetRow> D1Rows() =>
-        ChartViewModel.BuildPlanetRows(D1.KeyDetails, D1.HouseLords, D1.Aspects);
+    private SadeSatiRounds.Round? RoundAt(int i) => i < _rounds.Count ? _rounds[i] : null;
 
-    private IReadOnlyList<PolarWheel.Point> WheelPoints(LoadedChart lc, bool varga) =>
-        lc.KeyDetails.Select(k => new PolarWheel.Point(
-            k.Planet,
-            varga ? k.VargaLongitudeDegrees : k.NirayanaLongitudeDegrees,
-            k.PointKind != "Graha" ? "--accent"
-              : k.Planet == "Ascendant" ? "--accent"
-              : $"--planet-{k.Planet.ToLowerInvariant()}")).ToList();
+    private string? ShortDescriptionOf(string code) =>
+        _data!.ChartTypes.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))?.ChartShortDescription;
+
+    private IReadOnlyList<PlanetRow> ActiveRows() =>
+        ChartViewModel.BuildPlanetRows(ActiveChart.KeyDetails, ActiveChart.HouseLords, ActiveChart.Aspects);
+
+    /// <summary>"D9 · Marriage and spouse" chip caption — mirrors VargaRail.Caption.</summary>
+    private string Caption(string code)
+    {
+        var areaName = _data!.ChartTypes.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase)) is { PrimaryLifeAreaId: int id }
+            ? _lifeAreas.FirstOrDefault(a => a.Id == id)?.AreaName
+            : null;
+        return string.IsNullOrWhiteSpace(areaName) ? code : $"{code} · {areaName}";
+    }
+
+    /// <summary>Builds a `/charts/{Id}` href, keeping every current query value except whichever
+    /// one is overridden — same pattern this app's other view toggles (view/tech/aspects) already
+    /// use. `area`/`chart` are escaped since a Life Area title can contain "&amp;".</summary>
+    private string Href(string? area = null, string? chart = null, string? theme = null, bool? tech = null) =>
+        $"/charts/{Id}?area={Uri.EscapeDataString(area ?? ActiveGroup.GroupCode)}" +
+        $"&chart={Uri.EscapeDataString(chart ?? ActiveCode)}" +
+        $"&theme={theme ?? Theme}&tech={((tech ?? Tech) ? "1" : "0")}";
+
+    private IReadOnlyList<SegmentedToggle.Segment> ThemeSegments() => new[]
+    {
+        new SegmentedToggle.Segment("orange", "Orange", Href(theme: "orange")),
+        new SegmentedToggle.Segment("nocturne", "Nocturne", Href(theme: "nocturne")),
+    };
+
+    /// <summary>One segment per Life Area group. Switching to a group that doesn't contain the
+    /// current hero resets the hero to D1 (tabs alone never pick a chart — see ActiveCode).</summary>
+    private IReadOnlyList<SegmentedToggle.Segment> AreaSegments() =>
+        VargaBundles.Groups(_data!.ChartTypes, _lifeAreas)
+            .Select(g => new SegmentedToggle.Segment(g.GroupCode, g.Title,
+                Href(area: g.GroupCode, chart: g.Codes.Contains(ActiveCode) ? ActiveCode : "D1")))
+            .ToList();
 
     private IReadOnlyList<SegmentedToggle.Segment> TechSegments() => new[]
     {
-        new SegmentedToggle.Segment("off", "Clean", $"/charts/{Id}?view={View}&tech=0"),
-        new SegmentedToggle.Segment("on",  "Technical", $"/charts/{Id}?view={View}&tech=1"),
+        new SegmentedToggle.Segment("off", "Clean", Href(tech: false)),
+        new SegmentedToggle.Segment("on",  "Technical", Href(tech: true)),
     };
-
-    private string AspectsHref() =>
-        $"/charts/{Id}?view=wheel&tech={(Tech ? "1" : "0")}&aspects={(ShowAspects ? "0" : "1")}";
-
-    private static IReadOnlyList<PolarWheel.Chord> ChordsFor(LoadedChart lc)
-    {
-        var lonByPlanet = lc.KeyDetails
-            .GroupBy(k => k.Planet)
-            .ToDictionary(g => g.Key, g => g.First().NirayanaLongitudeDegrees);
-        var signByPlanet = lc.KeyDetails
-            .GroupBy(k => k.Planet)
-            .ToDictionary(g => g.Key, g => g.First().Sign);
-        return lc.Aspects
-            .Where(a => lonByPlanet.ContainsKey(a.AspectingPlanet) && lonByPlanet.ContainsKey(a.AspectedTarget))
-            .Where(a => signByPlanet[a.AspectingPlanet] != signByPlanet[a.AspectedTarget])
-            .Select(a => new PolarWheel.Chord(
-                lonByPlanet[a.AspectingPlanet],
-                lonByPlanet[a.AspectedTarget],
-                $"--planet-{a.AspectingPlanet.ToLowerInvariant()}"))
-            .ToList();
-    }
 
     private void HandleDelete()
     {
