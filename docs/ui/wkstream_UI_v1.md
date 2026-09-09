@@ -9,9 +9,9 @@ safe: Feature (full-surface)
 # wkstream_UI_v1 — the current app UI
 
 The scope of the UI as it stands: a MudBlazor light-theme shell over the warm Iki-Astrro
-brand, trimmed to the surfaces the astrologer actually reads. A `wkstream_UI_v2` is only
-created when a full re-do is next warranted; between now and then, changes are component docs
-under [`components/`](.) linked from [`MASTER.md`](MASTER.md).
+brand, trimmed to the surfaces the astrologer actually reads. This describes what is **live**.
+The full re-do is now in scoping — [`wkstream_UI_v2.md`](wkstream_UI_v2.md); v1 stays the
+live-state reference until v2 ships.
 
 ## What v1 is
 

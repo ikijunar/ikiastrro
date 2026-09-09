@@ -18,7 +18,8 @@ recomputes.
 
 | Doc | For |
 |---|---|
-| [`wkstream_UI_v1.md`](wkstream_UI_v1.md) | The current full-UI scope — MudBlazor shell, brand override, the four kept surfaces |
+| [`wkstream_UI_v1.md`](wkstream_UI_v1.md) | What is **live** — MudBlazor shell, brand override, the four kept surfaces |
+| [`wkstream_UI_v2.md`](wkstream_UI_v2.md) | **In scoping** — the full UI re-do: analysis-first IA + ROADMAP *Now* surfacing + `/add` / Preferences |
 | [`brand.md`](brand.md) | Canonical palette, typography, lockup, preserved assets |
 | [`design-language.md`](design-language.md) | Token + component authoring rules |
 | [`dataviz.md`](dataviz.md) | Charting approach — hand-rolled SVG now, Syncfusion as a deferred option |
@@ -57,7 +58,9 @@ Nav order Home · Preferences · Saved Charts. Chart-page person names in sunset
 
 ## Planned
 
-- Surface strength (Ṣaḍbala / Bhāva Bala), Chara Karakas, avastha states, and the slow-planet
-  transit timeline as each DB+CLI feature lands — the "Missing Web" column of the
-  `masterproduct.md` rollup.
-- `wkstream_UI_v2` when a full revamp is next warranted.
+- **`wkstream_UI_v2`** — full re-do, now in scoping ([`wkstream_UI_v2.md`](wkstream_UI_v2.md)).
+  Absorbs `FEAT-UI-03` / `FEAT-UI-12` and the "Missing Web" column of the `masterproduct.md`
+  rollup — divisional charts D2–D60, Chara Karakas, avastha states, the slow-planet transit
+  timeline, strength (Ṣaḍbala / Bhāva Bala).
+- Codex works one path scope on `workstream/ui` — proposed `src/Ikiastrro.Web/Components/Charts/**`
+  (confirm); Claude owns the shell and integrates.
