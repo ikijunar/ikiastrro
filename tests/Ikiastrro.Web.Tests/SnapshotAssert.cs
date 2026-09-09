@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Xunit.Sdk;
 
 namespace Ikiastrro.Web.Tests;
@@ -21,7 +22,8 @@ internal static partial class SnapshotAssert
     private static readonly string SnapshotDir =
         Path.Combine(RepoRoot(), "docs", "artifacts", "ui");
 
-    public static void MatchesGolden(this IRenderedFragment cut, string name)
+    public static void MatchesGolden<TComponent>(this IRenderedComponent<TComponent> cut, string name)
+        where TComponent : IComponent
     {
         var actual = Normalise(cut.Markup);
         var goldenPath = Path.Combine(SnapshotDir, $"{name}-sample.svg");

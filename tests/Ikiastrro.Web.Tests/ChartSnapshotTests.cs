@@ -12,7 +12,7 @@ namespace Ikiastrro.Web.Tests;
 /// WDAC on the dev machine blocks terminal `dotnet test`; run these from Visual Studio's
 /// Test Explorer. `dotnet build Ikiastrro.slnx` still compiles the project as the CI gate.
 /// </summary>
-public class ChartSnapshotTests : TestContext
+public class ChartSnapshotTests : BunitContext
 {
     public ChartSnapshotTests()
     {
@@ -24,7 +24,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void PolarWheel()
     {
-        var cut = RenderComponent<PolarWheel>(ps => ps
+        var cut = Render<PolarWheel>(ps => ps
             .Add(p => p.Points, ChartFixture.WheelPoints)
             .Add(p => p.Chords, ChartFixture.WheelChords));
 
@@ -34,7 +34,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void SouthIndianGrid()
     {
-        var cut = RenderComponent<SouthIndianGrid>(ps => ps
+        var cut = Render<SouthIndianGrid>(ps => ps
             .Add(p => p.AscendantSign, "Aries")
             .Add(p => p.MoonSign, "Taurus")
             .Add(p => p.PlanetsBySign, ChartFixture.GridGlyphs)
@@ -47,7 +47,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void MiniGrid()
     {
-        var cut = RenderComponent<MiniGrid>(ps => ps
+        var cut = Render<MiniGrid>(ps => ps
             .Add(p => p.PlanetsBySign, ChartFixture.GridNames)
             .Add(p => p.LagnaSign, "Aries")
             .Add(p => p.Caption, "D1"));
@@ -58,7 +58,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void CombinedD1D9Grid()
     {
-        var cut = RenderComponent<CombinedD1D9Grid>(ps => ps
+        var cut = Render<CombinedD1D9Grid>(ps => ps
             .Add(p => p.D1KeyDetails, ChartFixture.D1)
             .Add(p => p.D9KeyDetails, ChartFixture.D9)
             .Add(p => p.LagnaSign, "Aries"));
@@ -69,7 +69,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void VargottamaStrip()
     {
-        var cut = RenderComponent<VargottamaStrip>(ps => ps
+        var cut = Render<VargottamaStrip>(ps => ps
             .Add(p => p.D1Grahas, ChartFixture.D1)
             .Add(p => p.DnGrahas, ChartFixture.D9)
             .Add(p => p.DnCode, "D9"));
@@ -80,7 +80,7 @@ public class ChartSnapshotTests : TestContext
     [Fact]
     public void ChartFrame()
     {
-        var cut = RenderComponent<ChartFrame>(ps => ps
+        var cut = Render<ChartFrame>(ps => ps
             .Add(p => p.View, "grid")
             .Add(p => p.BaseHref, "/charts/1")
             .Add(p => p.GridContent, "<div class=\"stub-grid\">grid</div>")
