@@ -37,7 +37,7 @@ FROM (VALUES
     ( 8, 'D8',    8,  'ParasaraTraditional', 'BPHS Ashtamsa; PyJHora ashtamsa_chart method 1',                   'Special', 'AshtamsaD8'),
     ( 9, 'D9',    9,  'ParasaraTraditional', 'BPHS Navamsa; AstroMath.GetNavamsaSign',                           'Special', 'NavamsaD9'),
     (10, 'D10',   10, 'ParasaraTraditional', 'BPHS Dasamsa odd-self/even-9th; AstroMath.GetDasamsaSign',         'Special', 'DasamsaD10'),
-    (11, 'D11',   11, 'SanjayRath',          'Sanjay Rath Rudramsa; AstroMath.GetRudramsaSign',                  'Special', 'RudramsaD11'),
+    (11, 'D11',   11, 'ParasaraTraditional', 'PVR Integrated Approach / BPHS Rudramsa; AstroMath.GetRudramsaSign', 'Special', 'RudramsaD11'),
     (12, 'D12',   12, 'ParasaraTraditional', 'BPHS Dwadasamsa 12-from-self; PyJHora dwadasamsa_chart method 1',  'Linear',  'DwadasamsaD12'),
     (13, 'D16',   16, 'ParasaraTraditional', 'BPHS Shodasamsa; PyJHora shodasamsa_chart method 1',               'Special', 'ShodasamsaD16'),
     (14, 'D20',   20, 'ParasaraTraditional', 'BPHS Vimsamsa; PyJHora vimsamsa_chart method 1',                   'Special', 'VimsamsaD20'),

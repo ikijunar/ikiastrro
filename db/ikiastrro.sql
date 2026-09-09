@@ -3468,7 +3468,7 @@ FROM (VALUES
     ( 8, 'D8',    8,  'ParasaraTraditional', 'BPHS Ashtamsa; PyJHora ashtamsa_chart method 1',                   'Special', 'AshtamsaD8'),
     ( 9, 'D9',    9,  'ParasaraTraditional', 'BPHS Navamsa; AstroMath.GetNavamsaSign',                           'Special', 'NavamsaD9'),
     (10, 'D10',   10, 'ParasaraTraditional', 'BPHS Dasamsa odd-self/even-9th; AstroMath.GetDasamsaSign',         'Special', 'DasamsaD10'),
-    (11, 'D11',   11, 'SanjayRath',          'Sanjay Rath Rudramsa; AstroMath.GetRudramsaSign',                  'Special', 'RudramsaD11'),
+    (11, 'D11',   11, 'ParasaraTraditional', 'PVR Integrated Approach / BPHS Rudramsa; AstroMath.GetRudramsaSign', 'Special', 'RudramsaD11'),
     (12, 'D12',   12, 'ParasaraTraditional', 'BPHS Dwadasamsa 12-from-self; PyJHora dwadasamsa_chart method 1',  'Linear',  'DwadasamsaD12'),
     (13, 'D16',   16, 'ParasaraTraditional', 'BPHS Shodasamsa; PyJHora shodasamsa_chart method 1',               'Special', 'ShodasamsaD16'),
     (14, 'D20',   20, 'ParasaraTraditional', 'BPHS Vimsamsa; PyJHora vimsamsa_chart method 1',                   'Special', 'VimsamsaD20'),
@@ -3513,6 +3513,7 @@ UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = N'{"method":"BAND_VARGA
 UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = N'{"method":"GRID_VARGA","parts":40,"map":[[0,6,0,6,0,6,0,6,0,6,0,6],[1,7,1,7,1,7,1,7,1,7,1,7],[2,8,2,8,2,8,2,8,2,8,2,8],[3,9,3,9,3,9,3,9,3,9,3,9],[4,10,4,10,4,10,4,10,4,10,4,10],[5,11,5,11,5,11,5,11,5,11,5,11],[6,0,6,0,6,0,6,0,6,0,6,0],[7,1,7,1,7,1,7,1,7,1,7,1],[8,2,8,2,8,2,8,2,8,2,8,2],[9,3,9,3,9,3,9,3,9,3,9,3],[10,4,10,4,10,4,10,4,10,4,10,4],[11,5,11,5,11,5,11,5,11,5,11,5],[0,6,0,6,0,6,0,6,0,6,0,6],[1,7,1,7,1,7,1,7,1,7,1,7],[2,8,2,8,2,8,2,8,2,8,2,8],[3,9,3,9,3,9,3,9,3,9,3,9],[4,10,4,10,4,10,4,10,4,10,4,10],[5,11,5,11,5,11,5,11,5,11,5,11],[6,0,6,0,6,0,6,0,6,0,6,0],[7,1,7,1,7,1,7,1,7,1,7,1],[8,2,8,2,8,2,8,2,8,2,8,2],[9,3,9,3,9,3,9,3,9,3,9,3],[10,4,10,4,10,4,10,4,10,4,10,4],[11,5,11,5,11,5,11,5,11,5,11,5],[0,6,0,6,0,6,0,6,0,6,0,6],[1,7,1,7,1,7,1,7,1,7,1,7],[2,8,2,8,2,8,2,8,2,8,2,8],[3,9,3,9,3,9,3,9,3,9,3,9],[4,10,4,10,4,10,4,10,4,10,4,10],[5,11,5,11,5,11,5,11,5,11,5,11],[6,0,6,0,6,0,6,0,6,0,6,0],[7,1,7,1,7,1,7,1,7,1,7,1],[8,2,8,2,8,2,8,2,8,2,8,2],[9,3,9,3,9,3,9,3,9,3,9,3],[10,4,10,4,10,4,10,4,10,4,10,4],[11,5,11,5,11,5,11,5,11,5,11,5],[0,6,0,6,0,6,0,6,0,6,0,6],[1,7,1,7,1,7,1,7,1,7,1,7],[2,8,2,8,2,8,2,8,2,8,2,8],[3,9,3,9,3,9,3,9,3,9,3,9]]}', CalculationNarrative = N'GRID_VARGA parts=40: each rasi sign splits into 40 equal 0.75 deg parts; map[part][rasiSign] is the 0-based varga sign. Sampled from KhavedamsaD40SignRule (SignRuleKey=KhavedamsaD40).' WHERE Id = 18;  -- KhavedamsaD40
 UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = N'{"method":"GRID_VARGA","parts":45,"map":[[0,4,8,0,4,8,0,4,8,0,4,8],[1,5,9,1,5,9,1,5,9,1,5,9],[2,6,10,2,6,10,2,6,10,2,6,10],[3,7,11,3,7,11,3,7,11,3,7,11],[4,8,0,4,8,0,4,8,0,4,8,0],[5,9,1,5,9,1,5,9,1,5,9,1],[6,10,2,6,10,2,6,10,2,6,10,2],[7,11,3,7,11,3,7,11,3,7,11,3],[8,0,4,8,0,4,8,0,4,8,0,4],[9,1,5,9,1,5,9,1,5,9,1,5],[10,2,6,10,2,6,10,2,6,10,2,6],[11,3,7,11,3,7,11,3,7,11,3,7],[0,4,8,0,4,8,0,4,8,0,4,8],[1,5,9,1,5,9,1,5,9,1,5,9],[2,6,10,2,6,10,2,6,10,2,6,10],[3,7,11,3,7,11,3,7,11,3,7,11],[4,8,0,4,8,0,4,8,0,4,8,0],[5,9,1,5,9,1,5,9,1,5,9,1],[6,10,2,6,10,2,6,10,2,6,10,2],[7,11,3,7,11,3,7,11,3,7,11,3],[8,0,4,8,0,4,8,0,4,8,0,4],[9,1,5,9,1,5,9,1,5,9,1,5],[10,2,6,10,2,6,10,2,6,10,2,6],[11,3,7,11,3,7,11,3,7,11,3,7],[0,4,8,0,4,8,0,4,8,0,4,8],[1,5,9,1,5,9,1,5,9,1,5,9],[2,6,10,2,6,10,2,6,10,2,6,10],[3,7,11,3,7,11,3,7,11,3,7,11],[4,8,0,4,8,0,4,8,0,4,8,0],[5,9,1,5,9,1,5,9,1,5,9,1],[6,10,2,6,10,2,6,10,2,6,10,2],[7,11,3,7,11,3,7,11,3,7,11,3],[8,0,4,8,0,4,8,0,4,8,0,4],[9,1,5,9,1,5,9,1,5,9,1,5],[10,2,6,10,2,6,10,2,6,10,2,6],[11,3,7,11,3,7,11,3,7,11,3,7],[0,4,8,0,4,8,0,4,8,0,4,8],[1,5,9,1,5,9,1,5,9,1,5,9],[2,6,10,2,6,10,2,6,10,2,6,10],[3,7,11,3,7,11,3,7,11,3,7,11],[4,8,0,4,8,0,4,8,0,4,8,0],[5,9,1,5,9,1,5,9,1,5,9,1],[6,10,2,6,10,2,6,10,2,6,10,2],[7,11,3,7,11,3,7,11,3,7,11,3],[8,0,4,8,0,4,8,0,4,8,0,4]]}', CalculationNarrative = N'GRID_VARGA parts=45: each rasi sign splits into 45 equal 0.6667 deg parts; map[part][rasiSign] is the 0-based varga sign. Sampled from AkshavedamsaD45SignRule (SignRuleKey=AkshavedamsaD45).' WHERE Id = 19;  -- AkshavedamsaD45
 UPDATE dbo.tbl_Rule_VargaScheme SET RuleParametersJson = N'{"method":"LINEAR_VARGA","factor":60,"stride":1}', CalculationNarrative = N'LINEAR_VARGA factor=60 stride=1: l = floor(degreesInRasiSign / (30/60)); varga sign = (rasiSign + l*1) mod 12. Closed form of LinearVargaSignRule (SignRuleKey=ShashtyamsaD60).' WHERE Id = 20;  -- ShashtyamsaD60
+UPDATE dbo.tbl_Rule_VargaScheme SET MethodCode = 'ParasaraTraditional', MethodSource = 'PVR Integrated Approach / BPHS Rudramsa; AstroMath.GetRudramsaSign', SourceRefCode = 'SRC_PVR_INTEGRATED' WHERE Id = 11; -- D11 Rudramsa
 GO
 
 -- =====================================================================
@@ -3665,7 +3666,10 @@ VALUES
     ('tbl_Rule_SubPlanetPartRuler',         'SUBPLANET',    'PART_RULER_LOOKUP', 'PVR "Table 10": the ruling graha (or none) of each of the 8 equal parts of the day / night arc, per weekday. Feeds the EIGHTH_PART_RULER method for the time-based sub-planets; also the ruler sequence for Gulika/Maandi.', '27_add_subplanet_rule_layer.sql'),
     ('tbl_Rule_SubPlanetTime',              'SUBPLANET',    'EIGHTH_PART_RULER', 'Time-based sub-planets (Kaala, Mrityu, Ardhaprahara, Yamaghantaka, Gulika, Maandi): each rises at PartFraction (0 = start, 0.5 = middle) of the 1/8 arc part ruled by a specific graha; the rising Ascendant at that instant is the longitude. Reference data - only Gulika/Maandi are built in C# (start/middle swapped vs this text per JHora).', '27_add_subplanet_rule_layer.sql'),
     ('tbl_Rule_SpecialLagnaTimeRate',       'SPECIALLAGNA', 'TIME_RATE_FROM_SUNRISE', 'Bhaava / Hora / Ghati Lagna: each is the Sun''s sunrise longitude plus a fixed DegreesPerMinute advance for every minute since the day''s opening sunrise (Bhaava 0.25, Hora 0.5, Ghati 1.25), mod 360. Reference data - only Hora Lagna is built in C#.', '28_add_special_lagna_rule_layer.sql'),
-    ('tbl_Rule_SpecialLagnaFraction',       'SPECIALLAGNA', 'LAGNA_PLUS_NAK_FRACTION', 'Sree Lagna: natal lagna longitude plus the Moon''s fraction through its nakshatra scaled to 360 deg, mod 360. Reference point for Sudasa. Reference data - engine not yet built.', '28_add_special_lagna_rule_layer.sql');
+    ('tbl_Rule_SpecialLagnaFraction',       'SPECIALLAGNA', 'LAGNA_PLUS_NAK_FRACTION', 'Sree Lagna: natal lagna longitude plus the Moon''s fraction through its nakshatra scaled to 360 deg, mod 360. Reference point for Sudasa. Reference data - engine not yet built.', '28_add_special_lagna_rule_layer.sql'),
+    ('tbl_Rule_Ayanamsa',                   'ASTRONOMY',    'SIDEREAL_MODE,USER_OFFSET', 'Versioned ayanamsa selection, Swiss Ephemeris sidereal mode, optional correction, and default policy.', '36_create_rule_ayanamsa.sql'),
+    ('tbl_Rule_BhavaBalaComponent',         'STRENGTH',     'HOUSE_LORD_SHADBALA,HOUSE_DIRECTION,HOUSE_ASPECT', 'Versioned Bhava Bala component definitions, maxima, methods, and formula provenance.', '39_add_shadbala_strength_facts.sql'),
+    ('tbl_Rule_DashaApplicability',         'DASHA',        'CONDITION_LOOKUP', 'Source-attributed applicability conditions for conditional dasha systems.', '46_create_ayanamsa_dasha_benchmarks.sql');
 GO
 
 -- =====================================================================
@@ -5557,6 +5561,23 @@ JOIN dbo.tbl_SignAttributes  nav  ON nav.Id = p.NavamsaSignId;
 GO
 
 -- =====================================================================
+-- 40 — bilingual taxonomy fields (kept before the final consolidated view)
+IF COL_LENGTH('dbo.tbl_Dim_LifeArea','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_LifeArea ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+IF COL_LENGTH('dbo.tbl_Dim_House','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_House ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+IF COL_LENGTH('dbo.tbl_Dim_HouseCategory','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_HouseCategory ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+IF COL_LENGTH('dbo.tbl_Dim_HouseReference','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_HouseReference ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+IF COL_LENGTH('dbo.tbl_Dim_DivisionalSubject','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_DivisionalSubject ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+IF COL_LENGTH('dbo.tbl_Dim_InterpretationDimension','EnglishName') IS NULL ALTER TABLE dbo.tbl_Dim_InterpretationDimension ADD EnglishName NVARCHAR(160) NULL, SanskritName NVARCHAR(160) NULL;
+UPDATE dbo.tbl_Dim_LifeArea SET EnglishName = AreaName, SanskritName = AreaName WHERE EnglishName IS NULL OR SanskritName IS NULL;
+UPDATE dbo.tbl_Dim_House SET EnglishName = ShortName, SanskritName = BhavaNameSa WHERE EnglishName IS NULL OR SanskritName IS NULL;
+UPDATE dbo.tbl_Dim_HouseCategory SET EnglishName = DisplayName, SanskritName = DisplayName WHERE EnglishName IS NULL OR SanskritName IS NULL;
+UPDATE dbo.tbl_Dim_HouseReference SET EnglishName = ReferenceName, SanskritName = ReferenceName WHERE EnglishName IS NULL OR SanskritName IS NULL;
+UPDATE dbo.tbl_Dim_DivisionalSubject SET EnglishName = SubjectName, SanskritName = SubjectName WHERE EnglishName IS NULL OR SanskritName IS NULL;
+UPDATE dbo.tbl_Dim_InterpretationDimension SET EnglishName = DimensionName, SanskritName = DimensionName WHERE EnglishName IS NULL OR SanskritName IS NULL;
+IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '40_add_taxonomy_bilingual_fields.sql')
+    INSERT dbo.SchemaMigrations (ScriptName, AppliedAtUtc, Note) VALUES ('40_add_taxonomy_bilingual_fields.sql', SYSUTCDATETIME(), 'Bilingual taxonomy fields');
+GO
+
 -- vw_Chart_Consolidated — defined last: it reads tbl_Fact_PlanetaryState /
 -- tbl_Dim_PlanetaryState (created just above) as well as the tbl_Chart_* tables.
 -- =====================================================================
@@ -5587,6 +5608,412 @@ OUTER APPLY (SELECT TOP (1) r.MethodCode, r.CalculationNarrative, r.SourceRefCod
              FROM dbo.tbl_Rule_SubPlanetTime r
              WHERE r.SubPlanetId = sp.Id AND r.IsActive = 1
              ORDER BY r.RuleSetId DESC) tm;
+GO
+
+-- =====================================================================
+-- 47 — Prepare tbl_Rule_Yoga for source-attributed Raman/PVR variants.
+-- OCR text is research input, not implementation evidence, until each
+-- entry is checked against its scan page.
+-- =====================================================================
+USE [ikiastrro];
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '47_prepare_source_attributed_yoga_corpus.sql')
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_Source WHERE Code = 'SRC_RAMAN_300_COMBINATIONS')
+        INSERT dbo.tbl_Dim_Source (Code, Title, Author, Edition, Tradition, Notes)
+        VALUES ('SRC_RAMAN_300_COMBINATIONS', N'Three Hundred Important Combinations',
+            N'B. V. Raman', N'Ninth edition 1983; tenth-edition Delhi reprint 1994',
+            'Raman', N'ISBN 81-208-0843-6 cloth / 81-208-0850-9 paper; complete local DJVU and OCR draft');
+
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceLocator') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceLocator VARCHAR(120) NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceEntryNumber') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceEntryNumber SMALLINT NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceVariantCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceVariantCode VARCHAR(60) NULL;
+
+    IF OBJECT_ID('dbo.CK_Rule_Yoga_SourceEntryNumber', 'C') IS NULL
+        EXEC(N'ALTER TABLE dbo.tbl_Rule_Yoga ADD CONSTRAINT CK_Rule_Yoga_SourceEntryNumber
+            CHECK (SourceEntryNumber IS NULL OR SourceEntryNumber BETWEEN 1 AND 300);');
+    IF OBJECT_ID('dbo.UQ_Rule_Yoga_SourceVariant', 'UQ') IS NULL
+        EXEC(N'ALTER TABLE dbo.tbl_Rule_Yoga ADD CONSTRAINT UQ_Rule_Yoga_SourceVariant
+            UNIQUE (RuleSetId, YogaCode, SourceRefCode, SourceVariantCode);');
+
+    UPDATE dbo.tbl_Rule_Catalog
+       SET MethodCodes = 'PREDICATE_SET,SOURCE_VARIANT',
+           Purpose = 'Source-attributed yoga definitions: predicates, qualifications, cancellations, outcomes and exact locators.'
+     WHERE RuleTableName = 'tbl_Rule_Yoga';
+
+    INSERT dbo.SchemaMigrations (ScriptName, Note)
+    VALUES ('47_prepare_source_attributed_yoga_corpus.sql',
+        'SRC_RAMAN_300_COMBINATIONS + locator, entry number and source-variant identity for tbl_Rule_Yoga');
+END
+GO
+
+DECLARE @sourceCount INT = (SELECT COUNT(*) FROM dbo.tbl_Dim_Source WHERE Code = 'SRC_RAMAN_300_COMBINATIONS');
+PRINT '47 applied: Raman yoga sources=' + CAST(@sourceCount AS VARCHAR(10))
+    + '; predicates remain gated on scan verification.';
+GO
+
+-- =====================================================================
+-- 48 — Orthogonal yoga classification axes.
+-- Strength is not folded into nature or formation family. Source-stated
+-- importance remains distinct from per-chart evaluated strength.
+-- =====================================================================
+USE [ikiastrro];
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '48_add_yoga_classification_axes.sql')
+BEGIN
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'FormationFamilyCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD FormationFamilyCode VARCHAR(30) NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'OutcomeNatureCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD OutcomeNatureCode VARCHAR(20) NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceStrengthClassCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceStrengthClassCode VARCHAR(20) NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceCategoryCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceCategoryCode VARCHAR(40) NULL;
+    IF COL_LENGTH('dbo.tbl_Rule_Yoga', 'SourceCorpusCode') IS NULL
+        ALTER TABLE dbo.tbl_Rule_Yoga ADD SourceCorpusCode VARCHAR(20) NULL;
+
+    IF OBJECT_ID('dbo.CK_Rule_Yoga_OutcomeNature', 'C') IS NULL
+        EXEC(N'ALTER TABLE dbo.tbl_Rule_Yoga ADD CONSTRAINT CK_Rule_Yoga_OutcomeNature CHECK
+            (OutcomeNatureCode IS NULL OR OutcomeNatureCode IN (''AUSPICIOUS'',''INAUSPICIOUS'',''MIXED'',''CONTEXTUAL''));');
+    IF OBJECT_ID('dbo.CK_Rule_Yoga_SourceStrengthClass', 'C') IS NULL
+        EXEC(N'ALTER TABLE dbo.tbl_Rule_Yoga ADD CONSTRAINT CK_Rule_Yoga_SourceStrengthClass CHECK
+            (SourceStrengthClassCode IS NULL OR SourceStrengthClassCode IN (''MAJOR'',''MODERATE'',''MINOR'',''SOURCE_UNSPECIFIED''));');
+    IF OBJECT_ID('dbo.CK_Rule_Yoga_SourceCorpus', 'C') IS NULL
+        EXEC(N'ALTER TABLE dbo.tbl_Rule_Yoga ADD CONSTRAINT CK_Rule_Yoga_SourceCorpus CHECK
+            (SourceCorpusCode IS NULL OR SourceCorpusCode IN (''BVR-300'',''PVR-SPECIFIC'',''OTHERS''));');
+
+    INSERT dbo.SchemaMigrations (ScriptName, Note)
+    VALUES ('48_add_yoga_classification_axes.sql',
+        'tbl_Rule_Yoga formation family, outcome nature, source strength class, source category and source corpus axes');
+END
+GO
+
+-- =====================================================================
+-- 49 — Track which chart(s) each source-attributed yoga variant needs.
+-- One row per variant/chart keeps multi-varga requirements normalized.
+-- =====================================================================
+USE [ikiastrro];
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '49_add_yoga_chart_applicability.sql')
+BEGIN
+    IF OBJECT_ID('dbo.tbl_Rule_YogaChartApplicability', 'U') IS NULL
+    CREATE TABLE dbo.tbl_Rule_YogaChartApplicability
+    (
+        Id                INT IDENTITY(1,1) CONSTRAINT PK_Rule_YogaChartApplicability PRIMARY KEY,
+        RuleSetId         TINYINT NOT NULL,
+        SourceRefCode     VARCHAR(40) NOT NULL,
+        SourceVariantCode VARCHAR(60) NOT NULL,
+        ChartTypeId       TINYINT NOT NULL,
+        RequirementRole   VARCHAR(20) NOT NULL,
+        EvaluationScope   VARCHAR(20) NOT NULL CONSTRAINT DF_Rule_YogaChartApplicability_Scope DEFAULT ('NATAL'),
+        MissingBehavior   VARCHAR(20) NOT NULL CONSTRAINT DF_Rule_YogaChartApplicability_Missing DEFAULT ('NOT_EVALUATED'),
+        Notes             NVARCHAR(500) NULL,
+        IsActive          BIT NOT NULL CONSTRAINT DF_Rule_YogaChartApplicability_IsActive DEFAULT (1),
+        CONSTRAINT FK_Rule_YogaChartApplicability_RuleSet FOREIGN KEY (RuleSetId) REFERENCES dbo.tbl_Rule_Sets (Id),
+        CONSTRAINT FK_Rule_YogaChartApplicability_Source FOREIGN KEY (SourceRefCode) REFERENCES dbo.tbl_Dim_Source (Code),
+        CONSTRAINT FK_Rule_YogaChartApplicability_ChartType FOREIGN KEY (ChartTypeId) REFERENCES dbo.tbl_Dim_ChartType (Id),
+        CONSTRAINT UQ_Rule_YogaChartApplicability UNIQUE (RuleSetId, SourceRefCode, SourceVariantCode, ChartTypeId),
+        CONSTRAINT CK_Rule_YogaChartApplicability_Role CHECK (RequirementRole IN ('FOUNDATION','REQUIRED','CONFIRMATORY')),
+        CONSTRAINT CK_Rule_YogaChartApplicability_Scope CHECK (EvaluationScope IN ('NATAL','DIVISIONAL','TRANSIT','UNIVERSAL')),
+        CONSTRAINT CK_Rule_YogaChartApplicability_Missing CHECK (MissingBehavior IN ('NOT_EVALUATED','OPTIONAL','FALLBACK'))
+    );
+
+    INSERT dbo.tbl_Rule_Catalog
+        (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+    SELECT 'tbl_Rule_YogaChartApplicability', 'YOGA', 'CHART_REQUIREMENT',
+        'Required chart inputs for each source-attributed yoga variant.',
+        'migration 49'
+    WHERE NOT EXISTS
+        (SELECT 1 FROM dbo.tbl_Rule_Catalog WHERE RuleTableName = 'tbl_Rule_YogaChartApplicability');
+
+    INSERT dbo.SchemaMigrations (ScriptName, Note)
+    VALUES ('49_add_yoga_chart_applicability.sql',
+        'Normalized D1/D9 requirement tracking for source-attributed yoga variants');
+END
+GO
+
+DECLARE @ruleSetId TINYINT = (SELECT TOP (1) Id FROM dbo.tbl_Rule_Sets WHERE IsActive = 1 ORDER BY VersionNumber DESC);
+DECLARE @d1 TINYINT = (SELECT Id FROM dbo.tbl_Dim_ChartType WHERE Code = 'D1');
+DECLARE @d9 TINYINT = (SELECT Id FROM dbo.tbl_Dim_ChartType WHERE Code = 'D9');
+
+IF @ruleSetId IS NULL OR @d1 IS NULL OR @d9 IS NULL
+    THROW 50049, 'Migration 49 requires an active rule set and registered D1/D9 chart types.', 1;
+
+DECLARE @variants TABLE
+(
+    SourceRefCode VARCHAR(60) NOT NULL,
+    SourceVariantCode VARCHAR(60) NOT NULL,
+    NeedsD9 BIT NOT NULL
+);
+
+DECLARE @n INT = 1;
+WHILE @n <= 300
+BEGIN
+    IF @n NOT IN (49, 51, 52, 53, 54, 79, 81, 87, 89)
+        INSERT @variants VALUES
+            ('SRC_RAMAN_300_COMBINATIONS', CONCAT('RAMAN_300_', RIGHT(CONCAT('000', @n), 3)),
+             CASE WHEN @n IN (28,29,46,57,62,66,68,113,114,131,135,137,153,169,172,175,176,182,183,184,185,186,192,197,199) THEN 1 ELSE 0 END);
+    SET @n += 1;
+END;
+
+INSERT @variants VALUES
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_049_CLASSICAL',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_049_OBSERVED',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_051_A',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_051_B',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_051_C',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_052_PRIMARY',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_052_RAO',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_053_STRICT',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_053_RELAXED',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_054_NAVAMSA',1),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_054_RASI',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H02',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H03',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H05',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H06',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H08',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H09',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H11',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_079_H12',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_081_H01',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_081_H04',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_081_H07',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_081_H10',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_087_H02',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_087_H03',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_087_H04',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_089_PANAPARA',0),
+('SRC_RAMAN_300_COMBINATIONS','RAMAN_300_089_APOKLIMA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_GAJAKESARI',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_SUNAPHA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_ANAPHA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_DURADHARA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_KEMADRUMA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_CHANDRA_MANGALA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_VESI',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_VOSI',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_UBHAYACHARA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_BUDHA_ADITYA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_RUCHAKA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_BHADRA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_HAMSA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_MALAVYA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_SASA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_ADHI',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_AMALA',0),
+('SRC_PVR_INTEGRATED','PVR_CH11_PARVATA',0);
+
+INSERT dbo.tbl_Rule_YogaChartApplicability
+    (RuleSetId, SourceRefCode, SourceVariantCode, ChartTypeId, RequirementRole, EvaluationScope, MissingBehavior, Notes)
+SELECT @ruleSetId, v.SourceRefCode, v.SourceVariantCode, @d1, 'FOUNDATION', 'NATAL', 'NOT_EVALUATED',
+       N'D1 is the foundational chart for this yoga definition.'
+FROM @variants v
+WHERE NOT EXISTS
+(
+    SELECT 1 FROM dbo.tbl_Rule_YogaChartApplicability x
+    WHERE x.RuleSetId = @ruleSetId AND x.SourceRefCode = v.SourceRefCode
+      AND x.SourceVariantCode = v.SourceVariantCode AND x.ChartTypeId = @d1
+);
+
+INSERT dbo.tbl_Rule_YogaChartApplicability
+    (RuleSetId, SourceRefCode, SourceVariantCode, ChartTypeId, RequirementRole, EvaluationScope, MissingBehavior, Notes)
+SELECT @ruleSetId, v.SourceRefCode, v.SourceVariantCode, @d9, 'REQUIRED', 'DIVISIONAL', 'NOT_EVALUATED',
+       N'D9 placement is required by the source definition; absence must not be reported as yoga absence.'
+FROM @variants v
+WHERE v.NeedsD9 = 1
+  AND NOT EXISTS
+(
+    SELECT 1 FROM dbo.tbl_Rule_YogaChartApplicability x
+    WHERE x.RuleSetId = @ruleSetId AND x.SourceRefCode = v.SourceRefCode
+      AND x.SourceVariantCode = v.SourceVariantCode AND x.ChartTypeId = @d9
+);
+GO
+
+CREATE OR ALTER VIEW dbo.vw_YogaChartApplicability
+AS
+SELECT a.RuleSetId, a.SourceRefCode, a.SourceVariantCode,
+       ct.Code AS ChartCode, ct.DisplayName AS ChartName,
+       a.RequirementRole, a.EvaluationScope, a.MissingBehavior, a.Notes, a.IsActive
+FROM dbo.tbl_Rule_YogaChartApplicability a
+JOIN dbo.tbl_Dim_ChartType ct ON ct.Id = a.ChartTypeId;
+GO
+
+DECLARE @tracked INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_YogaChartApplicability);
+DECLARE @multiChart INT =
+(
+    SELECT COUNT(*) FROM
+    (
+        SELECT RuleSetId, SourceRefCode, SourceVariantCode
+        FROM dbo.tbl_Rule_YogaChartApplicability
+        GROUP BY RuleSetId, SourceRefCode, SourceVariantCode
+        HAVING COUNT(*) > 1
+    ) x
+);
+PRINT '49 applied: chart-requirement rows=' + CAST(@tracked AS VARCHAR(10))
+    + '; multi-chart variants=' + CAST(@multiChart AS VARCHAR(10));
+GO
+
+-- =====================================================================
+-- 51 — Normalize non-chart inputs required by source-attributed yogas.
+-- Missing required context must yield NOT_EVALUATED, never ABSENT.
+-- =====================================================================
+USE [ikiastrro];
+GO
+
+IF OBJECT_ID('dbo.tbl_Rule_YogaContextRequirement', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tbl_Rule_YogaContextRequirement
+    (
+        Id                   INT IDENTITY(1,1) CONSTRAINT PK_Rule_YogaContextRequirement PRIMARY KEY,
+        RuleSetId            TINYINT NOT NULL,
+        SourceRefCode        VARCHAR(40) NOT NULL,
+        SourceVariantCode    VARCHAR(60) NOT NULL,
+        RequirementCode      VARCHAR(30) NOT NULL,
+        DerivationMethodCode VARCHAR(40) NULL,
+        MissingBehavior      VARCHAR(20) NOT NULL CONSTRAINT DF_Rule_YogaContextRequirement_Missing DEFAULT ('NOT_EVALUATED'),
+        Notes                NVARCHAR(500) NULL,
+        IsActive             BIT NOT NULL CONSTRAINT DF_Rule_YogaContextRequirement_IsActive DEFAULT (1),
+        CONSTRAINT FK_Rule_YogaContextRequirement_RuleSet FOREIGN KEY (RuleSetId) REFERENCES dbo.tbl_Rule_Sets (Id),
+        CONSTRAINT FK_Rule_YogaContextRequirement_Source FOREIGN KEY (SourceRefCode) REFERENCES dbo.tbl_Dim_Source (Code),
+        CONSTRAINT UQ_Rule_YogaContextRequirement UNIQUE
+            (RuleSetId, SourceRefCode, SourceVariantCode, RequirementCode),
+        CONSTRAINT CK_Rule_YogaContextRequirement_Code CHECK
+            (RequirementCode IN ('BIRTH_DAY_NIGHT','MOON_WAXING','MOON_FULL','SUBJECT_SEX','EXACT_LONGITUDE')),
+        CONSTRAINT CK_Rule_YogaContextRequirement_Missing CHECK
+            (MissingBehavior IN ('NOT_EVALUATED','OPTIONAL','FALLBACK'))
+    );
+END
+GO
+
+IF OBJECT_ID('dbo.tbl_Rule_Catalog', 'U') IS NULL
+    THROW 50051, 'Migration 51 requires dbo.tbl_Rule_Catalog.', 1;
+
+INSERT dbo.tbl_Rule_Catalog
+    (RuleTableName, EngineCode, MethodCodes, Purpose, IntroducedIn)
+SELECT 'tbl_Rule_YogaContextRequirement', 'YOGA', 'CONTEXT_REQUIREMENT',
+       'Non-chart inputs and derived context required to evaluate each source-attributed yoga variant.',
+       '51_add_yoga_context_requirements.sql'
+WHERE NOT EXISTS
+(
+    SELECT 1 FROM dbo.tbl_Rule_Catalog
+    WHERE RuleTableName = 'tbl_Rule_YogaContextRequirement'
+);
+GO
+
+DECLARE @ruleSetId TINYINT =
+(
+    SELECT TOP (1) Id FROM dbo.tbl_Rule_Sets WHERE IsActive = 1 ORDER BY Id DESC
+);
+
+IF @ruleSetId IS NULL
+    THROW 50052, 'Migration 51 requires an active rule set.', 1;
+
+INSERT dbo.tbl_Rule_YogaContextRequirement
+    (RuleSetId, SourceRefCode, SourceVariantCode, RequirementCode,
+     DerivationMethodCode, MissingBehavior, Notes)
+SELECT @ruleSetId, 'SRC_RAMAN_300_COMBINATIONS', v.SourceVariantCode,
+       v.RequirementCode, v.DerivationMethodCode, 'NOT_EVALUATED', v.Notes
+FROM (VALUES
+    ('RAMAN_300_025', 'SUBJECT_SEX',     NULL,
+     N'Raman states separate male and female branches; sex must be supplied and must not be inferred.'),
+    ('RAMAN_300_025', 'BIRTH_DAY_NIGHT', 'ASTRONOMICAL_SUNRISE_SUNSET',
+     N'Day or night is part of the source predicate.'),
+    ('RAMAN_300_058', 'EXACT_LONGITUDE', NULL,
+     N'Deep exaltation requires exact planetary longitude, not exaltation-sign membership alone.'),
+    ('RAMAN_300_059', 'EXACT_LONGITUDE', NULL,
+     N'Deep exaltation requires exact planetary longitude, not exaltation-sign membership alone.'),
+    ('RAMAN_300_066', 'BIRTH_DAY_NIGHT', 'ASTRONOMICAL_SUNRISE_SUNSET',
+     N'Day or night is part of the source predicate.'),
+    ('RAMAN_300_066', 'MOON_WAXING',     'SUN_MOON_ELONGATION',
+     N'Waxing Moon status is part of the source predicate.'),
+    ('RAMAN_300_068', 'MOON_FULL',       'SUN_MOON_ELONGATION',
+     N'Full-Moon status is part of the source predicate; the evaluator must retain its threshold provenance.')
+) v (SourceVariantCode, RequirementCode, DerivationMethodCode, Notes)
+WHERE NOT EXISTS
+(
+    SELECT 1 FROM dbo.tbl_Rule_YogaContextRequirement x
+    WHERE x.RuleSetId = @ruleSetId
+      AND x.SourceRefCode = 'SRC_RAMAN_300_COMBINATIONS'
+      AND x.SourceVariantCode = v.SourceVariantCode
+      AND x.RequirementCode = v.RequirementCode
+);
+GO
+
+CREATE OR ALTER VIEW dbo.vw_YogaContextRequirements
+AS
+SELECT r.RuleSetId, r.SourceRefCode, s.Title AS SourceTitle,
+       r.SourceVariantCode, r.RequirementCode, r.DerivationMethodCode,
+       r.MissingBehavior, r.Notes, r.IsActive
+FROM dbo.tbl_Rule_YogaContextRequirement r
+JOIN dbo.tbl_Dim_Source s ON s.Code = r.SourceRefCode;
+GO
+
+INSERT dbo.SchemaMigrations (ScriptName, Note)
+SELECT '51_add_yoga_context_requirements.sql',
+       'Normalize known yoga sex, day/night, lunar-phase, and exact-longitude requirements.'
+WHERE NOT EXISTS
+    (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = '51_add_yoga_context_requirements.sql');
+GO
+
+DECLARE @tracked INT = (SELECT COUNT(*) FROM dbo.tbl_Rule_YogaContextRequirement WHERE IsActive = 1);
+PRINT '51 applied: active yoga context requirements=' + CAST(@tracked AS VARCHAR(10));
+GO
+
+USE [ikiastrro];
+GO
+SET XACT_ABORT ON;
+GO
+IF COL_LENGTH('dbo.tbl_BirthDetails', 'Sex') IS NULL
+    ALTER TABLE dbo.tbl_BirthDetails ADD Sex VARCHAR(6) NULL;
+GO
+IF OBJECT_ID('dbo.CK_BirthDetails_Sex', 'C') IS NULL
+    ALTER TABLE dbo.tbl_BirthDetails ADD CONSTRAINT CK_BirthDetails_Sex
+    CHECK (Sex IS NULL OR Sex IN ('Male','Female'));
+GO
+IF OBJECT_ID('dbo.tbl_Fact_YogaInputEvaluations', 'U') IS NULL
+CREATE TABLE dbo.tbl_Fact_YogaInputEvaluations
+(
+    Id INT IDENTITY(1,1) CONSTRAINT PK_Fact_YogaInputEvaluations PRIMARY KEY,
+    ChartResultId INT NOT NULL,
+    RuleSetId TINYINT NOT NULL,
+    SourceRefCode VARCHAR(40) NOT NULL,
+    SourceVariantCode VARCHAR(60) NOT NULL,
+    YogaCode VARCHAR(40) NOT NULL,
+    SourceLocator VARCHAR(120) NOT NULL,
+    Present BIT NULL,
+    EvaluationStatus VARCHAR(20) NOT NULL,
+    MissingRequirementCodesJson NVARCHAR(MAX) NOT NULL,
+    SubjectSex VARCHAR(6) NULL,
+    IsNightBirth BIT NULL,
+    ElongationDegrees FLOAT NULL,
+    IsWaxingMoon BIT NULL,
+    IsFullMoon BIT NULL,
+    LunarPhasePolicyCode VARCHAR(60) NULL,
+    SunriseMethodCode VARCHAR(60) NOT NULL,
+    Notes NVARCHAR(MAX) NULL,
+    ComputedAtUtc DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_Fact_YogaInputEvaluations_ChartResult FOREIGN KEY (ChartResultId)
+        REFERENCES dbo.tbl_ChartResults(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_Fact_YogaInputEvaluations_RuleSet FOREIGN KEY (RuleSetId) REFERENCES dbo.tbl_Rule_Sets(Id),
+    CONSTRAINT FK_Fact_YogaInputEvaluations_Source FOREIGN KEY (SourceRefCode) REFERENCES dbo.tbl_Dim_Source(Code),
+    CONSTRAINT UQ_Fact_YogaInputEvaluations UNIQUE (ChartResultId, SourceRefCode, SourceVariantCode),
+    CONSTRAINT CK_Fact_YogaInputEvaluations_Json CHECK (ISJSON(MissingRequirementCodesJson) = 1),
+    CONSTRAINT CK_Fact_YogaInputEvaluations_Status CHECK
+        ((EvaluationStatus = 'NOT_EVALUATED' AND Present IS NULL)
+         OR (EvaluationStatus = 'EVALUATED' AND Present IS NOT NULL))
+);
+GO
+INSERT dbo.SchemaMigrations (ScriptName, Note)
+SELECT '052_add_birth_sex_and_yoga_input_facts.sql',
+       'Optional user-entered sex and auditable evaluation of seven yoga context requirements.'
+WHERE NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName='052_add_birth_sex_and_yoga_input_facts.sql');
 GO
 
 EXEC dbo.sp_executesql @statement = N'CREATE VIEW [dbo].[vw_Chart_Consolidated] AS

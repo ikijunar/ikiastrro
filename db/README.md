@@ -37,6 +37,8 @@ The historical `db/00_*.sql` one-offs predate this ledger and are not recorded i
 
 ## Inspection scripts
 
+`checks/check_ayanamsa_dasha_benchmarks.sql` inspects migration 46's durable `BENCH_RAMAKRISHNAN_P_JHORA_1981` golden record: birth inputs, ten JHora longitudes, the six-system dasha catalogue, and nine Vimshottari Mahadasha boundaries. Comparison facts remain empty until the refresh command is implemented.
+
 `db/checks/` holds **read-only, un-numbered** SQL for eyeballing table contents at
 different levels (orientation → **chart inputs** → rule layer → per-chart facts →
 conjunction deep-dive → sub-planet layer → row-count rollup). Level 0i enumerates
@@ -46,7 +48,20 @@ varga catalogue, and static reference / rule masters. These are not migrations, 
 never recorded in `dbo.SchemaMigrations`, and write nothing. Run them interactively
 in SSMS / ADS.
 
+`checks/49_yoga_chart_applicability.sql` and
+`checks/51_yoga_context_requirements.sql` inspect the chart and non-chart inputs
+required by each source-attributed yoga variant. A missing required input means
+`NOT_EVALUATED`; it must never be interpreted as an absent yoga.
+
 ## Verifying a migrated / rebuilt DB
+
+Migration 052 adds optional BirthDetails.Sex and tbl_Fact_YogaInputEvaluations.
+The table now stores the complete output of ProductionYogaEngine, one row per
+chart and source variant; its original name reflects the migration that introduced it.
+Run `dotnet run --project tools/YogaInputVerification` for a transactional
+save/load and yoga-fact check; all fixture writes roll back. Run
+`dotnet test tests/Ikiastrro.Yoga.Tests` for isolated domain regression tests.
+Existing charts acquire the new evaluation facts when regenerated.
 
 After applying migrations (or a from-empty rebuild), run the CLI `verify-*` modes —
 they are the regression suite for the schema + rule layer:
