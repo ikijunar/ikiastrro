@@ -50,7 +50,7 @@ Shared MudBlazor header (`MudAppBar`): brand lockup **Iki-Astrro | Where Passion
 Planets Align.** Nav order Home · Saved Charts (Preferences is an inline Home control in v2,
 not a nav item). Chart-page person names in sunset orange.
 
-## In flight — `wkstream_UI_v2`, screens 1–2 (Home)
+## In flight — `wkstream_UI_v2`, the Home page
 
 - **`FEAT-UI-02`** — Home rebuilt on MudBlazor: `MudAutocomplete` name search; two-column
   canvas layout with Ganesha art right; the three size tokens; sunset-orange button fill.

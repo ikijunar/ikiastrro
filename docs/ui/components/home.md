@@ -8,10 +8,14 @@ togaf: C — component spec
 
 # Component — home & entry
 
-In `wkstream_UI_v2` the Home page absorbs **Preferences** and **Add person** — there is no
-separate `/preferences` or `/add` route. One page, two states.
+In `wkstream_UI_v2` **one page** at `/` does everything — it absorbs **Preferences** and
+**Add person**; there is no `/preferences` or `/add` route. Nothing on Home navigates until a
+chart is generated. Two states of the same page, toggled in place:
 
-## Screen 1 — Home (select / search)
+- **default** — Preferences disclosure + searchable Name + saved-people list
+- **Add-New** — the entry fields, hidden at start, revealed in place when `＋ Add New` is picked
+
+## Default state — select / search
 
 Shell: MudBlazor `MudLayout` / `MudAppBar` with the brand lockup + tagline
 ([`../brand.md`](../brand.md)). The canonical main screen is the visual authority.
@@ -34,19 +38,21 @@ footer. The Ganesha / Navagraha illustration is a **first-class part of the Home
 - **Name — searchable.** `MudAutocomplete` over saved-people names.
   - Typing filters saved people (contains match).
   - Selecting a person → `/charts/{id}` (the person hub).
-  - **When nothing matches, the last option is `Add New`.** Choosing it opens Screen 2.
+  - **`＋ Add New` is always the last option** (whether or not anything matched). Choosing it
+    switches Home to the Add-New state.
 
-## Screen 2 — Home (Add New expanded)
+## Add-New state — entry fields revealed in place
 
-Choosing `Add New` unhides the entry fields inline (below the Name field); the person list is
-replaced by the form. Fields, in order:
+`＋ Add New` sets `_adding = true`: on the same page, the search control is swapped for the
+entry fields (the person list gives way to the form). `Cancel` returns to the default state.
+Fields, in order:
 
 | Field | Control | Notes |
 |---|---|---|
 | Name | `MudTextField` | required |
 | Sex | `MudSelect` (option box) | Male · Female |
 | Date of Birth | `MudDatePicker` | required |
-| Time of Birth | `MudTimePicker` | **required for the Lagna** — kept though not in the shorthand field list; confirm |
+| Time of Birth | `MudTimePicker` | **required** — critical for the Lagna; no chart without it |
 | City | `MudTextField` | required; feeds `IPlaceResolver` |
 | Country | `MudTextField` | required; **the last step** |
 
