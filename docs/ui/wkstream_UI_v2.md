@@ -7,83 +7,126 @@ togaf: E — Solution increment
 safe: Feature (full-surface)
 ---
 
-# wkstream_UI_v2 — full UI re-do
+# wkstream_UI_v2 — full UI re-do (table-first)
 
-A ground-up rework of the astrologer-facing app. [`wkstream_UI_v1.md`](wkstream_UI_v1.md)
+A ground-up rework of the astrologer-facing app on **one pattern: the
+[`AstrologerEvidence`](components/evidence-tables.md) page**. [`wkstream_UI_v1.md`](wkstream_UI_v1.md)
 stays the description of what is **live** until v2 ships; this doc is the increment.
 
-> **Status: scoping.** The delivery list below is fixed (it is ROADMAP *Now* plus the open
-> `FEAT-UI` rows). The **design decisions** section is open and needs a short pass with the
-> product head before build starts. Nothing here is built yet.
+> **Status: scoping.** The pattern and the design system below are decided. The delivery list
+> is fixed (ROADMAP *Now* + the open `FEAT-UI` rows). Route consolidation and which v1-dropped
+> surfaces return are the remaining open items — a short pass with the product head. Nothing
+> here is built yet.
 
-## Why a re-do (not more component docs)
+## The pattern — AstrologerEvidence, everywhere
 
-- v1 deliberately dropped most of the analytical surfaces — `ChartInsights`, `DispositorTable`,
-  life-area tabs, the `AllCharts` gallery, the reading-profile lens — to ship a clean chart-first
-  shell. The product is an **evidence model**, not a chart renderer (`masterproduct.md` →
-  Product intent); the information architecture should lead with analysis, not with a chart grid.
-- The ROADMAP *Now* tier is entirely UI-surfacing of engine features that are verified but not
-  shown. That is more than a component can carry — it changes navigation and page structure.
-- One coherent pass is cheaper than six bolt-ons and one snapshot re-mint per bolt-on.
+Every read surface in v2 is the `AstrologerEvidence` shape, restyled to MudBlazor:
+
+- **Page = sticky header + entity/chart selector + a section index (anchor nav) + N
+  collapsible sections.** Each section is a table.
+- **Tables are the primary representation.** The generic `EvidenceTable` (columns + rows,
+  auto-labelled headers, typed value formatting) generalises to a shared `SectionTable`.
+- **Every row comes from a persisted view or table** — `vw_Chart_Consolidated`,
+  `vw_ChartMoonContext`, `vw_ChartPlanetEvidence`, `vw_ChartShadbala`, `vw_ChartBhavaBala`,
+  `vw_ChartYogaEvaluations`, the reference dimension tables. No page recomputes
+  ([`../architecture/domain-contracts.md`](../architecture/domain-contracts.md)).
+- **A chart selector** switches the position-dependent sections between D1 and any stored varga.
+- **Hand-rolled SVG diagrams** (`SouthIndianGrid`, `PolarWheel`, transit wheel, life-weeks)
+  are *secondary* — embedded beside the table where a picture aids reading, never the primary
+  view. They stay in Codex's scope (see Workstream mechanics) and outside the MudBlazor restyle.
 
 ## What v2 must deliver
 
-| From | Feature | Issue | Milestone |
+Each item is one or more table sections on the pattern above.
+
+| From | Feature | As | Issue · Milestone |
 |---|---|---|---|
-| ROADMAP Now | Divisional charts D2–D60 in the UI (`FEAT-VARGA-01`) | #8 | Divisional charts in the UI |
-| ROADMAP Now | Jaimini chara karakas panel (`FEAT-KARAKA-01`) | #9 | Jaimini chara karakas panel |
-| ROADMAP Now | Planetary-state / avastha display (`FEAT-AVASTHA-01/02`) | #10 | Planetary-state (avastha) display |
-| ROADMAP Now | Slow-planet transit history view (`FEAT-TRANSIT-01`) | #11 | Slow-planet transit history view |
-| Open `FEAT-UI` | Add/Edit form — MudBlazor restyle + Sex field (`FEAT-UI-03`) | #4 | — |
-| Open `FEAT-UI` | Preferences / ayanāṁśa route (`FEAT-UI-12`) | #5 | — |
+| ROADMAP Now | Divisional charts D2–D60 (`FEAT-VARGA-01`) | the chart selector drives the Positions + Dignity/Avastha + Karaka sections across all 21 vargas | #8 · Divisional charts in the UI |
+| ROADMAP Now | Jaimini chara karakas (`FEAT-KARAKA-01`) | a Karakas section — AK…DK → planet, longitude, degree-in-sign, per chart | #9 · Jaimini chara karakas panel |
+| ROADMAP Now | Avastha display (`FEAT-AVASTHA-01/02`) | rows in the Dignity & Avastha section — AgeState, WakefulnessState | #10 · Planetary-state (avastha) display |
+| ROADMAP Now | Slow-planet transit history (`FEAT-TRANSIT-01`) | a Transit History section — sign-ingress events (planet, from→to, date, retro) with a date-range filter | #11 · Slow-planet transit history view |
+| Open `FEAT-UI` | Add / Edit person (`FEAT-UI-03`) | a MudBlazor form (not a table) on the same tokens; adds the **Sex** field | #4 |
+| Open `FEAT-UI` | Preferences / ayanāṁśa (`FEAT-UI-12`) | a MudBlazor form; ayanāṁśa selector defaults to the active `tbl_Rule_Ayanamsa` (now Lahiri) | #5 |
 
-Every existing live route in [`MASTER.md`](MASTER.md) is re-homed or replaced — none is dropped
-without a decision recorded below.
+Also folded in (the "Missing Web" rollup column): Ṣaḍbala / Bhāva Bala already have sections
+7–8 in the AstrologerEvidence plan.
 
-## Design decisions (open — the pass)
+## Design system (decided — enforced, no exceptions)
 
-1. **Information architecture / navigation** — analysis-first vs the current chart-first shell.
-   What the top-level nav is; whether the varga workspace stays the hub.
-2. **Re-introductions** — which v1-dropped surfaces come back (`ChartInsights`, `DispositorTable`,
-   reading-profile, life-area grouping) and which stay retired.
-3. **Chart rendering** — keep hand-rolled inline SVG / CSS grid (`design-language.md`,
-   `dataviz.md`); Syncfusion stays a deferred option, not a dependency. (Default: keep.)
-4. **Evidence surfacing** — how `vw_Chart*` evidence views drive the new pages.
-5. **Routing & deep-linking** — route shape for 21 vargas + panels; shareable URLs.
-6. **Mobile** — the v1 open items (transit-wheel outer-label crowding, small mobile text) are
-   fixed as part of v2, not carried forward.
+Extends [`brand.md`](brand.md) / [`design-language.md`](design-language.md). v1's
+`AstrologerEvidence.razor.css` (hard-coded `.82rem`, `var(--surface,#fff)` fallbacks) is
+**not** compliant and is the first thing v2 fixes.
 
-## Constraints carried from v1 (not up for change)
+- **Font family** — Manrope only, every element. No second family.
+- **Exactly three sizes** — one token each, nothing else in the app:
+  - `--fs-display` — page title only
+  - `--fs-heading` — section titles, table captions
+  - `--fs-body` — table cells, controls, body, nav
+  Weight, colour and spacing carry all other hierarchy. *(Exact px/rem values: design pass —
+  brand.md's Display/Tagline/Control scale is the starting point, retuned for a dense table app.)*
+- **Sunset orange (`--brand-sunset` `#F47A24`) is the highlight / background accent** —
+  **button backgrounds** (primary actions), active section in the index, selected chart in the
+  selector, table row hover / selected, focus ring. **This changes `brand.md`'s current action
+  rule** (midnight fill / orange text → orange fill); brand.md is updated when v2 lands.
+- **Midnight blue (`--brand-midnight`)** — headings, body text, table structure, nav text.
+- **Canvas / surface** — `--brand-canvas` page, `--brand-surface` raised (section cards, rows).
+- **Tabular numerals** on every numeric column (degrees, scores, dates, periods).
+- **Tokens only** — `var(--…)` from `wwwroot/css/tokens.css`; the MudBlazor theme is wired to
+  the same tokens. No raw hex, no named colours, no inline `<style>`, no per-component size
+  literals.
 
-- **MudBlazor** is the component system for chrome / forms / tables / dialogs — light theme,
-  warm Iki-Astrro brand ([`brand.md`](brand.md), [`design-language.md`](design-language.md)).
-- **Tokens, not raw values** (`wwwroot/css/tokens.css`); token changes are additive.
-- **CSS isolation** per component (`Component.razor.css`).
-- **Chart diagrams stay hand-rolled** — MudBlazor does chrome, not diagrams.
-- **UI reads persisted rows only** and never recomputes — `tbl_Chart_*`, `tbl_Fact_*`, `vw_*`,
-  `tbl_Rule_Ayanamsa` ([`../architecture/domain-contracts.md`](../architecture/domain-contracts.md)).
-  A calculation the UI needs is a DB + CLI feature first.
-- **Data flow** — one batch load (`WorkspaceData.Load` contract) → a dictionary keyed by chart
-  code; no per-chart queries in pages.
+## MudBlazor mapping
+
+| v1 | v2 |
+|---|---|
+| `<table class="dt">` | `MudTable` / `MudSimpleTable` (dense) |
+| `<select>` chart picker | `MudSelect` |
+| `<details>` / `<summary>` sections | `MudExpansionPanels` / `MudExpansionPanel` |
+| hand-rolled sticky top nav | `MudAppBar` in `MudLayout` |
+| section index `<nav>` | `MudNavMenu` or an anchor `MudChipSet` |
+| `EmptyState` | `MudAlert` / `MudPaper` empty pattern |
+
+## Navigation (v2 route map — to confirm in the pass)
+
+`AstrologerEvidence` stops being a side route and **becomes the person hub** (`/charts/{id}`).
+
+- `/` — Home: Generate-Chart form + saved-people search (form, not table)
+- `/add`, `/add/{id}` — birth-details form (`FEAT-UI-03`)
+- `/preferences` — global settings form (`FEAT-UI-12`)
+- `/charts` — saved people, one table
+- `/charts/{id}` — **the hub**: context · moon/tithi · positions (D1 + varga selector) ·
+  dignity & avastha · karakas · shadbala · bhava bala · yoga — all table sections
+- `/charts/{id}/timing` — dasha tree + Sade Sati + gochara (tables)
+- `/charts/{id}/transits` — transit-history table + the wheel as a secondary visual
+- `/charts/{id}/south-indian-template` — the one print-style visual (Codex scope)
+- `/charts/{id}/life-weeks` — the 4000-week grid (Codex scope; keep or make optional — pass)
+
+Retired: the separate `/charts/{id}/evidence` and `/charts/{id}/varga/{code}` routes (folded
+into the hub). `wkstream_UI_v1`'s already-dropped surfaces stay dropped unless the pass
+re-introduces one.
 
 ## Workstream mechanics
 
 - Branch `workstream/ui`, worktree `…\ikiastrro.wt\ui`, path scope `src/Ikiastrro.Web/` +
   `tests/Ikiastrro.Web.Tests/` (`STANDARDS.md` §E.1). **Claude Code is primary** — owns the
-  shell, layout, pages, routing, `wwwroot`, and integration to `master`.
+  shell, layout, pages, routing, `wwwroot`, tokens, and integration to `master`.
 - **Codex — one assigned path scope** (§E.2 AGENT-02): **`src/Ikiastrro.Web/Components/Charts/**`**
-  — the hand-rolled chart components, bounded and golden-snapshot-guarded. *(Proposed split;
-  confirm the subtree before Codex starts.)* Codex does not touch shell / pages / routing /
-  tokens; Claude reviews and integrates every Codex change.
+  — the hand-rolled SVG diagrams, bounded and golden-snapshot-guarded, outside the MudBlazor
+  restyle. *(Proposed subtree; confirm before Codex starts.)* Codex does not touch shell /
+  pages / routing / tokens; Claude reviews and integrates every Codex change.
 
 ## Verification
 
-- `tests/Ikiastrro.Web.Tests` (bUnit) golden-SVG snapshots — **re-minted** as v2 components land
-  (`IKIASTRRO_UPDATE_SNAPSHOTS=1`); each snapshot diff noted against its `FEAT-…` row.
-- Live browser smoke test against every re-homed route + a dense chart + a recent-birth chart.
+- `tests/Ikiastrro.Web.Tests` (bUnit) — table-section snapshots + the SVG golden snapshots
+  re-minted as components land (`IKIASTRRO_UPDATE_SNAPSHOTS=1`); each diff noted against its
+  `FEAT-…` row.
+- A token-lint check (or review gate): no raw hex, no size literals, one font family.
+- Live browser smoke test against every route + a dense chart + a recent-birth chart.
 - No regression in the 11 `verify-*` CLI modes (UI is read-only over persisted rows).
 
 ## Done when
 
-Every row in *What v2 must deliver* is `Web [x]` in `masterproduct.md`, every live route is
-re-homed or a drop is recorded here, snapshots are re-minted, and the browser smoke passes.
+Every row in *What v2 must deliver* is `Web [x]` in `masterproduct.md`; the hub renders all
+table sections on the design system with zero token violations; retired routes are gone or
+recorded; snapshots re-minted; browser smoke passes; `brand.md` updated for the action-colour
+change.
