@@ -86,16 +86,7 @@
     object-position: top right;
 }
 
-/* Sunset-orange button fill (brand.md action rule is updated for v2). */
-.home ::deep .mud-button-filled.mud-button-filled-primary {
-    background-color: var(--brand-sunset);
-    color: var(--brand-midnight);
-    border: 1px solid var(--brand-sunset);
-}
-
-.home ::deep .mud-button-filled.mud-button-filled-primary:hover {
-    background-color: color-mix(in srgb, var(--brand-sunset) 88%, black);
-}
+/* Primary buttons are sunset-filled via the app theme (IkiastrroTheme). */
 
 .home ::deep .home-prefs-toggle {
     color: var(--brand-midnight);

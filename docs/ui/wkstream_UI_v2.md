@@ -65,15 +65,18 @@ Extends [`brand.md`](brand.md) / [`design-language.md`](design-language.md). v1'
   Weight, colour and spacing carry all other hierarchy. *(Values may be retuned for a dense
   table app during the pass; the token names do not change.)*
 - **Sunset orange (`--brand-sunset` `#F47A24`) is the highlight / background accent** —
-  **button backgrounds** (primary actions), active section in the index, selected chart in the
-  selector, table row hover / selected, focus ring. **This changes `brand.md`'s current action
-  rule** (midnight fill / orange text → orange fill); brand.md is updated when v2 lands.
+  **button backgrounds** (`Primary`), active section in the index, selected chart in the
+  selector, table row hover / selected, focus ring. Text on it is midnight. (`brand.md` updated;
+  the old midnight-fill / orange-text rule is retired.)
 - **Midnight blue (`--brand-midnight`)** — headings, body text, table structure, nav text.
-- **Canvas / surface** — `--brand-canvas` page, `--brand-surface` raised (section cards, rows).
+- **One background colour** — the warm canvas (`--brand-canvas`) for page **and** surface:
+  the MudBlazor theme (`Components/IkiastrroTheme.cs`) sets `Background` and `Surface` both to
+  canvas, so panels / menus / dropdowns match the app and the artwork (no white boxes);
+  elevation shadow separates.
 - **Tabular numerals** on every numeric column (degrees, scores, dates, periods).
-- **Tokens only** — `var(--…)` from `wwwroot/css/tokens.css`; the MudBlazor theme is wired to
-  the same tokens. No raw hex, no named colours, no inline `<style>`, no per-component size
-  literals.
+- **Tokens only in CSS** — `var(--…)` from `wwwroot/css/tokens.css`. No raw hex, no named
+  colours, no inline `<style>`, no per-component size literals. (`IkiastrroTheme.cs` is the one
+  place brand hexes are repeated, because a `MudTheme` is C#; keep it in sync with the tokens.)
 
 ## MudBlazor mapping
 

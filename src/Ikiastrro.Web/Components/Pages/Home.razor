@@ -19,15 +19,15 @@
             </MudButton>
             <MudCollapse Expanded="_prefsOpen">
                 <div class="home-prefs-body">
-                    <MudSelect T="string" Label="Choose Ayanāṁśa" @bind-Value="_ayanamsaCode"
-                               Dense="true" Variant="Variant.Outlined">
+                    <MudSelect T="string" Label="Choose Ayanāṁśa" Value="_ayanamsaCode"
+                               ValueChanged="OnAyanamsaChanged" Dense="true" Variant="Variant.Outlined">
                         @foreach (var a in AyanamsaDefinition.Catalog)
                         {
                             <MudSelectItem T="string" Value="@a.Code">@AyanamsaLabel(a)</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudSelect T="string" Label="Choose Chart Type" @bind-Value="_chartStyle"
-                               Dense="true" Variant="Variant.Outlined">
+                    <MudSelect T="string" Label="Choose Chart Type" Value="_chartStyle"
+                               ValueChanged="OnChartStyleChanged" Dense="true" Variant="Variant.Outlined">
                         <MudSelectItem T="string" Value="@("south-indian")">South Indian — default</MudSelectItem>
                         <MudSelectItem T="string" Value="@("north-indian")">North Indian</MudSelectItem>
                     </MudSelect>
@@ -108,6 +108,10 @@
 
     private string AyanamsaLabel(AyanamsaDefinition a) =>
         a.Code == _activeDefault.Code ? $"{a.DisplayName} — default" : a.DisplayName;
+
+    // Selecting a preference applies it and collapses the panel (hides the dropdowns).
+    private void OnAyanamsaChanged(string value) { _ayanamsaCode = value; _prefsOpen = false; }
+    private void OnChartStyleChanged(string value) { _chartStyle = value; _prefsOpen = false; }
 
     private Task<IEnumerable<string>> SearchNames(string? value, CancellationToken _)
     {

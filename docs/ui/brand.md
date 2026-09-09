@@ -50,9 +50,10 @@ with saved-chart search and rows directly below. Main action label **Generate Ch
 
 ## Actions
 
-Primary: midnight-blue fill, sunset-orange text, sunset-orange border — never white text.
-Selected nav may use the same treatment; secondary nav is midnight-blue text on the canvas.
-Focus / hover / pressed states stay visibly distinct and meet accessible contrast.
+Primary: **sunset-orange fill, midnight-blue text** (`wkstream_UI_v2`; the earlier
+midnight-fill / orange-text treatment is retired). Selected nav may use the same treatment;
+secondary nav is midnight-blue text on the canvas. Focus / hover / pressed states stay visibly
+distinct and meet accessible contrast.
 
 ## Preserved assets (do not redraw or reorder)
 
@@ -64,5 +65,8 @@ mountain/footer artwork and the dedication footer:
 
 Every screen is a denser continuation of the main screen: warm, spacious, precise, with
 midnight-blue information structure and sunset-orange emphasis. **MudBlazor** is the canonical
-component system (light theme, shared tokens, `MudLayout` / `MudAppBar` / `MudMainContent`).
-Chart rendering itself stays outside the MudBlazor restyling scope.
+component system (light theme, shared tokens, `MudLayout` / `MudAppBar` / `MudMainContent`),
+wired to the brand palette in `src/Ikiastrro.Web/Components/IkiastrroTheme.cs` — **Background
+and Surface are both the warm canvas** (`--brand-canvas`), so panels, menus and dropdowns sit
+on the same colour as the app and the artwork; elevation shadow, not a white fill, does the
+separating. Chart rendering itself stays outside the MudBlazor restyling scope.

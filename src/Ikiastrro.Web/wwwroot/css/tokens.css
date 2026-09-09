@@ -123,8 +123,8 @@
 /* App-wide base look, shared by every page (scoped-CSS components keep their own copies of
    these rules — harmless duplication, since CSS isolation means they can't read these). */
 body {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--brand-canvas);
+    color: var(--brand-midnight);
     font-family: 'Manrope', 'Segoe UI', sans-serif;
 }
 

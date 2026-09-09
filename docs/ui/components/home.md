@@ -32,6 +32,8 @@ footer. The Ganesha / Navagraha illustration is a **first-class part of the Home
   2. **Choose Chart Type** — `MudSelect`: *South Indian* (default) · *North Indian*. Extensible
      — more styles added when built. North Indian is selectable but its renderer is a later
      feature; until then it falls back to South Indian.
+
+  **Selecting either preference applies it and collapses the panel** (the dropdowns hide again).
   Persistence: per-browser (`localStorage`) for now; a DB-backed default is a `database`-workstream
   follow-up.
 - **Discover Your Path** — heading (`--font-size-display`), no subheading.
