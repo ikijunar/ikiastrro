@@ -157,7 +157,7 @@ internal sealed class TerminologySeedData
         d.Add("SpecialPoint", "SPT_HL", null, "KARAKA", null, "Hora Lagna", "Hora Lagna",
             "Time-based lagna advancing one sign per hora from sunrise.");
         d.Add("SpecialPoint", "SPT_GULIKA", null, "KARAKA", null, "Gulika", "Gulika",
-            "Upagraha marking the start of the Saturn sub-part of the day or night arc.");
+            "Upagraha marking the midpoint of the Saturn sub-part of the day or night arc (PVR).");
         d.Add("SpecialPoint", "SPT_MAANDI", null, "KARAKA", null, "Maandi", "Maandi",
             "Upagraha tied to the Saturn sub-division of the day or night arc.");
 
@@ -224,9 +224,13 @@ internal sealed class TerminologySeedData
         foreach (var r in rels)
             d.Add("Relationship", r.Code, null, "RELATIONSHIP", null, r.Sa, r.En, r.Desc);
 
-        // ---- Ayanamsa (1) ----
-        d.Add("Ayanamsa", "AYANAMSA_LAHIRI", null, "ASTRO_CALC", 1, "Lahiri", "Lahiri ayanamsa",
-            "Chitrapaksha sidereal zero-point; the default ayanamsa for this project.");
+        // ---- Ayanamsa (22): names and Swiss Ephemeris mode IDs are single-sourced in Core ----
+        foreach (var a in AyanamsaDefinition.Catalog)
+            d.Add("Ayanamsa", a.Code, null, "ASTRO_CALC", a.SwissSiderealMode,
+                a.DisplayName, a.DisplayName,
+                a.IsImplemented
+                    ? $"JHora calculation preference; implemented through the selected Swiss Ephemeris reference system."
+                    : "JHora calculation preference; custom fixed-star formula is catalogued but not implemented yet.");
 
         return d;
     }

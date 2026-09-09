@@ -108,8 +108,10 @@ var birthDetailsRepo = new BirthDetailsRepository(connectionFactory);
 // --- Shared compute-and-store pipeline (Task 6/7): one instance, reused by every one-off mode
 //     below and by the interactive add flow near the bottom of this file. ---
 var vargaSchemes = new VargaSchemeRepository(connectionFactory).GetAll(1);
-var orchestrator = ChartCalculationOrchestrator.CreateDefault(vargaSchemes);
+var orchestrator = ChartCalculationOrchestrator.CreateDefault(vargaSchemes,
+    new SubPlanetRuleRepository(connectionFactory).GetAll(new RuleSetRepository(connectionFactory).GetActive().Id));
 var chartResultsRepo = new ChartResultsRepository(connectionFactory);
+var ayanamsaRuleRepo = new AyanamsaRuleRepository(connectionFactory);
 var vimshottariDashaService = new VimshottariDashaService(
     chartResultsRepo, new DashaPeriodsRepository(connectionFactory));
 var chartGenerationService = new ChartGenerationService(
@@ -123,7 +125,11 @@ var chartGenerationService = new ChartGenerationService(
     new PlanetaryStateRuleRepository(connectionFactory),
     new PlanetaryStateRepository(connectionFactory),
     new RuleSetRepository(connectionFactory),
-    new ChartTypeRepository(connectionFactory));
+    new ChartTypeRepository(connectionFactory),
+    ayanamsaRuleRepo,
+    new PlanetaryStrengthRepository(connectionFactory),
+    new BhavaStrengthRepository(connectionFactory),
+    new VargottamaRepository(connectionFactory), new YogaInputRepository(connectionFactory));
 
 // --- One-off backfill mode: `dotnet run -- backfill-analytics` ---
 // Unconditionally re-derives all four analytics tables (KeyDetails/HouseLords/Conjunctions/Aspects)
@@ -143,6 +149,36 @@ if (args.Length > 0 && args[0] == "backfill-analytics")
         var personReport = chartGenerationService.RecomputeAnalytics(person, chartTypeFilter: null);
         Console.WriteLine($"  {person.Name}: recomputed analytics for [{string.Join(", ", personReport.ChartTypesWritten)}]");
     }
+    return;
+}
+
+// Read-only: verifies current rule data and in-memory output, never rewrites saved charts.
+if (args.Length > 0 && args[0] == "verify-upagrahas")
+{
+    var rules = new SubPlanetRuleRepository(connectionFactory).GetAll(new RuleSetRepository(connectionFactory).GetActive().Id);
+    var birth = new BirthDetails { Name = "Upagraha verification", DateOfBirth = new DateOnly(2000, 1, 2),
+        TimeOfBirth = new TimeOnly(3, 0), Latitude = 13.0827, Longitude = 80.2707, UtcOffset = "05:30" };
+    var computed = orchestrator.CalculateAll(birth);
+    var failures = 0;
+    foreach (var (_, input) in computed)
+    {
+        var points = input.SpecialPoints.Where(p => p.PointKind == "Upagraha").ToArray();
+        var ok = points.Length == 11 && points.Select(p => p.Planet).Distinct().Count() == 11 &&
+            points.All(p => p.NirayanaLongitudeDegrees is >= 0 and < 360);
+        Console.WriteLine($"[{(ok ? "PASS" : "FAIL")}] {input.ChartType}: {points.Length} upagrahas");
+        if (!ok) failures++;
+    }
+    var d1 = computed.Single(c => c.Input.ChartType == "D1").Input;
+    var sunLongitude = d1.Planets.Single(p => p.Planet == "Sun").NirayanaLongitudeDegrees!.Value;
+    var upaketu = d1.SpecialPoints.Single(p => p.Planet == "Upaketu").NirayanaLongitudeDegrees!.Value;
+    if (Math.Abs(((upaketu + 30 - sunLongitude + 540) % 360) - 180) > .000002) failures++;
+    var sun = SwissEphemerisProvider.GetSunTimes(birth);
+    var pair = UpagrahaCalculator.Compute(birth, sun);
+    foreach (var expected in new[] { pair.Gulika, pair.Maandi })
+        if (Math.Abs(d1.SpecialPoints.Single(p => p.Planet == expected.Code).NirayanaLongitudeDegrees!.Value - expected.NirayanaLongitudeDegrees) > .000001) failures++;
+    Console.WriteLine($"Rule set {rules.RuleSetId}; PVR Gulika=middle, Maandi=start; pre-dawn birth uses previous sunrise.");
+    Console.WriteLine(failures == 0 ? "verify-upagrahas: ALL PASS" : $"verify-upagrahas: {failures} FAILURE(S)");
+    Environment.ExitCode = failures == 0 ? 0 : 1;
     return;
 }
 
@@ -613,7 +649,7 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
         Check("AL D9 channel integrity", SpSign("D9", "AL"), expectedD9);
     }
 
-    // --- Phase 4: Hora Lagna + Gulika + Maandi (JHora golden record) ---
+    // --- Phase 4: Hora Lagna + PVR upagrahas (JHora Saturn instants, names swapped) ---
     using (var conn = connectionFactory.CreateOpenConnection())
     {
         string? SpSign(string chart, string code) => conn.ExecuteScalar<string>(
@@ -640,12 +676,12 @@ if (args.Length > 0 && args[0] == "verify-jaimini")
         Check("HL (D1) -> Pisces",     SpSign("D1", "HL"),     "Pisces");
         Check("HL (D9) -> Aquarius",   SpSign("D9", "HL"),     "Aquarius");
         Check("Gulika (D1) -> Libra",  SpSign("D1", "Gulika"), "Libra");
-        Check("Gulika (D9) -> Sagittarius", SpSign("D9", "Gulika"), "Sagittarius");
+        Check("Gulika (D9) -> Pisces (PVR)", SpSign("D9", "Gulika"), "Pisces");
         Check("Maandi (D1) -> Libra",  SpSign("D1", "Maandi"), "Libra");
-        Check("Maandi (D9) -> Pisces", SpSign("D9", "Maandi"), "Pisces");
+        Check("Maandi (D9) -> Sagittarius (PVR)", SpSign("D9", "Maandi"), "Sagittarius");
         CheckLon("HL longitude",     SpLon("HL"),     353.9189, 0.5);
-        CheckLon("Gulika longitude", SpLon("Gulika"), 187.7439, 0.5);
-        CheckLon("Maandi longitude", SpLon("Maandi"), 198.1169, 0.5);
+        CheckLon("Gulika longitude", SpLon("Gulika"), 198.1169, 0.5);
+        CheckLon("Maandi longitude", SpLon("Maandi"), 187.7439, 0.5);
     }
 
     Console.WriteLine(failures == 0 ? "\nverify-jaimini: ALL PASS" : $"\nverify-jaimini: {failures} FAILURE(S)");
@@ -1085,8 +1121,8 @@ if (args.Length > 0 && args[0] == "verify-dignity")
         ("Jupiter", ZodiacName.Cancer,      20, "Exalted"),
         ("Venus",   ZodiacName.Libra,       10, "Moolatrikona"),
         ("Saturn",  ZodiacName.Capricornus, 25, "Own Sign"),
-        ("Rahu",    ZodiacName.Taurus,      12, "Exalted"),
-        ("Ketu",    ZodiacName.Scorpio,     12, "Exalted"),
+        ("Rahu",    ZodiacName.Gemini,      12, "Exalted"),
+        ("Ketu",    ZodiacName.Sagittarius, 12, "Exalted"),
     };
     var allSigns = fixture.ToDictionary(f => f.Planet, f => f.Sign, StringComparer.Ordinal);
     var fixtureMismatch = 0;
@@ -1099,7 +1135,7 @@ if (args.Length > 0 && args[0] == "verify-dignity")
             Console.WriteLine($"    {planet} {sign} {deg}: got {r.DignityStatus ?? "(null)"} expected {expected}");
         }
     }
-    Check("fixture chart reproduces DignityEngine.Evaluate (BPHS behaviour)", fixtureMismatch);
+    Check("fixture chart reproduces DignityEngine.Evaluate (PVR behaviour)", fixtureMismatch);
 
     // 10. Seed cross-check -- active PVR set's classical seven vs the tbl_SignAttributes seed.
     Check("active-set EXALTED (sign + deep degree) agrees with tbl_SignAttributes",
