@@ -34,4 +34,15 @@ public sealed class VargottamaRepository
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute("DELETE FROM dbo.tbl_Fact_Vargottama WHERE ChartResultId = @ChartResultId", new { ChartResultId = chartResultId });
     }
+
+    /// <summary>Clears every stored chart's vargottama rows for one person — the delete-first step of ChartGenerationService.GenerateAll (this FK to tbl_ChartResults does not cascade).</summary>
+    public void DeleteByBirthDetailId(int birthDetailId)
+    {
+        const string sql = """
+            DELETE FROM dbo.tbl_Fact_Vargottama
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId)
+            """;
+        using var connection = _connectionFactory.CreateOpenConnection();
+        connection.Execute(sql, new { BirthDetailId = birthDetailId });
+    }
 }

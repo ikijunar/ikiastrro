@@ -1045,12 +1045,12 @@ BEGIN
     INSERT dbo.tbl_Rule_Ayanamsa (RuleSetId, Code, DisplayName, SwissSiderealMode, IsTropical, IsImplemented, IsDefault, SourceRefCode)
     VALUES
       (1,'AYANAMSA_TRUE_LAHIRI',N'True Lahiri/Chitrapaksha',27,0,1,0,'SRC_PYJHORA'),
-      (1,'AYANAMSA_LAHIRI',N'Traditional Lahiri',1,0,1,0,'SRC_PYJHORA'),
+      (1,'AYANAMSA_LAHIRI',N'Traditional Lahiri',1,0,1,1,'SRC_PYJHORA'),
       (1,'AYANAMSA_PUSHYA_PAKSHA',N'Pushya-paksha ayanamsa',29,0,1,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_RAMAN',N'Raman',3,0,1,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_KP',N'Krishnamoorthy (KP)',5,0,1,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_FIXED_STAR_CUSTOM',N'Fixed star based CUSTOM ayanamsa',NULL,0,0,0,'SRC_PYJHORA'),
-      (1,'AYANAMSA_JAGANNATHA',N'Jagannatha (Spica in the middle of Chitra always, fixed solar rotation plane)',26,0,1,1,'SRC_PYJHORA'),
+      (1,'AYANAMSA_JAGANNATHA',N'Jagannatha (Spica in the middle of Chitra always, fixed solar rotation plane)',26,0,1,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_ROHINI_PAKSHA',N'Rohini-paksha ayanamsa',NULL,0,0,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_SRI_SURYA_SIDDHANTA',N'Sri Surya Siddhanta',21,0,1,0,'SRC_PYJHORA'),
       (1,'AYANAMSA_DEVA_DATTA',N'Deva-datta',NULL,0,0,0,'SRC_PYJHORA'),

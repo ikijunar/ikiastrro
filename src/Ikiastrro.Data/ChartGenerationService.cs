@@ -94,6 +94,9 @@ public class ChartGenerationService
         _multiGrahaConjunctionsRepo.DeleteByBirthDetailId(birthDetails.Id);  // after pair rows (they FK the groups)
         _aspectsRepo.DeleteByBirthDetailId(birthDetails.Id);
         _planetaryStateRepo.DeleteByBirthDetailId(birthDetails.Id);
+        _planetaryStrengthRepo.DeleteByBirthDetailId(birthDetails.Id);  // FK_Fact_PlanetaryStrength_ChartResult has no cascade
+        _bhavaStrengthRepo.DeleteByBirthDetailId(birthDetails.Id);
+        _vargottamaRepo.DeleteByBirthDetailId(birthDetails.Id);
         foreach (var calc in _orchestrator.Calculators)
             _chartResultsRepo.DeleteByBirthDetailIdAndChartType(birthDetails.Id, calc.ChartType);
 

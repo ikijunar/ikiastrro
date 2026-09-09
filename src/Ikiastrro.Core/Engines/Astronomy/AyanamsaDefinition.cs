@@ -69,7 +69,14 @@ public sealed record AyanamsaDefinition(
         Aldebaran15Tau, GalacticCenter, Hipparchos, Sassanian, Tropical
     ];
 
-    public static AyanamsaDefinition Default => Jagannatha;
+    // Lahiri / Chitrapaksha (Swiss SE_SIDM_LAHIRI = 1) is the project baseline — a polynomial
+    // model that needs no Swiss data files, unlike True Chitrapaksha (27), which requires
+    // sefstars.txt and cannot run in this file-less Moshier configuration. It is the frame
+    // every verify-* reference chart was built in. c238aa8 switched chart generation from this
+    // hard-coded mode to the DB default, which migration 36 had seeded as Jagannatha (mode 26
+    // = SE_SIDM_SS_CITRA, ~22.745° for 1981) — a ~0.85° regression — now reverted here and in
+    // tbl_Rule_Ayanamsa. This constant is only the fallback when no DB row is available.
+    public static AyanamsaDefinition Default => TraditionalLahiri;
 
     public static AyanamsaDefinition FromCode(string? code) =>
         Catalog.FirstOrDefault(x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase))

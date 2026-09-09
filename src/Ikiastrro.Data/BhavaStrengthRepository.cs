@@ -49,4 +49,17 @@ public sealed class BhavaStrengthRepository
         using var connection = _connectionFactory.CreateOpenConnection();
         connection.Execute("DELETE FROM dbo.tbl_Fact_BhavaStrengthComponent WHERE ChartResultId = @ChartResultId; DELETE FROM dbo.tbl_Fact_BhavaStrength WHERE ChartResultId = @ChartResultId;", new { ChartResultId = chartResultId });
     }
+
+    /// <summary>Clears every stored chart's bhava-strength rows for one person — the delete-first step of ChartGenerationService.GenerateAll (these FKs to tbl_ChartResults do not cascade).</summary>
+    public void DeleteByBirthDetailId(int birthDetailId)
+    {
+        const string sql = """
+            DELETE FROM dbo.tbl_Fact_BhavaStrengthComponent
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId);
+            DELETE FROM dbo.tbl_Fact_BhavaStrength
+            WHERE ChartResultId IN (SELECT Id FROM dbo.tbl_ChartResults WHERE BirthDetailId = @BirthDetailId);
+            """;
+        using var connection = _connectionFactory.CreateOpenConnection();
+        connection.Execute(sql, new { BirthDetailId = birthDetailId });
+    }
 }
