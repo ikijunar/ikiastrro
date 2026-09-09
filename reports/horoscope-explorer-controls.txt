@@ -1,0 +1,2861 @@
+Control Identifiers:
+
+ThunderRT6MDIForm - 'Horoscope Explorer-Quick View'    (L-10, T-10, R1930, B1030)
+['Horoscope Explorer-Quick ViewThunderRT6MDIForm', 'ThunderRT6MDIForm', 'Horoscope Explorer-Quick View']
+child_window(title="Horoscope Explorer-Quick View", class_name="ThunderRT6MDIForm")
+   | 
+   | MDIClient - ''    (L8, T153, R1921, B989)
+   | ['MDIClient', '<MDIClient']
+   | child_window(class_name="MDIClient")
+   |    | 
+   |    | ThunderRT6FormDC - 'Horoscope Reckoner'    (L10, T155, R955, B656)
+   |    | ['Horoscope Reckoner', 'ThunderRT6FormDC', 'Horoscope ReckonerThunderRT6FormDC', 'ThunderRT6FormDC0', 'ThunderRT6FormDC1']
+   |    | child_window(title="Horoscope Reckoner", class_name="ThunderRT6FormDC")
+   |    |    | 
+   |    |    | ThunderRT6Frame - 'Frame1'    (L10, T225, R955, B726)
+   |    |    | ['Frame1', 'Frame1ThunderRT6Frame', 'ThunderRT6Frame', 'ThunderRT6Frame0', 'ThunderRT6Frame1']
+   |    |    | child_window(title="Frame1", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | ThunderRT6Frame - 'Frame1'    (L10, T225, R955, B726)
+   |    | ['Frame1', 'Frame1ThunderRT6Frame', 'ThunderRT6Frame', 'ThunderRT6Frame0', 'ThunderRT6Frame1']
+   |    | child_window(title="Frame1", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | ThunderRT6FormDC - 'Login'    (L10, T155, R969, B631)
+   |    | ['Login', 'ThunderRT6FormDC2', 'LoginThunderRT6FormDC']
+   |    | child_window(title="Login", class_name="ThunderRT6FormDC")
+   |    |    | 
+   |    |    | Button - '&Options'    (L150, T565, R261, B606)
+   |    |    | ['Button', '&OptionsButton', '&Options', 'Button0', 'Button1']
+   |    |    | child_window(title="&Options", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | Button - '&Generate'    (L30, T565, R141, B606)
+   |    |    | ['Button2', '&GenerateButton', '&Generate']
+   |    |    | child_window(title="&Generate", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ComboBox - 'English'    (L840, T215, R951, B243)
+   |    |    | ['ComboBox', '<ComboBox', 'ComboBox0', 'ComboBox1', '<ComboBox0', '<ComboBox1']
+   |    |    | child_window(title="English", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    |    | child_window(title="English", class_name="Edit")
+   |    |    | 
+   |    |    | ThunderRT6Frame - 'Mode'    (L830, T165, R961, B556)
+   |    |    | ['ThunderRT6Frame2', 'ModeThunderRT6Frame', 'Mode']
+   |    |    | child_window(title="Mode", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6Frame - 'Horoscope'    (L20, T165, R821, B556)
+   |    |    | ['Horoscope', 'ThunderRT6Frame3', 'HoroscopeThunderRT6Frame']
+   |    |    | child_window(title="Horoscope", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    |    | ['ComboBox2', '<ComboBox2']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    |    | ['ComboBox3', '<ComboBox3']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    |    | ['ComboBox4', '<ComboBox4']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    |    | ['ComboBox5', '<ComboBox5']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    |    | ['Edit5', '<Edit5']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    |    | ['Edit6', '<Edit6']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | ThunderRT6Frame - 'Marriage Match Making'    (L20, T165, R821, B556)
+   |    |    | ['Marriage Match Making', 'ThunderRT6Frame4', 'Marriage Match MakingThunderRT6Frame']
+   |    |    | child_window(title="Marriage Match Making", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    |    | ['ComboBox6', '<ComboBox6']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    |    | ['ComboBox7', '<ComboBox7']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    |    | ['ComboBox8', '<ComboBox8']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    |    | ['ComboBox9', '<ComboBox9']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    |    | ['ComboBox10', '<ComboBox10']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    |    | ['ComboBox11', '<ComboBox11']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    |    | ['Edit11', '<Edit11']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    |    | ['Edit12', '<Edit12']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    |    | ['Edit13', '<Edit13']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    |    | ['Edit14', '<Edit14']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    |    | ['ComboBox12', '<ComboBox12']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    |    | ['ComboBox13', '<ComboBox13']
+   |    |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    |    | 
+   |    |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | Button - '&Options'    (L150, T565, R261, B606)
+   |    | ['Button', '&OptionsButton', '&Options', 'Button0', 'Button1']
+   |    | child_window(title="&Options", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - '&Generate'    (L30, T565, R141, B606)
+   |    | ['Button2', '&GenerateButton', '&Generate']
+   |    | child_window(title="&Generate", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ComboBox - 'English'    (L840, T215, R951, B243)
+   |    | ['ComboBox', '<ComboBox', 'ComboBox0', 'ComboBox1', '<ComboBox0', '<ComboBox1']
+   |    | child_window(title="English", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    |    | child_window(title="English", class_name="Edit")
+   |    | 
+   |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    | child_window(title="English", class_name="Edit")
+   |    | 
+   |    | ThunderRT6Frame - 'Mode'    (L830, T165, R961, B556)
+   |    | ['ThunderRT6Frame2', 'ModeThunderRT6Frame', 'Mode']
+   |    | child_window(title="Mode", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6Frame - 'Horoscope'    (L20, T165, R821, B556)
+   |    | ['Horoscope', 'ThunderRT6Frame3', 'HoroscopeThunderRT6Frame']
+   |    | child_window(title="Horoscope", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    |    | ['ComboBox2', '<ComboBox2']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    |    | ['ComboBox3', '<ComboBox3']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    |    | ['ComboBox4', '<ComboBox4']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    |    | ['ComboBox5', '<ComboBox5']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    |    | ['Edit5', '<Edit5']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    |    | ['Edit6', '<Edit6']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    | ['ComboBox2', '<ComboBox2']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    | ['Button6', 'SaveButton', 'Save']
+   |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    | ['ComboBox3', '<ComboBox3']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    | ['Edit2', '<Edit2']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    | ['ComboBox4', '<ComboBox4']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    | ['Edit3', '<Edit3']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    | ['ComboBox5', '<ComboBox5']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    | ['Edit4', '<Edit4']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    | ['Edit5', '<Edit5']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    | ['Edit6', '<Edit6']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ThunderRT6Frame - 'Marriage Match Making'    (L20, T165, R821, B556)
+   |    | ['Marriage Match Making', 'ThunderRT6Frame4', 'Marriage Match MakingThunderRT6Frame']
+   |    | child_window(title="Marriage Match Making", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    |    | ['ComboBox6', '<ComboBox6']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    |    | ['ComboBox7', '<ComboBox7']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    |    | ['ComboBox8', '<ComboBox8']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    |    | ['ComboBox9', '<ComboBox9']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    |    | ['ComboBox10', '<ComboBox10']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    |    | ['ComboBox11', '<ComboBox11']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    |    | ['Edit11', '<Edit11']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    |    | ['Edit12', '<Edit12']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    |    | ['Edit13', '<Edit13']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    |    | ['Edit14', '<Edit14']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    |    | ['ComboBox12', '<ComboBox12']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    |    | ['ComboBox13', '<ComboBox13']
+   |    |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    |    | 
+   |    |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    | ['ComboBox6', '<ComboBox6']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    | ['ComboBox7', '<ComboBox7']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    | ['ComboBox8', '<ComboBox8']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    | ['Edit7', '<Edit7']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    | ['ComboBox9', '<ComboBox9']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    | ['Edit8', '<Edit8']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    | ['ComboBox10', '<ComboBox10']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    | ['Edit9', '<Edit9']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    | ['ComboBox11', '<ComboBox11']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    | ['Edit10', '<Edit10']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    | ['Edit11', '<Edit11']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    | ['Edit12', '<Edit12']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    | ['Edit13', '<Edit13']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    | ['Edit14', '<Edit14']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    | ['ComboBox12', '<ComboBox12']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    | ['Edit15', '<Edit15']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    | ['ComboBox13', '<ComboBox13']
+   |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    | ['Edit16', '<Edit16']
+   |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | ThunderRT6FormDC - 'Horoscope Reckoner'    (L10, T155, R955, B656)
+   | ['Horoscope Reckoner', 'ThunderRT6FormDC', 'Horoscope ReckonerThunderRT6FormDC', 'ThunderRT6FormDC0', 'ThunderRT6FormDC1']
+   | child_window(title="Horoscope Reckoner", class_name="ThunderRT6FormDC")
+   |    | 
+   |    | ThunderRT6Frame - 'Frame1'    (L10, T225, R955, B726)
+   |    | ['Frame1', 'Frame1ThunderRT6Frame', 'ThunderRT6Frame', 'ThunderRT6Frame0', 'ThunderRT6Frame1']
+   |    | child_window(title="Frame1", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    | child_window(class_name="MSChart20WndClass")
+   | 
+   | ThunderRT6Frame - 'Frame1'    (L10, T225, R955, B726)
+   | ['Frame1', 'Frame1ThunderRT6Frame', 'ThunderRT6Frame', 'ThunderRT6Frame0', 'ThunderRT6Frame1']
+   | child_window(title="Frame1", class_name="ThunderRT6Frame")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   |    | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   |    | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   |    | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   |    | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   |    | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    |    | child_window(class_name="MSChart20WndClass")
+   |    | 
+   |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    | child_window(class_name="MSChart20WndClass")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L370, T435, R941, B646)
+   | ['<ThunderRT6PictureBoxDC', 'ThunderRT6PictureBoxDC', '<ThunderRT6PictureBoxDC0', '<ThunderRT6PictureBoxDC1', 'ThunderRT6PictureBoxDC0', 'ThunderRT6PictureBoxDC1']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   |    | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6UserControlDC - ''    (L660, T445, R731, B483)
+   | ['ThunderRT6UserControlDC', '<ThunderRT6UserControlDC', 'ThunderRT6UserControlDC0', 'ThunderRT6UserControlDC1', '<ThunderRT6UserControlDC0', '<ThunderRT6UserControlDC1']
+   | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L660, T225, R931, B436)
+   | ['<ThunderRT6PictureBoxDC2', 'ThunderRT6PictureBoxDC2']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   |    | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6UserControlDC - ''    (L660, T245, R921, B426)
+   | ['ThunderRT6UserControlDC2', '<ThunderRT6UserControlDC2']
+   | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L380, T225, R651, B436)
+   | ['<ThunderRT6PictureBoxDC3', 'ThunderRT6PictureBoxDC3']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   |    | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6UserControlDC - ''    (L380, T245, R641, B426)
+   | ['ThunderRT6UserControlDC3', '<ThunderRT6UserControlDC3']
+   | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L10, T225, R381, B456)
+   | ['<ThunderRT6PictureBoxDC4', 'ThunderRT6PictureBoxDC4']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   |    | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   |    | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6UserControlDC - ''    (L20, T245, R331, B456)
+   | ['ThunderRT6UserControlDC4', '<ThunderRT6UserControlDC4']
+   | child_window(class_name="ThunderRT6UserControlDC")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L10, T465, R381, B656)
+   | ['<ThunderRT6PictureBoxDC5', 'ThunderRT6PictureBoxDC5']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   |    | ['MSChart20WndClass', '<MSChart20WndClass']
+   |    | child_window(class_name="MSChart20WndClass")
+   | 
+   | MSChart20WndClass - ''    (L10, T485, R381, B656)
+   | ['MSChart20WndClass', '<MSChart20WndClass']
+   | child_window(class_name="MSChart20WndClass")
+   | 
+   | ThunderRT6FormDC - 'Login'    (L10, T155, R969, B631)
+   | ['Login', 'ThunderRT6FormDC2', 'LoginThunderRT6FormDC']
+   | child_window(title="Login", class_name="ThunderRT6FormDC")
+   |    | 
+   |    | Button - '&Options'    (L150, T565, R261, B606)
+   |    | ['Button', '&OptionsButton', '&Options', 'Button0', 'Button1']
+   |    | child_window(title="&Options", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - '&Generate'    (L30, T565, R141, B606)
+   |    | ['Button2', '&GenerateButton', '&Generate']
+   |    | child_window(title="&Generate", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ComboBox - 'English'    (L840, T215, R951, B243)
+   |    | ['ComboBox', '<ComboBox', 'ComboBox0', 'ComboBox1', '<ComboBox0', '<ComboBox1']
+   |    | child_window(title="English", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    |    | child_window(title="English", class_name="Edit")
+   |    | 
+   |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    | child_window(title="English", class_name="Edit")
+   |    | 
+   |    | ThunderRT6Frame - 'Mode'    (L830, T165, R961, B556)
+   |    | ['ThunderRT6Frame2', 'ModeThunderRT6Frame', 'Mode']
+   |    | child_window(title="Mode", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6Frame - 'Horoscope'    (L20, T165, R821, B556)
+   |    | ['Horoscope', 'ThunderRT6Frame3', 'HoroscopeThunderRT6Frame']
+   |    | child_window(title="Horoscope", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    |    | ['ComboBox2', '<ComboBox2']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    |    | ['ComboBox3', '<ComboBox3']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    |    | ['ComboBox4', '<ComboBox4']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    |    | ['ComboBox5', '<ComboBox5']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    |    | ['Edit5', '<Edit5']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    |    | ['Edit6', '<Edit6']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    | ['ComboBox2', '<ComboBox2']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    | ['Button6', 'SaveButton', 'Save']
+   |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    | ['ComboBox3', '<ComboBox3']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    | ['Edit2', '<Edit2']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    | ['ComboBox4', '<ComboBox4']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    | ['Edit3', '<Edit3']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    | ['ComboBox5', '<ComboBox5']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    | ['Edit4', '<Edit4']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    | ['Edit5', '<Edit5']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    | ['Edit6', '<Edit6']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ThunderRT6Frame - 'Marriage Match Making'    (L20, T165, R821, B556)
+   |    | ['Marriage Match Making', 'ThunderRT6Frame4', 'Marriage Match MakingThunderRT6Frame']
+   |    | child_window(title="Marriage Match Making", class_name="ThunderRT6Frame")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    |    | ['ComboBox6', '<ComboBox6']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    |    | ['ComboBox7', '<ComboBox7']
+   |    |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    |    | ['ComboBox8', '<ComboBox8']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    |    | ['ComboBox9', '<ComboBox9']
+   |    |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    |    | ['ComboBox10', '<ComboBox10']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    |    | ['ComboBox11', '<ComboBox11']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    |    | 
+   |    |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    |    | ['Edit11', '<Edit11']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    |    | ['Edit12', '<Edit12']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    |    | ['Edit13', '<Edit13']
+   |    |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    |    | ['Edit14', '<Edit14']
+   |    |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    |    | ['ComboBox12', '<ComboBox12']
+   |    |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    |    | 
+   |    |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    |    | ['ComboBox13', '<ComboBox13']
+   |    |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    |    | 
+   |    |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    |    | 
+   |    |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    | ['ComboBox6', '<ComboBox6']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    | ['ComboBox7', '<ComboBox7']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    | ['ComboBox8', '<ComboBox8']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    | ['Edit7', '<Edit7']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    | ['ComboBox9', '<ComboBox9']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    | ['Edit8', '<Edit8']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    | ['ComboBox10', '<ComboBox10']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    | ['Edit9', '<Edit9']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    | ['ComboBox11', '<ComboBox11']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    | ['Edit10', '<Edit10']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    | ['Edit11', '<Edit11']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    | ['Edit12', '<Edit12']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    | ['Edit13', '<Edit13']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    | ['Edit14', '<Edit14']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    | ['ComboBox12', '<ComboBox12']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    | ['Edit15', '<Edit15']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    | ['ComboBox13', '<ComboBox13']
+   |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    | ['Edit16', '<Edit16']
+   |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | Button - '&Options'    (L150, T565, R261, B606)
+   | ['Button', '&OptionsButton', '&Options', 'Button0', 'Button1']
+   | child_window(title="&Options", class_name="ThunderRT6CommandButton")
+   | 
+   | Button - '&Generate'    (L30, T565, R141, B606)
+   | ['Button2', '&GenerateButton', '&Generate']
+   | child_window(title="&Generate", class_name="ThunderRT6CommandButton")
+   | 
+   | ComboBox - 'English'    (L840, T215, R951, B243)
+   | ['ComboBox', '<ComboBox', 'ComboBox0', 'ComboBox1', '<ComboBox0', '<ComboBox1']
+   | child_window(title="English", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'English'    (L844, T219, R927, B239)
+   |    | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   |    | child_window(title="English", class_name="Edit")
+   | 
+   | Edit - 'English'    (L844, T219, R927, B239)
+   | ['Edit', '<Edit', 'Edit0', 'Edit1', '<Edit0', '<Edit1']
+   | child_window(title="English", class_name="Edit")
+   | 
+   | ThunderRT6Frame - 'Mode'    (L830, T165, R961, B556)
+   | ['ThunderRT6Frame2', 'ModeThunderRT6Frame', 'Mode']
+   | child_window(title="Mode", class_name="ThunderRT6Frame")
+   |    | 
+   |    | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   |    | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   |    | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Marriage'    (L844, T295, R945, B326)
+   |    | ['Button4', '&Marriage', '&MarriageButton']
+   |    | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Button - '&Horoscope'    (L844, T255, R945, B286)
+   |    | ['Button5', '&Horoscope', '&HoroscopeButton']
+   |    | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   | 
+   | Button - '&Varshaphala'    (L844, T335, R945, B366)
+   | ['Button3', '&Varshaphala', '&VarshaphalaButton']
+   | child_window(title="&Varshaphala", class_name="ThunderRT6OptionButton")
+   | 
+   | Button - '&Marriage'    (L844, T295, R945, B326)
+   | ['Button4', '&Marriage', '&MarriageButton']
+   | child_window(title="&Marriage", class_name="ThunderRT6OptionButton")
+   | 
+   | Button - '&Horoscope'    (L844, T255, R945, B286)
+   | ['Button5', '&Horoscope', '&HoroscopeButton']
+   | child_window(title="&Horoscope", class_name="ThunderRT6OptionButton")
+   | 
+   | ThunderRT6Frame - 'Horoscope'    (L20, T165, R821, B556)
+   | ['Horoscope', 'ThunderRT6Frame3', 'HoroscopeThunderRT6Frame']
+   | child_window(title="Horoscope", class_name="ThunderRT6Frame")
+   |    | 
+   |    | ComboBox - 'None'    (L520, T271, R641, B297)
+   |    | ['ComboBox2', '<ComboBox2']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   |    | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    |    | ['Button6', 'SaveButton', 'Save']
+   |    |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    | ['Button6', 'SaveButton', 'Save']
+   |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   |    | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   |    | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   |    | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   |    | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   |    | child_window(class_name="Toolbar20WndClass")
+   |    |    | 
+   |    |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    | child_window(class_name="msvb_lib_toolbar")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   |    | ['ComboBox3', '<ComboBox3']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    |    | ['Edit2', '<Edit2']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    | ['Edit2', '<Edit2']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L194, T315, R365, B341)
+   |    | ['ComboBox4', '<ComboBox4']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    |    | ['Edit3', '<Edit3']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    | ['Edit3', '<Edit3']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   |    | ['ComboBox5', '<ComboBox5']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    |    | ['Edit4', '<Edit4']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    | ['Edit4', '<Edit4']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'E'    (L440, T355, R461, B383)
+   |    | ['Edit5', '<Edit5']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L540, T355, R561, B383)
+   |    | ['Edit6', '<Edit6']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   |    | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   |    | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   |    | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   |    | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   |    | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   |    | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | ComboBox - 'None'    (L520, T271, R641, B297)
+   | ['ComboBox2', '<ComboBox2']
+   | child_window(title="None", class_name="ThunderRT6ComboBox")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L570, T345, R651, B386)
+   | ['<ThunderRT6PictureBoxDC6', 'ThunderRT6PictureBoxDC6']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | Button - 'Save'    (L570, T345, R651, B386)
+   |    | ['Button6', 'SaveButton', 'Save']
+   |    | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   | 
+   | Button - 'Save'    (L570, T345, R651, B386)
+   | ['Button6', 'SaveButton', 'Save']
+   | child_window(title="Save", class_name="ThunderRT6CommandButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L310, T230, R431, B271)
+   | ['<ThunderRT6PictureBoxDC7', 'ThunderRT6PictureBoxDC7']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   |    | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   |    | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   | 
+   | Button - 'Cast for Now'    (L310, T230, R421, B264)
+   | ['Button7', 'Cast for NowButton', 'Cast for Now']
+   | child_window(title="Cast for Now", class_name="ThunderRT6CommandButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L270, T275, R391, B296)
+   | ['<ThunderRT6PictureBoxDC8', 'ThunderRT6PictureBoxDC8']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | RadioButton - 'AM'    (L270, T275, R321, B296)
+   |    | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   |    | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'PM'    (L330, T275, R381, B296)
+   |    | ['RadioButton2', 'PM', 'PMRadioButton']
+   |    | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - 'AM'    (L270, T275, R321, B296)
+   | ['RadioButton', 'AMRadioButton', 'AM', 'RadioButton0', 'RadioButton1']
+   | child_window(title="AM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - 'PM'    (L330, T275, R381, B296)
+   | ['RadioButton2', 'PM', 'PMRadioButton']
+   | child_window(title="PM", class_name="ThunderRT6OptionButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L430, T199, R621, B220)
+   | ['<ThunderRT6PictureBoxDC9', 'ThunderRT6PictureBoxDC9']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | RadioButton - 'Male'    (L430, T199, R491, B220)
+   |    | ['RadioButton3', 'MaleRadioButton', 'Male']
+   |    | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - 'Female'    (L500, T199, R581, B220)
+   |    | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   |    | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - 'Male'    (L430, T199, R491, B220)
+   | ['RadioButton3', 'MaleRadioButton', 'Male']
+   | child_window(title="Male", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - 'Female'    (L500, T199, R581, B220)
+   | ['RadioButton4', 'FemaleRadioButton', 'Female']
+   | child_window(title="Female", class_name="ThunderRT6OptionButton")
+   | 
+   | Toolbar20WndClass - ''    (L60, T425, R811, B493)
+   | ['Toolbar20WndClass', '<Toolbar20WndClass', 'Toolbar20WndClass0', 'Toolbar20WndClass1']
+   | child_window(class_name="Toolbar20WndClass")
+   |    | 
+   |    | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   |    | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   |    | child_window(class_name="msvb_lib_toolbar")
+   | 
+   | msvb_lib_toolbar - ''    (L60, T425, R811, B493)
+   | ['<msvb_lib_toolbar', 'msvb_lib_toolbar', 'msvb_lib_toolbar0', 'msvb_lib_toolbar1']
+   | child_window(class_name="msvb_lib_toolbar")
+   | 
+   | ComboBox - 'Ananya'    (L190, T195, R421, B223)
+   | ['ComboBox3', '<ComboBox3']
+   | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Ananya'    (L194, T199, R397, B219)
+   |    | ['Edit2', '<Edit2']
+   |    | child_window(title="Ananya", class_name="Edit")
+   | 
+   | Edit - 'Ananya'    (L194, T199, R397, B219)
+   | ['Edit2', '<Edit2']
+   | child_window(title="Ananya", class_name="Edit")
+   | 
+   | ComboBox - 'India'    (L194, T315, R365, B341)
+   | ['ComboBox4', '<ComboBox4']
+   | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'India'    (L198, T319, R341, B338)
+   |    | ['Edit3', '<Edit3']
+   |    | child_window(title="India", class_name="Edit")
+   | 
+   | Edit - 'India'    (L198, T319, R341, B338)
+   | ['Edit3', '<Edit3']
+   | child_window(title="India", class_name="Edit")
+   | 
+   | ComboBox - 'Bangalore (Karnataka)'    (L194, T355, R365, B381)
+   | ['ComboBox5', '<ComboBox5']
+   | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   |    | ['Edit4', '<Edit4']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   | 
+   | Edit - 'Bangalore (Karnataka)'    (L198, T359, R341, B378)
+   | ['Edit4', '<Edit4']
+   | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   | 
+   | Edit - 'E'    (L440, T355, R461, B383)
+   | ['Edit5', '<Edit5']
+   | child_window(title="E", class_name="ThunderRT6TextBox")
+   | 
+   | Edit - 'N'    (L540, T355, R561, B383)
+   | ['Edit6', '<Edit6']
+   | child_window(title="N", class_name="ThunderRT6TextBox")
+   | 
+   | MSMaskWndClass - '+05.30'    (L370, T315, R441, B343)
+   | ['+05.30', 'MSMaskWndClass', '+05.30MSMaskWndClass', 'MSMaskWndClass0', 'MSMaskWndClass1', '+05.300', '+05.301', '+05.30MSMaskWndClass0', '+05.30MSMaskWndClass1']
+   | child_window(title="+05.30", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '013:00'    (L470, T355, R541, B383)
+   | ['013:00MSMaskWndClass', 'MSMaskWndClass2', '013:00', '013:00MSMaskWndClass0', '013:00MSMaskWndClass1', '013:000', '013:001']
+   | child_window(title="013:00", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '14/12/2010'    (L190, T230, R301, B261)
+   | ['14/12/2010', '14/12/2010MSMaskWndClass', 'MSMaskWndClass3', '14/12/20100', '14/12/20101', '14/12/2010MSMaskWndClass0', '14/12/2010MSMaskWndClass1']
+   | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '20.40'    (L190, T269, R261, B300)
+   | ['20.40', 'MSMaskWndClass4', '20.40MSMaskWndClass', '20.400', '20.401', '20.40MSMaskWndClass0', '20.40MSMaskWndClass1']
+   | child_window(title="20.40", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '077:35'    (L370, T355, R441, B383)
+   | ['MSMaskWndClass5', '077:35', '077:35MSMaskWndClass', '077:350', '077:351', '077:35MSMaskWndClass0', '077:35MSMaskWndClass1']
+   | child_window(title="077:35", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '-00.00'    (L640, T271, R711, B299)
+   | ['MSMaskWndClass6', '-00.00MSMaskWndClass', '-00.00', '-00.00MSMaskWndClass0', '-00.00MSMaskWndClass1', '-00.000', '-00.001']
+   | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | ThunderRT6Frame - 'Marriage Match Making'    (L20, T165, R821, B556)
+   | ['Marriage Match Making', 'ThunderRT6Frame4', 'Marriage Match MakingThunderRT6Frame']
+   | child_window(title="Marriage Match Making", class_name="ThunderRT6Frame")
+   |    | 
+   |    | ComboBox - 'None'    (L530, T345, R651, B371)
+   |    | ['ComboBox6', '<ComboBox6']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ComboBox - 'None'    (L130, T345, R251, B371)
+   |    | ['ComboBox7', '<ComboBox7']
+   |    | child_window(title="None", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   |    | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   |    | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    |    | 
+   |    |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | ComboBox - 'India'    (L530, T385, R641, B411)
+   |    | ['ComboBox8', '<ComboBox8']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    |    | ['Edit7', '<Edit7']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    | ['Edit7', '<Edit7']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'India'    (L130, T385, R241, B411)
+   |    | ['ComboBox9', '<ComboBox9']
+   |    | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    |    | ['Edit8', '<Edit8']
+   |    |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    | ['Edit8', '<Edit8']
+   |    | child_window(title="India", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   |    | ['ComboBox10', '<ComboBox10']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    |    | ['Edit9', '<Edit9']
+   |    |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    | ['Edit9', '<Edit9']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   |    | ['ComboBox11', '<ComboBox11']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    |    | ['Edit10', '<Edit10']
+   |    |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    | ['Edit10', '<Edit10']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   |    | 
+   |    | Edit - 'N'    (L590, T459, R611, B487)
+   |    | ['Edit11', '<Edit11']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L680, T459, R701, B487)
+   |    | ['Edit12', '<Edit12']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'N'    (L190, T459, R211, B487)
+   |    | ['Edit13', '<Edit13']
+   |    | child_window(title="N", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | Edit - 'E'    (L280, T459, R301, B487)
+   |    | ['Edit14', '<Edit14']
+   |    | child_window(title="E", class_name="ThunderRT6TextBox")
+   |    | 
+   |    | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   |    | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   |    | child_window(title="013:05", class_name="MSMaskWndClass")
+   |    | 
+   |    | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   |    | ['ComboBox12', '<ComboBox12']
+   |    | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    |    | ['Edit15', '<Edit15']
+   |    |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    | ['Edit15', '<Edit15']
+   |    | child_window(title="Ananya", class_name="Edit")
+   |    | 
+   |    | ComboBox - 'charu'    (L130, T233, R371, B261)
+   |    | ['ComboBox13', '<ComboBox13']
+   |    | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    |    | ['Edit16', '<Edit16']
+   |    |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    | ['Edit16', '<Edit16']
+   |    | child_window(title="charu", class_name="Edit")
+   |    | 
+   |    | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   |    | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   |    | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   |    | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   |    | child_window(title="11.15", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   |    | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   |    | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   |    | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   |    | child_window(title="20.40", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   |    | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   |    | child_window(title="080:18", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   |    | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   |    | child_window(title="013:00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   |    | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   |    | child_window(title="077:35", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   |    | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   |    | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   |    | child_window(title="+05.30", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   |    | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   |    | 
+   |    | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   |    | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   |    | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | ComboBox - 'None'    (L530, T345, R651, B371)
+   | ['ComboBox6', '<ComboBox6']
+   | child_window(title="None", class_name="ThunderRT6ComboBox")
+   | 
+   | ComboBox - 'None'    (L130, T345, R251, B371)
+   | ['ComboBox7', '<ComboBox7']
+   | child_window(title="None", class_name="ThunderRT6ComboBox")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L620, T305, R741, B336)
+   | ['<ThunderRT6PictureBoxDC10', 'ThunderRT6PictureBoxDC10']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | RadioButton - '&AM'    (L620, T305, R671, B326)
+   |    | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&PM'    (L670, T305, R721, B326)
+   |    | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - '&AM'    (L620, T305, R671, B326)
+   | ['RadioButton5', '&AM', '&AMRadioButton', '&AM0', '&AM1', '&AMRadioButton0', '&AMRadioButton1']
+   | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - '&PM'    (L670, T305, R721, B326)
+   | ['RadioButton6', '&PM', '&PMRadioButton', '&PM0', '&PM1', '&PMRadioButton0', '&PMRadioButton1']
+   | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L230, T305, R341, B336)
+   | ['<ThunderRT6PictureBoxDC11', 'ThunderRT6PictureBoxDC11']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | RadioButton - '&PM'    (L280, T305, R331, B326)
+   |    | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   |    | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   |    | 
+   |    | RadioButton - '&AM'    (L230, T305, R281, B326)
+   |    | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   |    | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - '&PM'    (L280, T305, R331, B326)
+   | ['RadioButton7', '&PM2', '&PMRadioButton2']
+   | child_window(title="&PM", class_name="ThunderRT6OptionButton")
+   | 
+   | RadioButton - '&AM'    (L230, T305, R281, B326)
+   | ['RadioButton8', '&AM2', '&AMRadioButton2']
+   | child_window(title="&AM", class_name="ThunderRT6OptionButton")
+   | 
+   | ComboBox - 'India'    (L530, T385, R641, B411)
+   | ['ComboBox8', '<ComboBox8']
+   | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'India'    (L534, T389, R617, B408)
+   |    | ['Edit7', '<Edit7']
+   |    | child_window(title="India", class_name="Edit")
+   | 
+   | Edit - 'India'    (L534, T389, R617, B408)
+   | ['Edit7', '<Edit7']
+   | child_window(title="India", class_name="Edit")
+   | 
+   | ComboBox - 'India'    (L130, T385, R241, B411)
+   | ['ComboBox9', '<ComboBox9']
+   | child_window(title="India", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'India'    (L134, T389, R217, B408)
+   |    | ['Edit8', '<Edit8']
+   |    | child_window(title="India", class_name="Edit")
+   | 
+   | Edit - 'India'    (L134, T389, R217, B408)
+   | ['Edit8', '<Edit8']
+   | child_window(title="India", class_name="Edit")
+   | 
+   | ComboBox - 'Bangalore (Karnataka)'    (L530, T425, R651, B451)
+   | ['ComboBox10', '<ComboBox10']
+   | child_window(title="Bangalore (Karnataka)", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   |    | ['Edit9', '<Edit9']
+   |    | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   | 
+   | Edit - 'Bangalore (Karnataka)'    (L534, T429, R627, B448)
+   | ['Edit9', '<Edit9']
+   | child_window(title="Bangalore (Karnataka)", class_name="Edit")
+   | 
+   | ComboBox - 'Chennai (Tamilnadu)'    (L130, T425, R251, B451)
+   | ['ComboBox11', '<ComboBox11']
+   | child_window(title="Chennai (Tamilnadu)", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   |    | ['Edit10', '<Edit10']
+   |    | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   | 
+   | Edit - 'Chennai (Tamilnadu)'    (L134, T429, R227, B448)
+   | ['Edit10', '<Edit10']
+   | child_window(title="Chennai (Tamilnadu)", class_name="Edit")
+   | 
+   | Edit - 'N'    (L590, T459, R611, B487)
+   | ['Edit11', '<Edit11']
+   | child_window(title="N", class_name="ThunderRT6TextBox")
+   | 
+   | Edit - 'E'    (L680, T459, R701, B487)
+   | ['Edit12', '<Edit12']
+   | child_window(title="E", class_name="ThunderRT6TextBox")
+   | 
+   | Edit - 'N'    (L190, T459, R211, B487)
+   | ['Edit13', '<Edit13']
+   | child_window(title="N", class_name="ThunderRT6TextBox")
+   | 
+   | Edit - 'E'    (L280, T459, R301, B487)
+   | ['Edit14', '<Edit14']
+   | child_window(title="E", class_name="ThunderRT6TextBox")
+   | 
+   | MSMaskWndClass - '013:05'    (L130, T459, R191, B487)
+   | ['MSMaskWndClass7', '013:05MSMaskWndClass', '013:05']
+   | child_window(title="013:05", class_name="MSMaskWndClass")
+   | 
+   | ComboBox - 'Ananya'    (L530, T233, R781, B261)
+   | ['ComboBox12', '<ComboBox12']
+   | child_window(title="Ananya", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Ananya'    (L534, T236, R757, B256)
+   |    | ['Edit15', '<Edit15']
+   |    | child_window(title="Ananya", class_name="Edit")
+   | 
+   | Edit - 'Ananya'    (L534, T236, R757, B256)
+   | ['Edit15', '<Edit15']
+   | child_window(title="Ananya", class_name="Edit")
+   | 
+   | ComboBox - 'charu'    (L130, T233, R371, B261)
+   | ['ComboBox13', '<ComboBox13']
+   | child_window(title="charu", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'charu'    (L134, T236, R347, B256)
+   |    | ['Edit16', '<Edit16']
+   |    | child_window(title="charu", class_name="Edit")
+   | 
+   | Edit - 'charu'    (L134, T236, R347, B256)
+   | ['Edit16', '<Edit16']
+   | child_window(title="charu", class_name="Edit")
+   | 
+   | MSMaskWndClass - '19/07/1992'    (L130, T268, R251, B299)
+   | ['MSMaskWndClass8', '19/07/1992', '19/07/1992MSMaskWndClass']
+   | child_window(title="19/07/1992", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '11.15'    (L130, T305, R211, B336)
+   | ['11.15', 'MSMaskWndClass9', '11.15MSMaskWndClass']
+   | child_window(title="11.15", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '14/12/2010'    (L530, T268, R661, B299)
+   | ['14/12/20102', '14/12/2010MSMaskWndClass2', 'MSMaskWndClass10']
+   | child_window(title="14/12/2010", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '20.40'    (L530, T305, R601, B336)
+   | ['20.402', 'MSMaskWndClass11', '20.40MSMaskWndClass2']
+   | child_window(title="20.40", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '080:18'    (L220, T459, R281, B487)
+   | ['MSMaskWndClass12', '080:18MSMaskWndClass', '080:18']
+   | child_window(title="080:18", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '013:00'    (L530, T459, R591, B487)
+   | ['013:00MSMaskWndClass2', 'MSMaskWndClass13', '013:002']
+   | child_window(title="013:00", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '077:35'    (L620, T459, R681, B487)
+   | ['MSMaskWndClass14', '077:352', '077:35MSMaskWndClass2']
+   | child_window(title="077:35", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '+05.30'    (L250, T385, R311, B413)
+   | ['+05.302', 'MSMaskWndClass15', '+05.30MSMaskWndClass2']
+   | child_window(title="+05.30", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '+05.30'    (L650, T385, R711, B413)
+   | ['+05.303', 'MSMaskWndClass16', '+05.30MSMaskWndClass3']
+   | child_window(title="+05.30", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '-00.00'    (L250, T345, R321, B373)
+   | ['MSMaskWndClass17', '-00.00MSMaskWndClass2', '-00.002']
+   | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | MSMaskWndClass - '-00.00'    (L650, T345, R721, B373)
+   | ['MSMaskWndClass18', '-00.00MSMaskWndClass3', '-00.003']
+   | child_window(title="-00.00", class_name="MSMaskWndClass")
+   | 
+   | ThunderRT6Timer - ''    (L110, T504, R110, B504)
+   | ['ThunderRT6Timer', '<ThunderRT6Timer', 'ThunderRT6Timer0', 'ThunderRT6Timer1']
+   | child_window(class_name="ThunderRT6Timer")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L1, T153, R7, B989)
+   | ['<ThunderRT6PictureBoxDC12', 'ThunderRT6PictureBoxDC12']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L0, T153, R1, B989)
+   | ['ThunderRT6PictureBoxDC13', 'Horoscope Explorer-Quick ViewThunderRT6PictureBoxDC']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | TreeView20WndClass - ''    (L1, T153, R4, B989)
+   |    | ['<TreeView20WndClass', 'TreeView20WndClass']
+   |    | child_window(class_name="TreeView20WndClass")
+   | 
+   | TreeView20WndClass - ''    (L1, T153, R4, B989)
+   | ['<TreeView20WndClass', 'TreeView20WndClass']
+   | child_window(class_name="TreeView20WndClass")
+   | 
+   | Toolbar20WndClass - ''    (L0, T54, R1920, B84)
+   | ['Horoscope Explorer-Quick ViewToolbar20WndClass', 'Toolbar20WndClass2']
+   | child_window(class_name="Toolbar20WndClass")
+   |    | 
+   |    | ComboBox - '2000'    (L631, T55, R702, B84)
+   |    | ['ComboBox14']
+   |    | child_window(title="2000", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - '2000'    (L635, T59, R678, B80)
+   |    |    | ['Edit17']
+   |    |    | child_window(title="2000", class_name="Edit")
+   |    | 
+   |    | Edit - '2000'    (L635, T59, R678, B80)
+   |    | ['Edit17']
+   |    | child_window(title="2000", class_name="Edit")
+   |    | 
+   |    | UpDown20WndClass - ''    (L701, T55, R722, B83)
+   |    | ['UpDown20WndClass']
+   |    | child_window(class_name="UpDown20WndClass")
+   |    | 
+   |    | ComboBox - 'Quick View'    (L401, T55, R632, B84)
+   |    | ['ComboBox15']
+   |    | child_window(title="Quick View", class_name="ThunderRT6ComboBox")
+   |    |    | 
+   |    |    | Edit - 'Quick View'    (L405, T59, R608, B80)
+   |    |    | ['Edit18']
+   |    |    | child_window(title="Quick View", class_name="Edit")
+   |    | 
+   |    | Edit - 'Quick View'    (L405, T59, R608, B80)
+   |    | ['Edit18']
+   |    | child_window(title="Quick View", class_name="Edit")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L633, T55, R2026, B106)
+   |    | ['<ThunderRT6PictureBoxDC13', 'ThunderRT6PictureBoxDC14']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    |    | 
+   |    |    | TOcxAncestor - ''    (L693, T55, R728, B90)
+   |    |    | ['<TOcxAncestor', 'TOcxAncestor']
+   |    |    | child_window(class_name="TOcxAncestor")
+   |    |    | 
+   |    |    | Button - 'Test'    (L733, T55, R814, B86)
+   |    |    | ['Button8', 'Test', 'TestButton']
+   |    |    | child_window(title="Test", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | TOcxAncestor - ''    (L693, T55, R728, B90)
+   |    | ['<TOcxAncestor', 'TOcxAncestor']
+   |    | child_window(class_name="TOcxAncestor")
+   |    | 
+   |    | Button - 'Test'    (L733, T55, R814, B86)
+   |    | ['Button8', 'Test', 'TestButton']
+   |    | child_window(title="Test", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | msvb_lib_toolbar - ''    (L1, T55, R1919, B83)
+   |    | ['Horoscope Explorer-Quick Viewmsvb_lib_toolbar', 'msvb_lib_toolbar2']
+   |    | child_window(class_name="msvb_lib_toolbar")
+   | 
+   | ComboBox - '2000'    (L631, T55, R702, B84)
+   | ['ComboBox14']
+   | child_window(title="2000", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - '2000'    (L635, T59, R678, B80)
+   |    | ['Edit17']
+   |    | child_window(title="2000", class_name="Edit")
+   | 
+   | Edit - '2000'    (L635, T59, R678, B80)
+   | ['Edit17']
+   | child_window(title="2000", class_name="Edit")
+   | 
+   | UpDown20WndClass - ''    (L701, T55, R722, B83)
+   | ['UpDown20WndClass']
+   | child_window(class_name="UpDown20WndClass")
+   | 
+   | ComboBox - 'Quick View'    (L401, T55, R632, B84)
+   | ['ComboBox15']
+   | child_window(title="Quick View", class_name="ThunderRT6ComboBox")
+   |    | 
+   |    | Edit - 'Quick View'    (L405, T59, R608, B80)
+   |    | ['Edit18']
+   |    | child_window(title="Quick View", class_name="Edit")
+   | 
+   | Edit - 'Quick View'    (L405, T59, R608, B80)
+   | ['Edit18']
+   | child_window(title="Quick View", class_name="Edit")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L633, T55, R2026, B106)
+   | ['<ThunderRT6PictureBoxDC13', 'ThunderRT6PictureBoxDC14']
+   | child_window(class_name="ThunderRT6PictureBoxDC")
+   |    | 
+   |    | TOcxAncestor - ''    (L693, T55, R728, B90)
+   |    | ['<TOcxAncestor', 'TOcxAncestor']
+   |    | child_window(class_name="TOcxAncestor")
+   |    | 
+   |    | Button - 'Test'    (L733, T55, R814, B86)
+   |    | ['Button8', 'Test', 'TestButton']
+   |    | child_window(title="Test", class_name="ThunderRT6CommandButton")
+   | 
+   | TOcxAncestor - ''    (L693, T55, R728, B90)
+   | ['<TOcxAncestor', 'TOcxAncestor']
+   | child_window(class_name="TOcxAncestor")
+   | 
+   | Button - 'Test'    (L733, T55, R814, B86)
+   | ['Button8', 'Test', 'TestButton']
+   | child_window(title="Test", class_name="ThunderRT6CommandButton")
+   | 
+   | msvb_lib_toolbar - ''    (L1, T55, R1919, B83)
+   | ['Horoscope Explorer-Quick Viewmsvb_lib_toolbar', 'msvb_lib_toolbar2']
+   | child_window(class_name="msvb_lib_toolbar")
+   | 
+   | StatusBar - ''    (L0, T989, R1920, B1020)
+   | ['Horoscope Explorer-Quick ViewStatusBar', 'StatusBar']
+   | child_window(class_name="StatusBar20WndClass")
+   | 
+   | ThunderRT6UserControlDC - ''    (L0, T84, R1920, B153)
+   | ['ThunderRT6UserControlDC5', '<ThunderRT6UserControlDC5']
+   | child_window(class_name="ThunderRT6UserControlDC")
+   |    | 
+   |    | ThunderRT6Timer - ''    (L453, T86, R453, B86)
+   |    | ['ThunderRT6Timer2']
+   |    | child_window(class_name="ThunderRT6Timer")
+   |    | 
+   |    | Button - '>'    (L1896, T86, R1917, B150)
+   |    | ['Button9', '>', '>Button']
+   |    | child_window(title=">", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | Button - '<'    (L3, T86, R24, B150)
+   |    | ['Button10', '<', '<Button']
+   |    | child_window(title="<", class_name="ThunderRT6CommandButton")
+   |    | 
+   |    | ThunderRT6PictureBoxDC - ''    (L13, T86, R2784, B155)
+   |    | ['<ThunderRT6PictureBoxDC14', 'ThunderRT6PictureBoxDC15']
+   |    | child_window(class_name="ThunderRT6PictureBoxDC")
+   | 
+   | ThunderRT6Timer - ''    (L453, T86, R453, B86)
+   | ['ThunderRT6Timer2']
+   | child_window(class_name="ThunderRT6Timer")
+   | 
+   | Button - '>'    (L1896, T86, R1917, B150)
+   | ['Button9', '>', '>Button']
+   | child_window(title=">", class_name="ThunderRT6CommandButton")
+   | 
+   | Button - '<'    (L3, T86, R24, B150)
+   | ['Button10', '<', '<Button']
+   | child_window(title="<", class_name="ThunderRT6CommandButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L13, T86, R2784, B155)
+   | ['<ThunderRT6PictureBoxDC14', 'ThunderRT6PictureBoxDC15']
+   | child_window(class_name="ThunderRT6PictureBoxDC")

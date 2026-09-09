@@ -1,3 +1,7 @@
+---
+last_updated: 2026-09-07
+---
+
 # ikiastrro — Calculations Reference
 
 Every astrological calculation ikiastrro performs, its convention, and its source. Living
@@ -32,7 +36,10 @@ logic is original.
   and the opposite-signed latitude (mean node sits on the ecliptic, so ≈ 0).
 - **House system:** **Whole Sign** everywhere. House *n* from any reference sign =
   `AstroMath.CountFromSignToSign(referenceSign, targetSign)` (1-based, the sign that holds the
-  reference point is house 1).
+  reference point is house 1). **User-confirmed 2026-09-07** for house placements and
+  placement-rule interpretation, including supplementary `SRC_RAMAN_HTJH` material.
+  Cusp-dependent source rules require separate review; see the
+  [adopted house convention](research-house-placement-pvr-raman.md#adopted-convention--2026-09-07).
 - **Time:** birth local wall-clock + place. Lat/long via Nominatim; UTC offset resolved
   offline from lat/long + date (historical DST respected). Stored `DATETIME2`, no offset
   column — local time of day is what's kept, matching how `tbl_BirthDetails` stores it.
@@ -80,7 +87,7 @@ D20, D24, D27, D30, D40, D45, D60.
 | **D8** | 8 | sudden events, longevity | Ashtamsa movable/fixed/dual → Ar/Sg/Le (`AshtamsaD8`) |
 | **D9** | 9 | marriage, dharma, inner strength | Navamsa (`NavamsaD9`) |
 | **D10** | 10 | career, status | Dasamsa odd-self / even-9th (`DasamsaD10`) |
-| **D11** | 11 | gains, income | Sanjay Rath Rudramsa (`RudramsaD11`) — one-line switch to Raman's if needed |
+| **D11** | 11 | gains, income | PVR/BPHS traditional Rudramsa (`RudramsaD11`) — 11-part reverse-seed rule |
 | **D12** | 12 | parents, lineage | Dwadasamsa 12-from-self (`DwadasamsaD12`) |
 | **D16** | 16 | vehicles, comforts, happiness | Shodasamsa movable/fixed/dual → Ar/Le/Sg (`ShodasamsaD16`) |
 | **D20** | 20 | spiritual practice | Vimsamsa movable/dual/fixed → Ar/Le/Sg (`VimsamsaD20`) |
@@ -194,6 +201,8 @@ for the UI).
 ---
 
 ## 7. Vimshottari Dasha (`VimshottariDashaCalculator.cs` / `VimshottariDashaService.cs`)
+
+**Reference benchmark (2026-09-08):** migration `46_create_ayanamsa_dasha_benchmarks.sql` stores the Ramakrishnan P JHora birth inputs, reported ayanamsa, ten longitudes, and nine Vimshottari Mahadasha boundaries as `BENCH_RAMAKRISHNAN_P_JHORA_1981`. Inspect it with `db/checks/check_ayanamsa_dasha_benchmarks.sql`. Other catalogued dashas are not yet verified.
 
 - **Not** an `IChartCalculator` (Dasha has no planet-position/house shape) — a dedicated
   calculator + service, still logged as a `tbl_ChartResults` row for delete-cascade
@@ -334,15 +343,12 @@ dignity / nakshatra / combustion / aspects / karaka). `verify-jaimini` is the ch
   - **Hora Lagna** (`HoraLagnaCalculator.cs`, kind `SpecialLagna`, code `HL`) — Sun's sidereal
     longitude at the Vedic day's opening sunrise + 0.5° per clock-minute of time-of-day since
     it (negative for a night birth). `1_Ramakrishnan` → 23 Pi 55′ (Pisces; D9 Aquarius).
-  - **Gulika + Maandi** (`UpagrahaCalculator.cs`, kind `Upagraha`, codes `Gulika` / `Maandi`) —
-    split the day arc (sunrise→sunset) or night arc (sunset→next sunrise) into 8; the Ascendant
-    at the **start** of Saturn's part is Gulika, at its **middle** is Maandi. Weekday is the
-    Vedic day's, so a pre-dawn birth uses the previous civil day's ruler row.
-    `1_Ramakrishnan` → Gulika 7 Li 45′ (D9 Sagittarius), Maandi 18 Li 07′ (D9 Pisces).
+  - **All 11 upagrahas** (`SubPlanetCalculator`, kind `Upagraha`) read migration 27 under `SRC_PVR_INTEGRATED`. Sun chain: Dhuma = Sun + 133 degrees 20 minutes; Vyatipata = 360 - Dhuma; Parivesha = Vyatipata + 180; Indrachapa = 360 - Parivesha; Upaketu = Indrachapa + 16 degrees 40 minutes, normalizing every step. Time points use the rising Ascendant at the midpoint of Sun/Mars/Mercury/Jupiter/Saturn's eighth for Kaala/Mrityu/Ardhaprahara/Yamaghantaka/Gulika, and the start of Saturn's eighth for Maandi. Table 10 selects parts using the weekday of the opening sunrise, including pre-dawn births. Every point follows the existing varga projection path. `verify-upagrahas` checks current in-memory output; saved-chart `verify-jaimini` expects regeneration under PVR names.
+
 - Sunrise/sunset come from `SwissEphemerisProvider.GetSunTimes` (`swe_rise_trans`,
   `SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION` — JHora's default; SwissEphNet ships no `.se1`
   files so it runs on Moshier, ~2s early vs JHora, well inside tolerance).
-- **Not built:** Karakamsa / Swamsa chart, Jaimini rasi dashas, the remaining upagrahas
+- **Not built:** Karakamsa / Swamsa chart, Jaimini rasi dashas, additional special-point families
   (Dhooma, Kaala, Mrityu, …), Bhava/Ghati/other special lagnas.
 
 ---

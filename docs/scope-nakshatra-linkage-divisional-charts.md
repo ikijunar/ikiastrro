@@ -255,16 +255,15 @@ result = oddSign ? (ZodiacName)((s + part) % 12)
 ```
 `AstroMath.GetDasamsaSign(lon) : ZodiacName`.
 
-**D11 — Rudramsa** (`rudramsa_chart`, method 1 "Traditional Parasara / Sanjay Rath" — PyJHora
-default):
+**D11 — Rudramsa** (`RudramsaD11`, PVR/BPHS traditional method):
 ```
 part = floor(d / (30.0 / 11))                  // 0..10
 result = (ZodiacName)((12 - s + part) % 12)
 ```
-`AstroMath.GetRudramsaSign(lon) : ZodiacName`. (PyJHora carries an author TODO "Check calculation
-against PVR book" on this function; it is nonetheless the shipped default and the documented Sanjay
-Rath method. Flagged here for the record; verification cross-checks it against a JHora-based
-calculator.)
+`AstroMath.GetRudramsaSign(lon) : ZodiacName`. The PVR extract gives the same reverse-seed formula.
+The consulted B. V. Raman *How to Judge a Horoscope* extract does not provide a D11 calculation
+formula, so no Raman deviation is currently identified; the rule remains explicitly tagged
+PVR/BPHS rather than silently attributed to Raman.
 
 Worked examples (become doc-comment assertions):
 

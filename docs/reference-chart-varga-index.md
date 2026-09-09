@@ -118,8 +118,9 @@ coverage; does not feed Vimsopaka).
 ### D11 — Rudramsa · gains, income
 
 - **JHora grid:** `D-11`. **N = 11.** **Groups:** — (project life-area pick).
-- **Method:** **Sanjay Rath Rudramsa** (`RudramsaD11`) — one-line switch to Raman's
-  variant available. State which was used.
+- **Method:** **PVR/BPHS traditional Rudramsa** (`RudramsaD11`) — eleven equal parts;
+  count from Aries to the source sign, count that number anti-zodiacally from Aries,
+  then advance zodiacally through the eleven parts. This is the active product rule.
 - **Read for:** gains, income streams, fulfilment of desires, elder siblings, the "death
   of enemies/obstacles" (Rath's Rudra connotation), windfalls.
 - **Read in order:** D11 Lagna + lord → D11 11th house, its lord, Jupiter (labha karaka)

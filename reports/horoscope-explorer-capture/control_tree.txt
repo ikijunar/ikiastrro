@@ -1,0 +1,13 @@
+Control Identifiers:
+
+ThunderRT6FormDC - 'Fonts Not Installed'    (L705, T380, R1216, B699)
+['Fonts Not InstalledThunderRT6FormDC', 'ThunderRT6FormDC', 'Fonts Not Installed']
+child_window(title="Fonts Not Installed", class_name="ThunderRT6FormDC")
+   | 
+   | Button - '&Proceed'    (L1089, T643, R1200, B684)
+   | ['Button', '&ProceedButton', '&Proceed']
+   | child_window(title="&Proceed", class_name="ThunderRT6CommandButton")
+   | 
+   | ThunderRT6PictureBoxDC - ''    (L719, T433, R770, B474)
+   | ['ThunderRT6PictureBoxDC', 'Fonts Not InstalledThunderRT6PictureBoxDC']
+   | child_window(class_name="ThunderRT6PictureBoxDC")

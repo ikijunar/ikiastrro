@@ -1,3 +1,7 @@
+---
+last_updated: 2026-09-07
+---
+
 # ikiastrro — Architecture & Current Implementation
 
 > Internal engineering reference: current architecture, stack, data layer, and known
@@ -231,12 +235,12 @@ Four tables, populated automatically alongside **every** chart type this project
 also holds a **`CharaKaraka`** label (`AK`…`DK`, 8-karaka *Ashta*) on the graha rows of every
 chart type, and — discriminated by a new **`PointKind`** column (`Graha` / `SpecialLagna` /
 `Arudha` / `Upagraha`) — position-only rows for the special points **AL + the 12 Bhava
-Arudhas + Hora Lagna + Gulika + Maandi**, each projected into all 21 vargas with the same
+Arudhas + Hora Lagna + all 11 upagrahas**, each projected into all 21 vargas with the same
 `IVargaSignRule` a planet uses. `CK_KeyDetails_NonGrahaNulls` forbids graha-only analytics
 (dignity, nakshatra, combustion, aspects, karaka) on non-`Graha` rows. `verify-jaimini`
 checks them against the `1_Ramakrishnan` JHora export; `vw_Chart_Consolidated` surfaces both
 columns; the workspace shows a static **D1 ⊕ D9 combined grid** (`CombinedD1D9Grid.razor`).
-Still future: Karakamsa / Swamsa chart, Jaimini rasi dashas, the other upagrahas. See
+Still future: Karakamsa / Swamsa chart, Jaimini rasi dashas. See
 `docs/reference-calculations.md` §10b.
 
 **Avasthas (star-schema, 2026-08-31; renamed to the planetary-state names 2026-09-03, migration 16):** `tbl_Fact_PlanetaryState` (Fact) holds each planet's
@@ -472,3 +476,22 @@ by `2026-09-01-varga-centric-web-ui-design.md`).
   the four life-area workspace tabs (Personality & Health / Relationships / Career / Money).
 - Rename: `D1ChartViewModel` / `D1PlanetRow` → **`ChartViewModel` / `PlanetRow`** (the types were
   already chart-type-agnostic).
+
+### Upagraha rule integration (2026-09-06)
+
+CLI/Web load `SubPlanetRuleRepository` for the active rule set and pass it into the orchestrator. `SubPlanetCalculator` consumes the five Sun-longitude chain rows and six time-point rules with the 112 weekday/arc part rows. Gulika uses Saturn's midpoint and Maandi its start (`SRC_PVR_INTEGRATED`). All eleven use the existing special-point projection and position-only persistence paths; template views group by `PointKind`.
+
+`verify-upagrahas` checks live rule loading and in-memory output without database writes. Existing saved charts keep the former convention until regeneration. The compatibility Core API without supplied sub-planet rules still computes only the Gulika/Maandi pair, now with PVR names.
+
+## 2026-09-07 — Transit UI data and selector resume
+
+The transit route now loads the selected saved person's latest D1 natal rows and real saved
+Maha/Antar periods. One UTC instant drives the date control, Swiss transit positions and SVG
+centre, displayed in IST. Natal placements remain fixed through date/dasha changes.
+The wheel remains square; the mobile comparison table remains visible and navigation wraps.
+
+Validation: Web build passed; 38 tests passed; local Edge interaction and layout checks passed
+at 1440×900 and 390×844. Visual inspection still identifies crowded outer labels at conjunctions
+and small mobile SVG text. Dragging/tails remain under the earlier rollback, and persistence
+retains the existing slow-body scope. Shared implementation and next steps:
+[UI resume](docs/superpowers/plans/2026-09-07-ui-resume.md).

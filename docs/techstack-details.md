@@ -163,7 +163,7 @@ hand-rolled chart components; see `docs/artifacts/ui/README.md`.
     build, delete `src/*/bin` `src/*/obj` and let VS rebuild.
 - Web launch profiles (`src/Ikiastrro.Web/Properties/launchSettings.json`): `http`
   (Kestrel, `http://localhost:5160`), `https` (`https://localhost:7108`), `IIS Express`
-  (`http://localhost:59377`, https `44370`). Use the **http** profile when a plain-HTTP URL
+  (`http://localhost:59377`, https `44393`). Use the **http** profile when a plain-HTTP URL
   is needed (no dev-cert prompt).
 
 ---

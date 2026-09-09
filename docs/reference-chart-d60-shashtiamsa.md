@@ -60,7 +60,8 @@ the horoscope. Its uses:
 - Each planet's D60 sign (from the `D-60 (Trd)` grid) and, ideally, D60 degree-in-sign.
 - Each planet's **shashtiamsha number** and its **deity name + nature** (§4).
 - The D60 Lagna and its lord.
-- Vargottama status D1 ↔ D60 for the Lagna and each planet.
+- Same-sign-as-D1 status D1 ↔ D60 for the Lagna and each planet. Reserve the classical
+  term Vargottama for the D1 ↔ D9 Navamsa comparison.
 - Vimsopaka Shodasa-varga scores from the export (D60 is a member) for a cross-check.
 
 ## 4. The 60 shashtiamsha names and their nature
@@ -103,7 +104,7 @@ that area even if the D1 looks fine.
    read the D60 for *themes only* and flag every conclusion as provisional.
 2. **D60 Lagna and its lord** — the karmic "self." Its sign, its lord's D60 house and
    dignity, and the shashtiamsha name of the Lagna degree set the base karmic tone.
-3. **Vargottama sweep D1 ↔ D60** — any planet or the Lagna in the same sign in both is a
+3. **Same-sign sweep D1 ↔ D60** — any planet or the Lagna in the same sign in both is a
    karmically "sealed" significator: whatever it promises in D1 is confirmed as earned.
 4. **Per planet, four reads:** D60 house (from D60 Lagna) · D60 sign dignity ·
    shashtiamsha name/nature · vargottama or not. Combine into a net "karma supports /
@@ -173,7 +174,7 @@ The D60 *is* the confirmation layer, so the flow always ends here:
 - **Mixing methods.** "From the sign itself" vs. variant counts, and reversing vs. not
   reversing the even-sign name list, give different results. State the rule; the engine
   uses the `(Trd)` rule in §2.
-- **Forgetting vargottama.** A D1↔D60 vargottama planet is one of the strongest
+- **Forgetting the same-sign sweep.** A D1↔D60 same-sign planet is a useful cross-varga
   statements in the whole horoscope and is easy to miss without an explicit sweep.
 
 ## 9. Worked lens — reference export (1_Ramakrishnan)

@@ -72,10 +72,11 @@ to their subject.
    - **retrograde** — JHora prints `R` after the body name in the grid (`JuR`, `SaR`),
    - **combustion / war** where relevant (real-body flags, identical to D1).
 
-5. **Vargottama check.** Same sign in D1 and this varga = *vargottama*: the planet (or
-   Lagna) delivers its D1 result stably and with force in that domain. A planet strong in
-   D1 but fallen in the varga = the D1 promise is diluted; strong in both = it matures
-   fully; weak in both = little to expect there.
+5. **Varga confirmation check.** Same sign in D1 and D9 is *vargottama* (the classical
+   PVR/Raman usage). For D2/D3/D10/D60 and other vargas, record the result as
+   **same-sign-as-D1** rather than Vargottama. In either case, assess the varga dignity:
+   strong in D1 but fallen in the varga can dilute the D1 promise; strong in both helps it
+   mature fully.
 
 6. **Yoga inside the varga.** Look for the same yoga-forming relationships you would in
    D1 — conjunction, mutual aspect, **Parivartana** (sign exchange) between the varga

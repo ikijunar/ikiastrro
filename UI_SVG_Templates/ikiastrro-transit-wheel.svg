@@ -1,0 +1,347 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="100%" height="100%" role="img" aria-label="Ikiastrro natal, zodiac-nakshatra grid and transit wheel">
+<defs>
+  <radialGradient id="natalFill" cx="50%" cy="45%" r="70%">
+    <stop offset="0%" stop-color="#fff9ea"/>
+    <stop offset="72%" stop-color="#f6df9a"/>
+    <stop offset="100%" stop-color="#e9bb4d"/>
+  </radialGradient>
+  <linearGradient id="gridFill" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#080d2e"/>
+    <stop offset="52%" stop-color="#17124f"/>
+    <stop offset="100%" stop-color="#290f59"/>
+  </linearGradient>
+  <linearGradient id="transitFill" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#102f99"/>
+    <stop offset="35%" stop-color="#26117e"/>
+    <stop offset="70%" stop-color="#5d15b7"/>
+    <stop offset="100%" stop-color="#008d8f"/>
+  </linearGradient>
+  <filter id="glowBlue" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="8" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="glowGold" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="6" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="glowViolet" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="10" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <style>
+    .rasi { stroke:#ffd36b; stroke-width:3.2; opacity:.95; }
+    .nak { stroke:#6c84ff; stroke-width:1.5; opacity:.95; }
+    .pada { stroke:#89a0ff; stroke-width:.65; opacity:.65; }
+    .natal-rasi { stroke:#fff4c2; stroke-width:1.8; stroke-dasharray:2 7; opacity:.9; }
+    .zodiac { font: 700 42px "Segoe UI Symbol","Noto Sans Symbols 2",sans-serif; text-anchor:middle; dominant-baseline:middle; }
+    .tick { stroke:#ffce59; stroke-width:2; opacity:.9; }
+  </style>
+</defs>
+
+<!-- Transparent background -->
+
+<!-- Layer 1: Static natal layer -->
+<g id="natal-layer">
+  <circle cx="600.0" cy="600.0" r="365" fill="url(#natalFill)" stroke="#ffb52c" stroke-width="4" filter="url(#glowGold)"/>
+  <circle cx="600.0" cy="600.0" r="210" fill="none" stroke="#d99a2f" stroke-width="2.5"/>
+
+<line x1="600.00" y1="390.00" x2="600.00" y2="235.00" class="natal-rasi"/>
+<line x1="705.00" y1="418.13" x2="782.50" y2="283.90" class="natal-rasi"/>
+<line x1="781.87" y1="495.00" x2="916.10" y2="417.50" class="natal-rasi"/>
+<line x1="810.00" y1="600.00" x2="965.00" y2="600.00" class="natal-rasi"/>
+<line x1="781.87" y1="705.00" x2="916.10" y2="782.50" class="natal-rasi"/>
+<line x1="705.00" y1="781.87" x2="782.50" y2="916.10" class="natal-rasi"/>
+<line x1="600.00" y1="810.00" x2="600.00" y2="965.00" class="natal-rasi"/>
+<line x1="495.00" y1="781.87" x2="417.50" y2="916.10" class="natal-rasi"/>
+<line x1="418.13" y1="705.00" x2="283.90" y2="782.50" class="natal-rasi"/>
+<line x1="390.00" y1="600.00" x2="235.00" y2="600.00" class="natal-rasi"/>
+<line x1="418.13" y1="495.00" x2="283.90" y2="417.50" class="natal-rasi"/>
+<line x1="495.00" y1="418.13" x2="417.50" y2="283.90" class="natal-rasi"/>
+</g>
+
+<g id="zodiac-nakshatra-grid">
+  <circle cx="600.0" cy="600.0" r="500" fill="url(#gridFill)" stroke="#5b7cff" stroke-width="4" filter="url(#glowBlue)"/>
+  <circle cx="600.0" cy="600.0" r="375" fill="none" stroke="#ffd15a" stroke-width="3"/>
+
+<line x1="600.00" y1="225.00" x2="600.00" y2="100.00" class="nak"/>
+<line x1="621.80" y1="225.63" x2="629.07" y2="100.85" class="pada"/>
+<line x1="643.53" y1="227.54" x2="658.05" y2="103.38" class="pada"/>
+<line x1="665.12" y1="230.70" x2="686.82" y2="107.60" class="pada"/>
+<line x1="686.48" y1="235.11" x2="715.31" y2="113.48" class="nak"/>
+<line x1="707.55" y1="240.75" x2="743.40" y2="121.01" class="pada"/>
+<line x1="728.26" y1="247.62" x2="771.01" y2="130.15" class="pada"/>
+<line x1="748.53" y1="255.67" x2="798.04" y2="140.89" class="pada"/>
+<line x1="768.30" y1="264.89" x2="824.40" y2="153.18" class="nak"/>
+<line x1="787.50" y1="275.24" x2="850.00" y2="166.99" class="pada"/>
+<line x1="806.07" y1="286.69" x2="874.75" y2="182.26" class="pada"/>
+<line x1="823.93" y1="299.20" x2="898.58" y2="198.94" class="pada"/>
+<line x1="841.05" y1="312.73" x2="921.39" y2="216.98" class="nak"/>
+<line x1="857.34" y1="327.23" x2="943.12" y2="236.31" class="pada"/>
+<line x1="872.77" y1="342.66" x2="963.69" y2="256.88" class="pada"/>
+<line x1="887.27" y1="358.95" x2="983.02" y2="278.61" class="pada"/>
+<line x1="900.80" y1="376.07" x2="1001.06" y2="301.42" class="nak"/>
+<line x1="913.31" y1="393.93" x2="1017.74" y2="325.25" class="pada"/>
+<line x1="924.76" y1="412.50" x2="1033.01" y2="350.00" class="pada"/>
+<line x1="935.11" y1="431.70" x2="1046.82" y2="375.60" class="pada"/>
+<line x1="944.33" y1="451.47" x2="1059.11" y2="401.96" class="nak"/>
+<line x1="952.38" y1="471.74" x2="1069.85" y2="428.99" class="pada"/>
+<line x1="959.25" y1="492.45" x2="1078.99" y2="456.60" class="pada"/>
+<line x1="964.89" y1="513.52" x2="1086.52" y2="484.69" class="pada"/>
+<line x1="969.30" y1="534.88" x2="1092.40" y2="513.18" class="nak"/>
+<line x1="972.46" y1="556.47" x2="1096.62" y2="541.95" class="pada"/>
+<line x1="974.37" y1="578.20" x2="1099.15" y2="570.93" class="pada"/>
+<line x1="975.00" y1="600.00" x2="1100.00" y2="600.00" class="pada"/>
+<line x1="974.37" y1="621.80" x2="1099.15" y2="629.07" class="nak"/>
+<line x1="972.46" y1="643.53" x2="1096.62" y2="658.05" class="pada"/>
+<line x1="969.30" y1="665.12" x2="1092.40" y2="686.82" class="pada"/>
+<line x1="964.89" y1="686.48" x2="1086.52" y2="715.31" class="pada"/>
+<line x1="959.25" y1="707.55" x2="1078.99" y2="743.40" class="nak"/>
+<line x1="952.38" y1="728.26" x2="1069.85" y2="771.01" class="pada"/>
+<line x1="944.33" y1="748.53" x2="1059.11" y2="798.04" class="pada"/>
+<line x1="935.11" y1="768.30" x2="1046.82" y2="824.40" class="pada"/>
+<line x1="924.76" y1="787.50" x2="1033.01" y2="850.00" class="nak"/>
+<line x1="913.31" y1="806.07" x2="1017.74" y2="874.75" class="pada"/>
+<line x1="900.80" y1="823.93" x2="1001.06" y2="898.58" class="pada"/>
+<line x1="887.27" y1="841.05" x2="983.02" y2="921.39" class="pada"/>
+<line x1="872.77" y1="857.34" x2="963.69" y2="943.12" class="nak"/>
+<line x1="857.34" y1="872.77" x2="943.12" y2="963.69" class="pada"/>
+<line x1="841.05" y1="887.27" x2="921.39" y2="983.02" class="pada"/>
+<line x1="823.93" y1="900.80" x2="898.58" y2="1001.06" class="pada"/>
+<line x1="806.07" y1="913.31" x2="874.75" y2="1017.74" class="nak"/>
+<line x1="787.50" y1="924.76" x2="850.00" y2="1033.01" class="pada"/>
+<line x1="768.30" y1="935.11" x2="824.40" y2="1046.82" class="pada"/>
+<line x1="748.53" y1="944.33" x2="798.04" y2="1059.11" class="pada"/>
+<line x1="728.26" y1="952.38" x2="771.01" y2="1069.85" class="nak"/>
+<line x1="707.55" y1="959.25" x2="743.40" y2="1078.99" class="pada"/>
+<line x1="686.48" y1="964.89" x2="715.31" y2="1086.52" class="pada"/>
+<line x1="665.12" y1="969.30" x2="686.82" y2="1092.40" class="pada"/>
+<line x1="643.53" y1="972.46" x2="658.05" y2="1096.62" class="nak"/>
+<line x1="621.80" y1="974.37" x2="629.07" y2="1099.15" class="pada"/>
+<line x1="600.00" y1="975.00" x2="600.00" y2="1100.00" class="pada"/>
+<line x1="578.20" y1="974.37" x2="570.93" y2="1099.15" class="pada"/>
+<line x1="556.47" y1="972.46" x2="541.95" y2="1096.62" class="nak"/>
+<line x1="534.88" y1="969.30" x2="513.18" y2="1092.40" class="pada"/>
+<line x1="513.52" y1="964.89" x2="484.69" y2="1086.52" class="pada"/>
+<line x1="492.45" y1="959.25" x2="456.60" y2="1078.99" class="pada"/>
+<line x1="471.74" y1="952.38" x2="428.99" y2="1069.85" class="nak"/>
+<line x1="451.47" y1="944.33" x2="401.96" y2="1059.11" class="pada"/>
+<line x1="431.70" y1="935.11" x2="375.60" y2="1046.82" class="pada"/>
+<line x1="412.50" y1="924.76" x2="350.00" y2="1033.01" class="pada"/>
+<line x1="393.93" y1="913.31" x2="325.25" y2="1017.74" class="nak"/>
+<line x1="376.07" y1="900.80" x2="301.42" y2="1001.06" class="pada"/>
+<line x1="358.95" y1="887.27" x2="278.61" y2="983.02" class="pada"/>
+<line x1="342.66" y1="872.77" x2="256.88" y2="963.69" class="pada"/>
+<line x1="327.23" y1="857.34" x2="236.31" y2="943.12" class="nak"/>
+<line x1="312.73" y1="841.05" x2="216.98" y2="921.39" class="pada"/>
+<line x1="299.20" y1="823.93" x2="198.94" y2="898.58" class="pada"/>
+<line x1="286.69" y1="806.07" x2="182.26" y2="874.75" class="pada"/>
+<line x1="275.24" y1="787.50" x2="166.99" y2="850.00" class="nak"/>
+<line x1="264.89" y1="768.30" x2="153.18" y2="824.40" class="pada"/>
+<line x1="255.67" y1="748.53" x2="140.89" y2="798.04" class="pada"/>
+<line x1="247.62" y1="728.26" x2="130.15" y2="771.01" class="pada"/>
+<line x1="240.75" y1="707.55" x2="121.01" y2="743.40" class="nak"/>
+<line x1="235.11" y1="686.48" x2="113.48" y2="715.31" class="pada"/>
+<line x1="230.70" y1="665.12" x2="107.60" y2="686.82" class="pada"/>
+<line x1="227.54" y1="643.53" x2="103.38" y2="658.05" class="pada"/>
+<line x1="225.63" y1="621.80" x2="100.85" y2="629.07" class="nak"/>
+<line x1="225.00" y1="600.00" x2="100.00" y2="600.00" class="pada"/>
+<line x1="225.63" y1="578.20" x2="100.85" y2="570.93" class="pada"/>
+<line x1="227.54" y1="556.47" x2="103.38" y2="541.95" class="pada"/>
+<line x1="230.70" y1="534.88" x2="107.60" y2="513.18" class="nak"/>
+<line x1="235.11" y1="513.52" x2="113.48" y2="484.69" class="pada"/>
+<line x1="240.75" y1="492.45" x2="121.01" y2="456.60" class="pada"/>
+<line x1="247.62" y1="471.74" x2="130.15" y2="428.99" class="pada"/>
+<line x1="255.67" y1="451.47" x2="140.89" y2="401.96" class="nak"/>
+<line x1="264.89" y1="431.70" x2="153.18" y2="375.60" class="pada"/>
+<line x1="275.24" y1="412.50" x2="166.99" y2="350.00" class="pada"/>
+<line x1="286.69" y1="393.93" x2="182.26" y2="325.25" class="pada"/>
+<line x1="299.20" y1="376.07" x2="198.94" y2="301.42" class="nak"/>
+<line x1="312.73" y1="358.95" x2="216.98" y2="278.61" class="pada"/>
+<line x1="327.23" y1="342.66" x2="236.31" y2="256.88" class="pada"/>
+<line x1="342.66" y1="327.23" x2="256.88" y2="236.31" class="pada"/>
+<line x1="358.95" y1="312.73" x2="278.61" y2="216.98" class="nak"/>
+<line x1="376.07" y1="299.20" x2="301.42" y2="198.94" class="pada"/>
+<line x1="393.93" y1="286.69" x2="325.25" y2="182.26" class="pada"/>
+<line x1="412.50" y1="275.24" x2="350.00" y2="166.99" class="pada"/>
+<line x1="431.70" y1="264.89" x2="375.60" y2="153.18" class="nak"/>
+<line x1="451.47" y1="255.67" x2="401.96" y2="140.89" class="pada"/>
+<line x1="471.74" y1="247.62" x2="428.99" y2="130.15" class="pada"/>
+<line x1="492.45" y1="240.75" x2="456.60" y2="121.01" class="pada"/>
+<line x1="513.52" y1="235.11" x2="484.69" y2="113.48" class="nak"/>
+<line x1="534.88" y1="230.70" x2="513.18" y2="107.60" class="pada"/>
+<line x1="556.47" y1="227.54" x2="541.95" y2="103.38" class="pada"/>
+<line x1="578.20" y1="225.63" x2="570.93" y2="100.85" class="pada"/>
+<line x1="600.00" y1="225.00" x2="600.00" y2="100.00" class="rasi"/>
+<line x1="787.50" y1="275.24" x2="850.00" y2="166.99" class="rasi"/>
+<line x1="924.76" y1="412.50" x2="1033.01" y2="350.00" class="rasi"/>
+<line x1="975.00" y1="600.00" x2="1100.00" y2="600.00" class="rasi"/>
+<line x1="924.76" y1="787.50" x2="1033.01" y2="850.00" class="rasi"/>
+<line x1="787.50" y1="924.76" x2="850.00" y2="1033.01" class="rasi"/>
+<line x1="600.00" y1="975.00" x2="600.00" y2="1100.00" class="rasi"/>
+<line x1="412.50" y1="924.76" x2="350.00" y2="1033.01" class="rasi"/>
+<line x1="275.24" y1="787.50" x2="166.99" y2="850.00" class="rasi"/>
+<line x1="225.00" y1="600.00" x2="100.00" y2="600.00" class="rasi"/>
+<line x1="275.24" y1="412.50" x2="166.99" y2="350.00" class="rasi"/>
+<line x1="412.50" y1="275.24" x2="350.00" y2="166.99" class="rasi"/>
+<line x1="600.00" y1="110.00" x2="600.00" y2="100.00" class="tick"/>
+<line x1="628.49" y1="110.83" x2="628.96" y2="102.84" class="tick"/>
+<line x1="656.89" y1="113.31" x2="657.81" y2="105.37" class="tick"/>
+<line x1="685.09" y1="117.44" x2="686.48" y2="109.57" class="tick"/>
+<line x1="713.00" y1="123.21" x2="715.31" y2="113.48" class="tick"/>
+<line x1="740.53" y1="130.59" x2="742.83" y2="122.92" class="tick"/>
+<line x1="767.59" y1="139.55" x2="770.33" y2="132.03" class="tick"/>
+<line x1="794.08" y1="150.07" x2="797.25" y2="142.73" class="tick"/>
+<line x1="819.91" y1="162.12" x2="824.40" y2="153.18" class="tick"/>
+<line x1="845.00" y1="175.65" x2="849.00" y2="168.72" class="tick"/>
+<line x1="869.26" y1="190.61" x2="873.66" y2="183.93" class="tick"/>
+<line x1="892.61" y1="206.96" x2="897.38" y2="200.54" class="tick"/>
+<line x1="914.97" y1="224.64" x2="921.39" y2="216.98" class="tick"/>
+<line x1="936.26" y1="243.59" x2="941.75" y2="237.77" class="tick"/>
+<line x1="956.41" y1="263.74" x2="962.23" y2="258.25" class="tick"/>
+<line x1="975.36" y1="285.03" x2="981.49" y2="279.89" class="tick"/>
+<line x1="993.04" y1="307.39" x2="1001.06" y2="301.42" class="tick"/>
+<line x1="1009.39" y1="330.74" x2="1016.07" y2="326.34" class="tick"/>
+<line x1="1024.35" y1="355.00" x2="1031.28" y2="351.00" class="tick"/>
+<line x1="1037.88" y1="380.09" x2="1045.03" y2="376.50" class="tick"/>
+<line x1="1049.93" y1="405.92" x2="1059.11" y2="401.96" class="tick"/>
+<line x1="1060.45" y1="432.41" x2="1067.97" y2="429.67" class="tick"/>
+<line x1="1069.41" y1="459.47" x2="1077.08" y2="457.17" class="tick"/>
+<line x1="1076.79" y1="487.00" x2="1084.58" y2="485.15" class="tick"/>
+<line x1="1082.56" y1="514.91" x2="1092.40" y2="513.18" class="tick"/>
+<line x1="1086.69" y1="543.11" x2="1094.63" y2="542.19" class="tick"/>
+<line x1="1089.17" y1="571.51" x2="1097.16" y2="571.04" class="tick"/>
+<line x1="1090.00" y1="600.00" x2="1098.00" y2="600.00" class="tick"/>
+<line x1="1089.17" y1="628.49" x2="1099.15" y2="629.07" class="tick"/>
+<line x1="1086.69" y1="656.89" x2="1094.63" y2="657.81" class="tick"/>
+<line x1="1082.56" y1="685.09" x2="1090.43" y2="686.48" class="tick"/>
+<line x1="1076.79" y1="713.00" x2="1084.58" y2="714.85" class="tick"/>
+<line x1="1069.41" y1="740.53" x2="1078.99" y2="743.40" class="tick"/>
+<line x1="1060.45" y1="767.59" x2="1067.97" y2="770.33" class="tick"/>
+<line x1="1049.93" y1="794.08" x2="1057.27" y2="797.25" class="tick"/>
+<line x1="1037.88" y1="819.91" x2="1045.03" y2="823.50" class="tick"/>
+<line x1="1024.35" y1="845.00" x2="1033.01" y2="850.00" class="tick"/>
+<line x1="1009.39" y1="869.26" x2="1016.07" y2="873.66" class="tick"/>
+<line x1="993.04" y1="892.61" x2="999.46" y2="897.38" class="tick"/>
+<line x1="975.36" y1="914.97" x2="981.49" y2="920.11" class="tick"/>
+<line x1="956.41" y1="936.26" x2="963.69" y2="943.12" class="tick"/>
+<line x1="936.26" y1="956.41" x2="941.75" y2="962.23" class="tick"/>
+<line x1="914.97" y1="975.36" x2="920.11" y2="981.49" class="tick"/>
+<line x1="892.61" y1="993.04" x2="897.38" y2="999.46" class="tick"/>
+<line x1="869.26" y1="1009.39" x2="874.75" y2="1017.74" class="tick"/>
+<line x1="845.00" y1="1024.35" x2="849.00" y2="1031.28" class="tick"/>
+<line x1="819.91" y1="1037.88" x2="823.50" y2="1045.03" class="tick"/>
+<line x1="794.08" y1="1049.93" x2="797.25" y2="1057.27" class="tick"/>
+<line x1="767.59" y1="1060.45" x2="771.01" y2="1069.85" class="tick"/>
+<line x1="740.53" y1="1069.41" x2="742.83" y2="1077.08" class="tick"/>
+<line x1="713.00" y1="1076.79" x2="714.85" y2="1084.58" class="tick"/>
+<line x1="685.09" y1="1082.56" x2="686.48" y2="1090.43" class="tick"/>
+<line x1="656.89" y1="1086.69" x2="658.05" y2="1096.62" class="tick"/>
+<line x1="628.49" y1="1089.17" x2="628.96" y2="1097.16" class="tick"/>
+<line x1="600.00" y1="1090.00" x2="600.00" y2="1098.00" class="tick"/>
+<line x1="571.51" y1="1089.17" x2="571.04" y2="1097.16" class="tick"/>
+<line x1="543.11" y1="1086.69" x2="541.95" y2="1096.62" class="tick"/>
+<line x1="514.91" y1="1082.56" x2="513.52" y2="1090.43" class="tick"/>
+<line x1="487.00" y1="1076.79" x2="485.15" y2="1084.58" class="tick"/>
+<line x1="459.47" y1="1069.41" x2="457.17" y2="1077.08" class="tick"/>
+<line x1="432.41" y1="1060.45" x2="428.99" y2="1069.85" class="tick"/>
+<line x1="405.92" y1="1049.93" x2="402.75" y2="1057.27" class="tick"/>
+<line x1="380.09" y1="1037.88" x2="376.50" y2="1045.03" class="tick"/>
+<line x1="355.00" y1="1024.35" x2="351.00" y2="1031.28" class="tick"/>
+<line x1="330.74" y1="1009.39" x2="325.25" y2="1017.74" class="tick"/>
+<line x1="307.39" y1="993.04" x2="302.62" y2="999.46" class="tick"/>
+<line x1="285.03" y1="975.36" x2="279.89" y2="981.49" class="tick"/>
+<line x1="263.74" y1="956.41" x2="258.25" y2="962.23" class="tick"/>
+<line x1="243.59" y1="936.26" x2="236.31" y2="943.12" class="tick"/>
+<line x1="224.64" y1="914.97" x2="218.51" y2="920.11" class="tick"/>
+<line x1="206.96" y1="892.61" x2="200.54" y2="897.38" class="tick"/>
+<line x1="190.61" y1="869.26" x2="183.93" y2="873.66" class="tick"/>
+<line x1="175.65" y1="845.00" x2="166.99" y2="850.00" class="tick"/>
+<line x1="162.12" y1="819.91" x2="154.97" y2="823.50" class="tick"/>
+<line x1="150.07" y1="794.08" x2="142.73" y2="797.25" class="tick"/>
+<line x1="139.55" y1="767.59" x2="132.03" y2="770.33" class="tick"/>
+<line x1="130.59" y1="740.53" x2="121.01" y2="743.40" class="tick"/>
+<line x1="123.21" y1="713.00" x2="115.42" y2="714.85" class="tick"/>
+<line x1="117.44" y1="685.09" x2="109.57" y2="686.48" class="tick"/>
+<line x1="113.31" y1="656.89" x2="105.37" y2="657.81" class="tick"/>
+<line x1="110.83" y1="628.49" x2="100.85" y2="629.07" class="tick"/>
+<line x1="110.00" y1="600.00" x2="102.00" y2="600.00" class="tick"/>
+<line x1="110.83" y1="571.51" x2="102.84" y2="571.04" class="tick"/>
+<line x1="113.31" y1="543.11" x2="105.37" y2="542.19" class="tick"/>
+<line x1="117.44" y1="514.91" x2="107.60" y2="513.18" class="tick"/>
+<line x1="123.21" y1="487.00" x2="115.42" y2="485.15" class="tick"/>
+<line x1="130.59" y1="459.47" x2="122.92" y2="457.17" class="tick"/>
+<line x1="139.55" y1="432.41" x2="132.03" y2="429.67" class="tick"/>
+<line x1="150.07" y1="405.92" x2="140.89" y2="401.96" class="tick"/>
+<line x1="162.12" y1="380.09" x2="154.97" y2="376.50" class="tick"/>
+<line x1="175.65" y1="355.00" x2="168.72" y2="351.00" class="tick"/>
+<line x1="190.61" y1="330.74" x2="183.93" y2="326.34" class="tick"/>
+<line x1="206.96" y1="307.39" x2="198.94" y2="301.42" class="tick"/>
+<line x1="224.64" y1="285.03" x2="218.51" y2="279.89" class="tick"/>
+<line x1="243.59" y1="263.74" x2="237.77" y2="258.25" class="tick"/>
+<line x1="263.74" y1="243.59" x2="258.25" y2="237.77" class="tick"/>
+<line x1="285.03" y1="224.64" x2="278.61" y2="216.98" class="tick"/>
+<line x1="307.39" y1="206.96" x2="302.62" y2="200.54" class="tick"/>
+<line x1="330.74" y1="190.61" x2="326.34" y2="183.93" class="tick"/>
+<line x1="355.00" y1="175.65" x2="351.00" y2="168.72" class="tick"/>
+<line x1="380.09" y1="162.12" x2="375.60" y2="153.18" class="tick"/>
+<line x1="405.92" y1="150.07" x2="402.75" y2="142.73" class="tick"/>
+<line x1="432.41" y1="139.55" x2="429.67" y2="132.03" class="tick"/>
+<line x1="459.47" y1="130.59" x2="457.17" y2="122.92" class="tick"/>
+<line x1="487.00" y1="123.21" x2="484.69" y2="113.48" class="tick"/>
+<line x1="514.91" y1="117.44" x2="513.52" y2="109.57" class="tick"/>
+<line x1="543.11" y1="113.31" x2="542.19" y2="105.37" class="tick"/>
+<line x1="571.51" y1="110.83" x2="571.04" y2="102.84" class="tick"/>
+<text x="713.23" y="177.41" class="zodiac" fill="#ff4a38" filter="url(#glowBlue)">♈</text>
+<text x="909.36" y="290.64" class="zodiac" fill="#65ffbf" filter="url(#glowBlue)">♉</text>
+<text x="1022.59" y="486.77" class="zodiac" fill="#ffb24a" filter="url(#glowBlue)">♊</text>
+<text x="1022.59" y="713.23" class="zodiac" fill="#63c4ff" filter="url(#glowBlue)">♋</text>
+<text x="909.36" y="909.36" class="zodiac" fill="#ff573d" filter="url(#glowBlue)">♌</text>
+<text x="713.23" y="1022.59" class="zodiac" fill="#65eeb0" filter="url(#glowBlue)">♍</text>
+<text x="486.77" y="1022.59" class="zodiac" fill="#ffd45e" filter="url(#glowBlue)">♎</text>
+<text x="290.64" y="909.36" class="zodiac" fill="#be7cff" filter="url(#glowBlue)">♏</text>
+<text x="177.41" y="713.23" class="zodiac" fill="#ff6847" filter="url(#glowBlue)">♐</text>
+<text x="177.41" y="486.77" class="zodiac" fill="#ffca66" filter="url(#glowBlue)">♑</text>
+<text x="290.64" y="290.64" class="zodiac" fill="#59e7ff" filter="url(#glowBlue)">♒</text>
+<text x="486.77" y="177.41" class="zodiac" fill="#d6a1ff" filter="url(#glowBlue)">♓</text>
+</g>
+
+<g id="transit-layer">
+  <circle cx="600.0" cy="600.0" r="570" fill="none" stroke="url(#transitFill)" stroke-width="34" opacity=".95" filter="url(#glowViolet)"/>
+  <circle cx="600.0" cy="600.0" r="548" fill="none" stroke="#1ab6ff" stroke-width="4" opacity=".9"/>
+  <circle cx="600.0" cy="600.0" r="505" fill="none" stroke="#9d53ff" stroke-width="4" opacity=".85"/>
+
+<circle cx="600.0" cy="600.0" r="535" fill="none" stroke="#2da8ff" stroke-width="3" opacity=".45"/>
+<circle cx="600.0" cy="600.0" r="550" fill="none" stroke="#f5a623" stroke-width="3" opacity=".45"/>
+<circle cx="600.0" cy="600.0" r="565" fill="none" stroke="#a629ff" stroke-width="3" opacity=".45"/>
+<g id="saturn" transform="translate(326.00,125.42) scale(1.25)" filter="url(#glowBlue)">
+      
+<circle cx="0" cy="0" r="22" fill="#0d44a7" stroke="#89c9ff" stroke-width="3"/>
+<ellipse cx="0" cy="0" rx="38" ry="12" fill="none" stroke="#dfefff" stroke-width="4" transform="rotate(-18)"/>
+<ellipse cx="0" cy="0" rx="31" ry="8" fill="none" stroke="#6bbcff" stroke-width="2" transform="rotate(-18)"/>
+
+    </g>
+<g id="jupiter" transform="translate(1078.05,324.00) scale(1.25)" filter="url(#glowGold)">
+      
+<circle cx="0" cy="0" r="24" fill="#a75b00" stroke="#ffd36a" stroke-width="3"/>
+<path d="M-18,-7 C-5,-16 8,-15 18,-7 M-20,3 C-6,-2 8,-1 21,4 M-15,12 C-5,8 7,9 16,12" fill="none" stroke="#ffe0a1" stroke-width="3"/>
+<ellipse cx="0" cy="0" rx="39" ry="11" fill="none" stroke="#ffc13d" stroke-width="4" transform="rotate(14)"/>
+<path d="M-8,-31 L0,-41 L8,-31" fill="none" stroke="#ffd86e" stroke-width="4" stroke-linecap="round"/>
+
+    </g>
+<g id="rahu" transform="translate(1136.09,743.64) scale(1.08)" filter="url(#glowViolet)">
+      
+<circle cx="0" cy="0" r="29" fill="#3a0b72" stroke="#d266ff" stroke-width="3"/>
+<path d="M-18,12 C-25,-7 -10,-24 8,-19 C20,-16 26,-4 18,7 C11,15 2,17 -7,12 C2,9 7,3 8,-4 C3,2 -4,3 -10,0 C-7,7 -9,11 -18,12 Z"
+      fill="#0f061d" stroke="#e17cff" stroke-width="2"/>
+<circle cx="7" cy="-5" r="3.5" fill="#ff4cff"/>
+
+    </g>
+<g id="ketu" transform="translate(991.03,991.03) scale(1.08)" filter="url(#glowBlue)">
+      
+<path d="M-24,0 C-8,-22 10,-20 24,-2 C11,-7 4,-5 -5,4 C6,0 13,3 17,11 C2,7 -10,13 -24,0 Z"
+      fill="#003b39" stroke="#43ffe7" stroke-width="3"/>
+<path d="M20,-2 C36,-12 45,-23 55,-39 M18,3 C36,3 48,-6 60,-17 M15,8 C31,16 43,15 57,10"
+      fill="none" stroke="#4affe7" stroke-width="4" stroke-linecap="round"/>
+
+    </g>
+</g></svg>

@@ -26,6 +26,7 @@ byte-for-byte the same source analysed here, not a second chart).
 |---|---|---|
 | Birth data (date/time/TZ/lat-long/place) | ✅ Covered | `tbl_BirthDetails`. **Altitude** is the one field not captured (export shows `0.00 m`). |
 | Ayanamsa value (`23-34-49.57`) | 🟡 Used, not surfaced | Lahiri comes straight from `SE_SIDM_LAHIRI`; the numeric value is never written to `tbl_ChartResults` or shown. |
+| Ayanamsa/Vimshottari benchmark | 🟡 Foundation built | Migration 46 snapshots Ramakrishnan P's supplied JHora inputs, `23°35′41.83″` ayanamsa, ten longitudes and nine Mahadasha boundaries as `BENCH_RAMAKRISHNAN_P_JHORA_1981`. Comparison/ranking population remains to be implemented. |
 | Sidereal Time (`19:20:55`) | ❌ Missing | Not computed/exposed. |
 | Sunrise / Sunset (`05:56:39` / `18:18:53`) | ❌ Missing | **Blocks upagrahas, special lagnas, Ishta Kaala, Hora lord.** SwissEphNet provides `swe_rise_trans` natively. |
 | Janma Ghatis (`58.8892`) | ❌ Missing | Trivial once sunrise is available (ghatis since sunrise). |
@@ -66,7 +67,7 @@ byte-for-byte the same source analysed here, not a second chart).
 (planet longitudes/signs/nakshatra/pada/dignity/retrograde, Rasi + Navamsa placement,
 Vimshottari Dasha, and — from the wider project, not this export — house lordship,
 conjunctions, Graha Drishti aspects, combustion, planet sign-transit history / Sade Sati).
-**~4 are partial** (varga set 6/16, ayanamsa value, Vargottama derivable-but-not-flagged,
+**~4 are partial** (varga set 6/16, ayanamsa value, generalized same-sign varga comparisons,
 Vimshottari depth). **~24 are absent.**
 
 ---
@@ -91,7 +92,7 @@ Saptavarga, **10** = Dashavarga, **16** = Shodashavarga.
 | D8 | Ashtamsa | (JHora extra) | — | ❌ Missing | PyJHora |
 | D9 | Navamsa | Spouse, dharma, overall strength | 6·7·10·16 | ✅ Built (+ Web UI) | own `AstroMath` |
 | D10 | Dasamsa (Trd) | Career, status | 10·16 | ✅ Built (DB/CLI) | own `AstroMath` |
-| D11 | Rudramsa | Gains / death (Rath convention) | — | ✅ Built (DB/CLI) | own `AstroMath` |
+| D11 | Rudramsa | Gains / death | — | ✅ Built (DB/CLI) | PVR/BPHS traditional `AstroMath` rule |
 | D12 | Dwadasamsa (Trd) | Parents | 6·7·10·16 | ❌ Missing | PyJHora / jyotishganit |
 | D16 | Shodasamsa (Trd) | Vehicles, comforts | 10·16 | ❌ Missing | PyJHora / jyotishganit |
 | D20 | Vimsamsa (Trd) | Spiritual practice | 16 | ❌ Missing | PyJHora / jyotishganit |
@@ -238,10 +239,9 @@ needing reference tables. Framed for ICE scoring in `methods_prodmag.md` — not
 - **Bhava Chalit / cusp chart.** JHora can produce Sripati/Placidus bhava charts; this export
   is Whole-Sign only, and so is the project. No gap *against this export*, but a selectable
   house system is a known deferred item.
-- **Vargottama flag.** Derivable today from D1↔D9 sign match, but the project deliberately
-  waits on D9 within-sign degree (ICE 7.7, top "Now" item) so it can apply the strict
-  first-navamsa trigger. Unchanged by this analysis — just confirming the export surfaces
-  nothing that removes that dependency.
+- **Vargottama flag.** Stored from the D1↔D9 sign match for planets, nodes, and Lagna.
+  Within-sign D9 degree is retained separately for varga-degree analysis; it is not needed
+  to define the sign-level Vargottama flag.
 - **`tbl_BirthDetails.Altitude`.** Add the column if elevation-sensitive rise/set times are
   ever wanted; negligible for chart work.
 

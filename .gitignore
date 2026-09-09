@@ -32,3 +32,8 @@
 
 # Chart snapshot mismatches (transient; the committed baseline is *-sample.svg)
 /docs/artifacts/ui/*-sample.received.svg
+
+# Throwaway browser profiles + server logs from the UI-verification scripts
+/reports/edge-*-profile*/
+/reports/*.log
+/reports/*.err.log

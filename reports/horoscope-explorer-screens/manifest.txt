@@ -1,0 +1,35 @@
+01	Quick View
+02	General Details
+03	Lagna & Planet Positions
+04	Shodash Kundlis-1
+05	Shodash Kundlis-2
+06	Shodash Kundlis-3
+07	Shodash Kundlis-4
+08	Bhava Table & Chalit Chakra
+09	Upgarahas & Minor Planets
+10	Bhinnashtakvarga 1
+11	Bhinnashtakvarga 2
+12	Ashtakvarga & Shodhan
+13	Planet Maitri Chakra
+14	Sudarshan Chakra
+15	Karakas, Avasthas & Navtara
+16	Planetary Conjunctions
+17	Shani Saade Saati
+18	Shad Bala
+19	KP Longitudes
+20	KP Significations
+21	KP Significations contd...
+22	KP Kundlis
+23	Jaimini Lagnas
+24	Jaimini Kundlis
+25	Jaimini Sphutas Etc.
+26	Vimshottari Dasha
+27	Vimshottari-Pratyantara
+28	Tribhagi Dasha
+29	Yogini & ShatTrimsha Dasha
+30	Yogas & Results
+31	Planetary Conjunction Results
+32	General Predictions
+33	Birth Nakshatra Result
+34	Result for Placement of Planets
+35	Prediction on Houses

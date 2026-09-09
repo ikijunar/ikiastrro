@@ -41,7 +41,8 @@ promises (10th house/lord/karakas active).
 
 - D1 read; the D1 10th house verdict formed (10th, 10th lord, Sun/Mercury/Jupiter/Saturn
   as karakas — `reference-house-lagna-significations.md`).
-- Each planet's D10 sign; degree-in-sign for conjunction tightness and vargottama.
+- Each planet's D10 sign; degree-in-sign for conjunction tightness and the generalized
+  same-sign-as-D1 comparison (classical Vargottama remains reserved for D1↔D9).
 - **Amatya Karaka (AmK)** from the D1 body table.
 - The D1 10th lord and its D10 placement/dignity; the D10 Lagna and its lord.
 - D1 dasha sequence (for timing career events against D10).

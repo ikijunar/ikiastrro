@@ -2,15 +2,29 @@
 
 > **An open-source astrology computation engine for researchers and developers.**
 
-ikiastrro is a research-oriented software project for computational astrology, developed by [ikijunar](https://github.com/ikijunar).
+ikiastrro is a research-oriented astrology analysis engine for astrologers, developed by [ikijunar](https://github.com/ikijunar).
+
+Its primary purpose is to calculate, organise, and explain the evidence in a horoscope so an
+astrologer can identify significant strengths, weaknesses, confirmations, and conflicts through a
+traceable statistical evidence model without
+missing them in a large body of chart data. Chart generation is supporting infrastructure for this
+analysis rather than the end-user objective.
 
 The project begins with **Vedic astrology (Jyotisha)** and focuses on the computational foundations behind charts, planetary positions, house systems, timing techniques, and related astrological calculations.
 
-Rather than treating astrology software as a black box that simply produces a horoscope, ikiastrro aims to make the underlying calculations **transparent, reproducible, testable, and extensible**.
+Rather than treating astrology software as a black box that simply produces a horoscope, ikiastrro aims to make the underlying calculations and analytical evidence **transparent, reproducible, testable, and extensible**.
 
 > 📄 **Current implementation status & known limitations:** see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Why ikiastrro?
+
+The birth form saves optional Male/Female input. Chart generation now runs the
+production yoga composition and persists all available Raman/PVR source variants,
+including missing-input codes and lunar/day-night provenance for Raman 25, 58,
+59, 66 and 68.
+Apply migration 052 to existing databases. See the
+[yoga handoff](docs/superpowers/plans/2026-09-08-source-attributed-yoga-corpus.md)
+for interpretation and verification details.
 
 Astrological software sits at the intersection of astronomy, mathematics, calendrical systems, traditional rules, and software engineering.
 
@@ -61,6 +75,8 @@ The long-term objective is not to restrict ikiastrro to a single application or 
 Potential areas include:
 
 - Birth chart generation
+- Astrologer-facing strength and weakness analysis
+- Evidence-backed rule findings and cross-chart confirmation
 - Planetary and celestial calculations
 - Signs and nakshatras
 - House calculations

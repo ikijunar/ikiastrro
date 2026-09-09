@@ -53,7 +53,7 @@ layer) can answer all of the following with a query and **no JSON parsing**:
 
 - Which sign / house / nakshatra is planet P in, in chart Dn, for person X?
 - What is planet P's degree *within its Dn sign*? Its Dn-space longitude?
-- Is planet P Vargottama (same sign in D1 and D9)? In D1 and D10?
+- Is planet P Vargottama (same sign in D1 and D9)? Is it same-sign-as-D1 in D10?
 - How tight (in Dn-space degrees) is a same-sign conjunction in Dn?
 - Which method/rule-set produced chart Dn, and what is its cited source?
 - What numeric ayanamsha and sidereal time underlie person X's charts?

@@ -1,4 +1,12 @@
+---
+last_updated: 2026-09-07
+---
+
 # ikiastrro — Master Doc Index
+
+UI evidence-table plan: [`UI_keytables.md`](UI_keytables.md).
+
+Active yoga work: [source-attributed corpus and seven input requirements](docs/superpowers/plans/2026-09-08-source-attributed-yoga-corpus.md).
 
 Every `.md` that documents this project, grouped by category, with what it's for,
 where it lives, when it was created, and whether it's kept current.
@@ -20,6 +28,7 @@ maintained · `superseded` = replaced, kept for history.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
+| [`docs/research/yoga-corpus-expansion.md`](docs/research/yoga-corpus-expansion.md) | Source-attributed yoga candidates beyond Raman's 300, PVR priorities, aliases, and classical-source OCR wave | 2026-09-08 | living |
 | [`README.md`](README.md) | Public-facing project overview — what it is, how to run it | 2026-08-30 | living |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Internal engineering reference — current architecture, stack, data layer, known limits | 2026-08-30 | living |
 | **`master_ikiastrro.md`** (this file) | The doc index — where everything is | 2026-08-31 | living |
@@ -39,11 +48,16 @@ maintained · `superseded` = replaced, kept for history.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
+| [`docs/research-house-placement-pvr-raman.md`](docs/research-house-placement-pvr-raman.md) | House-placement agreement, differences and source-specific coverage across both volumes | 2026-09-07 | living |
+| [docs/research-house-placement-implementation-audit.md](docs/research-house-placement-implementation-audit.md) | Current house-placement data, implemented facts, empty interpretation seams and sourced next additions | 2026-09-07 | living |
+| [docs/research-transit-event-rules-pvr-raman.md](docs/research-transit-event-rules-pvr-raman.md) | PVR/Raman transit-event rules and additive database mapping | 2026-09-07 | living |
+| [`docs/research-raman-volume2-extraction.md`](docs/research-raman-volume2-extraction.md) | Complete 482-page Volume II OCR, section map, verification evidence and quality limits | 2026-09-07 | snapshot |
 | [`docs/research-topic-coverage.md`](docs/research-topic-coverage.md) | Topic-research master — for each classical technique: is its raw data captured, where are the gaps. Topic 1: planetary roles + avastha states. D2 diagrams (source + rendered `.svg`) under `docs/artifacts/diagrams/` | 2026-08-31 | living |
 | [`docs/research-horoscope-software-compare.md`](docs/research-horoscope-software-compare.md) | UI/UX & feature comparison of existing Vedic software (VedAstro, AstroSage, jyotish-dashboard, …) — what to borrow/avoid, mapped to our components | 2026-08-30 | snapshot |
 | [`docs/research-top5-vedic-software.md`](docs/research-top5-vedic-software.md) | Competitive benchmark of the top 5 Vedic astrology tools | 2026-08-31 | snapshot |
 | [`docs/research/reference-sources.md`](docs/research/reference-sources.md) | `SRC_*` citation master — one bibliographic entry per source key; mirrors `tbl_Dim_Source` (STANDARDS §M.4) | 2026-09-02 | living |
 | [`docs/research-pvr-book-coverage.md`](docs/research-pvr-book-coverage.md) | Chapter-by-chapter map of P.V.R. Narasimha Rao's *Integrated Approach* (the canonical source, `SRC_PVR_INTEGRATED`) → project artifact → aligned / diverges / not built, + a reconciliation log | 2026-09-04 | living |
+| [`docs/research/rasi-nakshatra-characteristics.md`](docs/research/rasi-nakshatra-characteristics.md) | Research baseline for rāśi/sign attributes and significance, plus all 27 nakṣatras, ranges, lords, deities, symbols, padas, and implementation boundaries | 2026-09-06 | living |
 
 ## Rationale — why we chose what
 
@@ -72,7 +86,8 @@ maintained · `superseded` = replaced, kept for history.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
-| [`docs/uidesign-specs.md`](docs/uidesign-specs.md) | Web workspace design — layout, design tokens, every component, the decisions behind them | 2026-08-30 | living |
+| [`brandguide_ikiastrro.md`](brandguide_ikiastrro.md) | Canonical brand colors, typography, main-screen composition and preserved visual assets | 2026-09-08 | living |
+| [docs/uidesign-specs.md](docs/uidesign-specs.md) | Web workspace design — layout, design tokens, every component, the decisions behind them | 2026-08-30 | living |
 | [`docs/uidesign-dataviz.md`](docs/uidesign-dataviz.md) | Charting stack — Syncfusion pick + rationale (**not taken**; hand-rolled SVG stands), screen→chart map, palette reconciliation; **§6** = chart-component evolution, golden-SVG snapshots, revert procedure, additive-token / additive-geometry rules | 2026-08-31 | living |
 | [`src/Ikiastrro.Web/Components/Charts/README.md`](src/Ikiastrro.Web/Components/Charts/README.md) | Catalog of the hand-rolled SVG/CSS chart components — contract, projection formula, tokens & render mode per component | 2026-09-04 | living |
 | [`docs/artifacts/ui/README.md`](docs/artifacts/ui/README.md) | Golden-SVG snapshot store — fixed fixture, `tests/Ikiastrro.Web.Tests` (bUnit) run/update flow (VS Test Explorer; `IKIASTRRO_UPDATE_SNAPSHOTS=1`) | 2026-09-04 | living |
@@ -119,7 +134,13 @@ maintained · `superseded` = replaced, kept for history.
 | [`docs/superpowers/specs/2026-09-02-engine-organization-terminology-design.md`](docs/superpowers/specs/2026-09-02-engine-organization-terminology-design.md) | Engine reorganization to a 13-engine target architecture + `tbl_Astro_Terminology` + self-describing rule tables + `ChartPipeline`; sequenced Plans 0→4. **Plan 0 done 2026-09-02; Plan 1 done 2026-09-03** (§9 interpreter table reconciled in-file to the shipped `GRID_VARGA`). Plans 2–4 not started | 2026-09-02 | snapshot (design; Plans 0+1 implemented) |
 | [`docs/superpowers/specs/_TEMPLATE.md`](docs/superpowers/specs/_TEMPLATE.md) | Skeleton for a new dated spec — Research-status block + standard sections (Problem → Open decisions) | 2026-09-02 | living |
 
+Active implementation: [Upagrahas](docs/superpowers/plans/2026-09-06-upagrahas.md).
+
+Planned next strength feature: [PVR-first Shadbala and planetary strength](docs/superpowers/plans/2026-09-06-shadbala.md).
+
 ## Plans — dated per-feature implementation (writing-plans output)
+
+Planned timing work: [Ashtottari Dasha](docs/superpowers/plans/2026-09-08-ashtottari-dasha.md), building on migration 46's Ramakrishnan P ayanamsa/Vimshottari benchmark.
 
 | Doc | For | Created | Status |
 |---|---|---|---|
@@ -155,3 +176,15 @@ never edited after acceptance (a reversal is a new record). See STANDARDS §M.1.
   rendered `.svg` the prose docs embed; regenerated with `d2`, not prose themselves.
 - `../ikiastrro.md` history entries reference docs by their **name at the time** —
   those are a dated record and are not rewritten when a doc is renamed.
+
+
+## Shared agent instructions
+
+| Doc | Purpose | Created | Status |
+|---|---|---|---|
+| [AGENTS.md](AGENTS.md) | Shared startup and standards pointer | 2026-09-06 | living |
+| [CLAUDE.md](CLAUDE.md) | Claude import of shared instructions | 2026-09-06 | living |
+
+## Active UI handoff
+
+[2026-09-07 UI resume](docs/superpowers/plans/2026-09-07-ui-resume.md) — verified transit data and dasha bindings, browser evidence, and remaining visual/movement work.

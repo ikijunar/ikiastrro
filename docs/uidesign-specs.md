@@ -10,6 +10,18 @@ records the settled result and the reasoning.
 
 ---
 
+## 0. Canonical brand override (2026-09-08)
+
+The supplied main screen and ../brandguide_ikiastrro.md supersede the earlier dark-only parchment/indigo and serif-display direction wherever this historical document conflicts with them.
+
+- Brand lockup: **Iki-Astrro | Where Passion, Purpose & Planets Align.** The pipe and tagline use midnight-blue standard interface typography.
+- Main heading: **Discover Your Path**; remove the former subheading.
+- Use Manrope consistently.
+- Use the warm canvas, midnight blue and sunset orange across the whole app.
+- Primary actions use midnight-blue fills with sunset-orange text and borders.
+- Position navigation closer to Ganesha.
+- Preserve the existing Ganesha/Navagraha arrangement and dedication footer.
+
 ## 1. Design language
 
 One language, everywhere — **parchment ink on deep indigo, serif display, dark-only**.

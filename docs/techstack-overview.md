@@ -1,15 +1,23 @@
+---
+last_updated: 2026-09-08
+reflects: .NET 10 migration verified with SDK 10.0.400 and runtime 10.0.11
+---
+
 # ikiastrro — Technology Stack
 
-Verified against the actual `.csproj` files in `D:\@ClaudeSpace\ikiastrro\src\` on 2026-08-26.
+Verified against the actual `.csproj` files and restored NuGet graph in
+`D:\@ClaudeSpace\ikiastrro\` on 2026-09-08.
 See `ikiastrro.md` for build/decision history and the project's own `README.md` for
 current architecture.
 
 ## Runtime / Language
 
-- **.NET 8** (`net8.0`) across all four projects
+- **.NET 10** (`net10.0`) across all application and test projects
+- SDK pinned by `global.json` to **10.0.400**, with `latestFeature` roll-forward; verified
+  against runtime **10.0.11**
 - **C#**, nullable reference types + implicit usings enabled everywhere
 
-## Solution layout (4 projects)
+## Solution layout (5 projects)
 
 | Project | SDK | Type | Depends on |
 |---|---|---|---|
@@ -17,6 +25,7 @@ current architecture.
 | `Ikiastrro.Data` | `Microsoft.NET.Sdk` | class library | Core |
 | `Ikiastrro.Cli` | `Microsoft.NET.Sdk` | console exe | Core, Data |
 | `Ikiastrro.Web` | `Microsoft.NET.Sdk.Web` | Blazor Server app | Core, Data |
+| `Ikiastrro.Web.Tests` | `Microsoft.NET.Sdk` | xUnit + bUnit test project | Web |
 
 ## Key libraries / packages
 
@@ -26,16 +35,13 @@ current architecture.
   `VedAstro.Library` entirely on 2026-08-24 after confirmed defects there.
 - `GeoTimeZone` 6.1.0 — resolves IANA timezone from lat/long
 - `TimeZoneConverter` 7.2.0 — IANA ⇄ Windows timezone conversion
-- `Newtonsoft.Json` 13.0.1
-- `System.Text.Json` 6.0.10
-- `Microsoft.AspNetCore.Components` 6.0.25 — Blazor component model referenced from Core (view
-  models shared with the Web project)
-- `System.Text.RegularExpressions` 4.3.1, `System.Net.Http` 4.3.4
+- JSON, HTTP, and regular-expression APIs come from the .NET 10 platform. Obsolete direct
+  references to `Newtonsoft.Json`, `Microsoft.AspNetCore.Components`, and legacy `System.*`
+  packages were removed during the .NET 10 migration.
 
 **Data**
 - `Dapper` 2.1.79 — micro-ORM for SQL Server access
-- `Microsoft.Data.SqlClient` 6.0.2 — SQL Server driver (back on current stable after the old
-  VedAstro-era version pin was removed 2026-08-24)
+- `Microsoft.Data.SqlClient` 7.0.2 — SQL Server driver
 
 **Cli**
 - No extra packages; references Core + Data, `OutputType=Exe`
@@ -49,6 +55,18 @@ current architecture.
   Dasha timelines, polar longitude wheel). Native Blazor Server, no JS framework.
   Decision recorded 2026-08-31 in `docs/uidesign-dataviz.md`; **not yet added to the
   `.csproj`** — version pin to follow when wired in.
+
+**Tests**
+- `Microsoft.NET.Test.Sdk` 18.9.0
+- `xunit` 2.9.3 + `xunit.runner.visualstudio` 4.0.0
+- `bunit` 2.9.0
+
+## Upgrade verification
+
+- `dotnet build Ikiastrro.slnx --no-restore` — succeeded with 0 warnings and 0 errors
+- `dotnet test Ikiastrro.slnx --no-build --no-restore` — 38 passed, 0 failed, 0 skipped
+- NuGet outdated audit — no top-level updates available from configured sources
+- NuGet vulnerability audit — no vulnerable direct or transitive packages reported
 
 ## Database
 

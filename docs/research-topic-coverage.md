@@ -85,8 +85,9 @@ D9 sign); Parashari avasthas still apply to the Chara AK unchanged.
    Lajjitadi, and (already) some functional-nature logic; today it's inline.
 6. **Janma ghatis not persisted** — blocks Sayanadi and several `docs/scope-jhora-coverage.md`
    upagraha / special-lagna items.
-7. **Degree-in-sign is D1-only** — Baaladi (and Vargottama, and Chara Karaka on vargas)
-   need per-varga within-sign degree (the standing ICE-7.7 item).
+7. **Varga degree coverage** — within-sign varga degrees are now available on
+   `PlanetPosition.VargaLongitudeDegrees`. Classical Vargottama is a D1↔D9 sign comparison;
+   other vargas expose a separate same-sign-as-D1 comparison and are not labelled Vargottama.
 
 ### 1e. Suggested build order
 
