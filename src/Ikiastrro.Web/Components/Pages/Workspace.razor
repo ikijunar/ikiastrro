@@ -11,7 +11,6 @@
 @inject SadeSatiRepository SadeSatiRepo
 @inject BirthDetailDeletionService DeletionService
 @inject NavigationManager Nav
-@inject ReadingProfileState Profile
 @using Ikiastrro.Core.Models
 @using Ikiastrro.Web.Components.Workspace
 
@@ -28,7 +27,6 @@ else
             <a class="ws-back" href="/charts">← All saved charts</a>
             <div class="ws-actions">
                 <SegmentedToggle ActiveKey="@Theme" Segments="ThemeSegments()" />
-                <button class="ws-profile-trigger" type="button" @onclick="() => _profileOpen = true">Reading profile <span>@Profile.Summary</span></button>
                 <DeleteIconButton Title="@($"Delete {_data.Person.Name}'s chart")" OnClick="() => _confirmingDelete = true" />
             </div>
         </div>
@@ -43,9 +41,7 @@ else
         <div class="ws-areas">
             <SegmentedToggle ActiveKey="@ActiveGroup.GroupCode" Segments="AreaSegments()" />
             <a class="ws-all-link" href="@($"/charts/{Id}/evidence")">Evidence tables →</a>
-            <a class="ws-all-link" href="@($"/charts/{Id}/all-charts")">See all charts →</a>
         </div>
-        <ReadingProfileLens Profile="Profile" />
 
         @{ var chipCodes = ActiveGroup.Codes.Where(c => c != "D1" && _data.Charts.ContainsKey(c)).ToList(); }
         @if (chipCodes.Count > 0)
@@ -133,22 +129,14 @@ else
                     </div>
                     <PlanetPositionsTable Rows="ActiveRows()" LagnaSign="@ActiveChart.AscendantSign"
                                           Variant="@(ActiveCode == "D1" ? "d1" : "varga")" ShowTechnical="Tech"
-                                          ShowDignity="Profile.ShowPlanetaryDignity" />
+                                          ShowDignity="true" />
                 </div>
             </section>
         </div>
 
-        @if (Profile.ShowDispositorRelations)
-        {
-            <Disclosure Title="Dispositor relations" Open="_dispositorOpen" OnToggle="v => _dispositorOpen = v">
-                <DispositorTable Grahas="ActiveChart.Grahas" />
-            </Disclosure>
-        }
-
         <ConfirmDialog IsOpen="_confirmingDelete"
                        Message="@($"Delete {_data.Person.Name}'s chart and all computed data? This can't be undone.")"
                        IsBusy="_isDeleting" OnConfirm="HandleDelete" OnCancel="() => _confirmingDelete = false" />
-        <ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
     </div>
 }
 
@@ -161,15 +149,15 @@ else
 
     private WorkspaceData? _data;
     private IReadOnlyList<DashaPeriodRecord> _dashaRoots = Array.Empty<DashaPeriodRecord>();
-    private bool _compOpen, _confirmingDelete, _isDeleting, _dispositorOpen, _profileOpen;
+    private bool _compOpen, _confirmingDelete, _isDeleting;
 
     /// <summary>Birth date/time and the 3 Sade-Sati "Round" windows — D1/Moon-specific, computed
     /// once regardless of which chart is active (only rendered in the D1 center-cell branch).</summary>
     private DateTime _birthDate;
     private IReadOnlyList<SadeSatiRounds.Round> _rounds = Array.Empty<SadeSatiRounds.Round>();
 
-    private string Theme => ThemeParam is null ? Profile.Theme : (ThemeParam == "nocturne" ? "nocturne" : "orange");
-    private bool Tech => TechParam is null ? Profile.TechnicalMode : TechParam == "1";
+    private string Theme => ThemeParam == "nocturne" ? "nocturne" : "orange";
+    private bool Tech => TechParam == "1";
     private LoadedChart D1 => _data!.Charts["D1"];
 
     /// <summary>tbl_Dim_LifeArea rows — static reference data, loaded once (2026-09-05, feeds
@@ -195,7 +183,7 @@ else
     /// this; only picking one of its chips does (rammyps's call, 2026-09-05).</summary>
     private string ActiveCode => ChartParam is not null && _data!.Charts.ContainsKey(ChartParam)
         ? ChartParam
-        : _data!.Charts.ContainsKey(Profile.DefaultChart) ? Profile.DefaultChart : "D1";
+        : "D1";
 
     private LoadedChart ActiveChart => _data!.Charts[ActiveCode];
 

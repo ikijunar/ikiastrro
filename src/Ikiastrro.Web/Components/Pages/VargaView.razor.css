@@ -1,8 +1,5 @@
 .vv-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
 .vv-nav a { color: var(--accent); text-decoration: none; }
-.vv-profile-trigger { display: grid; gap: .1rem; margin-left: auto; padding: .35rem .6rem; border: 1px solid var(--paper-line); border-radius: 4px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
-.vv-profile-trigger span { color: var(--ink-soft); font-size: 11px; }
-.vv-profile-trigger:hover { border-color: var(--accent); }
 .vv-prevnext { display: flex; gap: .75rem; align-items: baseline; }
 .vv-vg { margin: 1rem 0; }
 .vv-ppt { margin-top: 1rem; }

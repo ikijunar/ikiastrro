@@ -115,10 +115,6 @@
     gap: 1rem;
     flex-wrap: wrap;
 }
-.ws-profile-trigger { display: grid; gap: .1rem; padding: .35rem .6rem; border: 1px solid var(--paper-line); border-radius: 4px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
-.ws-profile-trigger span { color: var(--ink-soft); font-size: 11px; }
-.ws-profile-trigger:hover { border-color: var(--accent); }
-
 .ws-back,
 .ws-print {
     color: var(--accent);

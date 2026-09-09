@@ -39,7 +39,6 @@ builder.Services.AddScoped<RuleSetRepository>();
 builder.Services.AddScoped<AyanamsaRuleRepository>();
 builder.Services.AddScoped<ChartTypeRepository>();
 builder.Services.AddScoped<LifeAreaReferenceRepository>();
-builder.Services.AddScoped<ReadingProfileState>();
 builder.Services.AddScoped<VargaSchemeRepository>();
 builder.Services.AddScoped<SubPlanetRuleRepository>();
 builder.Services.AddScoped<VimshottariDashaService>();

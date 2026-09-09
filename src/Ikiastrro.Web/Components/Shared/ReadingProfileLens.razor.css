@@ -1,4 +1,0 @@
-.profile-lens { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: .75rem 0 0; color: var(--ink-soft, #6b5a41); font-size: .78rem; }
-.profile-lens-title { color: var(--accent, #8c2f39); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-.profile-lens-chip { padding: .2rem .5rem; border: 1px solid var(--paper-line, #c9b690); border-radius: 999px; background: var(--paper-raised, #fffaf0); }
-.profile-lens-empty { font-style: italic; }

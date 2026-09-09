@@ -1,4 +1,0 @@
-.dispositor-scroll { overflow-x: auto; }
-.dispositor-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
-.dispositor-table th, .dispositor-table td { padding: .45rem .6rem; border-bottom: 1px solid var(--paper-line); text-align: left; }
-.dispositor-table th { color: var(--ink-soft); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; }
