@@ -41,7 +41,7 @@ recomputes.
 | `/charts/{id}/south-indian-template` | `SouthIndianTemplate` | the print-style South-Indian D1 template, light/dark toggle | verified |
 | `/charts/{id}/timing` | `Timing` | Vimśottari dasha tree + Sade Sati + Gochara | verified |
 | `/charts/{id}/evidence` | `AstrologerEvidence` | read-only evidence tables in reading order, chart selector | verified |
-| `/charts/{id}/life-weeks` | `LifeWeeks` | 4000-week grid coloured by Mahādaśā | verified |
+| `/charts/{id}/life-weeks` | `LifeWeeks` | 4000-week grid coloured by Mahādaśā | verified — **retired in v2** |
 | `/transit-wheel` · `/transit-wheel/{id}` | `TransitWheel` | fixed natal ring + transit layer, date + Mahā/Antar selectors, comparison table | verified |
 
 ## Navigation

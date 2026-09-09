@@ -31,7 +31,7 @@ Every read surface in v2 is the `AstrologerEvidence` shape, restyled to MudBlazo
   `vw_ChartYogaEvaluations`, the reference dimension tables. No page recomputes
   ([`../architecture/domain-contracts.md`](../architecture/domain-contracts.md)).
 - **A chart selector** switches the position-dependent sections between D1 and any stored varga.
-- **Hand-rolled SVG diagrams** (`SouthIndianGrid`, `PolarWheel`, transit wheel, life-weeks)
+- **Hand-rolled SVG diagrams** (`SouthIndianGrid`, `PolarWheel`, transit wheel)
   are *secondary* — embedded beside the table where a picture aids reading, never the primary
   view. They stay in Codex's scope (see Workstream mechanics) and outside the MudBlazor restyle.
 
@@ -99,11 +99,11 @@ Extends [`brand.md`](brand.md) / [`design-language.md`](design-language.md). v1'
 - `/charts/{id}/timing` — dasha tree + Sade Sati + gochara (tables)
 - `/charts/{id}/transits` — transit-history table + the wheel as a secondary visual
 - `/charts/{id}/south-indian-template` — the one print-style visual (Codex scope)
-- `/charts/{id}/life-weeks` — the 4000-week grid (Codex scope; keep or make optional — pass)
 
-Retired: the separate `/charts/{id}/evidence` and `/charts/{id}/varga/{code}` routes (folded
-into the hub). `wkstream_UI_v1`'s already-dropped surfaces stay dropped unless the pass
-re-introduces one.
+Retired: `/charts/{id}/evidence` and `/charts/{id}/varga/{code}` (folded into the hub);
+**`/charts/{id}/life-weeks`** — the 4000-week grid is dropped in v2 (the Vimśottari timeline
+is served by `/charts/{id}/timing`). `wkstream_UI_v1`'s already-dropped surfaces stay dropped
+unless the pass re-introduces one.
 
 ## Workstream mechanics
 

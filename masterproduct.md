@@ -236,7 +236,8 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
 - **FEAT-DASHA-02 · Life-in-weeks grid (4000-week)** — Verified · 80%
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [ ] · Research: complete
-  (Grid rendering is tracked under FEAT-UI-11.)
+  (Grid rendering is tracked under FEAT-UI-11 — retired in `wkstream_UI_v2`; the 4000-week
+  calc stays, its dedicated route does not.)
 
 ## YOGA — workstream: cli
 
@@ -315,8 +316,10 @@ test exists; `Web` = route is live; `Docs` = a `docs/ui/` component doc exists.
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`docs/ui/components/evidence-tables.md`)
 - **FEAT-UI-10 · Transit wheel (`/transit-wheel/{id}`) — natal ↔ transit + dasha selector** — Verified · 80%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`docs/ui/components/transit-wheel.md`)
-- **FEAT-UI-11 · Life-in-weeks grid (`/charts/{id}/life-weeks`)** — Verified · 60%
+- **FEAT-UI-11 · Life-in-weeks grid (`/charts/{id}/life-weeks`)** — Verified · 60% · **retired in `wkstream_UI_v2`**
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
+  Live in v1; the v2 re-do drops the route (the Vimśottari timeline is served by
+  `/charts/{id}/timing`). `LifeWeeks.razor` + its golden snapshot go when v2 lands.
 - **FEAT-UI-12 · Preferences / ayanamsa setting** — Planned · 0%
   DB [—] · Core [—] · Verify [ ] · Web [ ] · Docs [x] (`docs/ui/components/home.md`)
   Requirement: a Preferences route whose Ayanamsa box defaults to the active
