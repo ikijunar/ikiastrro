@@ -37,16 +37,15 @@
 
         <h1 class="home-title">Discover Your Path</h1>
 
-        @if (!_adding)
-        {
-            <MudAutocomplete T="string" Label="Name" Placeholder="Search saved people…"
-                             SearchFunc="SearchNames" ValueChanged="OnNamePicked"
-                             Variant="Variant.Outlined" Dense="true" Strict="false"
-                             ResetValueOnEmptyText="true" Class="home-name" />
-        }
-        else
+        <MudAutocomplete T="string" Label="Name" Placeholder="Search saved people…"
+                         SearchFunc="SearchNames" Value="_search" ValueChanged="OnNamePicked"
+                         Variant="Variant.Outlined" Dense="true" Strict="false" Clearable="true"
+                         ResetValueOnEmptyText="true" Class="home-name" />
+
+        @if (_adding)
         {
             <div class="home-form">
+                <MudText Class="home-form-caption">New person</MudText>
                 <MudTextField T="string" Label="Name" @bind-Value="_f.Name" Variant="Variant.Outlined" Dense="true" />
                 <MudSelect T="string" Label="Sex" @bind-Value="_f.Sex" Variant="Variant.Outlined" Dense="true">
                     <MudSelectItem T="string" Value="@("Male")">Male</MudSelectItem>
@@ -93,6 +92,8 @@
 
     private readonly AddForm _f = new();
     private const string AddNewOption = "＋  Add New";
+    private string? _search;      // bound value of the name-search box
+    private string _lastQuery = string.Empty;  // last text typed into the search
 
     protected override void OnInitialized()
     {
@@ -110,9 +111,9 @@
 
     private Task<IEnumerable<string>> SearchNames(string? value, CancellationToken _)
     {
-        var q = (value ?? string.Empty).Trim();
+        _lastQuery = (value ?? string.Empty).Trim();
         var names = _people
-            .Where(p => q.Length == 0 || p.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Where(p => _lastQuery.Length == 0 || p.Name.Contains(_lastQuery, StringComparison.OrdinalIgnoreCase))
             .Select(p => p.Name)
             .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -122,8 +123,18 @@
 
     private void OnNamePicked(string? value)
     {
+        if (value == AddNewOption)
+        {
+            _adding = true;
+            _error = null;
+            if (string.IsNullOrWhiteSpace(_f.Name) && !string.IsNullOrWhiteSpace(_lastQuery))
+                _f.Name = _lastQuery;       // seed the new person's name from what was typed
+            _search = null;                 // don't leave "＋ Add New" sitting in the box
+            return;
+        }
+
+        _search = value;
         if (string.IsNullOrEmpty(value)) return;
-        if (value == AddNewOption) { _adding = true; _error = null; return; }
 
         var person = _people.FirstOrDefault(p => string.Equals(p.Name, value, StringComparison.OrdinalIgnoreCase));
         if (person is not null) Nav.NavigateTo($"/charts/{person.Id}");

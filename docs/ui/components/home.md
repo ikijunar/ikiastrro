@@ -43,9 +43,9 @@ footer. The Ganesha / Navagraha illustration is a **first-class part of the Home
 
 ## Add-New state — entry fields revealed in place
 
-`＋ Add New` sets `_adding = true`: on the same page, the search control is swapped for the
-entry fields (the person list gives way to the form). `Cancel` returns to the default state.
-Fields, in order:
+`＋ Add New` sets `_adding = true`: the **Name search stays visible**, and the entry fields
+appear below it under a *New person* caption. Whatever was typed into the search seeds the new
+person's Name. `Cancel` hides the fields again. Fields, in order:
 
 | Field | Control | Notes |
 |---|---|---|

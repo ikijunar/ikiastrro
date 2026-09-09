@@ -50,6 +50,14 @@
     display: grid;
     gap: 0.85rem;
     max-width: 480px;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--brand-line);
+}
+
+.home-form-caption {
+    color: var(--brand-midnight);
+    font-weight: 700;
 }
 
 .home-form-actions {
