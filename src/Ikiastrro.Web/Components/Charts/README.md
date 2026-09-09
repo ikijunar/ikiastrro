@@ -58,16 +58,6 @@ Glyphs-only thumbnail grid; whole grid optionally a link. **Not**
 | **Glyphs** | `ChartViewModel.PlanetGlyph(name)` |
 | **Used by** | `VargaRail`, `Home` rows, `SavedCharts` |
 
-### CombinedD1D9Grid.razor
-Static D1 ⊕ D9 on one grid: D1 occupants as `PlanetChip`s (inner), a D9 strip
-pinned top (outer), special-point codes top-left. Read-only, no dignity/aspect.
-
-| | |
-|---|---|
-| **Parameters** | `D1KeyDetails: IReadOnlyList<ChartKeyDetail>` *(req)*, `D9KeyDetails` *(req)*, `LagnaSign` *(req)* |
-| **Tokens** | `--planet-*` only (identity carried by glyph) |
-| **Used by** | `Workspace` |
-
 ### VargottamaStrip.razor
 Row of graha chips; a chip lights when its Dn sign == its D1 sign (true
 Vargottama only for `DnCode == "D9"`; otherwise "same sign as D1").

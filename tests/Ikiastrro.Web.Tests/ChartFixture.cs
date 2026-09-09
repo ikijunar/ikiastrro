@@ -67,7 +67,7 @@ internal static class ChartFixture
         new PolarWheel.Chord(45, 285, "--aspect-faint"),   // Moon square-ish Mars
     };
 
-    // --- ChartKeyDetail rows for CombinedD1D9Grid + VargottamaStrip ---
+    // --- ChartKeyDetail rows for VargottamaStrip ---
     public static readonly IReadOnlyList<ChartKeyDetail> D1 = new[]
     {
         Graha("Ascendant", "Aries"),

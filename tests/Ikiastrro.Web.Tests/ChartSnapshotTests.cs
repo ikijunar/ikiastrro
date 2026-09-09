@@ -56,17 +56,6 @@ public class ChartSnapshotTests : BunitContext
     }
 
     [Fact]
-    public void CombinedD1D9Grid()
-    {
-        var cut = Render<CombinedD1D9Grid>(ps => ps
-            .Add(p => p.D1KeyDetails, ChartFixture.D1)
-            .Add(p => p.D9KeyDetails, ChartFixture.D9)
-            .Add(p => p.LagnaSign, "Aries"));
-
-        cut.MatchesGolden(nameof(CombinedD1D9Grid));
-    }
-
-    [Fact]
     public void VargottamaStrip()
     {
         var cut = Render<VargottamaStrip>(ps => ps
