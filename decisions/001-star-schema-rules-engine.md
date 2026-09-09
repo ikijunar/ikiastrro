@@ -34,4 +34,5 @@ FK, immutability rule = SCD Type 2).
 - **Phase 2 (not started):** rename `tbl_Chart_*` → `tbl_Fact_*` and wire the calculators to
   read the rule tables. Today's app still runs on the hardcoded C#, behaviour unchanged.
 
-Full implementation plan and record: [`../docs/dbdesign-star-schema-rules-engine.md`](../docs/dbdesign-star-schema-rules-engine.md).
+Current model: [`../docs/database/rules-engine.md`](../docs/database/rules-engine.md) and
+[`../docs/database/schema.md`](../docs/database/schema.md).

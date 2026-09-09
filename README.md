@@ -15,16 +15,9 @@ The project begins with **Vedic astrology (Jyotisha)** and focuses on the comput
 Rather than treating astrology software as a black box that simply produces a horoscope, ikiastrro aims to make the underlying calculations and analytical evidence **transparent, reproducible, testable, and extensible**.
 
 > 📄 **Current implementation status & known limitations:** see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+> **All project docs:** [`MASTER.md`](MASTER.md) · **features & completion:** [`masterproduct.md`](masterproduct.md) · **direction:** [`ROADMAP.md`](ROADMAP.md).
 
 ## Why ikiastrro?
-
-The birth form saves optional Male/Female input. Chart generation now runs the
-production yoga composition and persists all available Raman/PVR source variants,
-including missing-input codes and lunar/day-night provenance for Raman 25, 58,
-59, 66 and 68.
-Apply migration 052 to existing databases. See the
-[yoga handoff](docs/superpowers/plans/2026-09-08-source-attributed-yoga-corpus.md)
-for interpretation and verification details.
 
 Astrological software sits at the intersection of astronomy, mathematics, calendrical systems, traditional rules, and software engineering.
 

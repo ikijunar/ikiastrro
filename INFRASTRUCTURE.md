@@ -89,10 +89,13 @@ dotnet run --project src/Ikiastrro.Web                              # https://lo
 
 ## Version control & repository hygiene
 
-Two remotes, both with `master` + `feat/*` branches: **`origin`**
-(`github.com/rammyps/ikiastrro`) and **`ikijunar`** (`github.com/ikijunar/ikiastrro`).
-`master` is the shared, published line; feature work happens on `feat/<topic>` and is
-**not pushed** until it FF-merges to `master`.
+Remotes: **`origin`** (`github.com/rammyps/ikiastrro`) and **`ikijunar`**
+(`github.com/ikijunar/ikiastrro`). `master` is the shared, published line and the integration
+branch. Work happens on the three **long-lived workstream branches** —
+`workstream/database`, `workstream/cli`, `workstream/ui` — one `git worktree` and one disjoint
+path scope each (`STANDARDS.md` §E.1; the model + weekly ritual are in
+`docs/governance/operating-model.md`). Each rebases on `master` before a PR; integration is
+fast-forward or squash. Claude Code is the primary agent and owns integration (§E.2).
 
 ### What is tracked vs. ignored
 
@@ -101,8 +104,8 @@ Two remotes, both with `master` + `feat/*` branches: **`origin`**
 | `src/**` (all C#, `.csproj`, `.slnx`), `appsettings.json` (dev default, **no secrets**) | `bin/`, `obj/`, `.vs/`, `*.user`, `/publish/` — build output |
 | `db/ikiastrro.sql` (baseline), `db/NN_*.sql` (numbered), `db/_archive/**` (frozen pre-consolidation chain), `db/README.md` | `/db/*.ipynb` — ad-hoc DDL notebooks |
 | `docs/**` — every `.md`, **and `docs/artifacts/**`** (DB diagrams, rendered `.d2` + source, `reference-charts/` = the JHora golden-record exports + images, UI mockups) | `/scratch/` — pure throwaway; anything a run needs long-term is promoted into `docs/artifacts/` first |
-| root docs (`README.md`, `ARCHITECTURE.md`, `PRODUCT.md`, `INFRASTRUCTURE.md`, `master_ikiastrro.md`), `scripts/**`, `decisions/**` | `/build_output.txt`, `/verify_*_output.txt` — CLI stdout redirects |
-| `.gitignore` itself | `/_research/` — vendored OSS reference repos; `/.superpowers/` — SDD scratch; `/.claude/worktrees/` |
+| root docs (`README.md`, `ARCHITECTURE.md`, `masterproduct.md`, `ROADMAP.md`, `INFRASTRUCTURE.md`, `MASTER.md`, `personas.md`, `value-stream.md`), `scripts/**`, `decisions/**` | `/build_output.txt`, `/verify_*_output.txt` — CLI stdout redirects |
+| `.gitignore` itself | `/_research/` — vendored OSS reference repos; `/.claude/worktrees/` |
 
 Rule: a file that a future clone needs to **build, verify, or understand** the project is
 tracked; everything a run *produces* or a session *scratches* is ignored. When a scratch file
@@ -123,17 +126,18 @@ the code. No separate mechanism.
   regenerable: `d2 --theme 0 --pad 20 diagrams/<x>.d2 diagrams/<x>.svg`. Re-run and re-commit
   when the source changes; never hand-edit the `.svg`.
 
-### Promoting a feature branch to `master`
+### Promoting a workstream branch to `master`
 
 ```
+git -C <worktree> rebase master            # from the workstream worktree
+# open a PR; integrate on master with:
 git checkout master
-git merge --ff-only feat/<topic>          # FF only — no merge commits on master
+git merge --ff-only workstream/<name>       # FF or squash — no accidental merge commits
 git push origin master && git push ikijunar master
-git checkout feat/<topic>                 # continue, or delete if the topic is done
 ```
 
-If `--ff-only` fails, `master` moved — rebase `feat/<topic>` onto `master` first. Never
-`git push --force` a shared branch.
+If `--ff-only` fails, `master` moved — rebase the workstream branch again. Workstream branches
+are permanent lanes; never delete them after a merge. Never `git push --force` a shared branch.
 
 ### Before any push to a public remote
 
@@ -148,4 +152,5 @@ If `--ff-only` fails, `master` moved — rebase `feat/<topic>` onto `master` fir
 - **`db/` history scrub** (approved 2026-08-31, not executed): strip every `db/**` SQL from
   both branches' history (`git filter-branch` — no `git filter-repo`/Python here), force-push
   both remotes, `git bundle` backup first. After it runs, `db/ikiastrro.sql` + the `db/00_*.sql`
-  become local-only (untracked); the C# is unaffected. Track this in `../ikiastrro.md`.
+  become local-only (untracked); the C# is unaffected. Track this in the workspace history
+  file `D:\@ClaudeSpace\ikiastrro.md`.

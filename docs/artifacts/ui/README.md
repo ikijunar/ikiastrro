@@ -6,7 +6,7 @@ One rendered SVG per visual chart component, refreshed every release:
 <Component>-sample.svg      e.g. PolarWheel-sample.svg
 ```
 
-Purpose and the revert workflow: `docs/uidesign-dataviz.md` §6.
+Purpose and the revert workflow: `docs/ui/dataviz.md` and `docs/ui/components/chart-catalog.md`.
 Component list and contracts: `src/Ikiastrro.Web/Components/Charts/README.md`.
 
 ## The fixture
@@ -21,8 +21,8 @@ harness is chosen below.
 
 - Regenerate **all** snapshots whenever a chart component, its `.razor.css`, a
   shared geometry helper, or a `--*` token it reads changes. Commit the diff.
-- A snapshot diff in a PR = a deliberate visual change. It must be mentioned in
-  `CHANGELOG.md` under the relevant `FEAT-…` row.
+- A snapshot diff in a PR = a deliberate visual change. Note it in the PR body against the
+  relevant `FEAT-…` row and in the release notes.
 - Never hand-edit a snapshot. It is output.
 
 ## Harness — `tests/Ikiastrro.Web.Tests` (bUnit)
@@ -35,18 +35,13 @@ so `tokens.css` colour edits don't churn snapshots — only markup structure doe
 
 ### Running
 
-WDAC on the dev machine blocks terminal `dotnet test` (same as `dotnet run`), so:
-
-- **Run from Visual Studio Test Explorer.** `dotnet build Ikiastrro.slnx` still
-  compiles the project and is the CI-style gate.
-- **Mint / update the baseline:** set env `IKIASTRRO_UPDATE_SNAPSHOTS=1`, run the
-  tests once, review the generated `*-sample.svg`, commit them. Do this now for
-  `v0.1.0` — no goldens exist yet, so the first run without the flag also writes
-  them (and passes), but the flag is the explicit path.
-- **On a failure:** the actual markup is written as `*-sample.received.svg` beside
-  the golden for diffing. That file is gitignored. If the change is intended,
-  re-run with the flag and commit; note the visual change under its `FEAT-…` row
-  in `CHANGELOG.md`.
+- **Run** from `dotnet test` or Visual Studio Test Explorer. `dotnet build Ikiastrro.slnx` is
+  the compile gate.
+- **Mint / update the baseline:** set env `IKIASTRRO_UPDATE_SNAPSHOTS=1`, run the tests once,
+  review the generated `*-sample.svg`, commit them.
+- **On a failure:** the actual markup is written as `*-sample.received.svg` beside the golden
+  for diffing (gitignored). If the change is intended, re-run with the flag and commit; note
+  the visual change against its `FEAT-…` row in the PR body.
 
 ### Adding a component
 

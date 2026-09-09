@@ -5,7 +5,7 @@ component library draws these; the reusable unit is the **Razor component + its
 projection logic**, not a static `.svg` asset (the picture is data-driven).
 
 Rules that keep these revertable across releases — see
-`docs/uidesign-dataviz.md` §6:
+`docs/ui/dataviz.md` and `docs/ui/design-language.md`:
 
 - **Tokens are additive.** Never repurpose a `--wheel-*` / `--cell-*` token's
   meaning. New look ⇒ new token or a dated value change.
@@ -78,7 +78,7 @@ fragment the page already bound. `[Parameter]`s: `View` *(req)*, `BaseHref`
 
 ## Tables & panels (same folder, not SVG)
 
-Interactive or tabular; specced in `docs/uidesign-specs.md`, not here.
+Interactive or tabular; specced in `docs/ui/` (`design-language.md`, `components/`), not here.
 
 | Component | Role | Interactive |
 |---|---|---|

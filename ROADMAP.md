@@ -1,24 +1,35 @@
 # ikiastrro — Roadmap
 
-**Status:** living · **Created:** 2026-09-06 · **Owner:** rammyps
+**Owner:** rammyps
 
-Theme-based **Now / Next / Later**, no fixed dates — this project ships in bursts, not sprints.
-This file is the public view of direction; the authoritative feature-by-feature state is
-[`PRODUCT.md`](PRODUCT.md), and the private prioritisation working doc is `../methods_prodmag.md`.
+The **flow** view: theme-based **Now / Next / Later**, pure flow — no sprints, no named
+increments, no fixed dates. Work moves continuously; something ships when it's ready.
+Feature-by-feature state is [`masterproduct.md`](masterproduct.md); the private
+prioritisation working doc is `../methods_prodmag.md`. State vs flow: `STANDARDS.md` §E.1.
 
 ## How priority is decided
 
 - **Opportunities** are filed as [Feature / opportunity](.github/ISSUE_TEMPLATE/01-feature-opportunity.yml) issues.
 - Scored with **ICE** — Impact / Confidence / Ease, each 1–10, `Score = average`. Not RICE:
   at this user count "Reach" is a constant that only adds noise.
-- Slotted into Now / Next / Later at triage. Re-scored after each shipped theme, not on a calendar.
-- A feature becomes a `FEAT-<AREA>-<NN>` row and moves along the ladder
-  `Planned → Designed → DB → Core → Verified → Web → Done` (checklist: DB · Core · Verify · Web · Docs).
+- Slotted into Now / Next / Later at triage; re-scored after each ship, not on a calendar.
+- Each Now / Next item is a GitHub **Milestone** (an epic) and a `FEAT-<AREA>-<NN>` row in
+  `masterproduct.md`, worked as issues on the flow board and closed along the ladder
+  `Planned → Designed → DB → Core → Verified → Web → Done`.
+
+## Velocity
+
+Derived, never hand-tracked: **rolling 4-week merged-PR average**, plus feature-boxes
+closed per week (diff the `masterproduct.md` rollup over git). Read on demand:
+
+```
+gh pr list --state merged --search "merged:>=$(date -d '-28 days' +%F)" --json number | jq length
+```
 
 ## Now
 
 Close the gap between verified engine logic and what the web app actually shows — the
-"Missing Web" column in the `PRODUCT.md` rollup.
+"Missing Web" column in the `masterproduct.md` rollup.
 
 - **Divisional charts in the UI** — render D2–D60 (21 varga types), not just D1/D9 · `FEAT-VARGA-01`
 - **Jaimini chara karakas panel** — surface the 8-fold Aṣṭa already computed · `FEAT-KARAKA-01`
@@ -47,7 +58,11 @@ Acknowledged, deliberately deferred.
 - **Selectable house system** — beyond whole-sign
 - **KP system** — sub-lords, significators as a layered sub-system
 
-## Change log
+## Cadence
 
-- 2026-09-06 — Initial roadmap extracted from `PRODUCT.md` state and the `methods_prodmag.md`
-  Now/Next/Later. "Now" set to UI-surfacing of verified engine features.
+One dated line per ship event (a `git tag` + GitHub Release). Capped at the last ~6 —
+`git log --first-parent origin/master` and the Releases page hold the rest. This is the
+only time-phased block in the repo's prose (`STANDARDS.md` §E.1 WORKSTREAM-05).
+
+- 2026-09-06 — Roadmap set to pure-flow Now/Next/Later; "Now" = UI-surfacing of verified
+  engine features.
