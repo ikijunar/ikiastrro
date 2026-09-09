@@ -2466,7 +2466,10 @@ GO
 
 -- =====================================================================
 -- tbl_Dim_ChartType — controlled vocabulary for ChartResults.ChartTypeId
--- (folded from db/02_create_dim_charttype.sql + db/10_seed_varga_charttypes.sql).
+-- (folded from db/02_create_dim_charttype.sql + db/10_seed_varga_charttypes.sql
+-- + db/22_add_charttype_description.sql + db/23_add_charttype_shortdescription.sql
+-- + db/24_update_charttype_shortdescription.sql
+-- + db/25_update_charttype_category_lifearea.sql).
 -- Seeds the 21 registered position charts (D1, D2, D2-US, D3..D60);
 -- Vimshottari Dasha is not a chart type (see CalculationKind).
 -- Ids 22..24 are reserved for Plan B (D81/D108/D144).
@@ -2481,34 +2484,36 @@ CREATE TABLE dbo.tbl_Dim_ChartType (
     Code             VARCHAR(20)  NOT NULL CONSTRAINT UQ_Dim_ChartType_Code UNIQUE,
     DisplayName      VARCHAR(40)  NOT NULL,
     DivisionalFactor TINYINT      NULL,
-    Category         VARCHAR(20)  NOT NULL,
+    Category         VARCHAR(40)  NOT NULL,
     DisplayOrder     TINYINT      NOT NULL,
+    Description      VARCHAR(120) NULL,
+    ChartShortDescription VARCHAR(60) NULL,
     CONSTRAINT CK_Dim_ChartType_Factor CHECK (DivisionalFactor IS NULL OR DivisionalFactor BETWEEN 1 AND 60)
 );
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType)
-INSERT dbo.tbl_Dim_ChartType (Id, Code, DisplayName, DivisionalFactor, Category, DisplayOrder) VALUES
-    ( 1, 'D1',    'Rasi',              1,  'Varga',  1),
-    ( 2, 'D2',    'Hora',              2,  'Varga',  2),
-    ( 3, 'D6',    'Shashtamsa',        6,  'Varga',  3),
-    ( 4, 'D9',    'Navamsa',           9,  'Varga',  4),
-    ( 5, 'D10',   'Dasamsa',           10, 'Varga',  5),
-    ( 6, 'D11',   'Rudramsa',          11, 'Varga',  6),
-    ( 7, 'D2-US', 'Hora (Uma Shambu)', 2,  'Varga',  7),
-    ( 8, 'D3',    'Drekkana',          3,  'Varga',  8),
-    ( 9, 'D4',    'Chaturthamsa',      4,  'Varga',  9),
-    (10, 'D5',    'Panchamsa',         5,  'Varga', 10),
-    (11, 'D7',    'Saptamsa',          7,  'Varga', 11),
-    (12, 'D8',    'Ashtamsa',          8,  'Varga', 12),
-    (13, 'D12',   'Dwadasamsa',        12, 'Varga', 13),
-    (14, 'D16',   'Shodasamsa',        16, 'Varga', 14),
-    (15, 'D20',   'Vimsamsa',          20, 'Varga', 15),
-    (16, 'D24',   'Siddhamsa',         24, 'Varga', 16),
-    (17, 'D27',   'Nakshatramsa',      27, 'Varga', 17),
-    (18, 'D30',   'Trimsamsa',         30, 'Varga', 18),
-    (19, 'D40',   'Khavedamsa',        40, 'Varga', 19),
-    (20, 'D45',   'Akshavedamsa',      45, 'Varga', 20),
-    (21, 'D60',   'Shashtyamsa',       60, 'Varga', 21);
+INSERT dbo.tbl_Dim_ChartType (Id, Code, DisplayName, DivisionalFactor, Category, DisplayOrder, Description, ChartShortDescription) VALUES
+    ( 1, 'D1',    'Rasi',              1,  'Self & Personality',      1, 'Personality, Expression, Logic', 'Self / Overall Life'),
+    ( 2, 'D2',    'Hora',              2,  'Wealth & Resources',      2, NULL, 'Wealth'),
+    ( 3, 'D6',    'Shashtamsa',        6,  'Health & Vitality',       3, NULL, 'Health / Disease'),
+    ( 4, 'D9',    'Navamsa',           9,  'Relationships & Family',  4, NULL, 'Marriage / Dharma'),
+    ( 5, 'D10',   'Dasamsa',           10, 'Career & Status',         5, NULL, 'Career / Status'),
+    ( 6, 'D11',   'Rudramsa',          11, 'Spirituality & Struggle', 6, NULL, 'Struggle / Destruction'),
+    ( 7, 'D2-US', 'Hora (Uma Shambu)', 2,  'Wealth & Resources',      7, NULL, 'Wealth / Prosperity'),
+    ( 8, 'D3',    'Drekkana',          3,  'Relationships & Family',  8, NULL, 'Siblings / Courage'),
+    ( 9, 'D4',    'Chaturthamsa',      4,  'Wealth & Resources',      9, NULL, 'Property / Fortune'),
+    (10, 'D5',    'Panchamsa',         5,  'Career & Status',        10, NULL, 'Power / Influence'),
+    (11, 'D7',    'Saptamsa',          7,  'Relationships & Family', 11, NULL, 'Children'),
+    (12, 'D8',    'Ashtamsa',          8,  'Health & Vitality',      12, NULL, 'Longevity / Obstacles'),
+    (13, 'D12',   'Dwadasamsa',        12, 'Relationships & Family', 13, NULL, 'Parents / Ancestors'),
+    (14, 'D16',   'Shodasamsa',        16, 'Wealth & Resources',     14, NULL, 'Vehicles / Comforts'),
+    (15, 'D20',   'Vimsamsa',          20, 'Spirituality & Struggle',15, NULL, 'Spirituality'),
+    (16, 'D24',   'Siddhamsa',         24, 'Career & Status',        16, NULL, 'Education'),
+    (17, 'D27',   'Nakshatramsa',      27, 'Self & Personality',     17, NULL, 'Strength / Weakness'),
+    (18, 'D30',   'Trimsamsa',         30, 'Self & Personality',     18, NULL, 'Misfortune / Vulnerability'),
+    (19, 'D40',   'Khavedamsa',        40, 'Relationships & Family', 19, NULL, 'Maternal Lineage'),
+    (20, 'D45',   'Akshavedamsa',      45, 'Relationships & Family', 20, NULL, 'Paternal Lineage / Character'),
+    (21, 'D60',   'Shashtyamsa',       60, 'Self & Personality',     21, NULL, 'Karma / Past-life Influences');
 GO
 -- =====================================================================
 -- 15 — tbl_Dim_Source: the SRC_* citation registry (STANDARDS §M.4). Mirror of

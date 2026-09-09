@@ -848,6 +848,10 @@ if (args.Length > 0 && args[0] == "verify-schema")
         Count("SELECT COUNT(*) FROM dbo.tbl_Chart_DashaPeriods c JOIN dbo.tbl_Chart_DashaPeriods p ON p.Id = c.ParentDashaPeriodId WHERE p.ChartResultId <> c.ChartResultId"));
     Check("every stored position chart type is a known Dim code",
         Count("SELECT COUNT(*) FROM (SELECT DISTINCT ChartType FROM dbo.tbl_ChartResults WHERE CalculationKind = 'PositionChart') x WHERE NOT EXISTS (SELECT 1 FROM dbo.tbl_Dim_ChartType d WHERE d.Code = x.ChartType)"));
+    Check("every tbl_Dim_ChartType row has a ChartShortDescription (migration 24)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Dim_ChartType WHERE ChartShortDescription IS NULL"));
+    Check("every tbl_Dim_ChartType row has a life-area Category, not the old blanket 'Varga' (migration 25)",
+        Count("SELECT COUNT(*) FROM dbo.tbl_Dim_ChartType WHERE Category = 'Varga'"));
     Check("every position chart has exactly 8 distinct CharaKaraka rows",
         Count(@"
             SELECT COUNT(*) FROM (
