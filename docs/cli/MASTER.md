@@ -33,16 +33,16 @@ persisted rows to the UI stream ([`../architecture/domain-contracts.md`](../arch
   inputs, slow-planet transits, Sade Sati / Kantaka / Ashtama, functional benefic/malefic.
 - **Verification:** `verify-*` CLI modes + `tests/Ikiastrro.Yoga.Tests` (124) +
   `tests/Ikiastrro.Web.Tests` (166). `dotnet build` / `dotnet test` run from the terminal.
-- **Green now:** `verify-schema`, `verify-dignity`, `verify-rules`, `verify-pipeline`,
-  `verify-sources`, `verify-terminology`, `verify-avastha`, `verify-functional-nature`,
-  `verify-upagrahas`.
+- **Green now:** all 11 `verify-*` modes — `verify-schema`, `verify-vargas`, `verify-jaimini`,
+  `verify-dignity`, `verify-rules`, `verify-pipeline`, `verify-sources`, `verify-terminology`,
+  `verify-avastha`, `verify-functional-nature`, `verify-upagrahas`.
 
 ## In flight
 
-- **`FEAT-DATA-04` (with database)** — ayanāṁśa mode fix: `verify-vargas` (78) and
-  `verify-jaimini` (3) fail on the JHora export grid because the `Jagannatha` default resolves
-  to Swiss sidereal mode 26 (22.745°) vs the 23.595° reference. After the mode fix, run
-  `compute-all` for every saved person and re-check.
+- **`FEAT-DATA-04` (with database)** — ayanāṁśa default fixed (migration 054: Jagannatha
+  mode 26 → Lahiri mode 1); both saved people regenerated via `compute-all`; `verify-vargas`
+  / `verify-jaimini` green. Still open: re-seed the `BENCH_RAMAKRISHNAN_P_JHORA_1981`
+  benchmark case row and add a `verify-ayanamsa` mode (deferred).
 - **`FEAT-STRENGTH-01`** — implement the seeded-but-uncomputed Kālabala components; planetary
   war; per-planet minimum-rūpa thresholds; reconcile Iṣṭa/Kaṣṭa/Cheṣṭā.
 - **`FEAT-YOGA-01`** — Raman predicates 201–300, PVR P0 additions, structured

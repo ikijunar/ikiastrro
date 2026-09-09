@@ -44,8 +44,8 @@ Optional `--db <name>` overrides the target database. `dotnet build` / `dotnet r
 | `verify-avastha` | Bālādi / Jāgradādi worked examples | **PASS** |
 | `verify-functional-nature` | `LagnaFunctionalNature` worked examples | **PASS** |
 | `verify-upagrahas` | live rule loading + in-memory upagraha output, all 21 charts | **PASS** |
-| `verify-vargas` | hand-computed `IVargaSignRule` checks + **the JHora export grid** (180 cells) | **78 FAIL** — ayanāṁśa (`FEAT-DATA-04`) |
-| `verify-jaimini` | HL / Gulika / Maandi longitudes + Chara Karakas vs the JHora export | **3 FAIL** — same ~0.85° offset |
+| `verify-vargas` | hand-computed `IVargaSignRule` checks + **the JHora export grid** (180 cells) | **PASS** (on the Lahiri default, `FEAT-DATA-04`) |
+| `verify-jaimini` | HL / Gulika / Maandi longitudes + Chara Karakas vs the JHora export | **PASS** |
 
 ## Tests
 

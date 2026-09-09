@@ -24,22 +24,24 @@ Publishes to the CLI and UI streams under
 ## Current state
 
 - **Baseline** `db/ikiastrro.sql` + numbered migrations `db/NN_*.sql` applied in order,
-  tracked in `dbo.SchemaMigrations` (keyed by `ScriptName`). Migrations `22`–`053` are the
+  tracked in `dbo.SchemaMigrations` (keyed by `ScriptName`). Migrations `22`–`054` are the
   active layer; earlier flat history is frozen under `db/_archive/`.
 - ~80 tables: input, chart results, chart-generic analytics, dasha, reference/master,
   `tbl_Rule_*` (versioned), `tbl_Dim_*`, `tbl_Fact_*` (star-schema).
 - **Live rule table:** `tbl_Rule_VargaScheme` (the orchestrator builds one `VargaCalculator`
   per row). All other `tbl_Rule_*` are a verified mirror of the hard-coded C# — Phase 2
   (calculators reading them) not started.
-- `tbl_Rule_Ayanamsa` — JHora ayanāṁśa catalogue + system default (`Jagannatha`).
+- `tbl_Rule_Ayanamsa` — JHora ayanāṁśa catalogue + system default (`Lahiri`, Swiss mode 1;
+  set by migration 054).
 
 ## In flight
 
-- **`FEAT-DATA-04`** — ayanāṁśa / Vimśottari reference benchmark: `tbl_Dim_AyanamsaBenchmarkCases`
-  is empty while `tbl_Dim_AyanamsaBenchmarkPositions` (10) + `tbl_Dim_DashaBenchmarkPeriods` (9)
-  are orphaned on `CaseId = 1`. Re-seed `BENCH_RAMAKRISHNAN_P_JHORA_1981`
-  (`ReferenceAyanamsaDegrees` 23.595, `SRC_JHORA_EXPORT_RAMAKRISHNAN`), then reconcile the
-  `Jagannatha` Swiss sidereal mode (26 → the ~0.85° discrepancy) with the CLI stream.
+- **`FEAT-DATA-04`** — ayanāṁśa default fixed (migration 054 repoints `tbl_Rule_Ayanamsa`
+  from Jagannatha mode 26 to Lahiri mode 1; `verify-vargas` / `verify-jaimini` green).
+  Still open: the reference benchmark harness — `tbl_Dim_AyanamsaBenchmarkCases` is empty
+  while `tbl_Dim_AyanamsaBenchmarkPositions` (10) + `tbl_Dim_DashaBenchmarkPeriods` (9) are
+  orphaned on `CaseId = 1`; re-seed `BENCH_RAMAKRISHNAN_P_JHORA_1981`
+  (`ReferenceAyanamsaDegrees` 23.595, `SRC_JHORA_EXPORT_RAMAKRISHNAN`).
 - **`FEAT-DATA-05`** — source-attributed yoga corpus schema (migrations 47–49): applied
   locally; roll to other environments after the corpus completes.
 

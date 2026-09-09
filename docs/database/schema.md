@@ -15,7 +15,7 @@ work. One repository per table/view in `src/Ikiastrro.Data/`.
 - **Baseline** `db/ikiastrro.sql` — whole schema + reference/master seed + the
   `tbl_Dim_LifeCalendar` day dimension.
 - **Forward changes** are numbered scripts `db/NN_<slug>.sql`, applied in order, each
-  appending its `ScriptName` to `dbo.SchemaMigrations`. Active range `22`–`053`.
+  appending its `ScriptName` to `dbo.SchemaMigrations`. Active range `22`–`054`.
 - **Never edit an applied migration.** A change is a new script. A rule change is a new
   `RuleSetId`, not an `UPDATE`.
 - `db/_archive/` holds the pre-consolidation `001..034` chain (frozen, historical).

@@ -73,7 +73,7 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
   `tbl_Rule_Ayanamsa` — and never recomputes. A calculation the UI needs is a DB + CLI
   feature first (`DB` + `Core` + `Verify`), then a UI feature (`Web`).
 - **Chart data must be regenerated** after any ayanamsa / rule-set / engine change before the
-  UI reflects it (`compute-all <name>` / `backfill-charts`) — tracked as `FEAT-DATA-04`.
+  UI reflects it (`compute-all <name>` / `backfill-charts`).
 - **Schema is additive** (new typed columns, not reshaped), so a DB feature can land ahead of
   the CLI / UI that reads it.
 - Full interface catalogue: [`docs/architecture/domain-contracts.md`](docs/architecture/domain-contracts.md).
@@ -82,7 +82,7 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
 
 | Area | Workstream | Features | Avg % | Missing DB | Missing Core | Missing Verify | Missing Web | Missing Docs |
 |---|---|---|---|---|---|---|---|---|
-| DATA | database | 5 | 70% | 1 | — | 1 | — | 1 |
+| DATA | database | 5 | 76% | 1 | — | 0 | — | 1 |
 | ASTRO_CALC | cli | 2 | 90% | 0 | 0 | 0 | 1 | 0 |
 | POSITION | cli | 1 | 100% | 0 | 0 | 0 | 0 | 0 |
 | VARGA | cli | 1 | 80% | 0 | 0 | 0 | 1 | 0 |
@@ -116,13 +116,18 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
   DB [x] · Core [x] · Verify [x] · Web [—] · Docs [x] · Research: complete
 - **FEAT-DATA-03 · Migration ledger + `SchemaMigrations` contract** — Verified · 80% · Verify `verify-schema`
   DB [x] · Core [—] · Verify [x] · Web [—] · Docs [x] · Research: complete
-  Local ledger is partial (baseline from `db/ikiastrro.sql` + migrations 22–053); orphan
+  Local ledger is partial (baseline from `db/ikiastrro.sql` + migrations 22–054); orphan
   rows exist in `tbl_Dim_AyanamsaBenchmarkPositions` (parent case row missing).
-- **FEAT-DATA-04 · Ayanamsa / Vimshottari reference benchmark (`BENCH_RAMAKRISHNAN_P_JHORA_1981`)** — In progress · 40% · Verify (pending)
-  DB [ ] (case row unseeded; 10 position + 9 dasha rows orphaned) · Core [—] · Verify [ ] · Web [—] · Docs [x] · Research: complete
-  Reference ayanamsa 23.595°; engine default (`AyanamsaDefinition.Jagannatha` → Swiss mode
-  26) yields 22.745°, a ~0.85° gap breaking `verify-vargas` / `verify-jaimini`. Re-seed +
-  ayanamsa-mode fix tracked here.
+- **FEAT-DATA-04 · Ayanāṁśa default = Lahiri (Swiss mode 1), matching the JHora reference** — Verified · 80% · Verify `verify-vargas`, `verify-jaimini`
+  DB [x] · Core [—] · Verify [x] · Web [—] · Docs [x] · Research: complete
+  `tbl_Rule_Ayanamsa` had seeded Jagannatha (mode 26 = `SE_SIDM_SS_CITRA`, 22.745° for
+  1981) as the active default; migration 054 repoints it to Lahiri (mode 1, 23.595° — the
+  frame every `verify-*` chart is built in). Mode 27 (True Chitrapaksha) matches the
+  reference but needs `sefstars.txt`, absent from this file-less Moshier build. Same fix
+  cleared a regeneration FK-547 (`GenerateAll` now deletes strength / bhava-strength /
+  vargottama facts before `tbl_ChartResults`). Both saved people regenerated; 11/11
+  `verify-*` green. Remaining 20%: re-seed the `BENCH_RAMAKRISHNAN_P_JHORA_1981` case row
+  and add a dedicated `verify-ayanamsa` (deferred).
 - **FEAT-DATA-05 · Source-attributed yoga corpus schema (migrations 47–49)** — Designed · 20%
   DB [ ] (migrations prepared, applied locally; apply to other envs after corpus completion) · Core [—] · Verify [x] · Web [—] · Docs [x] · Research: active
   Normalised D1/D9 requirement tracking + formation/outcome/source axes for `tbl_Rule_Yoga`.
@@ -143,7 +148,7 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
 
 - **FEAT-VARGA-01 · Divisional charts D1–D60 (21 types)** — Verified · 80% · Verify `verify-vargas`
   DB [x] · Core [x] · Verify [x] · Web [ ] (only D1/D9 rendered) · Docs [x] · Research: complete
-  `verify-vargas` currently failing on the JHora export grid — see FEAT-DATA-04 (ayanamsa).
+  `verify-vargas` green across all 21 charts for both saved people (after FEAT-DATA-04).
 
 ## HOUSE — workstream: cli
 
@@ -185,8 +190,8 @@ The DB + CLI stream **publishes**; the UI stream **consumes**. The contract:
   DB [x] · Core [x] · Verify [x] · Web [ ] · Docs [x] · Research: complete
 - **FEAT-KARAKA-02 · Special points (AL + 12 Bhāva Arudhas + HL + all 11 upagrahas)** — Done · 100% · Verify `verify-jaimini`, `verify-upagrahas`
   DB [x] · Core [x] · Verify [x] · Web [x] · Docs [x] · Research: complete
-  PVR Gulika/Maandi convention; `verify-upagrahas` passes all 21 charts. Stored charts
-  await regeneration after the ayanamsa fix (FEAT-DATA-04).
+  PVR Gulika/Maandi convention; `verify-upagrahas` passes all 21 charts (stored charts
+  regenerated on the Lahiri default, FEAT-DATA-04).
 - **FEAT-KARAKA-03 · Sthira Kāraka** — Planned · 0%
   DB [ ] · Core [ ] · Verify [ ] · Web [ ] · Docs [ ] · Research: partial (`SRC_RAMAN_HTJH`)
 - **FEAT-KARAKA-04 · Naisargika Kāraka (Sapta vs Aṣṭa — undecided)** — Planned · 0%

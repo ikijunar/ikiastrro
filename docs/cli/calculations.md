@@ -15,9 +15,10 @@ Every calculation ikiastrro performs, its convention, and its source. All code i
   ephemeris data files.
 - **Sidereal / ayanāṁśa:** selectable. `AyanamsaDefinition` catalogues 22 systems, each with
   its Swiss `swe_set_sid_mode` id; `tbl_Rule_Ayanamsa` holds the system default. Current
-  default **`Jagannatha`**. Every `tbl_ChartResults` row records `AyanamshaDegrees` +
-  `SiderealTimeHours`. *(Open: `FEAT-DATA-04` — the `Jagannatha` entry maps to Swiss mode 26,
-  ~0.85° off the JHora reference; fix + regeneration pending.)*
+  default **`Lahiri`** (Swiss mode 1, ~23.595° for 1981 — the JHora reference frame; migration
+  054). True Chitrapaksha (mode 27) is closer still but needs `sefstars.txt`, which the
+  file-less Moshier build omits. Every `tbl_ChartResults` row records `AyanamshaDegrees` +
+  `SiderealTimeHours`.
 - **Nodes:** Rahu = **mean node** (`SE_MEAN_NODE`); Ketu = Rahu + 180° (derived, never stored
   separately). `vw_KetuSignTransitEvents` = Rahu events + 6 signs.
 - **Speed & latitude:** from the same `swe_calc_ut` call (`SEFLG_SPEED`); persisted per planet

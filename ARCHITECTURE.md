@@ -34,7 +34,7 @@ database behind two front ends:
   ([`docs/ui/brand.md`](docs/ui/brand.md)). Chart diagrams and the life-weeks grid are
   hand-rolled inline SVG.
 - **Ayanāṁśa:** selectable, catalogued in `AyanamsaDefinition` (22 systems) and
-  `tbl_Rule_Ayanamsa`. Current default `Jagannatha`. **House system:** Whole Sign everywhere.
+  `tbl_Rule_Ayanamsa`. Current default **Lahiri** (Swiss sidereal mode 1). **House system:** Whole Sign everywhere.
 - **Place resolution:** OpenStreetMap Nominatim for lat/long; UTC offset resolved fully
   offline from lat/long + date (historical DST respected); manual lat/long/offset fallback.
 
@@ -76,10 +76,12 @@ planet per chart type. Adding a chart type needs an `IChartCalculator` pair and 
 
 ## Known constraints
 
-- **Ayanāṁśa discrepancy** — the `Jagannatha` default resolves to Swiss sidereal mode 26
-  (22.745° for 1981) against a JHora reference of 23.595°; a ~0.85° gap that fails
-  `verify-vargas` / `verify-jaimini`. Tracked as `FEAT-DATA-04`; fix + chart regeneration
-  pending.
+- **Ayanāṁśa — file-less build limits the choice** — the default is Lahiri (Swiss mode 1),
+  a polynomial model. True Chitrapaksha (mode 27) matches JHora more precisely but needs
+  `sefstars.txt`, which this Moshier-only build does not ship, so it fails at runtime.
+  Fixed-star systems (`AYANAMSA_FIXED_STAR_CUSTOM`, Rohiṇī-pakṣa, …) are catalogued but
+  unimplemented for the same reason. The `BENCH_RAMAKRISHNAN_P_JHORA_1981` benchmark case
+  row is still unseeded (`FEAT-DATA-04`).
 - **Rules-engine Phase 2 not started** — `Dignity` / `Relationships` / `Combustion` engines
   still run on hard-coded C#; the `tbl_Rule_*` classical tables are a verified-matching
   mirror. `tbl_Rule_VargaScheme` is the exception — it is live.
