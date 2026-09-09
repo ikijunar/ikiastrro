@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this for anything that would become a `FEAT-<AREA>-<NN>` row in [`PRODUCT.md`](../blob/master/PRODUCT.md).
+        Use this for anything that would become a `FEAT-<AREA>-<NN>` row in [`masterproduct.md`](../blob/master/masterproduct.md).
         Prioritisation model is **ICE** (Impact / Confidence / Ease), theme-based Now / Next / Later — see
         [`ROADMAP.md`](../blob/master/ROADMAP.md) and `methods_prodmag.md`.
 
@@ -23,7 +23,7 @@ body:
     id: area
     attributes:
       label: Engine area
-      description: Closest existing `FEAT-<AREA>` bucket in PRODUCT.md (pick NEW-AREA if none fit).
+      description: Closest existing `FEAT-<AREA>` bucket in masterproduct.md (pick NEW-AREA if none fit).
       options:
         - ASTRO_CALC
         - POSITION
@@ -46,6 +46,29 @@ body:
         - NEW-AREA (describe below)
     validations:
       required: true
+
+  - type: dropdown
+    id: workstream
+    attributes:
+      label: Workstream
+      description: Which branch / worktree / path scope this lands in (`STANDARDS.md` §E.1). A schema-only change is `database`; the engine rides with `cli`.
+      options:
+        - database
+        - cli
+        - ui
+        - cross-cutting
+        - unsure (set at triage)
+    validations:
+      required: true
+
+  - type: input
+    id: feat-id
+    attributes:
+      label: FEAT id (leave blank — assigned at triage)
+      description: The owner assigns the next `FEAT-<AREA>-<NN>` and adds the row to masterproduct.md.
+      placeholder: "FEAT-VARGA-02"
+    validations:
+      required: false
 
   - type: textarea
     id: problem
@@ -110,7 +133,7 @@ body:
     id: touches
     attributes:
       label: Expected footprint
-      description: Which PRODUCT.md dimensions this is likely to move.
+      description: Which masterproduct.md checklist dimensions this is likely to move.
       options:
         - label: DB (new migration + `dbo.SchemaMigrations` row)
         - label: Core (engine / pipeline code)

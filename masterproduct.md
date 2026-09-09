@@ -303,17 +303,17 @@ test exists; `Web` = route is live; `Docs` = a `docs/ui/` component doc exists.
 - **FEAT-UI-06 · Varga view (`/charts/{id}/varga/{code}`) — grid + polar-wheel toggle** — Verified · 60%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
 - **FEAT-UI-07 · South Indian template (`/charts/{id}/south-indian-template`)** — Verified · 80%
-  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`Components/Charts/README.md`)
+  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`src/Ikiastrro.Web/Components/Charts/README.md`)
 - **FEAT-UI-08 · Timing (`/charts/{id}/timing`) — 3-level dasha tree** — Verified · 60%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
 - **FEAT-UI-09 · Astrologer evidence tables (`/charts/{id}/evidence`)** — Verified · 80%
-  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`UI_keytables.md`)
+  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`docs/ui/components/evidence-tables.md`)
 - **FEAT-UI-10 · Transit wheel (`/transit-wheel/{id}`) — natal ↔ transit + dasha selector** — Verified · 80%
-  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`ui_specs_transit_wheel_v1.2.md`)
+  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`docs/ui/components/transit-wheel.md`)
 - **FEAT-UI-11 · Life-in-weeks grid (`/charts/{id}/life-weeks`)** — Verified · 60%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
 - **FEAT-UI-12 · Preferences / ayanamsa setting** — Planned · 0%
-  DB [—] · Core [—] · Verify [ ] · Web [ ] · Docs [x] (`ikiastrro_homescreen.md`)
+  DB [—] · Core [—] · Verify [ ] · Web [ ] · Docs [x] (`docs/ui/components/home.md`)
   Requirement: a Preferences route whose Ayanamsa box defaults to the active
   `tbl_Rule_Ayanamsa` system default, listing that plus the 20 other catalogued options.
   No route exists yet.
