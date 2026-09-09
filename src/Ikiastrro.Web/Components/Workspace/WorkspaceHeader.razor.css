@@ -8,3 +8,4 @@
 .ws-comp-trigger {
     background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit; padding: 0;
 }
+.ws-header h1 { color: var(--brand-sunset, #f47a24); }

@@ -1,0 +1,26 @@
+@using Ikiastrro.Core.Models
+
+<div class="dispositor-scroll">
+    <table class="dispositor-table">
+        <thead><tr><th>Graha</th><th>Placed in</th><th>Dispositor</th></tr></thead>
+        <tbody>
+            @foreach (var graha in Grahas.OrderBy(g => g.Planet))
+            {
+                <tr><td>@graha.Planet</td><td>@DisplaySign(graha.Sign)</td><td>@LordOf(graha.Sign)</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> Grahas { get; set; } = Array.Empty<ChartKeyDetail>();
+    private static readonly IReadOnlyDictionary<string, string> SignLords = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Aries"] = "Mars", ["Taurus"] = "Venus", ["Gemini"] = "Mercury", ["Cancer"] = "Moon",
+        ["Leo"] = "Sun", ["Virgo"] = "Mercury", ["Libra"] = "Venus", ["Scorpio"] = "Mars",
+        ["Sagittarius"] = "Jupiter", ["Capricornus"] = "Saturn", ["Capricorn"] = "Saturn",
+        ["Aquarius"] = "Saturn", ["Pisces"] = "Jupiter"
+    };
+    private static string LordOf(string sign) => SignLords.TryGetValue(sign, out var lord) ? lord : "—";
+    private static string DisplaySign(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+}

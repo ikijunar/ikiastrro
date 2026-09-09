@@ -1,17 +1,14 @@
 @inherits LayoutComponentBase
-
-<nav class="site-nav">
-    <span class="brand"><span class="brand-name">ikiastrro</span> <span class="brand-ded">dedicated to my guru Sundari Hemachandran</span></span>
-    <NavLink class="nav-pill" href="/" Match="NavLinkMatch.All">Home</NavLink>
-    <NavLink class="nav-pill" href="/charts">Saved Charts</NavLink>
-</nav>
-
-<div class="site-body">
-    @Body
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+<MudLayout>
+    <MudAppBar Elevation="1" Style="background:var(--brand-sunset); color:var(--brand-midnight);">
+        <MudText Typo="Typo.h6" Class="app-brand">Iki-Astrro <span class="app-tagline">| Where Passion, Purpose &amp; Planets Align.</span></MudText>
+        <MudSpacer />
+        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Home</MudButton>
+        <MudButton Href="/?preferences=1" Color="Color.Inherit" Variant="Variant.Text">Preferences</MudButton>
+        <MudButton Href="/charts" Color="Color.Inherit" Variant="Variant.Text">Saved Charts</MudButton>
+    </MudAppBar>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">@Body</MudContainer>
+    </MudMainContent>
+</MudLayout>
+<div id="blazor-error-ui"><MudAlert Severity="Severity.Error">An unhandled error has occurred. <a href="" class="reload">Reload</a></MudAlert></div>

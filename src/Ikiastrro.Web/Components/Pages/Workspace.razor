@@ -29,7 +29,6 @@ else
             <div class="ws-actions">
                 <SegmentedToggle ActiveKey="@Theme" Segments="ThemeSegments()" />
                 <button class="ws-profile-trigger" type="button" @onclick="() => _profileOpen = true">Reading profile <span>@Profile.Summary</span></button>
-                <a class="ws-print" href="@($"/charts/{Id}/print")">Print / Save PDF</a>
                 <DeleteIconButton Title="@($"Delete {_data.Person.Name}'s chart")" OnClick="() => _confirmingDelete = true" />
             </div>
         </div>
@@ -43,8 +42,10 @@ else
 
         <div class="ws-areas">
             <SegmentedToggle ActiveKey="@ActiveGroup.GroupCode" Segments="AreaSegments()" />
+            <a class="ws-all-link" href="@($"/charts/{Id}/evidence")">Evidence tables →</a>
             <a class="ws-all-link" href="@($"/charts/{Id}/all-charts")">See all charts →</a>
         </div>
+        <ReadingProfileLens Profile="Profile" />
 
         @{ var chipCodes = ActiveGroup.Codes.Where(c => c != "D1" && _data.Charts.ContainsKey(c)).ToList(); }
         @if (chipCodes.Count > 0)
@@ -131,10 +132,18 @@ else
                         <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
                     </div>
                     <PlanetPositionsTable Rows="ActiveRows()" LagnaSign="@ActiveChart.AscendantSign"
-                                          Variant="@(ActiveCode == "D1" ? "d1" : "varga")" ShowTechnical="Tech" />
+                                          Variant="@(ActiveCode == "D1" ? "d1" : "varga")" ShowTechnical="Tech"
+                                          ShowDignity="Profile.ShowPlanetaryDignity" />
                 </div>
             </section>
         </div>
+
+        @if (Profile.ShowDispositorRelations)
+        {
+            <Disclosure Title="Dispositor relations" Open="_dispositorOpen" OnToggle="v => _dispositorOpen = v">
+                <DispositorTable Grahas="ActiveChart.Grahas" />
+            </Disclosure>
+        }
 
         <ConfirmDialog IsOpen="_confirmingDelete"
                        Message="@($"Delete {_data.Person.Name}'s chart and all computed data? This can't be undone.")"
@@ -152,7 +161,7 @@ else
 
     private WorkspaceData? _data;
     private IReadOnlyList<DashaPeriodRecord> _dashaRoots = Array.Empty<DashaPeriodRecord>();
-    private bool _compOpen, _confirmingDelete, _isDeleting, _profileOpen;
+    private bool _compOpen, _confirmingDelete, _isDeleting, _dispositorOpen, _profileOpen;
 
     /// <summary>Birth date/time and the 3 Sade-Sati "Round" windows — D1/Moon-specific, computed
     /// once regardless of which chart is active (only rendered in the D1 center-cell branch).</summary>

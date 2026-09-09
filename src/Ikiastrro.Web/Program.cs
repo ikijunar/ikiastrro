@@ -1,3 +1,5 @@
+using MudBlazor.Services;
+using MudBlazor;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Geocoding;
 using Ikiastrro.Data;
@@ -7,6 +9,8 @@ using Ikiastrro.Web.Components.Shared;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// MudBlazor registers popover, dialog, snackbar, and related UI services.
+builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -24,6 +28,11 @@ builder.Services.AddScoped<DashaPeriodsRepository>();
 builder.Services.AddScoped<SadeSatiRepository>();
 builder.Services.AddScoped<PlanetaryStateRuleRepository>();
 builder.Services.AddScoped<PlanetaryStateRepository>();
+builder.Services.AddScoped<PlanetaryStrengthRepository>();
+builder.Services.AddScoped<BhavaStrengthRepository>();
+builder.Services.AddScoped<VargottamaRepository>();
+builder.Services.AddScoped<YogaInputRepository>();
+builder.Services.AddScoped<AstrologerEvidenceRepository>();
 builder.Services.AddScoped<PlanetSignTransitEventsRepository>();
 builder.Services.AddScoped<GocharaRepository>();
 builder.Services.AddScoped<RuleSetRepository>();

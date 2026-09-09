@@ -32,6 +32,7 @@ else
 
     <WorkspaceHeader Person="_data.Person" D1="@(_data.Charts["D1"])" ComputationOpen="false"
                      OnToggleComputation="@((bool _) => { })" />
+    <ReadingProfileLens Profile="Profile" />
 
     <ChartFrame View="@View" BaseHref="@($"/charts/{Id}/varga/{Code}")">
         <GridContent>
@@ -58,14 +59,27 @@ else
             <h2>Planet positions — @Code</h2>
             <SegmentedToggle ActiveKey="@(Tech ? "on" : "off")" Segments="TechSegments()" />
         </div>
-        <PlanetPositionsTable Rows="Rows(dn)" LagnaSign="@dn.AscendantSign" Variant="varga" ShowTechnical="Tech" />
+        <PlanetPositionsTable Rows="Rows(dn)" LagnaSign="@dn.AscendantSign" Variant="varga" ShowTechnical="Tech"
+                              ShowDignity="Profile.ShowPlanetaryDignity" />
     </section>
 
-    <Disclosure Title="House lordship & conjunctions" Open="_tablesOpen" OnToggle="v => _tablesOpen = v">
-        <HouseLordshipTable Rows="dn.HouseLords" />
-        <div style="height:1rem"></div>
+    @if (Profile.ShowHouseLordCombinations)
+    {
+        <Disclosure Title="House lordship" Open="_tablesOpen" OnToggle="v => _tablesOpen = v">
+            <HouseLordshipTable Rows="dn.HouseLords" />
+        </Disclosure>
+    }
+
+    <Disclosure Title="Conjunctions" Open="_conjunctionsOpen" OnToggle="v => _conjunctionsOpen = v">
         <ConjunctionsTable Rows="dn.Conjunctions" />
     </Disclosure>
+
+    @if (Profile.ShowDispositorRelations)
+    {
+        <Disclosure Title="Dispositor relations" Open="_dispositorOpen" OnToggle="v => _dispositorOpen = v">
+            <DispositorTable Grahas="dn.Grahas" />
+        </Disclosure>
+    }
 
     <ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
 }
@@ -78,7 +92,7 @@ else
     [Parameter, SupplyParameterFromQuery(Name = "aspects")] public string? AspectsParam { get; set; }
 
     private WorkspaceData? _data;
-    private bool _tablesOpen, _profileOpen;
+    private bool _tablesOpen, _conjunctionsOpen, _dispositorOpen, _profileOpen;
 
     private string View => ViewParam == "wheel" ? "wheel" : "grid";
     private bool Tech => TechParam is null ? Profile.TechnicalMode : TechParam == "1";

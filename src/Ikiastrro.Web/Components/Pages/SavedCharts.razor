@@ -13,7 +13,7 @@
 }
 else
 {
-    <DataTable TRow="Row" Rows="_rows" InitialSortHeader="Name" Columns="Cols" />
+    <div class="saved-charts-table"><DataTable TRow="Row" Rows="_rows" InitialSortHeader="Name" Columns="Cols" /></div>
 }
 
 <ConfirmDialog IsOpen="@(_pendingDelete is not null)"
@@ -29,7 +29,6 @@ else
 
     private IReadOnlyList<DataTable<Row>.Column> Cols => new[]
     {
-        new DataTable<Row>.Column("Chart", _ => 0, r => @<MiniGrid PlanetsBySign="@r.Glyphs" LagnaSign="@r.Lagna" Href="@($"/charts/{r.Person.Id}")" />),
         new DataTable<Row>.Column("Name", r => r.Person.Name, r => @<a href="@($"/charts/{r.Person.Id}")">@r.Person.Name</a>),
         new DataTable<Row>.Column("Date of Birth", r => r.Person.DateOfBirth, r => @<text>@r.Person.DateOfBirth.ToString("d MMM yyyy")</text>),
         new DataTable<Row>.Column("Place", r => r.Person.PlaceCity, r => @<text>@r.Person.PlaceCity, @r.Person.PlaceCountry</text>),

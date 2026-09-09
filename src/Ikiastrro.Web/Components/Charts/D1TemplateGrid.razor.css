@@ -94,7 +94,7 @@
 /* Dg(+N)/Dg(-N) dignity score (2026-09-05) — muted relative to the degree/combust text ahead of
    it, same "annotation, not part of the glyph itself" treatment SouthIndianGrid's own direction
    suffix uses. */
-.tdignity { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); font-weight: 600; color: var(--tmpl-ink-soft); }
+.tdignity { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); font-weight: 600; color: var(--tmpl-ink-soft); margin-left: 4px; }
 
 .tupagraha { font-size: clamp(15px, 0.6rem + 0.45vw, 18px); color: var(--tmpl-ink-soft); }
 

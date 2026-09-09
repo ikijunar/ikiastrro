@@ -25,8 +25,12 @@ public static class VargaBundles
     /// <summary>Category groups in display order (each group ordered first by its lowest member's
     /// DisplayOrder, so the group containing D1 leads), each group's own codes ordered by
     /// DisplayOrder. A chart type with no PrimaryLifeAreaId yet (shouldn't happen — migration 30
-    /// mapped all 21) falls into "Other" rather than being dropped.</summary>
-    public static IReadOnlyList<(string Title, IReadOnlyList<string> Codes)> Groups(
+    /// mapped all 21) falls into "Other" rather than being dropped. GroupCode is the stable
+    /// WorkspaceGroupCode ("PersonalityHealth" etc.) — a URL-safe key for query strings, distinct
+    /// from Title's display text (2026-09-05, added for Workspace's Life Area tabs: a Title like
+    /// "Personality & Health" has a literal "&" that would corrupt a query string if used as the
+    /// key directly).</summary>
+    public static IReadOnlyList<(string GroupCode, string Title, IReadOnlyList<string> Codes)> Groups(
         IReadOnlyList<ChartTypeRow> chartTypes, IReadOnlyList<LifeAreaRow> lifeAreas)
     {
         var groupCodeByAreaId = lifeAreas.ToDictionary(a => (int)a.Id, a => a.WorkspaceGroupCode);
@@ -36,7 +40,7 @@ public static class VargaBundles
         return chartTypes
             .GroupBy(GroupCodeOf)
             .OrderBy(g => g.Min(t => t.DisplayOrder))
-            .Select(g => (GroupTitles.GetValueOrDefault(g.Key, g.Key),
+            .Select(g => (g.Key, GroupTitles.GetValueOrDefault(g.Key, g.Key),
                 (IReadOnlyList<string>)g.OrderBy(t => t.DisplayOrder).Select(t => t.Code).ToList()))
             .ToList();
     }

@@ -40,7 +40,7 @@
 
         <div class="tcell @(isAscendant ? "asc" : "")" style="grid-column:@cell.Col;grid-row:@cell.Row;">
             @if (cell.Col == 1 && cell.Row == 1) { <div class="thead thead-rashi">Ras(L)</div> }
-            @if (cell.Col == 2 && cell.Row == 1) { <div class="thead">Hor(L)</div> }
+            @if (ShowHoraLagnaHeader && cell.Col == 2 && cell.Row == 1) { <div class="thead">Hor(L)</div> }
 
             @if (points.Count > 0)
             {
@@ -66,9 +66,12 @@
                 <div class="tplanets">
                     @foreach (var p in planets)
                     {
+                        var dignity = DignityMode == TemplateDignityMode.Score
+                            ? $"Dg({(p.DignityScore > 0 ? "+" : "")}{p.DignityScore})"
+                            : p.DignityCode;
                         <span class="tplanet">
-                            <span class="pglyph" style="color:var(--tmpl-planet-@(p.Key))">@(p.IsRetrograde ? $"({p.Glyph})" : p.Glyph)</span>
-                            +@p.DegreesInSign@(p.IsCombust ? " 🔥" : "") <span class="tdignity">Dg(@(p.DignityScore > 0 ? "+" : "")@p.DignityScore)</span>
+                            <span class="pglyph" style="color:var(--tmpl-planet-@(p.Key))">@(p.IsRetrograde ? $"({p.Glyph})" : p.Glyph)</span>@(ShowDegrees ? $" +{p.DegreesInSign}" : "")@(p.IsCombust ? " 🔥" : "")
+                            @if (!string.IsNullOrEmpty(dignity)) { <span class="tdignity">@dignity</span> }
                         </span>
                     }
                 </div>
@@ -118,12 +121,26 @@
     public IReadOnlyDictionary<string, IReadOnlyList<string>> AspectsBySign { get; set; }
         = new Dictionary<string, IReadOnlyList<string>>();
 
-    /// <summary>Upagraha row content — plain codes ("Gk"/"Md" today; laid out so the other 9
-    /// classical upagrahas can be added later without a redesign).</summary>
+    /// <summary>Upagraha row content: Gk/Md abbreviations and catalog names for the other points.</summary>
     [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<string>> UpagrahasBySign { get; set; }
         = new Dictionary<string, IReadOnlyList<string>>();
 
     [Parameter, EditorRequired] public RenderFragment CenterContent { get; set; } = null!;
+
+    /// <summary>Show the "Hor(L)" header tag in the top-row Aries cell. Default true (Workspace hero,
+    /// SouthIndianTemplate). The all-charts gallery sets false — only "Ras(L)", the chart's own
+    /// ascendant, drives the house-triplet rows there (rammyps's call, 2026-09-06).</summary>
+    [Parameter] public bool ShowHoraLagnaHeader { get; set; } = true;
+
+    /// <summary>Print "+N" whole-degrees-in-sign before each planet's dignity. Default true. Set
+    /// false for a varga (DegreesInSignDecimal is D1-only — a varga sign is a discrete bucket, so
+    /// the value is always 0 there and just adds noise).</summary>
+    [Parameter] public bool ShowDegrees { get; set; } = true;
+
+    /// <summary>How to show each planet's classical dignity: the signed "Dg(+N)" score (default —
+    /// Workspace hero, SouthIndianTemplate) or the compact two-letter code (Ex/Ow/…) from
+    /// TemplatePlanetLine.DignityCode, used by the dense all-charts gallery.</summary>
+    [Parameter] public TemplateDignityMode DignityMode { get; set; } = TemplateDignityMode.Score;
 
     private static readonly (string MatchSign, string DisplayEn, int Col, int Row)[] GridCells = new[]
     {

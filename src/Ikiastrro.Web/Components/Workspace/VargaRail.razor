@@ -5,7 +5,7 @@
    bundles (rammyps's call, 2026-09-05; see VargaBundles.cs). A varga appears once, in its one
    life area. Missing chart -> EmptyState tile. *@
 <div class="rail">
-    @foreach (var (title, codes) in VargaBundles.Groups(ChartTypes, LifeAreas))
+    @foreach (var (_, title, codes) in VargaBundles.Groups(ChartTypes, LifeAreas))
     {
         <Disclosure Title="@title" Open="@(_open.Contains(title))" OnToggle="v => SetOpen(title, v)">
             <div class="rail-tiles">

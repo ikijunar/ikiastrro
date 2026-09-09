@@ -65,3 +65,9 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+
+@media (max-width: 600px) {
+    .site-nav { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
+    .site-nav .brand { flex-basis: 100%; flex-wrap: wrap; gap: 4px 10px; }
+    .site-body { padding: 16px 0 32px; }
+}

@@ -1,0 +1,38 @@
+@page "/charts/{Id:int}/evidence"
+@inject AstrologerEvidenceRepository EvidenceRepo
+
+<PageTitle>Evidence tables — @(_data?.PersonName ?? "Chart") — ikiastrro</PageTitle>
+
+@if (_data is null)
+{
+    <EmptyState Message="No saved chart found for that person." />
+}
+else
+{
+    <main class="evidence-page">
+        <nav class="evidence-top"><a href="@($"/charts/{Id}")">← Workspace</a><strong>@_data.PersonName · Evidence tables</strong></nav>
+        <div class="evidence-controls">
+            <label for="evidence-chart">Chart</label>
+            <select id="evidence-chart" value="@_data.ChartType" @onchange="ChangeChart">
+                @foreach (var chartCode in _data.ChartTypes) { <option value="@chartCode">@chartCode</option> }
+            </select>
+        </div>
+        <nav class="evidence-index" aria-label="Evidence sections">
+            @foreach (var section in _data.Sections) { <a href="@($"#{section.Code}")">@section.Title</a> }
+        </nav>
+        @foreach (var section in _data.Sections)
+        {
+            <details class="evidence-section" id="@section.Code" open="@(section.Code is "context" or "moon" or "positions" or "shadbala" or "yoga-summary")">
+                <summary>@section.Title <span>@section.Rows.Count row@(section.Rows.Count == 1 ? "" : "s")</span></summary>
+                <EvidenceTable Data="section" />
+            </details>
+        }
+    </main>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private AstrologerEvidenceData? _data;
+    protected override void OnParametersSet() => _data = EvidenceRepo.Load(Id, _data?.ChartType ?? "D1");
+    private void ChangeChart(ChangeEventArgs args) => _data = EvidenceRepo.Load(Id, args.Value?.ToString() ?? "D1");
+}

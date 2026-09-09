@@ -1,58 +1,16 @@
 @page "/"
+@using System.ComponentModel.DataAnnotations
+@using Ikiastrro.Core.Engines.Astronomy
 @inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartGenerationService ChartGenerationService
+@inject IPlaceResolver PlaceResolver
 @inject NavigationManager Nav
-@inject ReadingProfileState Profile
+@inject AyanamsaRuleRepository AyanamsaRules
+<PageTitle>Iki-Astrro · Discover Your Path</PageTitle>
+<div class="landing-page">
 
-<PageTitle>ikiastrro</PageTitle>
-
-<div class="home-head">
-    <div>
-        <h1>ikiastrro</h1>
-        <p>Pick a saved person to open their charts, or add someone new.</p>
-    </div>
-    <button class="profile-trigger" type="button" @onclick="() => _profileOpen = true">
-        <span class="profile-trigger-label">Reading profile</span>
-        <span class="profile-trigger-value">@Profile.Summary</span>
-    </button>
-</div>
-
-@if (_people.Count == 0)
-{
-    <p class="muted">No charts saved yet — add your first person.</p>
-}
-else
-{
-    <input class="home-search" type="search" placeholder="Filter by name…" @bind="_filter" @bind:event="oninput" />
-    <div class="home-rows">
-        @foreach (var person in Filtered())
-        {
-            <a class="home-row" href="@($"/charts/{person.Id}")">
-                <span class="home-meta">
-                    <b>@person.Name</b>
-                    <span>@person.DateOfBirth.ToString("d MMM yyyy") · @person.EffectiveTimeOfBirth.ToString("h:mm tt")</span>
-                    <span>@person.PlaceCity, @person.PlaceCountry</span>
-                </span>
-            </a>
-        }
-    </div>
-}
-
-<button class="btn-add" type="button" @onclick='() => Nav.NavigateTo("/add")'>＋ Add someone</button>
-
-<ReadingProfileDrawer Profile="Profile" @bind-Open="_profileOpen" />
-
-@code {
-    // No chart thumbnail in this list any more (2026-09-05, rammyps's call: "no need to have the
-    // chart component to the left of the Name") — so this page no longer needs a D1 lookup per
-    // person, just BirthDetailsRepo.GetAll(). ChartResultsRepo/ChartKeyDetailsRepo (only ever used
-    // to build that thumbnail) are dropped along with it.
-    private List<BirthDetails> _people = new();
-    private string _filter = "";
-    private bool _profileOpen;
-
-    protected override void OnInitialized() => _people = BirthDetailsRepo.GetAll().ToList();
-
-    private IEnumerable<BirthDetails> Filtered() => string.IsNullOrWhiteSpace(_filter)
-        ? _people
-        : _people.Where(p => p.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase));
-}
+@if (showPreferences){<section class="preferences-panel" aria-label="Preferences"><h2>Preferences</h2><label for="ayanamsa-select">Ayanamsa</label><select id="ayanamsa-select" @bind="selectedAyanamsaCode">@foreach(var option in AyanamsaDefinition.Catalog){<option value="@option.Code">@option.DisplayName</option>}</select><small>Default: @defaultAyanamsa.DisplayName</small></section>}<main class="landing-content"><section class="landing-workspace">
+<MudPaper Class="pa-6 mx-auto home-card" Elevation="2"><MudText Typo="Typo.h4" Class="mb-4">Discover Your Path</MudText><MudTextField T="string" Label="Name" Placeholder="Filter by name…" Variant="Variant.Outlined" @bind-Value="filter" Immediate="true" /><div class="name-options mt-3">@foreach (var person in FilteredPeople){<MudButton Variant="Variant.Text" Color="Color.Primary" Class="name-option" OnClick="@(() => Select(person))">@person.Name</MudButton>}<MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddNew">Add New</MudButton></div></MudPaper>
+@if(creating || editing){<EditForm class="home-form" Model="form" OnValidSubmit="Save"><MudPaper Class="pa-6 mt-4" Elevation="1"><DataAnnotationsValidator /><div class="field"><label for="home-name">Name</label><InputText id="home-name" @bind-Value="form.Name" /><ValidationMessage For="() => form.Name" /></div><div class="field"><label for="home-dob">Date of Birth</label><InputDate id="home-dob" @bind-Value="form.DateOfBirth" /><ValidationMessage For="() => form.DateOfBirth" /></div><div class="field"><label for="home-tob">Time of Birth</label><InputDate id="home-tob" @bind-Value="form.TimeOfBirth" Type="InputDateType.Time" /><ValidationMessage For="() => form.TimeOfBirth" /></div><div class="field"><label for="home-sex">Sex</label><select id="home-sex" @bind="form.Sex"><option value="">Select sex</option><option value="Male">Male</option><option value="Female">Female</option></select></div><div class="field"><label for="home-city">City</label><InputText id="home-city" @bind-Value="form.City" /><ValidationMessage For="() => form.City" /></div><div class="field"><label for="home-country">Country</label><InputText id="home-country" @bind-Value="form.Country" /><ValidationMessage For="() => form.Country" /></div><MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Generate Chart</MudButton></MudPaper></EditForm>}
+</section><aside class="landing-art" aria-hidden="true"><img src="/images/ganesha-navagraha-brand.png" alt="" /></aside></main></div>
+@code { private List<BirthDetails> people = new(); private bool showPreferences; private string selectedAyanamsaCode = AyanamsaDefinition.Default.Code; private AyanamsaDefinition defaultAyanamsa = AyanamsaDefinition.Default; private BirthDetails? selected; private string filter = ""; private bool creating; private bool editing; private FormModel form = new(); protected override void OnInitialized(){people=BirthDetailsRepo.GetAll().ToList(); showPreferences=Nav.Uri.Contains("preferences=1", StringComparison.OrdinalIgnoreCase); try{defaultAyanamsa=AyanamsaRules.GetActiveDefault();selectedAyanamsaCode=defaultAyanamsa.Code;}catch{}} private void TogglePreferences()=>showPreferences=!showPreferences; private IEnumerable<BirthDetails> FilteredPeople=>string.IsNullOrWhiteSpace(filter)?people:people.Where(p=>p.Name.Contains(filter,StringComparison.OrdinalIgnoreCase)); private void Select(BirthDetails p){Nav.NavigateTo($"/charts/{p.Id}");} private void AddNew(){selected=null;editing=false;creating=true;form=new();} private void Edit(){if(selected is null)return;editing=true;creating=false;form=new(){Name=selected.Name,Sex=selected.Sex ?? "",DateOfBirth=selected.DateOfBirth,TimeOfBirth=selected.EffectiveTimeOfBirth,City=selected.PlaceCity,Country=selected.PlaceCountry};} private async Task Save(){if(string.IsNullOrWhiteSpace(form.Name))return; var place=await PlaceResolver.ResolveAsync(form.City,form.Country,form.DateOfBirth); var birth=new BirthDetails{Name=form.Name.Trim(),Sex=string.IsNullOrWhiteSpace(form.Sex) ? null : form.Sex,DateOfBirth=form.DateOfBirth,TimeOfBirth=form.TimeOfBirth,PlaceCity=form.City.Trim(),PlaceCountry=form.Country.Trim(),Latitude=place.Latitude,Longitude=place.Longitude,UtcOffset=place.UtcOffset.ToString(),IanaTimeZoneId=place.IanaTimeZoneId}; BirthDetailsRepo.Insert(birth); ChartGenerationService.GenerateAll(birth); Nav.NavigateTo($"/transit-wheel/{birth.Id}");} private sealed class FormModel{[Required]public string Name{get;set;}=""; public string Sex{get;set;}="";[Required]public DateOnly DateOfBirth{get;set;}[Required]public TimeOnly TimeOfBirth{get;set;}[Required]public string City{get;set;}="";[Required]public string Country{get;set;}="";} }

@@ -1,3 +1,8 @@
+@font-face { font-family: 'Manrope'; src: url('../fonts/manrope-400.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Manrope'; src: url('../fonts/manrope-500.ttf') format('truetype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Manrope'; src: url('../fonts/manrope-600.ttf') format('truetype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Manrope'; src: url('../fonts/manrope-700.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Manrope'; src: url('../fonts/manrope-800.ttf') format('truetype'); font-weight: 800; font-style: normal; font-display: swap; }
 /*
  * Shared design tokens for ikiastrro's web UI.
  *
@@ -120,10 +125,31 @@
 body {
     background: var(--paper);
     color: var(--ink);
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
 }
 
 h1, h2, h3 {
-    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
     font-weight: 400;
+}
+
+/* Supplied natal/transit template palette. */
+:root {
+    --transit-paper: #fff0a6;
+    --transit-ink: #14233d;
+    --transit-accent: #f6a23a;
+}
+
+/* Canonical Iki-Astrro brand palette — brandguide_ikiastrro.md. */
+:root {
+    --brand-canvas: #faf5ea;
+    --brand-surface: #fffdfc;
+    --brand-midnight: #0f2041;
+    --brand-sunset: #f47a24;
+    --brand-line: #d9d1c7;
+    --brand-muted: #53698d;
+    --brand-peach: #fff0e5;
+    --font-size-display: clamp(38px, 3.05vw, 53px);
+    --font-size-tagline: clamp(20px, 2vw, 37px);
+    --font-size-control: 19px;
 }

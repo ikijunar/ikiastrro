@@ -1,0 +1,35 @@
+@using Ikiastrro.Data
+
+@if (Data.Rows.Count == 0)
+{
+    <p class="muted">No calculated data.</p>
+}
+else
+{
+    <div class="dt-scroll evidence-scroll">
+        <table class="dt evidence-table">
+            <thead><tr>@foreach (var column in Data.Columns) { <th>@Label(column)</th> }</tr></thead>
+            <tbody>
+            @foreach (var row in Data.Rows)
+            {
+                <tr>@foreach (var column in Data.Columns) { <td>@Format(row[column])</td> }</tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public EvidenceTableData Data { get; set; } = default!;
+    private static string Label(string value) => System.Text.RegularExpressions.Regex.Replace(value, "([a-z0-9])([A-Z])", "$1 $2");
+    private static string Format(object? value) => value switch
+    {
+        null or DBNull => "—",
+        bool b => b ? "Yes" : "No",
+        DateTime d => d.ToString("yyyy-MM-dd HH:mm:ss"),
+        DateTimeOffset d => d.ToString("yyyy-MM-dd HH:mm:ss zzz"),
+        decimal d => d.ToString("0.###"),
+        double d => d.ToString("0.###"),
+        _ => value.ToString() ?? "—"
+    };
+}

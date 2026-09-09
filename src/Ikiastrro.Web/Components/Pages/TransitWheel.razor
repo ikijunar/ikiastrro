@@ -1,0 +1,176 @@
+@page "/transit-wheel"
+@page "/transit-wheel/{Id:int}"
+@using System.Globalization
+@using System.Text
+@using System.Xml.Linq
+@using Ikiastrro.Core.Models
+@using Ikiastrro.Core.Engines.Astronomy
+@inject Ikiastrro.Data.GocharaRepository Gochara
+@inject IWebHostEnvironment HostEnvironment
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject DashaPeriodsRepository DashaPeriodsRepo
+@inject NavigationManager Navigation
+@inject SqlConnectionFactory Connections
+
+<PageTitle>@(PersonName ?? "Natal") ↔ Transit</PageTitle>
+@if (_error is not null)
+{
+  <section class="transit-wheel-page" role="status"><h1>Chart unavailable</h1><p>@_error</p><a href="/">Choose a saved person</a></section>
+}
+else if (_selection is not null)
+{
+<div class="transit-wheel-page">
+  <div class="wheel-shell">
+    <aside class="wheel-sidebar">
+      <p class="eyebrow">ikiastrro / whole-sign view</p><p class="selected-person">@PersonName · D1</p>
+      <h1>Natal <span>↔</span> Transit</h1>
+      <p class="toolbar-note">Natal chart remains fixed. Transit positions update for the selected date or dasha period.</p>
+      <div class="selectors">
+        <label><span>Date of transit</span><input type="date" @bind="TransitDate" @bind:after="ChangeDate" /></label>
+        <label><span>Mahā-daśā</span><select value="@_selection.Maha?.Id" @onchange="ChangeMaha" disabled="@(_selection.Periods.Count == 0)"><option value="">Select a saved period</option>@foreach (var period in _selection.Periods) { <option value="@period.Id">@PeriodLabel(period)</option> }</select></label>
+        <label><span>Antar-daśā</span><select value="@_selection.Antar?.Id" @onchange="ChangeAntar" disabled="@(_selection.AntarPeriods.Count == 0)"><option value="">Select a saved period</option>@foreach (var period in _selection.AntarPeriods) { <option value="@period.Id">@PeriodLabel(period)</option> }</select></label>
+      </div>
+      @if (_selection.Periods.Count == 0) { <p role="status">No saved dasha periods. Date selection is available.</p> }
+      <div class="comparison"><h2>Chart placements</h2><table><thead><tr><th>Planet</th><th>Natal</th><th>Transit</th></tr></thead><tbody>@foreach (var row in ComparisonRows){<tr><td>@row.Name</td><td>@row.Natal</td><td>@row.Transit</td></tr>}</tbody></table></div>
+    </aside>
+    <main class="wheel-card" aria-label="Natal and transit chart">
+      @SvgMarkup
+
+    </main>
+  </div>
+</div>
+
+}
+
+@code {
+  [Parameter] public int? Id { get; set; }
+  private string? PersonName { get; set; }
+  private DateTime TransitDate { get; set; }
+  private TransitSelection? _selection;
+  private string? _error;
+  private Ikiastrro.Core.Reference.TerminologyCatalog Terms = null!;
+  private IReadOnlyList<PlanetTransitSnapshot> Snapshots { get; set; } = [];
+  private IReadOnlyDictionary<PlanetName, double> FastTransit { get; set; } = new Dictionary<PlanetName, double>();
+  private IReadOnlyDictionary<PlanetName, double> TransitSpeeds { get; set; } = new Dictionary<PlanetName, double>();
+  private MarkupString SvgMarkup { get; set; }
+  private static readonly string[] Signs = ["Ar","Ta","Ge","Cn","Le","Vi","Li","Sc","Sg","Cp","Aq","Pi"];
+  private static readonly string[] NakshatraShort = ["As","Bh","Kr","Ro","Mr","Ar","Pu","Ps","As","Ma","Ph","Ut","Ha","Ch","Sw","Vi","An","Jy","Mu","Pa","Ut","Sh","Dh","Sa","Pb","Ub","Re"];
+  private Dictionary<string,(string Sign,double Degree)> Natal { get; set; } = new();
+  private string NatalAscSign { get; set; } = "Ar";
+  private IEnumerable<(string Name,string Natal,string Transit)> ComparisonRows => new[]{("Su","Su"),("Mo","Mo"),("Ma","Ma"),("Me","Me"),("Ju","Ju"),("Ve","Ve"),("Sa","Sa"),("Ra","Ra"),("Ke","Ke"),("Gu","Gu"),("Maṇ","Maṇ")}.Select(x => (x.Item1, Natal.TryGetValue(x.Item2, out var n) ? $"{n.Sign} {n.Degree:0.0}°" : "—", TransitText(x.Item2)));
+  protected override void OnParametersSet()
+  {
+    _error = null;
+    Natal.Clear();
+    if (Id is not int id) { Navigation.NavigateTo("/", replace: true); return; }
+    var person = BirthDetailsRepo.GetAll().FirstOrDefault(x => x.Id == id);
+    if (person is null) { _error = "This saved person could not be found."; return; }
+    PersonName = person.Name;
+    Terms = new TerminologyRepository(Connections).BuildCatalog();
+    var chart = ChartResultsRepo.GetByBirthDetailId(id).Where(x => x.ChartType == "D1").OrderByDescending(x => x.ComputedAt).FirstOrDefault();
+    if (chart is null) { _error = "Generate a D1 chart for this person before opening the transit wheel."; return; }
+    var rows = ChartKeyDetailsRepo.GetByChartResultId(chart.Id);
+    var asc = rows.FirstOrDefault(x => x.Planet is "Ascendant" or "Lagna");
+    if (asc is null) { _error = "This D1 chart has no saved Ascendant. Regenerate the chart to continue."; return; }
+    NatalAscSign = ShortSign(asc.Sign);
+    foreach (var row in rows.Where(x => x.PlanetId.HasValue || x.Planet is "Gulika" or "Maandi"))
+      Natal[ShortName(row.Planet)] = (ShortSign(row.Sign), (double?)row.DegreesInSignDecimal ?? row.NirayanaLongitudeDegrees % 30);
+    if (!TimeSpan.TryParse(person.UtcOffset.TrimStart('+'), CultureInfo.InvariantCulture, out var offset))
+    { _error = "This person's saved time-zone offset is invalid. Correct the birth details to continue."; return; }
+    _selection = new TransitSelection(DashaPeriodsRepo.GetTreeByBirthDetailId(id), offset, DateTimeOffset.UtcNow);
+    RefreshTransit();
+  }
+  private string PeriodLabel(DashaPeriodRecord period) => $"{Terms.Label("PLANET_" + period.Lord.ToUpperInvariant(), "en")} · {_selection!.PeriodUtc(period.StartDate).ToOffset(TransitSelection.IstOffset):dd MMM yyyy} – {_selection.PeriodUtc(period.EndDate).ToOffset(TransitSelection.IstOffset):dd MMM yyyy}";
+  private void ChangeDate() { _selection!.SetDate(TransitDate); RefreshTransit(); }
+  private void ChangeMaha(ChangeEventArgs args) { if (int.TryParse(args.Value?.ToString(), out var id)) { _selection!.SelectMaha(id); RefreshTransit(); } }
+  private void ChangeAntar(ChangeEventArgs args) { if (int.TryParse(args.Value?.ToString(), out var id)) { _selection!.SelectAntar(id); RefreshTransit(); } }
+  private void RefreshTransit()
+  {
+    TransitDate = _selection!.ActiveIst.Date;
+    Snapshots = Gochara.GetSnapshots(_selection.ActiveUtc.UtcDateTime);
+    var positions = SwissEphemerisProvider.GetSiderealPositions(_selection.ActiveUtc, 0, 0);
+    FastTransit = positions.PlanetLongitudes;
+    TransitSpeeds = positions.PlanetSpeeds;
+    UpdateSvgTransforms();
+  }
+  private double Longitude(PlanetName p)
+  {
+    return p == PlanetName.Ketu ? (FastTransit[PlanetName.Rahu] + 180) % 360 : FastTransit[p];
+  }
+  private static string ShortName(string value) => value switch { "Sun" => "Su", "Moon" => "Mo", "Mars" => "Ma", "Mercury" => "Me", "Jupiter" => "Ju", "Venus" => "Ve", "Saturn" => "Sa", "Rahu" => "Ra", "Ketu" => "Ke", "Gulika" => "Gu", "Maandi" => "Maṇ", _ => value };
+  private static string ShortSign(string value) => value switch { "Aries" => "Ar", "Taurus" => "Ta", "Gemini" => "Ge", "Cancer" => "Cn", "Leo" => "Le", "Virgo" => "Vi", "Libra" => "Li", "Scorpio" => "Sc", "Sagittarius" => "Sg", "Capricorn" or "Capricornus" => "Cp", "Aquarius" => "Aq", "Pisces" => "Pi", _ => value };
+  private string TransitText(string key)
+  {
+    if (key == "Ke") return SignDegree(Longitude(PlanetName.Ketu));
+    var map = new Dictionary<string, PlanetName> { ["Su"] = PlanetName.Sun, ["Mo"] = PlanetName.Moon, ["Ma"] = PlanetName.Mars, ["Me"] = PlanetName.Mercury, ["Ju"] = PlanetName.Jupiter, ["Ve"] = PlanetName.Venus, ["Sa"] = PlanetName.Saturn, ["Ra"] = PlanetName.Rahu };
+    if (!map.TryGetValue(key, out var p)) return "—";
+    return FastTransit.TryGetValue(p, out var longitude) ? SignDegree(longitude) : "—";
+  }
+  private string SignDegree(double lon) { var sign = (int)Math.Floor((lon + 360) % 360 / 30); return $"{Signs[sign]} {((lon % 30) + 30) % 30:0.0}°"; }
+  private static (double X, double Y) Polar(double longitude, double radius) { var a = (longitude - 90) * Math.PI / 180; return (600 + radius * Math.Cos(a), 600 + radius * Math.Sin(a)); }
+  private void UpdateSvgTransforms()
+  {
+    var path = Path.Combine(HostEnvironment.WebRootPath, "ikiastrro-transit-wheel.svg");
+    var svg = File.ReadAllText(path);
+    var document = System.Xml.Linq.XDocument.Parse(svg);
+    var ns = document.Root!.Name.Namespace;
+    // Replace the reference chart's data labels, retaining its artwork and geometry.
+    document.Descendants(ns + "text").Where(x => (string?)x.Attribute("class") == "d").Remove();
+    var signLabels = document.Descendants(ns + "text").Where(x => (string?)x.Attribute("font-size") == "30").ToList();
+    var signNames = document.Descendants(ns + "text").Where(x => (string?)x.Attribute("font-size") == "12").ToList();
+    for (var i = 0; i < signLabels.Count && i < Signs.Length; i++) signLabels[i].Value = Signs[i];
+    // The nakshatra layer starts at Aries zero; the zodiac labels must use the same origin.
+    foreach (var name in signNames.Where(x => new[] { "CANCER", "LEO", "VIRGO", "LIBRA", "SCORPIO", "SAGITTARIUS", "CAPRICORN", "AQUARIUS", "PISCES", "ARIES", "TAURUS", "GEMINI" }.Contains(x.Value))) name.Remove();
+    svg = document.ToString(System.Xml.Linq.SaveOptions.DisableFormatting);
+    var bases = new Dictionary<string, (double X, double Y)> { ["saturn"] = (360, 184.31), ["jupiter"] = (1015.69, 360), ["rahu"] = (184.31, 840), ["ketu"] = (1015.69, 840) };
+    foreach (var planet in new[] { PlanetName.Jupiter, PlanetName.Rahu, PlanetName.Ketu, PlanetName.Saturn })
+    {
+      var id = planet.ToString().ToLowerInvariant(); var target = Polar(Longitude(planet), 480); var basis = bases[id];
+      var dx = (target.X - basis.X).ToString("F2", CultureInfo.InvariantCulture); var dy = (target.Y - basis.Y).ToString("F2", CultureInfo.InvariantCulture);
+      svg = svg.Replace("<g id=\"" + id + "\">", "<g id=\"" + id + "\" transform=\"translate(" + dx + "," + dy + ")\">");
+    }
+    var natalOverlay = new StringBuilder("<g id=\"dynamic-natal\" class=\"d\" font-family=\"Inter,Arial,sans-serif\" text-anchor=\"middle\" fill=\"#0d1d43\">");
+    var ascIndex = Array.IndexOf(Signs, NatalAscSign); if (ascIndex < 0) ascIndex = 0;
+    for (var h = 0; h < 12; h++) { var hp = Polar((ascIndex + h) * 30 + 4, 188); natalOverlay.Append(CultureInfo.InvariantCulture, $"<text x=\"{hp.X:F1}\" y=\"{hp.Y:F1}\" font-size=\"18\" font-weight=\"700\">{h + 1}</text>"); }
+    var slots = new Dictionary<int,int>(); foreach (var item in Natal) { var si = Array.IndexOf(Signs, item.Value.Sign); if (si < 0) continue; slots.TryGetValue(si, out var slot); slots[si] = slot + 1; var np = Polar(si * 30 + (slot % 2 == 0 ? 11 : 21), 275 - slot / 2 * 22); natalOverlay.Append(CultureInfo.InvariantCulture, $"<text x=\"{np.X:F1}\" y=\"{np.Y:F1}\" font-size=\"16\" font-weight=\"700\">{item.Key}</text>"); }
+    natalOverlay.Append("</g>"); svg = svg.Replace("</svg>", natalOverlay + "</svg>");
+    var fastOverlay = new StringBuilder("<g id=\"fast-transits\" font-family=\"Inter,Arial,sans-serif\" text-anchor=\"middle\" fill=\"#f6a23a\">");
+    foreach (var fast in new[] { PlanetName.Moon, PlanetName.Mars, PlanetName.Venus }) if (FastTransit.TryGetValue(fast, out var flon)) { var fp = Polar(flon, 505); fastOverlay.Append(CultureInfo.InvariantCulture, $"<text x=\"{fp.X:F1}\" y=\"{fp.Y:F1}\" font-size=\"15\" font-weight=\"700\">{ShortName(fast.ToString())} {SignDegree(flon)}</text>"); }
+    fastOverlay.Append("</g>"); svg = svg.Replace("</svg>", fastOverlay + "</svg>");
+    var centre = new StringBuilder("<g id=\"active-transit-status\" class=\"d\" text-anchor=\"middle\">");
+    var motion = (PlanetName planet) => TransitSpeeds.GetValueOrDefault(planet) < 0 ? "R" : "D";
+    var moon = Longitude(PlanetName.Moon);
+    var nakshatra = (int)(moon / (360d / 27));
+    var pada = (int)((moon % (360d / 27)) / (360d / 108)) + 1;
+    var status = new[]
+    {
+      _selection!.ActiveIst.ToString("dd MMM yyyy · HH:mm", CultureInfo.InvariantCulture) + " IST",
+      $"Moon · {NakshatraShort[nakshatra]} · Pada {pada}",
+      $"{Terms.Label("PLANET_SATURN", "en")} ({motion(PlanetName.Saturn)}) · {SignDegree(Longitude(PlanetName.Saturn))}",
+      $"{Terms.Label("PLANET_JUPITER", "en")} ({motion(PlanetName.Jupiter)}) · {SignDegree(Longitude(PlanetName.Jupiter))}",
+      _selection.Maha is null ? "No saved dasha at this date" :
+        Terms.Label("PLANET_" + _selection.Maha.Lord.ToUpperInvariant(), "en") +
+        (_selection.Antar is null ? "" : " · " + Terms.Label("PLANET_" + _selection.Antar.Lord.ToUpperInvariant(), "en"))
+    };
+    for (var i = 0; i < status.Length; i++)
+      centre.Append(CultureInfo.InvariantCulture, $"<text x=\"600\" y=\"{548 + i * 27}\" font-size=\"18\" font-weight=\"600\">{System.Security.SecurityElement.Escape(status[i])}</text>");
+    centre.Append("</g>");
+    svg = svg.Replace("</svg>", centre + "</svg>");
+    SvgMarkup = new MarkupString(svg);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

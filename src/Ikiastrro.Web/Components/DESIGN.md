@@ -1,5 +1,7 @@
 # Web UI design rule
 
+> **2026-09-08 canonical brand override:** ../../../brandguide_ikiastrro.md and its supplied main-screen image supersede the former dark-only parchment/serif direction. Use one light warm-canvas theme, midnight blue, sunset orange, and Manrope throughout. Primary actions use midnight-blue fills with sunset-orange text and borders; preserve the Ganesha/Navagraha composition and dedication footer.
+
 One design language exists in this app — the parchment/serif "South Indian style" look
 originally built for the chart view. Everything else should match it, not invent
 its own palette.

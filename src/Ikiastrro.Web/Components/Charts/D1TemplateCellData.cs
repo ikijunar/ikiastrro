@@ -8,7 +8,18 @@ namespace Ikiastrro.Web.Components.Charts;
 /// already uses. <paramref name="DignityScore"/> (2026-09-05) is
 /// ChartViewModel.DignityScore(k.DignityStatus) — a signed -4..+4 strength score printed as
 /// "Dg(+N)"/"Dg(-N)" right after the combust flame.</summary>
-public sealed record TemplatePlanetLine(string Glyph, string Key, int DegreesInSign, bool IsRetrograde, bool IsCombust, int DignityScore);
+public sealed record TemplatePlanetLine(string Glyph, string Key, int DegreesInSign, bool IsRetrograde, bool IsCombust, int DignityScore)
+{
+    /// <summary>Two-letter classical-dignity code (ChartViewModel.DignityShortCode) — the compact
+    /// alternative D1TemplateGrid renders instead of "Dg(+N)" when its DignityMode is Code (the
+    /// all-charts gallery). Init-only with an empty default so existing call sites that set only the
+    /// positional <see cref="DignityScore"/> keep compiling unchanged.</summary>
+    public string DignityCode { get; init; } = "";
+}
+
+/// <summary>How D1TemplateGrid labels each planet's classical dignity — the signed "Dg(+N)" score
+/// (Workspace hero, SouthIndianTemplate) or the compact two-letter code (all-charts gallery).</summary>
+public enum TemplateDignityMode { Score, Code }
 
 /// <summary>One karaka/special-point line for D1TemplateGrid's Ras(L)/Hor(L) header row — a short
 /// code (a CharaKaraka like "Ak", or a special-point code like "HL"/"AL"/"A7") flanked by its house

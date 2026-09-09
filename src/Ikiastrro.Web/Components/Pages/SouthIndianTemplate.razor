@@ -153,19 +153,18 @@ else
     {
         var karakaLines = lc.Grahas.Where(k => k.CharaKaraka is not null)
             .Select(k => (k.Sign, Line: new TemplatePointLine(k.CharaKaraka!, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
-        var lagnaLines = lc.SpecialPoints.Where(k => k.Planet is not ("Gulika" or "Maandi"))
+        var lagnaLines = lc.SpecialPoints.Where(k => k.PointKind != "Upagraha")
             .Select(k => (k.Sign, Line: new TemplatePointLine(k.Planet, k.HouseNumberFromLagna, k.HouseNumberFromMoon)));
 
         return karakaLines.Concat(lagnaLines).GroupBy(x => x.Sign)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<TemplatePointLine>)g.Select(x => x.Line).ToList());
     }
 
-    /// <summary>Only Gulika ("Gk") + Maandi ("Md") today — the other 9 classical upagrahas have no
-    /// calculator in this codebase yet (out of scope for this template, see the design spec).</summary>
+    /// <summary>All computed upagrahas, grouped by sign; older saved charts may contain fewer points.</summary>
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> UpagrahasBySign(LoadedChart lc) =>
-        lc.SpecialPoints.Where(k => k.Planet is "Gulika" or "Maandi")
+        lc.SpecialPoints.Where(k => k.PointKind == "Upagraha")
             .GroupBy(k => k.Sign)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet == "Gulika" ? "Gk" : "Md").ToList());
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(k => k.Planet switch { "Gulika" => "Gk", "Maandi" => "Md", _ => k.Planet }).ToList());
 
     /// <summary>The 8 Jaimini chara karakas as 2 rows of 4, in CharaKaraka rank order (AK strongest
     /// .. DK weakest) — matches the reference image's "AK Ra AmK Ve BK Sa MK Ju" / "PiK Su PK Mo GK

@@ -11,7 +11,11 @@
                 {
                     <th>Nakshatra</th><th>Pada</th><th>Nak&nbsp;Lord</th><th>Sub&nbsp;Lord</th>
                 }
-                <th>Dir</th><th>House</th><th>House&nbsp;(Ch)</th><th>Dignity</th>
+                <th>Dir</th><th>House</th><th>House&nbsp;(Ch)</th>
+                @if (ShowDignity)
+                {
+                    <th>Dignity</th>
+                }
                 <th>Rules</th><th>Malefic&nbsp;/&nbsp;Benefic</th><th>Karaka</th><th>Aspected&nbsp;by</th>
                 @if (ShowTechnical)
                 {
@@ -37,10 +41,13 @@
                     <td>@ChartViewModel.DirectionLabel(row.IsRetrograde)</td>
                     <td class="mono">@row.HouseFromLagna</td>
                     <td class="mono">@row.HouseFromMoon</td>
-                    <td>
-                        @if (row.DignityStatus is null) { <span class="muted">—</span> }
-                        else { <span class="pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span> }
-                    </td>
+                    @if (ShowDignity)
+                    {
+                        <td>
+                            @if (row.DignityStatus is null) { <span class="muted">—</span> }
+                            else { <span class="pill"><span class="dot" style="background:var(--dignity-@ChartViewModel.DignityToken(row.DignityStatus))"></span>@row.DignityStatus</span> }
+                        </td>
+                    }
                     <td>@(row.RulesHouseNumbers ?? "—")</td>
                     <td>
                         @if (fn is null) { <span class="muted">—</span> }
@@ -65,6 +72,7 @@
     [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
     [Parameter] public string Variant { get; set; } = "d1";
     [Parameter] public bool ShowTechnical { get; set; }
+    [Parameter] public bool ShowDignity { get; set; } = true;
 
     private static string DisplaySign(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
 
