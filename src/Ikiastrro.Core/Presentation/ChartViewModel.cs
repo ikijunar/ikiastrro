@@ -195,6 +195,24 @@ public static class ChartViewModel
         _ => 0
     };
 
+    /// <summary>Two-letter classical-dignity code — the compact alternative to the "Dg(+N)" score for
+    /// dense grids (the all-charts gallery). Same 9 tiers as <see cref="DignityScore"/>: Ex(alted),
+    /// MT (Moolatrikona), Ow(n sign), GF (Great Friend), Fr(iend), Ne(utral), En(emy), GE (Great
+    /// Enemy), De(bilitated). Empty string when unknown/not applicable (so nothing renders).</summary>
+    public static string DignityShortCode(string? dignityStatus) => dignityStatus switch
+    {
+        "Exalted" => "Ex",
+        "Moolatrikona" => "MT",
+        "Own Sign" => "Ow",
+        "Great Friend" => "GF",
+        "Friend" => "Fr",
+        "Neutral" => "Ne",
+        "Enemy" => "En",
+        "Great Enemy" => "GE",
+        "Debilitated" => "De",
+        _ => ""
+    };
+
     /// <summary>Short glyph for the South Indian grid cells (2 letters, Sanskrit-flavored for Jupiter/Rahu/Ketu per this project's convention).</summary>
     public static string PlanetGlyph(string planet) => planet switch
     {

@@ -15,11 +15,11 @@ namespace Ikiastrro.Core.Engines.Karakas;
 /// </summary>
 public static class HoraLagnaCalculator
 {
-    public static SpecialPointSeed Compute(BirthDetails bd, SunTimes sun)
+    public static SpecialPointSeed Compute(BirthDetails bd, SunTimes sun, AyanamsaDefinition? ayanamsa = null)
     {
         var reference = sun.Sunrise;
         var sunLonAtSunrise = SwissEphemerisProvider
-            .GetSiderealPositions(reference, bd.Latitude, bd.Longitude)
+            .GetSiderealPositions(reference, bd.Latitude, bd.Longitude, ayanamsa)
             .PlanetLongitudes[PlanetName.Sun];
 
         var birth = BirthMomentFactory.Create(bd);

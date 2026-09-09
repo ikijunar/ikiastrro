@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Ikiastrro.Core.Engines.Dasha;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Data;
@@ -37,9 +38,11 @@ public class VimshottariDashaService
     /// alongside the stored ChartResult so callers (e.g. the CLI's summary print) don't need to
     /// recompute it a second time just to display it.
     /// </summary>
-    public (ChartResult Result, List<DashaPeriod> Tree) ComputeAndStore(BirthDetails birthDetails)
+    public (ChartResult Result, List<DashaPeriod> Tree) ComputeAndStore(
+        BirthDetails birthDetails, AyanamsaDefinition? ayanamsa = null)
     {
-        var tree = VimshottariDashaCalculator.Compute(birthDetails);
+        var selected = ayanamsa ?? AyanamsaDefinition.Default;
+        var tree = VimshottariDashaCalculator.Compute(birthDetails, ayanamsa: selected);
         var resultJson = JsonSerializer.Serialize(tree, JsonOptions);
 
         _dashaPeriodsRepo.DeleteByBirthDetailId(birthDetails.Id);
@@ -52,9 +55,9 @@ public class VimshottariDashaService
             CalculationKind = "VimshottariDasha",
             ChartTypeId = null,
             RuleSetId = 1,   // Dasha has no rule-set variation yet; pin the base set
-            Ayanamsha = "Lahiri",
+            Ayanamsha = selected.DisplayName,
             HouseSystem = "N/A",   // no house-system concept applies to Dasha — explicit rather than silently reusing the "WholeSign" default, which would misleadingly imply houses were involved
-            EngineVersion = "SwissEphNet 2.8.0.2 (Moshier, Lahiri sidereal) + classical Vimshottari (365.2425 days/year)",
+            EngineVersion = $"SwissEphNet 2.8.0.2 (Moshier, {selected.DisplayName}) + classical Vimshottari (365.2425 days/year)",
             ResultJson = resultJson,
             ComputedAt = DateTime.UtcNow
         };

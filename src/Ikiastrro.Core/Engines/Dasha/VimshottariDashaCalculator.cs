@@ -39,10 +39,11 @@ public static class VimshottariDashaCalculator
     /// Mahadashas are always generated in full — the last one may run somewhat past the requested
     /// coverage rather than being cut off mid-period, same as any Dasha table you'd see elsewhere.
     /// </summary>
-    public static List<DashaPeriod> Compute(BirthDetails birthDetails, double minimumCoverageYears = 120)
+    public static List<DashaPeriod> Compute(BirthDetails birthDetails, double minimumCoverageYears = 120,
+        AyanamsaDefinition? ayanamsa = null)
     {
         var localMoment = BirthMomentFactory.Create(birthDetails);
-        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude);
+        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude, ayanamsa);
         var moonLongitude = positions.PlanetLongitudes[PlanetName.Moon];
 
         var (nakshatraIndex, fractionElapsed) = AstroMath.GetNakshatraIndexAndFractionElapsed(moonLongitude);

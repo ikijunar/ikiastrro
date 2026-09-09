@@ -22,7 +22,7 @@ public class ChartResult
     public string ChartType { get; set; } = string.Empty;
 
     /// <summary>Ayanamsha used for this computation, e.g. "Lahiri".</summary>
-    public string Ayanamsha { get; set; } = "Lahiri";
+    public string Ayanamsha { get; set; } = "Jagannatha (Spica in the middle of Chitra always, fixed solar rotation plane)";
 
     /// <summary>House system used for this computation, e.g. "WholeSign".</summary>
     public string HouseSystem { get; set; } = "WholeSign";

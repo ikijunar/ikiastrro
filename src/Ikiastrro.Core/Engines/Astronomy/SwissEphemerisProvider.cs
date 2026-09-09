@@ -16,7 +16,10 @@ public record SiderealPositions(
     IReadOnlyDictionary<PlanetName, double> PlanetLatitudes,
     IReadOnlyDictionary<PlanetName, double> PlanetSpeeds,
     double AyanamshaDegrees,
-    double LocalSiderealTimeHours);
+    double LocalSiderealTimeHours)
+{
+    public string AyanamsaCode { get; init; } = AyanamsaDefinition.Default.Code;
+}
 
 /// <summary>
 /// The three sunrise/sunset instants that frame the Vedic day the birth falls in, plus a
@@ -65,16 +68,24 @@ public static class SwissEphemerisProvider
 {
     private const int SeSidmLahiri = 1;
 
-    public static SiderealPositions GetSiderealPositions(DateTimeOffset localMoment, double latitude, double longitude)
+    public static SiderealPositions GetSiderealPositions(
+        DateTimeOffset localMoment, double latitude, double longitude,
+        AyanamsaDefinition? ayanamsa = null)
     {
+        ayanamsa ??= AyanamsaDefinition.Default;
+        if (!ayanamsa.IsImplemented)
+            throw new NotSupportedException($"Ayanamsa '{ayanamsa.DisplayName}' is catalogued but has no calculation formula yet.");
+
         using var sweph = new SwissEph();
-        sweph.swe_set_sid_mode(SeSidmLahiri, 0, 0);
+        if (!ayanamsa.IsTropical)
+            sweph.swe_set_sid_mode(ayanamsa.SwissSiderealMode!.Value, 0, 0);
 
         var utc = localMoment.ToUniversalTime();
         var utHours = utc.Hour + utc.Minute / 60.0 + utc.Second / 3600.0;
         var jd = sweph.swe_julday(utc.Year, utc.Month, utc.Day, utHours, SwissEph.SE_GREG_CAL);
 
-        const int flags = SwissEph.SEFLG_SIDEREAL | SwissEph.SEFLG_MOSEPH | SwissEph.SEFLG_SPEED;
+        var flags = SwissEph.SEFLG_MOSEPH | SwissEph.SEFLG_SPEED;
+        if (!ayanamsa.IsTropical) flags |= SwissEph.SEFLG_SIDEREAL;
 
         // xx[0] = longitude, xx[1] = ecliptic latitude (deg), xx[3] = daily motion speed in
         // longitude (deg/day) — negative means retrograde. Returned together since callers need
@@ -126,7 +137,8 @@ public static class SwissEphemerisProvider
         var cusps = new double[13];
         var ascmc = new double[10];
         var houseErr = "";
-        var houseResult = sweph.swe_houses_ex(jd, SwissEph.SEFLG_SIDEREAL | SwissEph.SEFLG_MOSEPH, latitude, longitude, 'W', cusps, ascmc);
+        var houseFlags = SwissEph.SEFLG_MOSEPH | (ayanamsa.IsTropical ? 0 : SwissEph.SEFLG_SIDEREAL);
+        var houseResult = sweph.swe_houses_ex(jd, houseFlags, latitude, longitude, 'W', cusps, ascmc);
         if (houseResult < 0)
         {
             throw new InvalidOperationException($"Swiss Ephemeris house/ascendant calculation failed: {houseErr}");
@@ -137,20 +149,21 @@ public static class SwissEphemerisProvider
         // sidereal time; /15 -> hours, normalised to [0,24).
         var lst = (ascmc[2] / 15.0) % 24.0;
         if (lst < 0) lst += 24.0;
-        var ayanamsha = sweph.swe_get_ayanamsa_ut(jd);
+        var ayanamshaDegrees = ayanamsa.IsTropical ? 0 : sweph.swe_get_ayanamsa_ut(jd);
 
         return new SiderealPositions(
-            ascendantLongitude, planetLongitudes, planetLatitudes, planetSpeeds, ayanamsha, lst);
+            ascendantLongitude, planetLongitudes, planetLatitudes, planetSpeeds, ayanamshaDegrees, lst)
+        { AyanamsaCode = ayanamsa.Code };
     }
 
     /// <summary>Convenience overload for callers (e.g. ChartGenerationService in the
     /// Data layer) that hold a BirthDetails but cannot reach the internal
     /// BirthMomentFactory.</summary>
-    public static SiderealPositions GetSiderealPositions(BirthDetails birthDetails) =>
+    public static SiderealPositions GetSiderealPositions(BirthDetails birthDetails, AyanamsaDefinition? ayanamsa = null) =>
         GetSiderealPositions(
             BirthMomentFactory.Create(birthDetails),
             birthDetails.Latitude,
-            birthDetails.Longitude);
+            birthDetails.Longitude, ayanamsa);
 
     /// <summary>
     /// Sunrise / sunset for a person's birth date &amp; place — see <see cref="SunTimes"/>.
@@ -235,6 +248,6 @@ public static class SwissEphemerisProvider
         // the birth calendar date's own sunrise; for a day birth it is the following day's.
         var nextSunrise = LocalOf(NextEvent(arcSunsetJd, riseFlag));
 
-        return new SunTimes(sunrise, sunset, nextSunrise, isNight);
+        return new SunTimes(sunrise, sunset, nextSunrise, moment < sunrise || moment >= sunset);
     }
 }

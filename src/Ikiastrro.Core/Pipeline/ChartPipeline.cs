@@ -1,6 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.Karakas;
 using Ikiastrro.Core.Engines.PlanetaryStates;
+using Ikiastrro.Core.Engines.Strength;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Pipeline;
@@ -28,15 +29,15 @@ public sealed class ChartPipeline
     /// labels and planetary-state facts. No I/O beyond the Swiss Ephemeris files the engines already
     /// read; no DB.
     /// </summary>
-    public ChartBundle Run(BirthDetails birth)
+    public ChartBundle Run(BirthDetails birth, AyanamsaDefinition? ayanamsa = null)
     {
         // Sidereal positions + sunrise/sunset — computed the same way ChartGenerationService does
         // (SwissEphemerisProvider, no DB). Positions feeds the chara-karaka helper below; SunTimes is
         // carried for downstream consumers (night-birth-sensitive points).
-        var positions = SwissEphemerisProvider.GetSiderealPositions(birth);
+        var positions = SwissEphemerisProvider.GetSiderealPositions(birth, ayanamsa);
         var sunTimes = SwissEphemerisProvider.GetSunTimes(birth);
 
-        var computed = _orchestrator.CalculateAll(birth);
+        var computed = _orchestrator.CalculateAll(birth, ayanamsa);
         var charts = computed.Select(c => c.Input).ToList();
 
         var charaKarakaByPlanet = CharaKarakaByPlanet(positions);
@@ -55,7 +56,14 @@ public sealed class ChartPipeline
             states.AddRange(PlanetaryStateComputer.Compute(input, keyDetails, _planetaryStateRules));
         }
 
-        return new ChartBundle(birth, positions, sunTimes, charts, charaKarakaByPlanet, states);
+        var strengths = ShadbalaCalculator.Calculate(charts, positions, sunTimes);
+        var d1 = charts.First(c => c.ChartType.Equals("D1", StringComparison.OrdinalIgnoreCase));
+        return new ChartBundle(birth, positions, sunTimes, charts, charaKarakaByPlanet, states)
+        {
+            Strengths = strengths,
+            BhavaStrengths = BhavaBalaCalculator.Calculate(d1, strengths),
+            Vargottama = VargottamaDetector.Calculate(charts)
+        };
     }
 
     /// <summary>

@@ -15,10 +15,11 @@ namespace Ikiastrro.Core.Engines.Position;
 public static class D1ChartComputer
 {
     public static ChartAnalysisInput Compute(
-        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? seeds = null)
+        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? seeds = null,
+        AyanamsaDefinition? ayanamsa = null)
     {
         var localMoment = BirthMomentFactory.Create(birthDetails);
-        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude);
+        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude, ayanamsa);
 
         var ascendantSign = AstroMath.GetSignAtLongitude(positions.AscendantLongitude);
         var (ascendantNakshatra, ascendantPada) = AstroMath.GetNakshatraAndPada(positions.AscendantLongitude);

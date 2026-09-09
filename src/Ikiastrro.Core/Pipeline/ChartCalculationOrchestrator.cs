@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Engines.DivisionalCharts;
 using Ikiastrro.Core.Engines.Karakas;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.Position;
 using Ikiastrro.Core.Models;
 
@@ -14,22 +15,24 @@ namespace Ikiastrro.Core.Pipeline;
 public class ChartCalculationOrchestrator
 {
     private readonly List<IChartCalculator> _calculators;
+    private readonly SubPlanetRuleSet? _subPlanetRules;
 
-    public ChartCalculationOrchestrator(IEnumerable<IChartCalculator> calculators)
+    public ChartCalculationOrchestrator(IEnumerable<IChartCalculator> calculators, SubPlanetRuleSet? subPlanetRules = null)
     {
         _calculators = calculators.ToList();
+        _subPlanetRules = subPlanetRules;
     }
 
     /// <summary>The registered calculators, in registration order — used by the CLI's backfill-charts / recompute-keydetails to enumerate every chart type that has an IChartCalculator (i.e. everything except VimshottariDasha).</summary>
     public IReadOnlyList<IChartCalculator> Calculators => _calculators;
 
     /// <summary>D1 + one VargaCalculator per varga scheme row (D2, D2-US, D3..D60).</summary>
-    public static ChartCalculationOrchestrator CreateDefault(IReadOnlyList<VargaScheme> schemes)
+    public static ChartCalculationOrchestrator CreateDefault(IReadOnlyList<VargaScheme> schemes, SubPlanetRuleSet? subPlanetRules = null)
     {
         var calculators = new List<IChartCalculator> { new D1RasiCalculator() };
         foreach (var s in schemes)
             calculators.Add(new VargaCalculator(s.ChartType, s));
-        return new ChartCalculationOrchestrator(calculators);
+        return new ChartCalculationOrchestrator(calculators, subPlanetRules);
     }
 
     /// <summary>
@@ -39,14 +42,20 @@ public class ChartCalculationOrchestrator
     /// anything or caring which chart type it is. This is the one place a new calculator (D2, D10, ...)
     /// needs to be registered for it to get full analytical-table treatment automatically.
     /// </summary>
-    public IReadOnlyList<(ChartResult Result, ChartAnalysisInput Input)> CalculateAll(BirthDetails birthDetails)
+    public IReadOnlyList<(ChartResult Result, ChartAnalysisInput Input)> CalculateAll(
+        BirthDetails birthDetails, AyanamsaDefinition? ayanamsa = null)
     {
-        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails);
+        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails, ayanamsa, _subPlanetRules);
         var results = new List<(ChartResult, ChartAnalysisInput)>();
         foreach (var calculator in _calculators)
         {
-            var input = calculator.ComputeAnalysisInput(birthDetails, seeds);
+            var input = calculator.ComputeAnalysisInput(birthDetails, seeds, ayanamsa);
             var result = calculator.BuildResult(birthDetails, input);
+            var selected = ayanamsa ?? AyanamsaDefinition.Default;
+            result.Ayanamsha = selected.DisplayName;
+            result.EngineVersion = $"SwissEphNet 2.8.0.2 (Moshier, {selected.DisplayName})";
+            if (_subPlanetRules is not null)
+                result.EngineVersion += $"; PVR upagrahas/rules {_subPlanetRules.RuleSetId}";
             results.Add((result, input));
         }
         return results;
@@ -60,11 +69,12 @@ public class ChartCalculationOrchestrator
     /// stored ResultJson, so it works even for old rows whose JSON predates a field this shape now
     /// needs (e.g. NirayanaLongitudeDegrees, added to D9's JSON in the same change that added this).
     /// </summary>
-    public ChartAnalysisInput ComputeAnalysisInput(string chartType, BirthDetails birthDetails)
+    public ChartAnalysisInput ComputeAnalysisInput(
+        string chartType, BirthDetails birthDetails, AyanamsaDefinition? ayanamsa = null)
     {
         var calculator = _calculators.FirstOrDefault(c => c.ChartType == chartType)
             ?? throw new InvalidOperationException($"No calculator registered for chart type '{chartType}'.");
-        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails);
-        return calculator.ComputeAnalysisInput(birthDetails, seeds);
+        var seeds = SpecialPointCalculator.ComputeSeeds(birthDetails, ayanamsa, _subPlanetRules);
+        return calculator.ComputeAnalysisInput(birthDetails, seeds, ayanamsa);
     }
 }

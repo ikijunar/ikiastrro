@@ -1,4 +1,5 @@
 using Ikiastrro.Core.Engines.Karakas;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Pipeline;
@@ -24,7 +25,8 @@ public interface IChartCalculator
     /// Maandi) are projected into this chart's zodiac when supplied; null/empty leaves ChartAnalysisInput.SpecialPoints empty.</summary>
     ChartAnalysisInput ComputeAnalysisInput(
         BirthDetails birthDetails,
-        IReadOnlyList<SpecialPointSeed>? specialPoints = null);
+        IReadOnlyList<SpecialPointSeed>? specialPoints = null,
+        AyanamsaDefinition? ayanamsa = null);
 
     /// <summary>Packages an already-computed analysis input into the ChartResult row to store (ResultJson shape is chart-type-specific).</summary>
     ChartResult BuildResult(BirthDetails birthDetails, ChartAnalysisInput analysisInput);

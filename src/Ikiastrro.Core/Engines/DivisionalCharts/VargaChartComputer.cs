@@ -16,10 +16,11 @@ public static class VargaChartComputer
 {
     public static ChartAnalysisInput Compute(
         BirthDetails birthDetails, int divisionFactor, IVargaSignRule rule,
-        IReadOnlyList<SpecialPointSeed>? seeds = null)
+        IReadOnlyList<SpecialPointSeed>? seeds = null,
+        AyanamsaDefinition? ayanamsa = null)
     {
         var localMoment = BirthMomentFactory.Create(birthDetails);
-        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude);
+        var positions = SwissEphemerisProvider.GetSiderealPositions(localMoment, birthDetails.Latitude, birthDetails.Longitude, ayanamsa);
 
         var lagnaSign = rule.SignFor(positions.AscendantLongitude);
         var lagnaVargaLon = AstroMath.GetVargaLongitude(positions.AscendantLongitude, divisionFactor);

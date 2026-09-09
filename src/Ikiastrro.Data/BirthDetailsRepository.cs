@@ -17,11 +17,11 @@ public class BirthDetailsRepository
     {
         const string sql = """
             INSERT INTO dbo.tbl_BirthDetails
-                (Name, DateOfBirth, TimeOfBirth,
+                (Name, Sex, DateOfBirth, TimeOfBirth,
                  PlaceCity, PlaceCountry, Latitude, Longitude, UtcOffset, IanaTimeZoneId, CreatedAt)
             OUTPUT INSERTED.Id
             VALUES
-                (@Name, @DateOfBirth, @TimeOfBirth,
+                (@Name, @Sex, @DateOfBirth, @TimeOfBirth,
                  @PlaceCity, @PlaceCountry, @Latitude, @Longitude, @UtcOffset, @IanaTimeZoneId, @CreatedAt)
             """;
 
@@ -29,6 +29,7 @@ public class BirthDetailsRepository
         var newId = connection.ExecuteScalar<int>(sql, new
         {
             birthDetails.Name,
+            Sex = string.IsNullOrWhiteSpace(birthDetails.Sex) ? null : birthDetails.Sex,
             DateOfBirth = birthDetails.DateOfBirth.ToDateTime(TimeOnly.MinValue),
             TimeOfBirth = birthDetails.TimeOfBirth.ToTimeSpan(),
             birthDetails.PlaceCity,
@@ -107,6 +108,7 @@ public class BirthDetailsRepository
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string? Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
         public TimeSpan TimeOfBirth { get; set; }
         public string PlaceCity { get; set; } = string.Empty;
@@ -121,6 +123,7 @@ public class BirthDetailsRepository
         {
             Id = Id,
             Name = Name,
+            Sex = Sex,
             DateOfBirth = DateOnly.FromDateTime(DateOfBirth),
             TimeOfBirth = TimeOnly.FromTimeSpan(TimeOfBirth),
             PlaceCity = PlaceCity,

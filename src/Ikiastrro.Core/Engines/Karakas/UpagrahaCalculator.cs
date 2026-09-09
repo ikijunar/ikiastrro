@@ -8,14 +8,14 @@ namespace Ikiastrro.Core.Engines.Karakas;
 /// sunrise→sunset, or night arc sunset→next sunrise) is split into eight equal parts. The
 /// part ruled by Saturn — by the classical weekday day-part / night-part ruler sequence —
 /// gives the instant; the Ascendant rising then IS the upagraha longitude (full 0–360°,
-/// then projected into each varga like a planet). Gulika takes the START of Saturn's part,
-/// Maandi its MIDDLE.
+/// then projected into each varga like a planet). Gulika takes the MIDDLE of Saturn's part,
+/// Maandi its START (SRC_PVR_INTEGRATED).
 ///
 /// Weekday is the Vedic day's (opens at <see cref="SunTimes.Sunrise"/>),
 /// so a pre-dawn birth uses the previous civil day's ruler row — matching JHora.
 ///
 /// Verified against docs/artifacts/reference-charts/Rammy_Jagannatha.txt (Tuesday-night birth, Saturn = night part 1):
-/// Gulika 7 Li 44' 38" (Navamsa Sg), Maandi 18 Li 07' 01" (Navamsa Pi).
+/// JHora labels the start Gulika and the midpoint Maandi; this API uses the PVR names.
 /// </summary>
 public static class UpagrahaCalculator
 {
@@ -39,7 +39,7 @@ public static class UpagrahaCalculator
     private const int SaturnIndex = 6;
 
     public static (SpecialPointSeed Gulika, SpecialPointSeed Maandi) Compute(
-        BirthDetails bd, SunTimes sun)
+        BirthDetails bd, SunTimes sun, AyanamsaDefinition? ayanamsa = null)
     {
         var weekday = (int)sun.Sunrise.DayOfWeek;   // Vedic day opener; Sunday = 0
         var (arcStart, arcEnd, parts) = sun.IsNightBirth
@@ -53,11 +53,11 @@ public static class UpagrahaCalculator
         {
             var instant = arcStart + onePart * partOffset;
             var ascLon = SwissEphemerisProvider
-                .GetSiderealPositions(instant, bd.Latitude, bd.Longitude)
+                .GetSiderealPositions(instant, bd.Latitude, bd.Longitude, ayanamsa)
                 .AscendantLongitude;
             return new SpecialPointSeed(code, "Upagraha", AstroMath.Normalize(ascLon));
         }
 
-        return (Rising(saturnPart, "Gulika"), Rising(saturnPart + 0.5, "Maandi"));
+        return (Rising(saturnPart + 0.5, "Gulika"), Rising(saturnPart, "Maandi"));
     }
 }

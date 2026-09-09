@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.PlanetaryStates;
+using Ikiastrro.Core.Engines.Strength;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Pipeline;
@@ -17,5 +18,17 @@ public sealed record ChartBundle(
     SunTimes SunTimes,
     IReadOnlyList<ChartAnalysisInput> Charts,
     IReadOnlyDictionary<string, string> CharaKarakaByPlanet,
-    IReadOnlyList<PlanetaryStateFact> States);
-    // P2+ add: Dispositors, Strength, Yogas as additive record fields.
+    IReadOnlyList<PlanetaryStateFact> States)
+{
+    public IReadOnlyList<Ikiastrro.Core.Engines.Yoga.YogaInputEvaluation> YogaInputs =>
+        Ikiastrro.Core.Engines.Yoga.YogaInputEvaluator.Evaluate(Birth, Charts, SunTimes);
+    /// <summary>PVR-first Shadbala results. Strength is computed over the complete chart bundle,
+    /// so Saptavargaja can see the available D1/D2/D3/D7/D9/D12/D30 inputs.</summary>
+    public IReadOnlyList<PlanetaryStrengthResult> Strengths { get; init; } = Array.Empty<PlanetaryStrengthResult>();
+
+    /// <summary>Bhava Bala for the D1 houses, calculated from the same planetary strengths.</summary>
+    public IReadOnlyList<BhavaBalaResult> BhavaStrengths { get; init; } = Array.Empty<BhavaBalaResult>();
+
+    /// <summary>Explicit D1/D9 same-sign results; Vargottama is reported separately from Shadbala points.</summary>
+    public IReadOnlyList<VargottamaResult> Vargottama { get; init; } = Array.Empty<VargottamaResult>();
+}

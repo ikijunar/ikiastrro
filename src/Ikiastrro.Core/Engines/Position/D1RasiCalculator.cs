@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Engines.Karakas;
+using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Engines.Position;
@@ -15,8 +16,9 @@ public class D1RasiCalculator : IChartCalculator
     public string ChartType => "D1";
 
     public ChartAnalysisInput ComputeAnalysisInput(
-        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null)
-        => D1ChartComputer.Compute(birthDetails, specialPoints);
+        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null,
+        AyanamsaDefinition? ayanamsa = null)
+        => D1ChartComputer.Compute(birthDetails, specialPoints, ayanamsa);
 
     public ChartResult BuildResult(BirthDetails birthDetails, ChartAnalysisInput analysisInput)
     {
@@ -30,9 +32,9 @@ public class D1RasiCalculator : IChartCalculator
         {
             BirthDetailId = birthDetails.Id,
             ChartType = ChartType,
-            Ayanamsha = "Lahiri",
+            Ayanamsha = AyanamsaDefinition.Default.DisplayName,
             HouseSystem = "WholeSign",
-            EngineVersion = "SwissEphNet 2.8.0.2 (Moshier, Lahiri sidereal)",
+            EngineVersion = "SwissEphNet 2.8.0.2 (Moshier, selectable ayanamsa)",
             ResultJson = resultJson,
             ComputedAt = DateTime.UtcNow
         };

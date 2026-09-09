@@ -11,6 +11,9 @@ public class BirthDetails
 
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>Explicit user input; null means unspecified.</summary>
+    public string? Sex { get; set; }
+
     /// <summary>Calendar date of birth.</summary>
     public DateOnly DateOfBirth { get; set; }
 

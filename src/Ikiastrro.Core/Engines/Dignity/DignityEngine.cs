@@ -22,11 +22,10 @@ public record DignityResult(
 /// Pure classical reference-table lookups, applied to the signs this project's own AstroMath/
 /// SwissEphemerisProvider pipeline computes — not derived from any engine's own relationship helpers.
 ///
-/// Rahu/Ketu: exaltation/debilitation are genuinely disputed across classical texts. This project uses
-/// the Parashari convention (Rahu exalted Taurus/debilitated Scorpio, Ketu exalted Scorpio/debilitated
-/// Taurus), per rammyps's decision (2026-08-24, ikiastrro.md). Rahu/Ketu are shadow points,
-/// not part of the Naisargika Maitri table, and have no Moolatrikona or own sign in standard Parashari
-/// texts — their DignityStatus is limited to Exalted/Debilitated/Neutral.
+/// Rahu/Ketu: the active project convention follows PVR Table 6 (Rahu exalted Gemini/debilitated
+/// Sagittarius, Ketu exalted Sagittarius/debilitated Gemini, with Aquarius/Scorpio own signs and
+/// Virgo/Pisces Moolatrikona). Nodes still have no Naisargika Maitri table, so non-axis-A placements
+/// remain Neutral.
 /// </summary>
 public static class DignityEngine
 {
@@ -43,8 +42,8 @@ public static class DignityEngine
         ["Jupiter"] = ZodiacName.Cancer,
         ["Venus"] = ZodiacName.Pisces,
         ["Saturn"] = ZodiacName.Libra,
-        ["Rahu"] = ZodiacName.Taurus,     // Parashari convention (chosen 2026-08-24)
-        ["Ketu"] = ZodiacName.Scorpio
+        ["Rahu"] = ZodiacName.Gemini,     // PVR Table 6 convention
+        ["Ketu"] = ZodiacName.Sagittarius
     };
 
     private static readonly Dictionary<string, ZodiacName> DebilitationSign = new()
@@ -56,20 +55,22 @@ public static class DignityEngine
         ["Jupiter"] = ZodiacName.Capricornus,
         ["Venus"] = ZodiacName.Virgo,
         ["Saturn"] = ZodiacName.Aries,
-        ["Rahu"] = ZodiacName.Scorpio,
-        ["Ketu"] = ZodiacName.Taurus
+        ["Rahu"] = ZodiacName.Sagittarius,
+        ["Ketu"] = ZodiacName.Gemini
     };
 
     // (Sign, low degree, high degree) — standard BPHS Moolatrikona ranges. Classical planets only.
     private static readonly Dictionary<string, (ZodiacName Sign, double Low, double High)> Moolatrikona = new()
     {
         ["Sun"] = (ZodiacName.Leo, 0, 20),
-        ["Moon"] = (ZodiacName.Taurus, 4, 30),
+        ["Moon"] = (ZodiacName.Taurus, 3, 30),
         ["Mars"] = (ZodiacName.Aries, 0, 12),
-        ["Mercury"] = (ZodiacName.Virgo, 16, 20),
+        ["Mercury"] = (ZodiacName.Virgo, 15, 20),
         ["Jupiter"] = (ZodiacName.Sagittarius, 0, 10),
         ["Venus"] = (ZodiacName.Libra, 0, 15),
-        ["Saturn"] = (ZodiacName.Aquarius, 0, 20)
+        ["Saturn"] = (ZodiacName.Aquarius, 0, 20),
+        ["Rahu"] = (ZodiacName.Virgo, 0, 30),
+        ["Ketu"] = (ZodiacName.Pisces, 0, 30)
     };
 
     /// <summary>Naisargika Maitri (fixed natural friendship) — deliberately asymmetric, per BPHS.</summary>
@@ -132,14 +133,14 @@ public static class DignityEngine
         string ownSignsDisplay = isShadowPlanet ? "" : string.Join(", ", HouseEngine.OwnSigns[planet].Select(s => s.ToString()));
         string? moolatrikonaSign = null;
         string? moolatrikonaRange = null;
-        if (!isShadowPlanet && Moolatrikona.TryGetValue(planet, out var moola))
+        if (Moolatrikona.TryGetValue(planet, out var moola))
         {
             moolatrikonaSign = moola.Sign.ToString();
             moolatrikonaRange = $"{moola.Low}-{moola.High}";
         }
 
         string dignityStatus;
-        if (sign == exaltation)
+        if (sign == exaltation && IsPvrExaltationSegment(planet, degreeInSign))
         {
             dignityStatus = "Exalted";
         }
@@ -147,12 +148,14 @@ public static class DignityEngine
         {
             dignityStatus = "Debilitated";
         }
-        else if (!isShadowPlanet && moolatrikonaSign is not null && sign.ToString() == moolatrikonaSign
+        else if (moolatrikonaSign is not null && sign.ToString() == moolatrikonaSign
                  && degreeInSign is not null && degreeInSign >= Moolatrikona[planet].Low && degreeInSign <= Moolatrikona[planet].High)
         {
             dignityStatus = "Moolatrikona";
         }
-        else if (!isShadowPlanet && HouseEngine.OwnSigns[planet].Contains(sign))
+        else if ((!isShadowPlanet && HouseEngine.OwnSigns[planet].Contains(sign))
+                 || (planet == "Rahu" && sign == ZodiacName.Aquarius)
+                 || (planet == "Ketu" && sign == ZodiacName.Scorpio))
         {
             dignityStatus = "Own Sign";
         }
@@ -180,4 +183,12 @@ public static class DignityEngine
             signLord,
             dignityStatus);
     }
+
+    private static bool IsPvrExaltationSegment(string planet, double? degreeInSign) =>
+        degreeInSign is null || planet switch
+        {
+            "Moon" => degreeInSign < 3,
+            "Mercury" => degreeInSign < 15,
+            _ => true
+        };
 }

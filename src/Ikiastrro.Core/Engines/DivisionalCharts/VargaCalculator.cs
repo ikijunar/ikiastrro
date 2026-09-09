@@ -2,6 +2,7 @@ using System.Text.Json;
 using Ikiastrro.Core.Pipeline;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Engines.Karakas;
+using Ikiastrro.Core.Engines.Astronomy;
 
 namespace Ikiastrro.Core.Engines.DivisionalCharts;
 
@@ -30,9 +31,10 @@ public sealed class VargaCalculator : IChartCalculator
     public string ChartType => _chartType;
 
     public ChartAnalysisInput ComputeAnalysisInput(
-        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null)
+        BirthDetails birthDetails, IReadOnlyList<SpecialPointSeed>? specialPoints = null,
+        AyanamsaDefinition? ayanamsa = null)
     {
-        var input = VargaChartComputer.Compute(birthDetails, _scheme.DivisionFactor, _rule, specialPoints);
+        var input = VargaChartComputer.Compute(birthDetails, _scheme.DivisionFactor, _rule, specialPoints, ayanamsa);
         return input with { ChartType = _chartType };
     }
 
@@ -48,9 +50,9 @@ public sealed class VargaCalculator : IChartCalculator
         {
             BirthDetailId = birthDetails.Id,
             ChartType = _chartType,
-            Ayanamsha = "Lahiri",
+            Ayanamsha = AyanamsaDefinition.Default.DisplayName,
             HouseSystem = "WholeSign",
-            EngineVersion = EngineVersionString,
+            EngineVersion = "SwissEphNet 2.8.0.2 (Moshier, selectable ayanamsa)",
             VargaMethod = _scheme.MethodCode,
             ResultJson = resultJson,
             ComputedAt = DateTime.UtcNow

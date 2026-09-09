@@ -3,7 +3,7 @@ using Ikiastrro.Core.Engines.Astronomy;
 namespace Ikiastrro.Core.Transits;
 
 /// <summary>One sign-boundary crossing for one planet, at the exact moment it happened.</summary>
-public record PlanetTransitEvent(PlanetName Planet, DateTime EventDateTimeUtc, ZodiacName Sign, bool IsRetrograde);
+public record PlanetTransitEvent(PlanetName Planet, DateTime EventDateTimeUtc, ZodiacName Sign, double LongitudeDegrees, double SpeedDegreesPerDay, bool IsRetrograde);
 
 /// <summary>
 /// Finds every sign-boundary crossing for the slow planets (Saturn, Jupiter, Rahu) over an arbitrary
@@ -62,7 +62,7 @@ public static class PlanetTransitEventFinder
 
                     var eventPositions = GetPositions(hi);
                     var isRetrograde = eventPositions.PlanetSpeeds[planet] < 0;
-                    events.Add(new PlanetTransitEvent(planet, hi, nextSign, isRetrograde));
+                    events.Add(new PlanetTransitEvent(planet, hi, nextSign, eventPositions.PlanetLongitudes[planet], eventPositions.PlanetSpeeds[planet], isRetrograde));
                 }
                 previousSigns[planet] = nextSign;
             }

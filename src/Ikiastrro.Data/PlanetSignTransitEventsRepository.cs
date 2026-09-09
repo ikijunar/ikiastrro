@@ -60,8 +60,8 @@ public class PlanetSignTransitEventsRepository
     public void InsertAll(IEnumerable<(PlanetTransitEvent Event, bool IsReentry)> events)
     {
         const string sql = """
-            INSERT INTO dbo.tbl_PlanetSignTransitEvents (PlanetId, EventDateTimeUtc, SignId, MotionDirection, IsReentry)
-            VALUES (@PlanetId, @EventDateTimeUtc, @SignId, @MotionDirection, @IsReentry)
+            INSERT INTO dbo.tbl_PlanetSignTransitEvents (PlanetId, EventDateTimeUtc, SignId, MotionDirection, IsReentry, LongitudeDegrees, DegreeInSign, NakshatraId, Pada, SpeedDegreesPerDay, AyanamsaRuleId)
+            VALUES (@PlanetId, @EventDateTimeUtc, @SignId, @MotionDirection, @IsReentry, @LongitudeDegrees, @DegreeInSign, @NakshatraId, @Pada, @SpeedDegreesPerDay, @AyanamsaRuleId)
             """;
         using var connection = _connectionFactory.CreateOpenConnection();
         var rows = events.Select(e => new
@@ -70,7 +70,13 @@ public class PlanetSignTransitEventsRepository
             e.Event.EventDateTimeUtc,
             SignId = (int)e.Event.Sign + 1,
             MotionDirection = e.Event.IsRetrograde ? "Retrograde" : "Direct",
-            e.IsReentry
+            e.IsReentry,
+            e.Event.LongitudeDegrees,
+            DegreeInSign = e.Event.LongitudeDegrees % 30.0,
+            NakshatraId = (byte)(Math.Floor(e.Event.LongitudeDegrees / (360.0 / 27.0)) + 1),
+            Pada = (byte)(Math.Floor((e.Event.LongitudeDegrees % (360.0 / 27.0)) / (360.0 / 108.0)) + 1),
+            SpeedDegreesPerDay = e.Event.SpeedDegreesPerDay,
+            AyanamsaRuleId = 7
         });
         connection.Execute(sql, rows);
     }

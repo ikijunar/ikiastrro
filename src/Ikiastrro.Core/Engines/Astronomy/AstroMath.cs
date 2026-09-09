@@ -137,8 +137,10 @@ public static class AstroMath
     }
 
     /// <summary>
-    /// D11 (Rudramsa) sign — Traditional Parasara / Sanjay Rath (PyJHora rudramsa_chart method 1,
-    /// the shipped default). Sign split into eleven parts of 30/11°. Target = (12 - signIndex + part)
+    /// D11 (Rudramsa) sign — PVR/BPHS traditional method. Sign split into eleven parts of
+    /// 30/11°. Count from Aries to the source rasi in zodiacal order, then count that same
+    /// number anti-zodiacally from Aries; the eleven parts advance zodiacally from that seed.
+    /// Target = (12 - signIndex + part)
     /// mod 12 for every sign. Verified: Aries 1°→Aries, Aries 29°→Aquarius, Taurus 1°→Pisces,
     /// Taurus 29°→Capricornus.
     /// </summary>
