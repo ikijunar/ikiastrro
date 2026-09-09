@@ -296,12 +296,15 @@ test exists; `Web` = route is live; `Docs` = a `docs/ui/` component doc exists.
 
 - **FEAT-UI-01 · App shell + brand system (MudBlazor, `tokens.css`, shared header)** — Verified · 60%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
-- **FEAT-UI-02 · Home / entry (`/`) — name filter, saved people, add-new** — Verified · 60%
-  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
-- **FEAT-UI-03 · Add / Edit person form (`/add`)** — In progress · 40%
-  DB [—] · Core [—] · Verify [ ] · Web [x] · Docs [ ]
-  Renders as unstyled native inputs (no MudBlazor, no `Add.razor.css`); no Sex field though
-  `tbl_BirthDetails.Sex` exists (migration 052). No geocoding fallback / timezone field.
+- **FEAT-UI-02 · Home / entry (`/`) — searchable name, saved people, inline Preferences + Add** — In progress · 60%
+  DB [—] · Core [—] · Verify [x] · Web [x] · Docs [x] (`docs/ui/components/home.md`)
+  `wkstream_UI_v2` rebuild: MudBlazor shell; `MudAutocomplete` name search; Preferences
+  disclosure top-left (Ayanāṁśa + Chart Type); `Add New` unhides the entry fields inline;
+  completing Country → `/transit-wheel/{id}`. Absorbs FEAT-UI-03 and FEAT-UI-12.
+- **FEAT-UI-03 · Add person — inline on Home (Name · Sex · DOB · Time · City · Country)** — In progress · 40%
+  DB [—] · Core [—] · Verify [ ] · Web [x] · Docs [x] (`docs/ui/components/home.md`)
+  No longer a `/add` route — folded into Home (`FEAT-UI-02`). v1 gaps still open: Sex field
+  (`tbl_BirthDetails.Sex`, migration 052) and geocoding-failure fallback.
 - **FEAT-UI-04 · Saved charts list (`/charts`) + inline delete** — Verified · 60%
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
 - **FEAT-UI-05 · Chart workspace (`/charts/{id}`) — D1 hero + grouped varga rail** — Verified · 60%
@@ -320,11 +323,13 @@ test exists; `Web` = route is live; `Docs` = a `docs/ui/` component doc exists.
   DB [—] · Core [—] · Verify [x] · Web [x] · Docs [ ]
   Live in v1; the v2 re-do drops the route (the Vimśottari timeline is served by
   `/charts/{id}/timing`). `LifeWeeks.razor` + its golden snapshot go when v2 lands.
-- **FEAT-UI-12 · Preferences / ayanamsa setting** — Planned · 0%
+- **FEAT-UI-12 · Preferences — inline Home disclosure (top-left)** — In progress · 0%
   DB [—] · Core [—] · Verify [ ] · Web [ ] · Docs [x] (`docs/ui/components/home.md`)
-  Requirement: a Preferences route whose Ayanamsa box defaults to the active
-  `tbl_Rule_Ayanamsa` system default, listing that plus the 20 other catalogued options.
-  No route exists yet.
+  Not a route. A `MudCollapse` at Home top-left: **Ayanāṁśa** selector (default = active
+  `tbl_Rule_Ayanamsa` = *Lahiri*, plus the 21 catalogued options) and **Chart Type** selector
+  (South Indian default / North Indian; extensible). Choices apply to the next generation;
+  per-browser persistence now, DB-backed default is a `database` follow-up. North-Indian
+  rendering is a later `FEAT-UI` row.
 
 ## DOCS — cross-cutting
 

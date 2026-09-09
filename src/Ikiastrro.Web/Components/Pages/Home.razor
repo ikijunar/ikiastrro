@@ -1,16 +1,195 @@
 @page "/"
-@using System.ComponentModel.DataAnnotations
 @using Ikiastrro.Core.Engines.Astronomy
 @inject BirthDetailsRepository BirthDetailsRepo
 @inject ChartGenerationService ChartGenerationService
 @inject IPlaceResolver PlaceResolver
 @inject NavigationManager Nav
 @inject AyanamsaRuleRepository AyanamsaRules
-<PageTitle>Iki-Astrro · Discover Your Path</PageTitle>
-<div class="landing-page">
 
-@if (showPreferences){<section class="preferences-panel" aria-label="Preferences"><h2>Preferences</h2><label for="ayanamsa-select">Ayanamsa</label><select id="ayanamsa-select" @bind="selectedAyanamsaCode">@foreach(var option in AyanamsaDefinition.Catalog){<option value="@option.Code">@option.DisplayName</option>}</select><small>Default: @defaultAyanamsa.DisplayName</small></section>}<main class="landing-content"><section class="landing-workspace">
-<MudPaper Class="pa-6 mx-auto home-card" Elevation="2"><MudText Typo="Typo.h4" Class="mb-4">Discover Your Path</MudText><MudTextField T="string" Label="Name" Placeholder="Filter by name…" Variant="Variant.Outlined" @bind-Value="filter" Immediate="true" /><div class="name-options mt-3">@foreach (var person in FilteredPeople){<MudButton Variant="Variant.Text" Color="Color.Primary" Class="name-option" OnClick="@(() => Select(person))">@person.Name</MudButton>}<MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddNew">Add New</MudButton></div></MudPaper>
-@if(creating || editing){<EditForm class="home-form" Model="form" OnValidSubmit="Save"><MudPaper Class="pa-6 mt-4" Elevation="1"><DataAnnotationsValidator /><div class="field"><label for="home-name">Name</label><InputText id="home-name" @bind-Value="form.Name" /><ValidationMessage For="() => form.Name" /></div><div class="field"><label for="home-dob">Date of Birth</label><InputDate id="home-dob" @bind-Value="form.DateOfBirth" /><ValidationMessage For="() => form.DateOfBirth" /></div><div class="field"><label for="home-tob">Time of Birth</label><InputDate id="home-tob" @bind-Value="form.TimeOfBirth" Type="InputDateType.Time" /><ValidationMessage For="() => form.TimeOfBirth" /></div><div class="field"><label for="home-sex">Sex</label><select id="home-sex" @bind="form.Sex"><option value="">Select sex</option><option value="Male">Male</option><option value="Female">Female</option></select></div><div class="field"><label for="home-city">City</label><InputText id="home-city" @bind-Value="form.City" /><ValidationMessage For="() => form.City" /></div><div class="field"><label for="home-country">Country</label><InputText id="home-country" @bind-Value="form.Country" /><ValidationMessage For="() => form.Country" /></div><MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Generate Chart</MudButton></MudPaper></EditForm>}
-</section><aside class="landing-art" aria-hidden="true"><img src="/images/ganesha-navagraha-brand.png" alt="" /></aside></main></div>
-@code { private List<BirthDetails> people = new(); private bool showPreferences; private string selectedAyanamsaCode = AyanamsaDefinition.Default.Code; private AyanamsaDefinition defaultAyanamsa = AyanamsaDefinition.Default; private BirthDetails? selected; private string filter = ""; private bool creating; private bool editing; private FormModel form = new(); protected override void OnInitialized(){people=BirthDetailsRepo.GetAll().ToList(); showPreferences=Nav.Uri.Contains("preferences=1", StringComparison.OrdinalIgnoreCase); try{defaultAyanamsa=AyanamsaRules.GetActiveDefault();selectedAyanamsaCode=defaultAyanamsa.Code;}catch{}} private void TogglePreferences()=>showPreferences=!showPreferences; private IEnumerable<BirthDetails> FilteredPeople=>string.IsNullOrWhiteSpace(filter)?people:people.Where(p=>p.Name.Contains(filter,StringComparison.OrdinalIgnoreCase)); private void Select(BirthDetails p){Nav.NavigateTo($"/charts/{p.Id}");} private void AddNew(){selected=null;editing=false;creating=true;form=new();} private void Edit(){if(selected is null)return;editing=true;creating=false;form=new(){Name=selected.Name,Sex=selected.Sex ?? "",DateOfBirth=selected.DateOfBirth,TimeOfBirth=selected.EffectiveTimeOfBirth,City=selected.PlaceCity,Country=selected.PlaceCountry};} private async Task Save(){if(string.IsNullOrWhiteSpace(form.Name))return; var place=await PlaceResolver.ResolveAsync(form.City,form.Country,form.DateOfBirth); var birth=new BirthDetails{Name=form.Name.Trim(),Sex=string.IsNullOrWhiteSpace(form.Sex) ? null : form.Sex,DateOfBirth=form.DateOfBirth,TimeOfBirth=form.TimeOfBirth,PlaceCity=form.City.Trim(),PlaceCountry=form.Country.Trim(),Latitude=place.Latitude,Longitude=place.Longitude,UtcOffset=place.UtcOffset.ToString(),IanaTimeZoneId=place.IanaTimeZoneId}; BirthDetailsRepo.Insert(birth); ChartGenerationService.GenerateAll(birth); Nav.NavigateTo($"/transit-wheel/{birth.Id}");} private sealed class FormModel{[Required]public string Name{get;set;}=""; public string Sex{get;set;}="";[Required]public DateOnly DateOfBirth{get;set;}[Required]public TimeOnly TimeOfBirth{get;set;}[Required]public string City{get;set;}="";[Required]public string Country{get;set;}="";} }
+<PageTitle>Iki-Astrro · Discover Your Path</PageTitle>
+
+<div class="home">
+    <div class="home-main">
+
+        <div class="home-prefs">
+            <MudButton Variant="Variant.Text" DisableElevation="true" Class="home-prefs-toggle"
+                       StartIcon="@(_prefsOpen ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.Tune)"
+                       OnClick="@(() => _prefsOpen = !_prefsOpen)">
+                Preferences
+            </MudButton>
+            <MudCollapse Expanded="_prefsOpen">
+                <div class="home-prefs-body">
+                    <MudSelect T="string" Label="Choose Ayanāṁśa" @bind-Value="_ayanamsaCode"
+                               Dense="true" Variant="Variant.Outlined">
+                        @foreach (var a in AyanamsaDefinition.Catalog)
+                        {
+                            <MudSelectItem T="string" Value="@a.Code">@AyanamsaLabel(a)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="string" Label="Choose Chart Type" @bind-Value="_chartStyle"
+                               Dense="true" Variant="Variant.Outlined">
+                        <MudSelectItem T="string" Value="@("south-indian")">South Indian — default</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("north-indian")">North Indian</MudSelectItem>
+                    </MudSelect>
+                </div>
+            </MudCollapse>
+        </div>
+
+        <h1 class="home-title">Discover Your Path</h1>
+
+        @if (!_adding)
+        {
+            <MudAutocomplete T="string" Label="Name" Placeholder="Search saved people…"
+                             SearchFunc="SearchNames" ValueChanged="OnNamePicked"
+                             Variant="Variant.Outlined" Dense="true" Strict="false"
+                             ResetValueOnEmptyText="true" Class="home-name" />
+        }
+        else
+        {
+            <div class="home-form">
+                <MudTextField T="string" Label="Name" @bind-Value="_f.Name" Variant="Variant.Outlined" Dense="true" />
+                <MudSelect T="string" Label="Sex" @bind-Value="_f.Sex" Variant="Variant.Outlined" Dense="true">
+                    <MudSelectItem T="string" Value="@("Male")">Male</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Female")">Female</MudSelectItem>
+                </MudSelect>
+                <MudDatePicker Label="Date of Birth" @bind-Date="_f.Dob" Variant="Variant.Outlined" />
+                <MudTimePicker Label="Time of Birth" @bind-Time="_f.Tob" Variant="Variant.Outlined" />
+                <MudTextField T="string" Label="City" @bind-Value="_f.City" Variant="Variant.Outlined" Dense="true" />
+                <MudTextField T="string" Label="Country" @bind-Value="_f.Country" Variant="Variant.Outlined" Dense="true"
+                              OnBlur="@(() => TryGenerate(showErrors: false))" />
+
+                @if (_error is not null)
+                {
+                    <MudText Class="home-form-error">@_error</MudText>
+                }
+
+                <div class="home-form-actions">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               OnClick="@(() => TryGenerate(showErrors: true))" Disabled="_busy">
+                        @(_busy ? "Generating…" : "Generate Chart")
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" OnClick="CancelAdd">Cancel</MudButton>
+                </div>
+            </div>
+        }
+    </div>
+
+    <aside class="home-art" aria-hidden="true">
+        <img src="/images/ganesha-navagraha-brand.png" alt="" />
+    </aside>
+</div>
+
+@code {
+    private List<BirthDetails> _people = new();
+    private bool _prefsOpen;
+    private bool _adding;
+    private bool _busy;
+    private string? _error;
+
+    // Preferences — in-memory for the first cut; localStorage / DB default is a follow-up.
+    private string _ayanamsaCode = AyanamsaDefinition.Default.Code;
+    private string _chartStyle = "south-indian";
+    private AyanamsaDefinition _activeDefault = AyanamsaDefinition.Default;
+
+    private readonly AddForm _f = new();
+    private const string AddNewOption = "＋  Add New";
+
+    protected override void OnInitialized()
+    {
+        _people = BirthDetailsRepo.GetAll().ToList();
+        try
+        {
+            _activeDefault = AyanamsaRules.GetActiveDefault();
+            _ayanamsaCode = _activeDefault.Code;
+        }
+        catch { /* fall back to AyanamsaDefinition.Default */ }
+    }
+
+    private string AyanamsaLabel(AyanamsaDefinition a) =>
+        a.Code == _activeDefault.Code ? $"{a.DisplayName} — default" : a.DisplayName;
+
+    private Task<IEnumerable<string>> SearchNames(string? value, CancellationToken _)
+    {
+        var q = (value ?? string.Empty).Trim();
+        var names = _people
+            .Where(p => q.Length == 0 || p.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Select(p => p.Name)
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        names.Add(AddNewOption); // always the last selection
+        return Task.FromResult<IEnumerable<string>>(names);
+    }
+
+    private void OnNamePicked(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        if (value == AddNewOption) { _adding = true; _error = null; return; }
+
+        var person = _people.FirstOrDefault(p => string.Equals(p.Name, value, StringComparison.OrdinalIgnoreCase));
+        if (person is not null) Nav.NavigateTo($"/charts/{person.Id}");
+    }
+
+    private void CancelAdd()
+    {
+        _adding = false;
+        _error = null;
+    }
+
+    private async Task TryGenerate(bool showErrors)
+    {
+        if (_busy) return;
+        _error = null;
+
+        if (string.IsNullOrWhiteSpace(_f.Name) || _f.Dob is null || _f.Tob is null
+            || string.IsNullOrWhiteSpace(_f.City) || string.IsNullOrWhiteSpace(_f.Country))
+        {
+            // Country can blur before the rest is filled — only nag on an explicit submit.
+            if (showErrors) _error = "Fill in name, date, time, city and country.";
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var dob = DateOnly.FromDateTime(_f.Dob.Value);
+            var tob = TimeOnly.FromTimeSpan(_f.Tob.Value);
+            var place = await PlaceResolver.ResolveAsync(_f.City!.Trim(), _f.Country!.Trim(), dob);
+
+            var birth = new BirthDetails
+            {
+                Name = _f.Name!.Trim(),
+                Sex = string.IsNullOrWhiteSpace(_f.Sex) ? null : _f.Sex,
+                DateOfBirth = dob,
+                TimeOfBirth = tob,
+                PlaceCity = _f.City!.Trim(),
+                PlaceCountry = _f.Country!.Trim(),
+                Latitude = place.Latitude,
+                Longitude = place.Longitude,
+                UtcOffset = place.UtcOffset.ToString(),
+                IanaTimeZoneId = place.IanaTimeZoneId,
+            };
+
+            BirthDetailsRepo.Insert(birth);
+            ChartGenerationService.GenerateAll(birth, AyanamsaDefinition.FromCode(_ayanamsaCode));
+            Nav.NavigateTo($"/transit-wheel/{birth.Id}");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not generate the chart: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class AddForm
+    {
+        public string? Name { get; set; }
+        public string Sex { get; set; } = string.Empty;
+        public DateTime? Dob { get; set; }
+        public TimeSpan? Tob { get; set; }
+        public string? City { get; set; }
+        public string? Country { get; set; }
+    }
+}

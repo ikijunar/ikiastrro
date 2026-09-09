@@ -45,8 +45,8 @@ Each item is one or more table sections on the pattern above.
 | ROADMAP Now | Jaimini chara karakas (`FEAT-KARAKA-01`) | a Karakas section — AK…DK → planet, longitude, degree-in-sign, per chart | #9 · Jaimini chara karakas panel |
 | ROADMAP Now | Avastha display (`FEAT-AVASTHA-01/02`) | rows in the Dignity & Avastha section — AgeState, WakefulnessState | #10 · Planetary-state (avastha) display |
 | ROADMAP Now | Slow-planet transit history (`FEAT-TRANSIT-01`) | a Transit History section — sign-ingress events (planet, from→to, date, retro) with a date-range filter | #11 · Slow-planet transit history view |
-| Open `FEAT-UI` | Add / Edit person (`FEAT-UI-03`) | a MudBlazor form (not a table) on the same tokens; adds the **Sex** field | #4 |
-| Open `FEAT-UI` | Preferences / ayanāṁśa (`FEAT-UI-12`) | a MudBlazor form; ayanāṁśa selector defaults to the active `tbl_Rule_Ayanamsa` (now Lahiri) | #5 |
+| Open `FEAT-UI` | Add / Edit person (`FEAT-UI-03`) | **inline on Home** — `Add New` unhides Name · Sex · DOB · Time · City · Country; completing Country → `/transit-wheel/{id}` | #4 |
+| Open `FEAT-UI` | Preferences (`FEAT-UI-12`) | **inline on Home, top-left disclosure** — Ayanāṁśa selector (default *Lahiri*) + Chart Type selector (South Indian default / North Indian; extensible) | #5 |
 
 Also folded in (the "Missing Web" rollup column): Ṣaḍbala / Bhāva Bala already have sections
 7–8 in the AstrologerEvidence plan.
@@ -58,12 +58,12 @@ Extends [`brand.md`](brand.md) / [`design-language.md`](design-language.md). v1'
 **not** compliant and is the first thing v2 fixes.
 
 - **Font family** — Manrope only, every element. No second family.
-- **Exactly three sizes** — one token each, nothing else in the app:
-  - `--fs-display` — page title only
-  - `--fs-heading` — section titles, table captions
-  - `--fs-body` — table cells, controls, body, nav
-  Weight, colour and spacing carry all other hierarchy. *(Exact px/rem values: design pass —
-  brand.md's Display/Tagline/Control scale is the starting point, retuned for a dense table app.)*
+- **Exactly three sizes** — the existing tokens in `tokens.css`, nothing else in the app:
+  - `--font-size-display` — page title only
+  - `--font-size-tagline` — section titles, table captions, the lockup tagline
+  - `--font-size-control` — table cells, controls, body, nav
+  Weight, colour and spacing carry all other hierarchy. *(Values may be retuned for a dense
+  table app during the pass; the token names do not change.)*
 - **Sunset orange (`--brand-sunset` `#F47A24`) is the highlight / background accent** —
   **button backgrounds** (primary actions), active section in the index, selected chart in the
   selector, table row hover / selected, focus ring. **This changes `brand.md`'s current action
@@ -86,24 +86,26 @@ Extends [`brand.md`](brand.md) / [`design-language.md`](design-language.md). v1'
 | section index `<nav>` | `MudNavMenu` or an anchor `MudChipSet` |
 | `EmptyState` | `MudAlert` / `MudPaper` empty pattern |
 
-## Navigation (v2 route map — to confirm in the pass)
+## Navigation (v2 route map)
 
 `AstrologerEvidence` stops being a side route and **becomes the person hub** (`/charts/{id}`).
+Home absorbs Preferences and Add — no `/preferences`, no `/add`.
 
-- `/` — Home: Generate-Chart form + saved-people search (form, not table)
-- `/add`, `/add/{id}` — birth-details form (`FEAT-UI-03`)
-- `/preferences` — global settings form (`FEAT-UI-12`)
+- `/` — **Home**: Preferences disclosure (top-left) + searchable Name + saved-people list +
+  `Add New` → inline entry fields → `/transit-wheel/{id}`. Full spec:
+  [`components/home.md`](components/home.md).
 - `/charts` — saved people, one table
 - `/charts/{id}` — **the hub**: context · moon/tithi · positions (D1 + varga selector) ·
   dignity & avastha · karakas · shadbala · bhava bala · yoga — all table sections
 - `/charts/{id}/timing` — dasha tree + Sade Sati + gochara (tables)
 - `/charts/{id}/transits` — transit-history table + the wheel as a secondary visual
 - `/charts/{id}/south-indian-template` — the one print-style visual (Codex scope)
+- `/transit-wheel/{id}` — the post-add landing (wheel; Codex scope)
 
-Retired: `/charts/{id}/evidence` and `/charts/{id}/varga/{code}` (folded into the hub);
-**`/charts/{id}/life-weeks`** — the 4000-week grid is dropped in v2 (the Vimśottari timeline
-is served by `/charts/{id}/timing`). `wkstream_UI_v1`'s already-dropped surfaces stay dropped
-unless the pass re-introduces one.
+Retired: `/preferences` and `/add` (inline on Home); `/charts/{id}/evidence` and
+`/charts/{id}/varga/{code}` (folded into the hub); **`/charts/{id}/life-weeks`** — the
+4000-week grid is dropped in v2 (the Vimśottari timeline is served by `/charts/{id}/timing`).
+`wkstream_UI_v1`'s already-dropped surfaces stay dropped unless the pass re-introduces one.
 
 ## Workstream mechanics
 

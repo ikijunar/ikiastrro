@@ -33,8 +33,8 @@ recomputes.
 
 | Route | Page | Shows | State |
 |---|---|---|---|
-| `/` | `Home` | brand lockup + Ganesha/Navagraha art; name filter over saved people; add-new | verified |
-| `/add` | `Add` | birth-details entry form → `ChartGenerationService.GenerateAll` | **in progress** — unstyled native inputs, no Sex field |
+| `/` | `Home` | brand lockup + Ganesha/Navagraha art; searchable name over saved people; inline Preferences (top-left) + inline Add | **v2 rebuild in progress** ([`components/home.md`](components/home.md)) |
+| ~~`/add`~~ | — | folded into Home in v2 | retired |
 | `/charts` | `SavedCharts` | sortable person table + `MiniGrid` thumbnail + inline-confirm delete | verified |
 | `/charts/{id}` | `Workspace` | D1 hero (`ChartFrame` grid⇄wheel), `VargaRail` over all 21, D1 positions table, compact dasha strip, birth/computation panel | verified |
 | `/charts/{id}/varga/{code}` | `VargaView` | one varga in full — grid + wheel, `VargottamaStrip`, positions, house-lordship + conjunctions disclosure, prev/next | verified |
@@ -46,15 +46,18 @@ recomputes.
 
 ## Navigation
 
-Shared MudBlazor header: brand lockup **Iki-Astrro | Where Passion, Purpose & Planets Align.**
-Nav order Home · Preferences · Saved Charts. Chart-page person names in sunset orange.
+Shared MudBlazor header (`MudAppBar`): brand lockup **Iki-Astrro | Where Passion, Purpose &
+Planets Align.** Nav order Home · Saved Charts (Preferences is an inline Home control in v2,
+not a nav item). Chart-page person names in sunset orange.
 
-## In flight
+## In flight — `wkstream_UI_v2`, screens 1–2 (Home)
 
-- **`FEAT-UI-03`** — restyle `/add` to MudBlazor + shared tokens; add the **Sex** field
-  (`tbl_BirthDetails.Sex` exists); geocoding-failure fallback.
-- **`FEAT-UI-12`** — Preferences route with an Ayanāṁśa selector defaulting to the active
-  `tbl_Rule_Ayanamsa` system default (no route exists yet).
+- **`FEAT-UI-02`** — Home rebuilt on MudBlazor: `MudAutocomplete` name search; two-column
+  canvas layout with Ganesha art right; the three size tokens; sunset-orange button fill.
+- **`FEAT-UI-03`** — Add folded into Home: `Add New` unhides Name · Sex · DOB · Time · City ·
+  Country; completing Country generates + routes to `/transit-wheel/{id}`.
+- **`FEAT-UI-12`** — Preferences disclosure at Home top-left: Ayanāṁśa (default *Lahiri*) +
+  Chart Type (South Indian default / North Indian; extensible). `localStorage` for now.
 
 ## Planned
 
