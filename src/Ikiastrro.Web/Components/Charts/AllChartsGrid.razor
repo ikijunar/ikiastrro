@@ -1,18 +1,12 @@
 @using Ikiastrro.Core.Models
 @using Ikiastrro.Web.Components.Workspace
-@inject Microsoft.JSInterop.IJSRuntime JS
 
 @* Shared "every divisional chart" gallery — every stored chart as a plain South-Indian grid, 3 per
    row, divisor order. Extracted 2026-09-24 so the standalone /charts/{id} page (AllCharts.razor)
    and Astro Facts's "7. ALL CHARTS" tab render identically off the same already-loaded
    WorkspaceData, instead of AstroFacts re-querying the DB for content AllCharts.razor already
-   has a query for. Print is scoped to this person only (rammyps, 2026-09-24 — the Saved Charts
-   list used to carry a page-wide Print button; that printed the whole list, not any one person's
-   charts, so it moved here). *@
-
-<div class="acg-toolbar">
-    <button type="button" class="acg-print" @onclick="PrintAsync">Print</button>
-</div>
+   has a query for. The grid's own Print button was removed (rammyps, 2026-10-08); printing is done from
+   Saved Charts' Print, which opens the module-picker print report (/print/{id}). *@
 
 <div class="ac-grid">
     @foreach (var t in Vargas)
@@ -53,8 +47,6 @@
 
 @code {
     [Parameter, EditorRequired] public WorkspaceData Data { get; set; } = null!;
-
-    private Task PrintAsync() => JS.InvokeVoidAsync("window.print").AsTask();
 
     // Every divisional chart type in divisor order (D1, D2, D3 … D60).
     private IEnumerable<ChartTypeRow> Vargas =>

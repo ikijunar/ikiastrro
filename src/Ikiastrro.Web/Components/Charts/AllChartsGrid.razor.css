@@ -2,32 +2,6 @@
    the standalone /charts/{id} page and Astro Facts's embedded "7. ALL CHARTS" tab look
    identical. Tokens only; Manrope only; the three --font-size-* tokens only. */
 
-.acg-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0 0 16px;
-}
-
-.acg-print {
-    display: inline-flex;
-    align-items: center;
-    padding: .5rem .9rem;
-    border: 1.5px solid var(--brand-midnight);
-    border-radius: 999px;
-    background: var(--brand-midnight);
-    color: var(--brand-canvas);
-    font: 700 var(--font-size-control) / 1 'Manrope', 'Segoe UI', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    cursor: pointer;
-}
-
-.acg-print:hover {
-    border-color: var(--brand-sunrise);
-    background: var(--brand-sunrise);
-    color: var(--brand-midnight);
-}
-
 .ac-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
