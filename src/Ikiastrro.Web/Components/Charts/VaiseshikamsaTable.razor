@@ -3,16 +3,16 @@
 @using Ikiastrro.Web.Components.Workspace
 
 @* Vaiseshikamsa — Astro Facts step 6, under Vimśopaka Bala. Counts the vargas a graha sits in its own
-   sign (Raman's Swavarga ladder, 16 charts) or in its own or exaltation sign (Jagannatha Hora's Dasa
-   Varga 10 and Shodasa Varga 16 groups), and names the tier that count reaches. JHora's tiers are
-   reproduced exactly for the seven grahas (JhoraVaiseshikamsaGoldenTests); Rahu and Ketu are not
-   covered. Computed live from the stored charts; nothing stored. *@
+   or exaltation sign (Jagannatha Hora's Dasa Varga 10 and Shodasa Varga 16 groups) and names the tier
+   that count reaches. JHora's tiers are reproduced exactly for the seven grahas
+   (JhoraVaiseshikamsaGoldenTests); Rahu and Ketu are not covered. The Raman own-sign ladder is no longer
+   shown here (VaiseshikamsaCalculator is still in Core). Computed live from the stored charts; nothing stored. *@
 <section class="vai" aria-labelledby="vai-title">
     <article class="vai-card">
         <header class="vai-head">
             <h2 id="vai-title">Vaiseshikamsa</h2>
-            <p>How many vargas a graha holds in its own sign (Raman) or its own or exaltation sign (Jagannatha Hora),
-                and the tier that count earns. Rāhu and Ketu are not scored.</p>
+            <p>How many vargas a graha holds in its own or exaltation sign (Jagannatha Hora), and the tier that
+                count earns. Rāhu and Ketu are not scored.</p>
         </header>
         @if (_missing.Count > 0)
         {
@@ -25,12 +25,10 @@
                     <thead>
                         <tr>
                             <th rowspan="2">Graha</th>
-                            <th colspan="2">Raman · own sign, 16 vargas</th>
                             <th colspan="2">JHora · own or exalted, Dasa Varga (10)</th>
                             <th colspan="2">JHora · own or exalted, Shodasa Varga (16)</th>
                         </tr>
                         <tr>
-                            <th class="vai-num">Count</th><th>Grade</th>
                             <th class="vai-num">Count</th><th>Tier</th>
                             <th class="vai-num">Count</th><th>Tier</th>
                         </tr>
@@ -40,8 +38,6 @@
                         {
                             <tr>
                                 <th scope="row">@r.Planet</th>
-                                <td class="vai-num"><b>@r.RamanCount</b></td>
-                                <td>@(r.RamanGrade ?? "—") <span class="vai-charts">@Join(r.RamanCharts)</span></td>
                                 <td class="vai-num"><b>@r.DasaCount</b></td>
                                 <td>@(r.DasaTier ?? "—") <span class="vai-charts">@Join(r.DasaCharts)</span></td>
                                 <td class="vai-num"><b>@r.ShodasaCount</b></td>
@@ -61,7 +57,7 @@
     private static readonly PlanetName[] Grahas =
         [PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury, PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn];
 
-    private sealed record Row(string Planet, int RamanCount, string? RamanGrade, IReadOnlyList<string> RamanCharts,
+    private sealed record Row(string Planet,
         int DasaCount, string? DasaTier, IReadOnlyList<string> DasaCharts,
         int ShodasaCount, string? ShodasaTier, IReadOnlyList<string> ShodasaCharts);
 
@@ -77,11 +73,9 @@
         var inputs = Charts.Values.Select(c => c.ToAnalysisInput()).ToList();
         _rows = Grahas.Select(p =>
         {
-            var raman = VaiseshikamsaCalculator.SwavargaCharts(inputs, p);
             var dasa = JhoraVaiseshikamsa.Matching(inputs, p, JhoraVaiseshikamsa.DasaVarga);
             var shodasa = JhoraVaiseshikamsa.Matching(inputs, p, JhoraVaiseshikamsa.ShodasaVarga);
             return new Row(p.ToString(),
-                raman.Count, VaiseshikamsaCalculator.Grade(raman.Count), raman,
                 dasa.Count, JhoraVaiseshikamsa.DasaTier(dasa.Count), dasa,
                 shodasa.Count, JhoraVaiseshikamsa.ShodasaTier(shodasa.Count), shodasa);
         }).ToList();

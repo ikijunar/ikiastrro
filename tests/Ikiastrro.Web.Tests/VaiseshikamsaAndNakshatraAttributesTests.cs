@@ -23,7 +23,7 @@ public sealed class VaiseshikamsaAndNakshatraAttributesTests : BunitContext
         [], [], [], [], [], null, null, "test");
 
     [Fact]
-    public void Counts_own_sign_for_Raman_and_own_or_exalted_for_JHora()
+    public void Counts_own_or_exalted_for_JHora_and_no_longer_shows_the_Raman_column()
     {
         // Sun owns Leo in D1-D3, is exalted in Aries in D7 and D9, and is in Gemini everywhere else.
         var signs = new Dictionary<string, string> { ["D1"] = "Leo", ["D2"] = "Leo", ["D3"] = "Leo", ["D7"] = "Aries", ["D9"] = "Aries" };
@@ -33,7 +33,8 @@ public sealed class VaiseshikamsaAndNakshatraAttributesTests : BunitContext
 
         var sun = cut.FindAll("tbody tr")[0].Normalized();
         Assert.Contains("Sun", sun);
-        Assert.Contains("3 Uttamamsa D1 D2 D3", sun);                 // Raman: own sign only, 3 of 16
+        Assert.DoesNotContain("Uttamamsa", sun);                      // the Raman own-sign ladder is gone
+        Assert.DoesNotContain("Raman", cut.Markup);
         Assert.Contains("5 5-Simhasana D1 D2 D3 D7 D9", sun);         // JHora Dasa Varga: own or exalted
         Assert.Contains("5 5-Kanduka D1 D2 D3 D7 D9", sun);           // JHora Shodasa Varga
         Assert.Equal(7, cut.FindAll("tbody tr").Count);
