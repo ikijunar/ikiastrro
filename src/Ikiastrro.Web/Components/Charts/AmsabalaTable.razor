@@ -149,12 +149,15 @@
         if (!_expanded.Add(planetCode)) _expanded.Remove(planetCode);
     }
 
+    // Highest planet count first (own / mūlatrikoṇa / exalted vargas out of the scheme's group); planets on the
+    // same count keep the classical Sun-to-Saturn order, since OrderByDescending is stable over PlanetOrder.
     private IReadOnlyList<AmsabalaRow> SchemeRows =>
         PlanetOrder
             .Select(p => Rows.FirstOrDefault(r => r.PlanetCode.Equals(p, StringComparison.OrdinalIgnoreCase)
                                                  && r.SchemeCode.Equals(_scheme, StringComparison.OrdinalIgnoreCase)))
             .Where(r => r is not null)
             .Select(r => r!)
+            .OrderByDescending(r => r.GoodCount)
             .ToList();
 
     private IReadOnlyList<VargottamaRow> VargottamaRows =>
