@@ -53,6 +53,7 @@ else
                     @foreach (var o in Shown)
                     {
                         var meaning = CheiroCompoundNumbers.Get(o.CompoundNumber);
+                        var shared = meaning?.SameAs is null ? null : CheiroCompoundNumbers.Resolve(o.CompoundNumber);
                         <tr>
                             <th scope="row">
                                 @o.Name
@@ -62,7 +63,20 @@ else
                             <td>@o.Purpose</td>
                             <td class="nf-num">@o.CompoundNumber</td>
                             <td class="nf-num">@o.RootNumber</td>
-                            <td class="nf-meaning">@(meaning is null ? "Cheiro lists meanings for 10–52 only." : meaning.Text)</td>
+                            <td class="nf-meaning">
+                                @if (meaning is null)
+                                {
+                                    @("Cheiro lists meanings for 10–52 only.")
+                                }
+                                else if (shared is not null)
+                                {
+                                    <span class="nf-sameas">Same as @shared.Number — Cheiro's text for @shared.Number:</span> @shared.Text
+                                }
+                                else
+                                {
+                                    @meaning.Text
+                                }
+                            </td>
                             <td><button type="button" class="nf-remove" @onclick="() => Remove(o.Id)" aria-label="Remove @o.Name">Remove</button></td>
                         </tr>
                     }

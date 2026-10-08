@@ -27,3 +27,5 @@
 .nf-rownote, .nf-letters { display: block; color: var(--brand-muted); font-size: var(--font-size-meta); font-weight: 500; text-transform: none; letter-spacing: 0; }
 .nf-remove { padding: 2px 10px; border: 1px solid var(--brand-line); border-radius: 8px; background: transparent; color: var(--brand-muted); cursor: pointer; }
 .nf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+.nf-sameas { display: block; font-weight: 700; margin-bottom: 0.25rem; }
