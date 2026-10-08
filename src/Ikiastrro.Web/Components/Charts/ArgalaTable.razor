@@ -126,7 +126,14 @@ else
         public IReadOnlyList<PlanetName> Occupants(int offset) => Planets(Facts.Where(f => f.HouseOffset == offset));
     }
 
-    private IReadOnlyList<HouseRow> Rows => BuildRows();
+    // Sorted by the nature of the planets causing argala: Subha (benefic) first, then Mixed, then Paapa (malefic),
+    // then houses with no argala planets. Houses keep their 1-12 order inside each group (OrderBy is stable).
+    private IReadOnlyList<HouseRow> Rows => BuildRows().OrderBy(r => NatureRank(r.Nature)).ToList();
+
+    private static int NatureRank(Direction d) => d switch
+    {
+        Direction.Supportive => 0, Direction.Mixed => 1, Direction.Obstructive => 2, _ => 3
+    };
     private ZodiacName ascendant => Enum.Parse<ZodiacName>(AscendantSign);
     private bool? moonWaxing => MoonPhase.Of(Grahas);
 
