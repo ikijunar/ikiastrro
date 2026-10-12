@@ -97,14 +97,18 @@ public static class TargetInfluences
     /// <param name="karakas">The matter's kāraka planets in this chart.</param>
     /// <param name="argalaPlanets">Planets whose Argala on the target holds or is contested.</param>
     /// <param name="virodhargalaPlanets">Planets obstructing Argala on the target.</param>
+    /// <param name="moonWaxing">The birth Moon's phase (<see cref="MoonPhase"/>); read from the signs in
+    /// <paramref name="placements"/> when null.</param>
     public static TargetInfluenceReading Read(
         ZodiacName lagnaSign,
         IReadOnlyDictionary<PlanetName, ZodiacName> placements,
         ZodiacName target,
         IEnumerable<PlanetName>? karakas = null,
         IEnumerable<PlanetName>? argalaPlanets = null,
-        IEnumerable<PlanetName>? virodhargalaPlanets = null)
+        IEnumerable<PlanetName>? virodhargalaPlanets = null,
+        bool? moonWaxing = null)
     {
+        var moonPhase = moonWaxing ?? MoonPhase.Of(placements);
         var karakaSet = (karakas ?? []).ToHashSet();
         var argalaSet = (argalaPlanets ?? []).ToHashSet();
         var virodhaSet = (virodhargalaPlanets ?? []).ToHashSet();
@@ -136,7 +140,7 @@ public static class TargetInfluences
                 : InfluenceLean.Neutral;
 
             return new PlanetInfluence(planet, sign, house, position, links,
-                planet is PlanetName.Rahu or PlanetName.Ketu ? null : LagnaFunctionalNature.For(lagnaSign, planet).Nature,
+                planet is PlanetName.Rahu or PlanetName.Ketu ? null : LagnaFunctionalNature.For(lagnaSign, planet, moonPhase).Nature,
                 ArgalaCalculator.IsNaturalMalefic(planet, occupancy),
                 planet == lord, isBaadhaka, inSthaana, karakaSet.Contains(planet), lean);
         })

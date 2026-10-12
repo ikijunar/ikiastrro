@@ -80,11 +80,11 @@ public static class D1PromiseEngine
 
         foreach (var (other, otherFact) in input.Planets.Where(p => p.Key != planet && p.Value.Sign == fact.Sign))
         {
-            var d = NatureDirection(input.Lagna, other);
+            var d = NatureDirection(input.Lagna, other, MoonWaxing(input));
             if (d == Direction.Neutral) continue;
             c.Testimonies.Add(new Testimony(Pvr, input.RuleSetVersion, input.Chart, "Lagna", role, planet.ToString(),
                 d, otherFact.Capacity, PromiseFamilies.Conjunction(planet),
-                $"{other} ({NatureWord(input.Lagna, other)}) is conjunct {planet}."));
+                $"{other} ({NatureWord(input.Lagna, other, MoonWaxing(input))}) is conjunct {planet}."));
         }
 
         // Refinements: they colour how the planet delivers; they never create or flip a direction.
@@ -92,7 +92,7 @@ public static class D1PromiseEngine
         if (dispositor != planet && input.Planets.TryGetValue(dispositor, out var dispFact)
             && dispFact.Dignity == "Debilitated")
             c.Refinements.Add($"{planet}'s dispositor {dispositor} is debilitated.");
-        if (fact.NakshatraLord is { } star && star != planet && NatureDirection(input.Lagna, star) == Direction.Obstructive)
+        if (fact.NakshatraLord is { } star && star != planet && NatureDirection(input.Lagna, star, MoonWaxing(input)) == Direction.Obstructive)
             c.Refinements.Add($"{planet} is in the nakshatra of {star}, a malefic for this Lagna.");
     }
 
@@ -120,7 +120,7 @@ public static class D1PromiseEngine
 
         var placements = input.Planets.ToDictionary(p => p.Key, p => p.Value.Sign);
         var reading = TargetInfluences.Read(input.Lagna, placements, input.Target, input.Karakas,
-            input.ArgalaPlanets, input.VirodhargalaPlanets);
+            input.ArgalaPlanets, input.VirodhargalaPlanets, MoonWaxing(input));
         var targetHouseFromLagna = AstroMath.CountFromSignToSign(input.Lagna, input.Target);
         var karakaSet = (input.Karakas ?? []).ToHashSet();
 
@@ -135,7 +135,7 @@ public static class D1PromiseEngine
             // only its nature counts; the bādhaka always obstructs.
             var direction = p.IsBaadhaka || p.InBaadhakaSthaana
                 ? Direction.Obstructive
-                : Combine(NatureDirection(input.Lagna, p.Planet),
+                : Combine(NatureDirection(input.Lagna, p.Planet, MoonWaxing(input)),
                     p.Links.HasFlag(InfluenceLink.Occupies) ? Direction.Neutral : LeanDirection(p.Lean));
             // PVR 13.2: a functional malefic in the 3rd or a dusthana is good, it spoils a house that
             // should be spoiled. Applied only to a planet standing in the target itself.
@@ -150,7 +150,7 @@ public static class D1PromiseEngine
             var baadhaka = p.IsBaadhaka ? "; it is the target's bādhaka" : p.InBaadhakaSthaana ? "; it stands in the bādhaka sthāna" : "";
             c.Testimonies.Add(new Testimony(Pvr, input.RuleSetVersion, input.Chart, "Target", TestimonyRole.Influence,
                 p.Planet.ToString(), direction, input.Planets[p.Planet].Capacity, PromiseFamilies.Influence(p.Planet),
-                $"{p.Planet} ({NatureWord(input.Lagna, p.Planet)}) {string.Join(" and ", how)} {input.TargetLabel}{baadhaka}."));
+                $"{p.Planet} ({NatureWord(input.Lagna, p.Planet, MoonWaxing(input))}) {string.Join(" and ", how)} {input.TargetLabel}{baadhaka}."));
         }
     }
 
@@ -163,8 +163,8 @@ public static class D1PromiseEngine
         var virodha = (input.VirodhargalaPlanets ?? []).Distinct().ToList();
         if (argala.Count == 0) return;
 
-        var benefic = argala.Count(p => NatureDirection(input.Lagna, p) == Direction.Supportive);
-        var malefic = argala.Count(p => NatureDirection(input.Lagna, p) == Direction.Obstructive);
+        var benefic = argala.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Supportive);
+        var malefic = argala.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Obstructive);
         Direction direction;
         string text;
         if (virodha.Count >= argala.Count)
@@ -205,8 +205,8 @@ public static class D1PromiseEngine
             var obstructing = link.ObstructingPlanets.Distinct().ToList();
             var guard = Ordinal(link.ObstructionOffset);
 
-            var good = planets.Count(p => NatureDirection(input.Lagna, p) == Direction.Supportive);
-            var bad = planets.Count(p => NatureDirection(input.Lagna, p) == Direction.Obstructive);
+            var good = planets.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Supportive);
+            var bad = planets.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Obstructive);
             var kind = good > bad ? "subhaargala (good)" : bad > good ? "paapaargala (bad)" : good > 0 ? "mixed argala" : "neutral argala";
 
             string virodha;
@@ -234,8 +234,8 @@ public static class D1PromiseEngine
         }
         if (lines.Count == 0) return;
 
-        var benefic = active.Count(p => NatureDirection(input.Lagna, p) == Direction.Supportive);
-        var malefic = active.Count(p => NatureDirection(input.Lagna, p) == Direction.Obstructive);
+        var benefic = active.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Supportive);
+        var malefic = active.Count(p => NatureDirection(input.Lagna, p, MoonWaxing(input)) == Direction.Obstructive);
         var direction = active.Count == 0 ? Direction.Neutral
             : benefic > malefic ? Direction.Supportive
             : malefic > benefic ? Direction.Obstructive
@@ -428,10 +428,10 @@ public static class D1PromiseEngine
 
     /// <summary>Functional nature for the Lagna: benefic and yogakaraka support, malefic obstructs,
     /// neutral is neutral. Rāhu and Ketu own no sign, so they read as natural malefics.</summary>
-    public static Direction NatureDirection(ZodiacName lagna, PlanetName planet)
+    public static Direction NatureDirection(ZodiacName lagna, PlanetName planet, bool? moonWaxing = null)
     {
         if (planet is PlanetName.Rahu or PlanetName.Ketu) return Direction.Obstructive;
-        return LagnaFunctionalNature.For(lagna, planet).Nature switch
+        return LagnaFunctionalNature.For(lagna, planet, moonWaxing).Nature switch
         {
             FunctionalNature.Benefic or FunctionalNature.Yogakaraka => Direction.Supportive,
             FunctionalNature.Malefic => Direction.Obstructive,
@@ -439,10 +439,19 @@ public static class D1PromiseEngine
         };
     }
 
-    private static string NatureWord(ZodiacName lagna, PlanetName planet) =>
+    /// <summary>The birth Moon's phase for PVR 13.2: exact from longitudes when every planet fact carries one,
+    /// otherwise from the signs.</summary>
+    private static bool? MoonWaxing(MatterPromiseInput input) =>
+        input.Planets.TryGetValue(PlanetName.Sun, out var sun) && input.Planets.TryGetValue(PlanetName.Moon, out var moon)
+            ? sun.LongitudeDegrees is { } sl && moon.LongitudeDegrees is { } ml
+                ? MoonPhase.IsWaxing(sl, ml)
+                : MoonPhase.IsWaxing(sun.Sign, moon.Sign)
+            : null;
+
+    private static string NatureWord(ZodiacName lagna, PlanetName planet, bool? moonWaxing = null) =>
         planet is PlanetName.Rahu or PlanetName.Ketu
             ? "natural malefic"
-            : $"functional {LagnaFunctionalNature.For(lagna, planet).Nature.ToString().ToLowerInvariant()}";
+            : $"functional {LagnaFunctionalNature.For(lagna, planet, moonWaxing).Nature.ToString().ToLowerInvariant()}";
 
     private static string ClassesOf(int house)
     {

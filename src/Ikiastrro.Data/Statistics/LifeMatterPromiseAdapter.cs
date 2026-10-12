@@ -86,7 +86,7 @@ public static class LifeMatterPromiseAdapter
             if (!Enum.TryParse<PlanetName>(g.Planet, out var planet) || !Enum.TryParse<ZodiacName>(g.Sign, out var sign)) continue;
             var capacity = StrengthBands.ShadbalaPercentOfMinimum.Classify(percent.GetValueOrDefault(g.Planet)).ToCapacity();
             PlanetName? star = Enum.TryParse<PlanetName>(g.NakshatraLordPlanet, out var lord) ? lord : null;
-            facts[planet] = new PlanetFact(sign, g.DignityStatus, g.IsCombust == true, capacity, star);
+            facts[planet] = new PlanetFact(sign, g.DignityStatus, g.IsCombust == true, capacity, star, g.NirayanaLongitudeDegrees);
         }
         return facts;
     }

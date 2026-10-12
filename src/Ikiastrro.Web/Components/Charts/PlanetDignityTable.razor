@@ -47,11 +47,13 @@
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<ExaltationRow> Rows { get; set; } = Array.Empty<ExaltationRow>();
     [Parameter, EditorRequired] public string LagnaSign { get; set; } = "";
+    /// <summary>The birth Moon's phase (<see cref="MoonPhase"/>); decides the Moon's role for Aries, Libra and Capricorn Lagnas.</summary>
+    [Parameter] public bool? MoonWaxing { get; set; }
 
     private FunctionalNatureResult? Functional(string planet)
     {
         if (!Enum.TryParse<PlanetName>(planet, out var p) || p is PlanetName.Rahu or PlanetName.Ketu) return null;
-        return Enum.TryParse<ZodiacName>(LagnaSign, out var lagna) ? LagnaFunctionalNature.For(lagna, p) : null;
+        return Enum.TryParse<ZodiacName>(LagnaSign, out var lagna) ? LagnaFunctionalNature.For(lagna, p, MoonWaxing) : null;
     }
     private static string DisplayNature(FunctionalNature nature) => nature == FunctionalNature.Yogakaraka ? "Yogakāraka" : nature.ToString();
     private static IEnumerable<string> OwnershipFlags(FunctionalNatureResult role)

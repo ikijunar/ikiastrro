@@ -68,7 +68,7 @@ else
                                 {
                                     @for (var i = 0; i < occupants.Count; i++)
                                     {
-                                        var d = D1PromiseEngine.NatureDirection(ascendant, occupants[i]);
+                                        var d = D1PromiseEngine.NatureDirection(ascendant, occupants[i], moonWaxing);
                                         <span class="at-p @PlanetCss(d)" title="@PlanetTitle(d)">@occupants[i]</span>@(i < occupants.Count - 1 ? ", " : "")
                                     }
                                     var argalaHouse = (row.HouseNumber + offset - 2) % 12 + 1;
@@ -128,13 +128,14 @@ else
 
     private IReadOnlyList<HouseRow> Rows => BuildRows();
     private ZodiacName ascendant => Enum.Parse<ZodiacName>(AscendantSign);
+    private bool? moonWaxing => MoonPhase.Of(Grahas);
 
     /// <summary>Subhaargala vs paapaargala, as D1-Promise counts it: benefic planets against malefic
     /// planets among those causing argala on the house.</summary>
-    private static Direction ArgalaNature(ZodiacName lagna, IReadOnlyList<PlanetName> planets)
+    private static Direction ArgalaNature(ZodiacName lagna, IReadOnlyList<PlanetName> planets, bool? moonWaxing)
     {
-        var good = planets.Count(p => D1PromiseEngine.NatureDirection(lagna, p) == Direction.Supportive);
-        var bad = planets.Count(p => D1PromiseEngine.NatureDirection(lagna, p) == Direction.Obstructive);
+        var good = planets.Count(p => D1PromiseEngine.NatureDirection(lagna, p, moonWaxing) == Direction.Supportive);
+        var bad = planets.Count(p => D1PromiseEngine.NatureDirection(lagna, p, moonWaxing) == Direction.Obstructive);
         return planets.Count == 0 ? Direction.Neutral : good > bad ? Direction.Supportive
             : bad > good ? Direction.Obstructive : good > 0 ? Direction.Mixed : Direction.Neutral;
     }
@@ -176,7 +177,7 @@ else
                 p => ChartViewModel.DignityScore(dignityByPlanet.GetValueOrDefault(p)));
             rows.Add(new HouseRow(house, HouseEngine.GetHouseSign(ascendant, house), facts, compare,
                 facts.Any(f => f.ExceptionApplied), facts.Any(f => f.CountedAntiZodiacally),
-                ArgalaNature(ascendant, Planets(facts.Where(f => f.RelationTypeCode == "ARGALA")))));
+                ArgalaNature(ascendant, Planets(facts.Where(f => f.RelationTypeCode == "ARGALA")), moonWaxing)));
         }
         return rows;
     }

@@ -1299,7 +1299,7 @@ else
             Enum.Parse<ZodiacName>(chart.AscendantSign), placements, target,
             Planets(karakas),
             Planets(argala.Pairs.Where(p => p.Verdict is ArgalaVerdict.Holds or ArgalaVerdict.Contested).SelectMany(p => p.ArgalaPlanets)),
-            Planets(argala.Pairs.SelectMany(p => p.ObstructingPlanets)));
+            Planets(argala.Pairs.SelectMany(p => p.ObstructingPlanets)), MoonPhase.Of(chart.Grahas));
         return new InfluenceTarget(label, target.ToString(), reading);
     }
 

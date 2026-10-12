@@ -104,7 +104,7 @@ public sealed class MarriageMattersReader(
             var arg = stats.ForSign(target.ToString()).Argala;
             seventh = TargetInfluences.Read(Enum.Parse<ZodiacName>(asc), placements, target, karakaSet,
                 Planets(arg.Pairs.Where(p => p.Verdict is ArgalaVerdict.Holds or ArgalaVerdict.Contested).SelectMany(p => p.ArgalaPlanets)),
-                Planets(arg.Pairs.SelectMany(p => p.ObstructingPlanets)));
+                Planets(arg.Pairs.SelectMany(p => p.ObstructingPlanets)), Ikiastrro.Core.Engines.Houses.MoonPhase.Of(grahas));
         }
         return new MarriageMatters(area, string.Join(" & ", core.Select(Ord)) + " house", rows, seventh);
     }

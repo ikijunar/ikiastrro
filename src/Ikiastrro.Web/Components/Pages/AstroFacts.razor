@@ -257,7 +257,7 @@ else
                     <MoonNakshatraAttributes Nakshatra="MoonNakshatra" />
 
                     @Head(NatalSection.Dignity)
-                    <PlanetDignityTable Rows="ExaltationRows(natalChart)" LagnaSign="@natalChart.AscendantSign" />
+                    <PlanetDignityTable Rows="ExaltationRows(natalChart)" LagnaSign="@natalChart.AscendantSign" MoonWaxing="MoonPhase.Of(natalChart.Grahas)" />
                     @if (!Printing) { <PlainWords Lines="DignityLines(natalChart)" Title="Dignity in plain words" /> }
 
                     @Head(NatalSection.Motion)

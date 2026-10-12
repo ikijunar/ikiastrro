@@ -40,11 +40,12 @@ public static class HouseVerdicts
 
         var lagna = Enum.Parse<ZodiacName>(ascendantSign);
         var raman = HouseBeneficMaleficCalculator.ComputeAll(lagna, grahas);
+        var moonWaxing = MoonPhase.Of(grahas);
         return raman.Select(r =>
         {
             var argala = argalaForHouse(r.HouseNumber);
             var influences = TargetInfluences.Read(lagna, placements, r.Sign,
-                argalaPlanets: argala.Argala, virodhargalaPlanets: argala.Virodhargala);
+                argalaPlanets: argala.Argala, virodhargalaPlanets: argala.Virodhargala, moonWaxing: moonWaxing);
             return new HouseVerdictRow(r.HouseNumber, r.Sign, r, influences);
         }).ToList();
     }

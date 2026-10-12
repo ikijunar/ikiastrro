@@ -223,8 +223,12 @@ Rahu/Ketu are out of scope. The verdict is Table 30's own 12 Lagna rows (yogakar
 neutral / malefic), not a re-derivation from lordship: PVR says to "judiciously combine" the two
 rasis a planet owns and the table is that result (e.g. Jupiter, 6th + 9th lord, is benefic for
 Cancer). The Moon is unlisted for Aries/Libra/Capricorn because it depends on phase; the optional
-`moonWaxing` argument picks Malefic (waxing, kendrādhipati) or Neutral (waning), defaulting to
-waxing with a note in the rationale. The earlier Raman-based heuristic was removed 2026-10-12.
+`moonWaxing` argument picks Malefic (waxing, kendrādhipati) or Neutral (waning). `MoonPhase` supplies
+it to every caller (house verdicts, TargetInfluences, D1 Promise, Argala table, Planets dignity table,
+Key Inference, marriage matters): exact from the natal Sun and Moon longitudes (waxing = Moon 0–180°
+ahead of the Sun, read from D1 even for a varga chart), or whole-sign (waning past six signs, as
+`ArgalaCalculator`) where only signs exist. With no phase at all it defaults to waxing and says so
+in the rationale. The earlier Raman-based heuristic was removed 2026-10-12.
 Baadhaka follows PVR §13.3 via `BaadhakaCalculator`. This is the sole source of the verdict (the
 per-Lagna mirror table was removed). Computed on demand, not persisted. Check:
 `verify-functional-nature` (all 12 Lagnas against Table 30, plus PVR's yogakaraka rule re-derived).

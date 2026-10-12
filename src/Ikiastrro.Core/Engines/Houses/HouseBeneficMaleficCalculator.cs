@@ -45,6 +45,7 @@ public static class HouseBeneficMaleficCalculator
         ZodiacName ascendantSign, IReadOnlyList<ChartKeyDetail> grahas)
     {
         var occupants = grahas.Where(k => k.PointKind == "Graha" && k.Planet != "Ascendant").ToList();
+        var moonWaxing = MoonPhase.Of(grahas);
 
         var results = new List<HouseBeneficMaleficResult>(12);
         for (var houseNumber = 1; houseNumber <= 12; houseNumber++)
@@ -52,18 +53,18 @@ public static class HouseBeneficMaleficCalculator
             var sign = HouseEngine.GetHouseSign(ascendantSign, houseNumber);
             var lordName = HouseEngine.GetSignLord(sign);
             var lordPlanet = Enum.Parse<PlanetName>(lordName);
-            var lordFunctional = LagnaFunctionalNature.For(ascendantSign, lordPlanet);
+            var lordFunctional = LagnaFunctionalNature.For(ascendantSign, lordPlanet, moonWaxing);
             var lordDetail = occupants.FirstOrDefault(k => k.Planet == lordName);
 
             var houseOccupants = occupants.Where(k => k.HouseNumberFromLagna == houseNumber).ToList();
-            var beneficOccupants = houseOccupants.Where(k => IsBenefic(ascendantSign, k.Planet)).Select(k => k.Planet).ToList();
-            var maleficOccupants = houseOccupants.Where(k => !IsBenefic(ascendantSign, k.Planet)).Select(k => k.Planet).ToList();
+            var beneficOccupants = houseOccupants.Where(k => IsBenefic(ascendantSign, k.Planet, moonWaxing)).Select(k => k.Planet).ToList();
+            var maleficOccupants = houseOccupants.Where(k => !IsBenefic(ascendantSign, k.Planet, moonWaxing)).Select(k => k.Planet).ToList();
 
             var aspectors = occupants
                 .Where(k => RelationshipEngine.AspectsSign(k.Planet, Enum.Parse<ZodiacName>(k.Sign), sign))
                 .ToList();
-            var beneficAspectors = aspectors.Where(k => IsBenefic(ascendantSign, k.Planet)).Select(k => k.Planet).ToList();
-            var maleficAspectors = aspectors.Where(k => !IsBenefic(ascendantSign, k.Planet)).Select(k => k.Planet).ToList();
+            var beneficAspectors = aspectors.Where(k => IsBenefic(ascendantSign, k.Planet, moonWaxing)).Select(k => k.Planet).ToList();
+            var maleficAspectors = aspectors.Where(k => !IsBenefic(ascendantSign, k.Planet, moonWaxing)).Select(k => k.Planet).ToList();
 
             var beneficCount = (lordFunctional.Nature is FunctionalNature.Benefic or FunctionalNature.Yogakaraka ? 1 : 0)
                 + beneficOccupants.Count + beneficAspectors.Count;
@@ -95,12 +96,12 @@ public static class HouseBeneficMaleficCalculator
     /// <summary>Benefic/malefic by the occupant/aspecting planet's OWN functional nature from this
     /// Lagna (not the house's own lord) — Rahu/Ketu own no sign so fall back to the natural-malefic
     /// convention already implicit in LagnaFunctionalNature.NaturalBenefics.</summary>
-    private static bool IsBenefic(ZodiacName ascendantSign, string planetName)
+    private static bool IsBenefic(ZodiacName ascendantSign, string planetName, bool? moonWaxing)
     {
         if (!Enum.TryParse<PlanetName>(planetName, out var planet) || planet is PlanetName.Rahu or PlanetName.Ketu)
             return false;
 
-        var nature = LagnaFunctionalNature.For(ascendantSign, planet).Nature;
+        var nature = LagnaFunctionalNature.For(ascendantSign, planet, moonWaxing).Nature;
         return nature is FunctionalNature.Benefic or FunctionalNature.Yogakaraka;
     }
 }

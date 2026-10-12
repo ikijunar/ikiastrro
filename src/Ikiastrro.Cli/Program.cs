@@ -639,6 +639,27 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
         Check($"{lagna} yogakaraka by rule", string.Join(",", byRule), LagnaFunctionalNature.YogakarakaFor(lagna)?.ToString() ?? "");
     }
 
+    // The Moon's phase reaches every caller: MoonPhase itself, then a caller that takes it as a flag
+    // (D1PromiseEngine.NatureDirection) and one that derives it from the chart (HouseBeneficMaleficCalculator).
+    Check("MoonPhase 10/100 waxing", MoonPhase.IsWaxing(10, 100), true);
+    Check("MoonPhase 10/200 waning (elongation 190)", MoonPhase.IsWaxing(10, 200), false);
+    Check("MoonPhase 350/5 waxing (wraps 0)", MoonPhase.IsWaxing(350, 5), true);
+    Check("MoonPhase 100/10 waning", MoonPhase.IsWaxing(100, 10), false);
+    Check("MoonPhase sign Ar/Vi (6th) waxing", MoonPhase.IsWaxing(ZodiacName.Aries, ZodiacName.Virgo), true);
+    Check("MoonPhase sign Ar/Li (7th) waning", MoonPhase.IsWaxing(ZodiacName.Aries, ZodiacName.Libra), false);
+    Check("NatureDirection Aries/Moon waxing", Ikiastrro.Core.LifeMatters.Promise.D1PromiseEngine.NatureDirection(ZodiacName.Aries, PlanetName.Moon, true), Ikiastrro.Core.LifeMatters.Promise.Direction.Obstructive);
+    Check("NatureDirection Aries/Moon waning", Ikiastrro.Core.LifeMatters.Promise.D1PromiseEngine.NatureDirection(ZodiacName.Aries, PlanetName.Moon, false), Ikiastrro.Core.LifeMatters.Promise.Direction.Neutral);
+    foreach (var (moonLon, expected) in new[] { (100.0, FunctionalNature.Malefic), (200.0, FunctionalNature.Neutral) })
+    {
+        var grahas = new List<ChartKeyDetail>
+        {
+            new() { Planet = "Sun", PointKind = "Graha", Sign = "Aries", NirayanaLongitudeDegrees = 10, HouseNumberFromLagna = 1 },
+            new() { Planet = "Moon", PointKind = "Graha", Sign = moonLon < 120 ? "Cancer" : "Libra", NirayanaLongitudeDegrees = moonLon, HouseNumberFromLagna = moonLon < 120 ? 4 : 7 },
+        };
+        var fourth = HouseBeneficMaleficCalculator.ComputeAll(ZodiacName.Aries, grahas).First(r => r.HouseNumber == 4);
+        Check($"Aries 4th lord Moon at {moonLon} deg", fourth.LordFunctionalNature, expected);
+    }
+
     Console.WriteLine(failures == 0 ? "\nverify-functional-nature: ALL PASS" : $"\nverify-functional-nature: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);
 }

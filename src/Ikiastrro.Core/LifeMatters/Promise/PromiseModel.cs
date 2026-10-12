@@ -76,7 +76,7 @@ public sealed record LifeMatterPromise(
 /// Neutral, Enemy, Great Enemy or Debilitated.</param>
 public sealed record PlanetFact(
     ZodiacName Sign, string? Dignity = null, bool IsCombust = false,
-    Capacity Capacity = Capacity.Unknown, PlanetName? NakshatraLord = null);
+    Capacity Capacity = Capacity.Unknown, PlanetName? NakshatraLord = null, double? LongitudeDegrees = null);
 
 /// <summary>One Argala pair on the target (PVR 10.5-10.6): the planets intervening from
 /// <see cref="ArgalaOffset"/> and the planets obstructing them from <see cref="ObstructionOffset"/>.
