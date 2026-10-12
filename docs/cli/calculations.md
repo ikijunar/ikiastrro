@@ -210,8 +210,8 @@ Venus **exactly**; Janma Ghaṭis within JHora's own two-decimal rounding.
 
 ## 10. Functional benefic / malefic
 
-`LagnaFunctionalNature` — Parāśari **functional** nature for a given Lagna from which houses a
-planet rules. The primary `enum { Benefic, Malefic, Neutral, Yogakaraka }` verdict is accompanied
+`LagnaFunctionalNature` — **functional** nature for a given Lagna, read from PVR Table 30
+(`SRC_PVR_INTEGRATED` §13.2, p.167). The primary `enum { Benefic, Malefic, Neutral, Yogakaraka }` verdict is accompanied
 by independent ownership evidence: `MarakaHouses` (2/7), `DusthanaHouses` (6/8/12),
 `TrishadayaHouses` (3/6/11), `IsBaadhakaLord` plus the modality-derived `BaadhakaHouse`
 (movable 11, fixed 9, dual 7), `KendradhipatiDosha`, and an aggregate rationale. The evidence
@@ -219,10 +219,15 @@ remains visible even when a stronger lordship determines the primary verdict—f
 planet can be Yogakaraka and also the baadhaka lord. `IsMaraka` remains as a compatibility
 convenience derived from `MarakaHouses`.
 
-Rahu/Ketu are out of scope. Heuristic from B.V. Raman *How to Judge a Horoscope* Vol. 1
-p.14–18; baadhaka follows PVR §13.3 via `BaadhakaCalculator`. This is the sole source of the
-verdict (the per-Lagna mirror table was removed). Computed on demand, not persisted. Check:
-`verify-functional-nature`.
+Rahu/Ketu are out of scope. The verdict is Table 30's own 12 Lagna rows (yogakaraka / benefic /
+neutral / malefic), not a re-derivation from lordship: PVR says to "judiciously combine" the two
+rasis a planet owns and the table is that result (e.g. Jupiter, 6th + 9th lord, is benefic for
+Cancer). The Moon is unlisted for Aries/Libra/Capricorn because it depends on phase; the optional
+`moonWaxing` argument picks Malefic (waxing, kendrādhipati) or Neutral (waning), defaulting to
+waxing with a note in the rationale. The earlier Raman-based heuristic was removed 2026-10-12.
+Baadhaka follows PVR §13.3 via `BaadhakaCalculator`. This is the sole source of the verdict (the
+per-Lagna mirror table was removed). Computed on demand, not persisted. Check:
+`verify-functional-nature` (all 12 Lagnas against Table 30, plus PVR's yogakaraka rule re-derived).
 ## 11. Baadhaka
 
 `BaadhakaCalculator` — PVR §13.3 (Table 31, `SRC_PVR_INTEGRATED`): for a rasi/house falling in

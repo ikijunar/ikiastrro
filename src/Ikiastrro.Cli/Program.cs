@@ -544,8 +544,8 @@ if (args.Length > 0 && args[0] == "verify-vargas")
 }
 
 // --- One-off check: `dotnet run -- verify-functional-nature` ---
-// Worked-example assertions for LagnaFunctionalNature (Parashari functional benefic/malefic
-// heuristic + yogakaraka detection). Solution has no unit-test project.
+// Assertions for LagnaFunctionalNature against PVR Table 30 (SRC_PVR_INTEGRATED p.167): worked
+// examples, then every Lagna x planet cell, then PVR's yogakaraka rule re-derived from lordship.
 if (args.Length > 0 && args[0] == "verify-functional-nature")
 {
     var failures = 0;
@@ -566,7 +566,7 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
     Check("Aries/Mercury houses", Houses(arMe), "{3,6}");
 
     var cnMo = LagnaFunctionalNature.For(ZodiacName.Cancer, PlanetName.Moon);
-    Check("Cancer/Moon nature", cnMo.Nature, FunctionalNature.Neutral);   // Moon as Lagna lord
+    Check("Cancer/Moon nature", cnMo.Nature, FunctionalNature.Benefic);   // Table 30: Moon benefic for Cancer
     Check("Cancer/Moon houses", Houses(cnMo), "{1}");
 
     Check("Libra/Saturn",     LagnaFunctionalNature.For(ZodiacName.Libra, PlanetName.Saturn).Nature,      FunctionalNature.Yogakaraka);
@@ -604,6 +604,40 @@ if (args.Length > 0 && args[0] == "verify-functional-nature")
     Check("Gemini baadhaka house", geJu.BaadhakaHouse, 7);
     Check("Gemini/Jupiter maraka overlap", string.Join(",", geJu.MarakaHouses), "7");
     Check("Aries/Venus nature", arVe.Nature, FunctionalNature.Malefic);     // falls through to the catch-all
+
+    // PVR Table 30 transcribed independently of the engine (Y yogakaraka, B benefic, N neutral, M malefic).
+    // Planet order Su Mo Ma Me Ju Ve Sa; '-' = not listed (the Moon for Aries, Libra, Capricornus).
+    var table30 = new (ZodiacName Lagna, string Cells)[]
+    {
+        (ZodiacName.Aries,       "B-BMBMM"), (ZodiacName.Taurus,      "BMNBMMY"), (ZodiacName.Gemini,      "MNMNMBN"),
+        (ZodiacName.Cancer,      "NBYMBMN"), (ZodiacName.Leo,         "BNYMBMM"), (ZodiacName.Virgo,       "NMMBMBN"),
+        (ZodiacName.Libra,       "M-MBMBY"), (ZodiacName.Scorpio,     "NBNMBMM"), (ZodiacName.Sagittarius, "BNBNNMM"),
+        (ZodiacName.Capricornus, "N-MBMYB"), (ZodiacName.Aquarius,    "NMMNMYB"), (ZodiacName.Pisces,      "MBBMNMM"),
+    };
+    var order = new[] { PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury, PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn };
+    foreach (var (lagna, cells) in table30)
+        for (var i = 0; i < order.Length; i++)
+        {
+            if (cells[i] == '-') continue;
+            var expected = cells[i] switch { 'Y' => FunctionalNature.Yogakaraka, 'B' => FunctionalNature.Benefic, 'N' => FunctionalNature.Neutral, _ => FunctionalNature.Malefic };
+            Check($"Table 30 {lagna}/{order[i]}", LagnaFunctionalNature.For(lagna, order[i]).Nature, expected);
+        }
+
+    // Moon is phase-dependent for Aries/Libra/Capricornus (PVR p.166-167).
+    foreach (var lagna in new[] { ZodiacName.Aries, ZodiacName.Libra, ZodiacName.Capricornus })
+    {
+        Check($"{lagna}/Moon waxing", LagnaFunctionalNature.For(lagna, PlanetName.Moon, true).Nature, FunctionalNature.Malefic);
+        Check($"{lagna}/Moon waning", LagnaFunctionalNature.For(lagna, PlanetName.Moon, false).Nature, FunctionalNature.Neutral);
+    }
+
+    // PVR 13.2: a planet owning a quadrant (4/7/10) and a trine (5/9) is the yogakaraka - the table's
+    // yogakaraka column must be exactly the planets the rule finds, for every Lagna.
+    foreach (var lagna in Enum.GetValues<ZodiacName>())
+    {
+        var byRule = order.Where(p => { var h = LagnaFunctionalNature.For(lagna, p, true).RuledHouses;
+                                         return h.Any(x => x is 4 or 7 or 10) && h.Any(x => x is 5 or 9); }).ToArray();
+        Check($"{lagna} yogakaraka by rule", string.Join(",", byRule), LagnaFunctionalNature.YogakarakaFor(lagna)?.ToString() ?? "");
+    }
 
     Console.WriteLine(failures == 0 ? "\nverify-functional-nature: ALL PASS" : $"\nverify-functional-nature: {failures} FAILURE(S)");
     Environment.Exit(failures == 0 ? 0 : 1);

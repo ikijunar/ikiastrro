@@ -49,7 +49,7 @@ the verdict.
 
 **Built 2026-09-23:** `HouseBeneficMaleficCalculator` (`Core/Engines/Houses`, `workstream/cli`)
 implements steps 1–4 below. Live-only, no persisted table — same "hardcode + cite" pattern as
-`LagnaFunctionalNature` itself, cited to the same `SRC_RAMAN_HTJH` p.14-15 passage. Step 3
+`LagnaFunctionalNature` itself (which since 2026-10-12 reads PVR Table 30, `SRC_PVR_INTEGRATED` p.167, instead of the Raman heuristic); this house-level count is still cited to `SRC_RAMAN_HTJH` p.14-15. Step 3
 (aspects) reuses `RelationshipEngine`'s own `AspectOffsets` table via a new public
 `AspectsSign` helper rather than a separate implementation, so an aspect onto an *empty* house
 (no occupant, so no `tbl_Chart_Aspects`/`AspectingPlanets` row) is still detected. Verdict is

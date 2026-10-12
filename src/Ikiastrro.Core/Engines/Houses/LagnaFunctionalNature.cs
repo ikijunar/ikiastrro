@@ -2,24 +2,57 @@ using Ikiastrro.Core.Engines.Astronomy;
 
 namespace Ikiastrro.Core.Engines.Houses;
 
-/// <summary>Parashari functional nature of a planet with respect to a Lagna — Benefic / Malefic /
-/// Neutral / Yogakaraka — derived from which houses the planet rules from that Lagna. This is the
-/// single source of the functional-nature verdict used across the app (CLI and web).
-/// A documented heuristic following the general rules in B.V. Raman, "How to Judge a Horoscope"
-/// Vol. 1, p.14-15 (kendra/trikona lordship, kendradhipati dosha, maraka/dusthana). For
-/// mixed-lordship planets the catch-all branch below applies. Rahu/Ketu are out of scope
-/// (no sign rulership).</summary>
+/// <summary>Functional nature of a planet for a Lagna — Benefic / Malefic / Neutral / Yogakaraka —
+/// read straight from P.V.R. Narasimha Rao, "Vedic Astrology: An Integrated Approach"
+/// (SRC_PVR_INTEGRATED), §13.2 and Table 30 "Functional nature of planets" (printed p.166-167).
+/// This is the single source of the functional-nature verdict used across the app (CLI and web).
+/// PVR's rule: lords of trines are functional benefics; lords of the 3rd, 6th and 11th functional
+/// malefics; a quadrant lord is a functional malefic if a natural benefic and neutral if a natural
+/// malefic; lords of the 2nd, 8th and 12th neutral (the 8th most malefic); a planet owning a quadrant
+/// and a trine is a yogakaraka. For planets owning two rasis PVR says to "judiciously combine the two
+/// indications", and Table 30 is that combination worked out for every Lagna — so the table is the
+/// verdict here and the rule is not re-derived (a mechanical re-derivation disagrees with the book,
+/// e.g. Jupiter in Cancer, 6th + 9th lord, which the table lists as benefic).
+/// The Moon is not listed for Aries, Libra and Capricorn: PVR makes it depend on phase — a waxing
+/// Moon is a natural benefic and becomes a functional malefic with quadrant ownership, a waning Moon
+/// a natural malefic made functionally neutral by it. Pass <c>moonWaxing</c> for those Lagnas; left
+/// null, the waxing reading is returned and the rationale says so.
+/// Rahu/Ketu are out of scope (no sign rulership, not in Table 30).</summary>
 public static class LagnaFunctionalNature
 {
-    private static readonly HashSet<PlanetName> NaturalBenefics = new()
-        { PlanetName.Jupiter, PlanetName.Venus, PlanetName.Mercury, PlanetName.Moon };
+    private sealed record Row(PlanetName? Yogakaraka, PlanetName[] Benefics, PlanetName[] Neutrals, PlanetName[] Malefics);
 
-    private static readonly int[] Kendras  = { 4, 7, 10 };   // the 1st is a kendra too but never on its own confers yogakaraka
-    private static readonly int[] Trikonas = { 5, 9 };       // the 1st is a trikona too, same caveat
+    private const PlanetName Su = PlanetName.Sun, Mo = PlanetName.Moon, Ma = PlanetName.Mars, Me = PlanetName.Mercury,
+        Ju = PlanetName.Jupiter, Ve = PlanetName.Venus, Sa = PlanetName.Saturn;
+
+    /// <summary>PVR Table 30, p.167, one row per Lagna. The Moon is absent from the Aries, Libra and
+    /// Capricorn rows exactly as printed.</summary>
+    private static readonly Dictionary<ZodiacName, Row> Table30 = new()
+    {
+        [ZodiacName.Aries]       = new(null, new[] { Su, Ma, Ju }, Array.Empty<PlanetName>(), new[] { Me, Ve, Sa }),
+        [ZodiacName.Taurus]      = new(Sa,   new[] { Su, Me, Sa }, new[] { Ma },              new[] { Mo, Ju, Ve }),
+        [ZodiacName.Gemini]      = new(null, new[] { Ve },         new[] { Mo, Me, Sa },      new[] { Su, Ma, Ju }),
+        [ZodiacName.Cancer]      = new(Ma,   new[] { Mo, Ma, Ju }, new[] { Su, Sa },          new[] { Me, Ve }),
+        [ZodiacName.Leo]         = new(Ma,   new[] { Su, Ma, Ju }, new[] { Mo },              new[] { Me, Ve, Sa }),
+        [ZodiacName.Virgo]       = new(null, new[] { Me, Ve },     new[] { Su, Sa },          new[] { Mo, Ma, Ju }),
+        [ZodiacName.Libra]       = new(Sa,   new[] { Me, Ve, Sa }, Array.Empty<PlanetName>(), new[] { Su, Ma, Ju }),
+        [ZodiacName.Scorpio]     = new(null, new[] { Mo, Ju },     new[] { Su, Ma },          new[] { Me, Ve, Sa }),
+        [ZodiacName.Sagittarius] = new(null, new[] { Su, Ma },     new[] { Mo, Me, Ju },      new[] { Ve, Sa }),
+        [ZodiacName.Capricornus] = new(Ve,   new[] { Ve, Me, Sa }, new[] { Su },              new[] { Ma, Ju }),
+        [ZodiacName.Aquarius]    = new(Ve,   new[] { Ve, Sa },     new[] { Su, Me },          new[] { Mo, Ma, Ju }),
+        [ZodiacName.Pisces]      = new(null, new[] { Mo, Ma },     new[] { Ju },              new[] { Su, Me, Ve, Sa }),
+    };
+
+    private static readonly PlanetName[] NaturalBenefics = { PlanetName.Jupiter, PlanetName.Venus, PlanetName.Mercury };
+    private static readonly int[] Kendras  = { 4, 7, 10 };   // the 1st is a quadrant too but never makes a yogakaraka on its own
+    private static readonly int[] Trikonas = { 5, 9 };
     private static readonly int[] Dusthanas = { 6, 8, 12 };
     private static readonly int[] Trishadayas = { 3, 6, 11 };
 
-    public static FunctionalNatureResult For(ZodiacName lagnaSign, PlanetName planet)
+    /// <summary>The planet Table 30 lists as yogakaraka for a Lagna, if any.</summary>
+    public static PlanetName? YogakarakaFor(ZodiacName lagnaSign) => Table30[lagnaSign].Yogakaraka;
+
+    public static FunctionalNatureResult For(ZodiacName lagnaSign, PlanetName planet, bool? moonWaxing = null)
     {
         if (planet is PlanetName.Rahu or PlanetName.Ketu)
             throw new ArgumentOutOfRangeException(nameof(planet), "Functional nature is defined for the 7 classical planets only.");
@@ -40,52 +73,52 @@ public static class LagnaFunctionalNature
         var trishadayaHouses = ruledHouses.Intersect(Trishadayas).ToArray();
         var baadhaka = BaadhakaCalculator.For(lagnaSign);
         var isBaadhakaLord = baadhaka.Baadhaka.Equals(planet.ToString(), StringComparison.Ordinal);
-        var hasKendra  = ruledHouses.Intersect(Kendras).Any();
-        var hasTrikona = ruledHouses.Intersect(Trikonas).Any();
-        var hasTrishadaya = trishadayaHouses.Length > 0;
-        var isNaturalBenefic = NaturalBenefics.Contains(planet);
+        var ownsKendra = ruledHouses.Intersect(Kendras).Any();
+        var ownsTrikona = ruledHouses.Intersect(Trikonas).Any();
+        var houses = string.Join(" & ", ruledHouses);
 
+        var row = Table30[lagnaSign];
         FunctionalNature nature;
-        var kendradhipatiDosha = false;
         string why;
+        var kendradhipatiDosha = false;
 
-        if (hasKendra && hasTrikona)
+        if (row.Yogakaraka == planet)
         {
             nature = FunctionalNature.Yogakaraka;
-            why = $"Rules a kendra and a trikona ({string.Join(" & ", ruledHouses)}) — Yogakaraka";
+            why = $"Rules a quadrant and a trine ({houses}) — Yogakaraka (PVR Table 30)";
         }
-        else if (ruledHouses.Contains(1) && !hasTrishadaya)
-        {
-            nature = planet == PlanetName.Moon ? FunctionalNature.Neutral : FunctionalNature.Benefic;
-            why = planet == PlanetName.Moon ? "Lagna lord and the Moon — Neutral" : "Lagna lord — Benefic";
-        }
-        else if ((ruledHouses.Contains(5) || ruledHouses.Contains(9)) && !hasTrishadaya)
+        else if (row.Benefics.Contains(planet))
         {
             nature = FunctionalNature.Benefic;
-            why = $"Trikona lord ({string.Join(" & ", ruledHouses)}) — Benefic";
+            why = $"Rules {houses} — functional benefic (PVR Table 30)";
         }
-        else if (!hasTrishadaya && ruledHouses.All(h => Kendras.Contains(h)) && ruledHouses.Length > 0)
+        else if (row.Neutrals.Contains(planet))
         {
-            if (isNaturalBenefic) { nature = FunctionalNature.Malefic; kendradhipatiDosha = true;
-                why = $"Natural benefic owning only a kendra ({string.Join(" & ", ruledHouses)}) — kendradhipati dosha"; }
-            else { nature = FunctionalNature.Benefic;
-                why = $"Natural malefic owning a kendra ({string.Join(" & ", ruledHouses)}) — Benefic"; }
+            nature = FunctionalNature.Neutral;
+            why = $"Rules {houses} — functionally neutral (PVR Table 30)";
         }
-        else if (hasTrishadaya)
+        else if (row.Malefics.Contains(planet))
         {
             nature = FunctionalNature.Malefic;
-            why = $"Lord of {string.Join(" & ", trishadayaHouses)} — triṣaḍāya lordship";
+            why = $"Rules {houses} — functional malefic (PVR Table 30)";
         }
-        else if (ruledHouses.Length > 0 && ruledHouses.All(h => h is 2 or 8 or 12))
+        else if (planet == PlanetName.Moon)
         {
-            nature = planet is PlanetName.Sun or PlanetName.Moon ? FunctionalNature.Neutral : FunctionalNature.Malefic;
-            why = $"Lord of {string.Join(" & ", ruledHouses)}" + (nature == FunctionalNature.Neutral ? " — luminary, Neutral" : " — Malefic");
+            // Aries / Libra / Capricornus: PVR leaves the Moon out of Table 30 — it depends on phase.
+            var waxing = moonWaxing ?? true;
+            nature = waxing ? FunctionalNature.Malefic : FunctionalNature.Neutral;
+            why = waxing
+                ? $"Rules {houses} — waxing Moon is a natural benefic, so quadrant ownership makes it a functional malefic (PVR §13.2)"
+                : $"Rules {houses} — waning Moon is a natural malefic, so quadrant ownership makes it functionally neutral (PVR §13.2)";
+            if (moonWaxing is null) why += "; phase not supplied, waxing assumed";
+            kendradhipatiDosha = waxing;
         }
         else
-        {
-            nature = FunctionalNature.Malefic;   // default catch-all: mixed kendra + maraka/dusthana, no trikona
-            why = $"Mixed lordship ({string.Join(" & ", ruledHouses)}) — Malefic (heuristic default)";
-        }
+            throw new InvalidOperationException($"{planet} is missing from PVR Table 30 for {lagnaSign}.");
+
+        // PVR §13.2: a natural benefic owning a quadrant (and no trine) is turned functionally malefic.
+        if (nature == FunctionalNature.Malefic && ownsKendra && !ownsTrikona && NaturalBenefics.Contains(planet))
+            kendradhipatiDosha = true;
 
         var modifiers = new List<string>();
         if (marakaHouses.Length > 0)
@@ -115,7 +148,7 @@ public enum FunctionalNature { Benefic, Malefic, Neutral, Yogakaraka }
 /// <param name="TrishadayaHouses">Owned triṣaḍāya houses (3, 6 and/or 11).</param>
 /// <param name="IsBaadhakaLord">Whether this planet rules the Lagna's modality-derived bādhaka house.</param>
 /// <param name="BaadhakaHouse">The bādhaka house: 11 movable, 9 fixed, 7 dual.</param>
-/// <param name="KendradhipatiDosha">Natural benefic degraded by owning only an angle.</param>
+/// <param name="KendradhipatiDosha">Natural benefic made functionally malefic by owning a quadrant (PVR §13.2).</param>
 public record FunctionalNatureResult(
     FunctionalNature Nature,
     int[] RuledHouses,
