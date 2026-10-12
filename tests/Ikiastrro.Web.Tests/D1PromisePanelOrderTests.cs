@@ -42,4 +42,23 @@ public sealed class D1PromisePanelOrderTests : BunitContext
             ["Matter A3", "Matter A5", "Matter A2", "Matter A6", "Matter A4", "Matter A1", "Matter B2", "Matter B1"],
             order);
     }
+
+    [Fact]
+    public void ShowsTheVargaReconciliationBesideTheVerdictAndSaysWhenNoVargaWasRead()
+    {
+        var withVarga = Matter("C1", "SELF", PromiseVerdict.StrongPositive);
+        var target = withVarga.Targets[0];
+        withVarga = withVarga with
+        {
+            Targets = [target with { Promise = target.Promise with { Domain = new DomainConfirmation("D10", PromiseVerdict.Adverse, "x") } }],
+        };
+        var without = Matter("C2", "SELF", PromiseVerdict.Mixed);
+
+        var cut = Render<D1PromisePanel>(p => p.Add(x => x.Readings, new[] { withVarga, without }));
+
+        var badges = cut.FindAll(".dp-recon").Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(["D10 · Delivery reduced"], badges);
+        Assert.Contains("delivery is reduced", cut.Markup);
+        Assert.Contains("No divisional chart was read", cut.Markup);
+    }
 }

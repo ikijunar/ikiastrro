@@ -838,7 +838,7 @@ else
         {
             if (_promiseLoaded) return _promiseReadings;
             _promiseLoaded = true;
-            try { _promiseReadings = PromiseService.ReadAll(Id); }
+            try { _promiseReadings = PromiseService.ReadAll(Id, includeVarga: true); }
             catch (Exception ex) { _promiseReadings = null; _promiseError = ex.Message; }
             return _promiseReadings;
         }

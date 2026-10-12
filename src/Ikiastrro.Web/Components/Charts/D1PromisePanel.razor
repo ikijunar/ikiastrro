@@ -11,7 +11,8 @@
     <p class="dp-note">
         What the natal chart promises about each matter, what supports or damages it, and how firmly the evidence agrees.
         Strength is capacity, not direction: a strong malefic is strongly obstructive. A verdict is a project heuristic.
-        Open a row for its testimonies. Matters read from a special point or another lagna are not read here yet.
+        Each row also shows the matter's own divisional chart, read the same way, and what D1 and that chart say together
+        (the varga never creates a promise D1 lacks). Open a row for its testimonies. Matters read from a special point or another lagna are not read here yet.
     </p>
 
     @if (Readings is null)
@@ -38,12 +39,17 @@
                 @foreach (var row in group)
                 {
                     var p = row.Target.Promise;
+                    var rec = PromiseReconciler.Reconcile(p);
                     <details class="dp-row">
                         <summary>
                             <span class="dp-matter">@row.Matter.MatterText</span>
                             <span class="dp-house">@row.Target.Label</span>
                             <span class="dp-verdict is-@Css(p.Verdict)">@Label(p.Verdict)</span>
                             <span class="dp-conf">@p.Confidence confidence</span>
+                            @if (p.Domain is not null)
+                            {
+                                <span class="dp-recon is-@ReconTone(rec.Outcome)" title="@rec.Inference">@p.Domain.Chart · @ReconLabel(rec.Outcome)</span>
+                            }
                             <span class="dp-roles" title="Lord · karakas · other influences">
                                 @foreach (var role in Roles)
                                 {
@@ -63,6 +69,15 @@
                             @if (p.DominantObstruction.Length > 0)
                             {
                                 <p><b>Leading obstruction</b> — @p.DominantObstruction</p>
+                            }
+                            @if (p.Domain is not null)
+                            {
+                                <p class="dp-recon-line"><b>@p.Domain.Chart reconciliation</b> — @rec.Inference
+                                    <span class="dp-conf">@p.Domain.Chart reads @Label(p.Domain.Verdict); reconciled: @Label(rec.Verdict), @rec.Confidence confidence.</span></p>
+                            }
+                            else
+                            {
+                                <p class="dp-missing"><b>Varga</b> — @rec.Inference</p>
                             }
                             @foreach (var c in p.Contradictions)
                             {
@@ -162,6 +177,30 @@
         PromiseVerdict.WeakLimited => "Weak / limited",
         PromiseVerdict.Adverse => "Adverse",
         _ => "Indeterminate",
+    };
+
+    private static string ReconLabel(ReconciliationOutcome o) => o switch
+    {
+        ReconciliationOutcome.Confirmed => "Confirmed",
+        ReconciliationOutcome.ConfirmedWithQualification => "Confirmed, qualified",
+        ReconciliationOutcome.DeliveryReduced => "Delivery reduced",
+        ReconciliationOutcome.ConditionalImprovement => "Conditional improvement",
+        ReconciliationOutcome.Unresolved => "Unresolved",
+        ReconciliationOutcome.ConflictTowardDifficulty => "Conflict, tends to difficulty",
+        ReconciliationOutcome.LimitedByD1 => "Limited by D1",
+        ReconciliationOutcome.StrongObstruction => "Strong obstruction",
+        ReconciliationOutcome.ThinPromise => "Thin promise",
+        ReconciliationOutcome.Indeterminate => "Indeterminate",
+        _ => "Not evaluated",
+    };
+
+    /// <summary>Colour class by direction of travel, matching the verdict chips; the label is always shown too.</summary>
+    private static string ReconTone(ReconciliationOutcome o) => o switch
+    {
+        ReconciliationOutcome.Confirmed or ReconciliationOutcome.ConfirmedWithQualification or ReconciliationOutcome.ConditionalImprovement => "good",
+        ReconciliationOutcome.DeliveryReduced or ReconciliationOutcome.ConflictTowardDifficulty or ReconciliationOutcome.StrongObstruction
+            or ReconciliationOutcome.LimitedByD1 or ReconciliationOutcome.ThinPromise => "bad",
+        _ => "neutral",
     };
 
     private static string Css(PromiseVerdict v) => v.ToString().ToLowerInvariant();
