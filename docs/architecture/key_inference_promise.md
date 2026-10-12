@@ -194,3 +194,13 @@ One correction found by this run: planets acting on the target were judged by fu
 ### 10.2 The D1-Promise tab (2026-10-04)
 
 Astro Facts has an eighth master tab, **D1-PROMISE** (`?step=promise`), showing the engine's output for every life matter before Key Inference is rewired: `D1PromisePanel` over `LifeMatterPromiseService.ReadAll`, loaded on first open. It is the place to compare the engine with hand readings. It is registered as a print module (`d1promise`) and adds no rule. Key Inference itself is unchanged.
+
+### 10.3 Phase 3: varga reconciliation (2026-10-12)
+
+`PromiseReconciler.Reconcile(LifeMatterPromise)` (`src/Ikiastrro.Core/LifeMatters/Promise/PromiseReconciler.cs`) applies the section 7 table to the D1 verdict and `Domain` (the varga read by `LifeMatterVargaConfirmationAdapter`). It returns a `PromiseReconciliation` (outcome, verdict, confidence, one-line inference). Pure Core; 26 cases in `PromiseReconcilerTests`. Nothing calls it yet: no page, CLI or `LifeMatterPromise` change.
+
+The six rows in section 7 are implemented as written. The cells the table did not cover are my reading, heuristic and open to change: positive D1 with a mixed varga is `ConfirmedWithQualification`; mixed with mixed is `Unresolved`; mixed D1 with a weak varga reads as the adverse row; weak or adverse D1 with a mixed varga is `LimitedByD1`; weak with weak is `ThinPromise`; any other weak/adverse pair is `StrongObstruction`.
+
+Rules enforced: the varga never raises the D1 verdict; only a Strong positive whose delivery is reduced steps down to Positive but conditional; an indeterminate D1 draws no inference; an unread or indeterminate varga leaves D1 standing. Confidence reaches High only when the outcome is Confirmed and the D1 foundation itself is High; every other outcome is capped at Medium.
+
+Still to do: surface it (CLI `read-promise`, D1-Promise tab, then the Key Inference rewire, phase 5), and phases 4 and 6.
