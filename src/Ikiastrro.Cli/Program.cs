@@ -3102,7 +3102,7 @@ if (args.Length > 0 && args[0] == "backfill-planet-transits")
 // --- Verification mode: `dotnet run -- read-promise <name|id> [--matter CODE] [--category CAT] [--detail]` ---
 // Reads every life matter's D1 promise for one saved person (docs/architecture/key_inference_promise.md
 // §10): the matter's Lagna house(s), the categorical verdict and confidence, the principal roles'
-// directions, and with --detail every testimony. Read-only; for checking the engine against a hand reading.
+// directions, the matter's varga verdict and the D1 x varga reconciliation (§10.3), and with --detail every testimony. Read-only; for checking the engine against a hand reading.
 if (args.Length > 0 && args[0] == "read-promise")
 {
     var who = args.Length > 1 ? args[1] : throw new ArgumentException("Usage: read-promise <name|id> [--matter CODE] [--category CAT] [--detail]");
@@ -3117,7 +3117,7 @@ if (args.Length > 0 && args[0] == "read-promise")
         new AshtakavargaRepository(connectionFactory), new BhavaStrengthRepository(connectionFactory),
         new AmsabalaRepository(connectionFactory), new ArgalaFactRepository(connectionFactory),
         new NaisargikaKarakaRepository(connectionFactory));
-    var readings = service.ReadAll(person.Id);
+    var readings = service.ReadAll(person.Id, includeVarga: true);
     if (readings is null) { Console.WriteLine($"{person.Name} has no stored D1."); return; }
 
     var matter = Opt("--matter");
@@ -3130,6 +3130,7 @@ if (args.Length > 0 && args[0] == "read-promise")
 
     Console.WriteLine($"D1 promise for {person.Name} (id {person.Id}) — {shown.Count} matters");
     var tally = new Dictionary<string, int>();
+    var reconTally = new Dictionary<string, int>();
     foreach (var r in shown)
     {
         if (r.Targets.Count == 0) { Console.WriteLine($"{r.LifeMatterCode,-16} {r.MatterText,-44} — {r.Note}"); tally["(no Lagna house)"] = tally.GetValueOrDefault("(no Lagna house)") + 1; continue; }
@@ -3138,8 +3139,12 @@ if (args.Length > 0 && args[0] == "read-promise")
             var p = t.Promise;
             tally[p.Verdict.ToString()] = tally.GetValueOrDefault(p.Verdict.ToString()) + 1;
             var roles = string.Join(" ", p.D1.RoleDirections.Select(d => $"{d.Key.ToString()[0]}={d.Value.ToString()[0]}"));
-            Console.WriteLine($"{r.LifeMatterCode,-16} {Trunc(r.MatterText, 44),-44} {t.Label,-10} {p.Verdict,-20} {p.Confidence,-7} [{roles}] idx={p.TechnicalSupportIndex?.ToString() ?? "-"}");
+            var rec = Ikiastrro.Core.LifeMatters.Promise.PromiseReconciler.Reconcile(p);
+            reconTally[rec.Outcome.ToString()] = reconTally.GetValueOrDefault(rec.Outcome.ToString()) + 1;
+            var varga = p.Domain is null ? "-" : $"{p.Domain.Chart}:{p.Domain.Verdict}";
+            Console.WriteLine($"{r.LifeMatterCode,-16} {Trunc(r.MatterText, 44),-44} {t.Label,-10} {p.Verdict,-20} {p.Confidence,-7} [{roles}] idx={p.TechnicalSupportIndex?.ToString() ?? "-"}  varga={varga} → {rec.Outcome}");
             if (!detail) continue;
+            Console.WriteLine($"    reconciled: {rec.Verdict}, {rec.Confidence} — {rec.Inference}");
             foreach (var x in p.D1.Testimonies.Where(x => x.Direction != Ikiastrro.Core.LifeMatters.Promise.Direction.Neutral || x.Role == Ikiastrro.Core.LifeMatters.Promise.TestimonyRole.Target))
                 Console.WriteLine($"    {x.Role,-12} {x.Direction,-11} {x.Capacity,-8} {x.Explanation}");
             foreach (var m in p.MissingEvidence) Console.WriteLine($"    missing: {m}");
@@ -3148,6 +3153,7 @@ if (args.Length > 0 && args[0] == "read-promise")
         }
     }
     Console.WriteLine("Verdicts: " + string.Join(", ", tally.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value}")));
+    Console.WriteLine("Reconciled with varga: " + string.Join(", ", reconTally.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value}")));
     return;
 
     static string Trunc(string s, int n) => s.Length <= n ? s : s[..(n - 1)] + "…";
