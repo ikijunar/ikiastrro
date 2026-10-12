@@ -220,8 +220,10 @@ public sealed class LifeMatterPromiseService(
     private const byte RuleSetId = 1;
     private static readonly LifeMatterFocusResolver Resolver = new();
 
-    /// <summary>All active matters in display order, or null when the person has no stored D1.</summary>
-    public IReadOnlyList<MatterPromiseReading>? ReadAll(int birthDetailId)
+    /// <summary>All active matters in display order, or null when the person has no stored D1. With
+    /// <paramref name="includeVarga"/>, each target's promise also carries the matter's own varga
+    /// (<see cref="LifeMatterVargaConfirmationAdapter"/>) in <c>Domain</c>, where that chart is stored.</summary>
+    public IReadOnlyList<MatterPromiseReading>? ReadAll(int birthDetailId, bool includeVarga = false)
     {
         var d1 = chartResults.GetByBirthDetailId(birthDetailId).FirstOrDefault(c => c.ChartType == "D1");
         if (d1 is null) return null;
@@ -243,9 +245,36 @@ public sealed class LifeMatterPromiseService(
         var rules = naisargika.LoadActive();
         var significations = LifeMatterPromiseAdapter.Significations(rules.Details);
         var houseMatters = LifeMatterPromiseAdapter.HouseMatters(rules.Houses);
+        var storedCharts = includeVarga ? chartResults.GetByBirthDetailId(birthDetailId) : [];
+        var vargaCache = new Dictionary<string, (IReadOnlyList<ChartKeyDetail> Details, string Ascendant, LifeMatterStatistics Stats)?>(StringComparer.OrdinalIgnoreCase);
+        (IReadOnlyList<ChartKeyDetail> Details, string Ascendant, LifeMatterStatistics Stats)? Varga(string chartType)
+        {
+            if (vargaCache.TryGetValue(chartType, out var hit)) return hit;
+            var stored = storedCharts.FirstOrDefault(c => string.Equals(c.ChartType, chartType, StringComparison.OrdinalIgnoreCase));
+            var chartDetails = stored is null ? null : keyDetails.GetByChartResultId(stored.Id);
+            var chartAsc = chartDetails?.FirstOrDefault(k => k.PointKind == "Graha" && k.Planet == "Ascendant")?.Sign;
+            (IReadOnlyList<ChartKeyDetail>, string, LifeMatterStatistics)? result = chartDetails is null || chartAsc is null ? null
+                : (chartDetails, chartAsc, new LifeMatterStatistics(chartType, chartAsc, ashtakavarga.GetByBirthDetailId(birthDetailId), [], shadbala,
+                    ArgalaFacts.ForChart(argala.GetByBirthDetailId(birthDetailId), chartType, chartAsc, chartDetails.Where(k => k.PointKind == "Graha")), null, amsabala.GetByBirthDetailId(birthDetailId)));
+            return vargaCache[chartType] = result;
+        }
+
         return steps
-            .Select(s => LifeMatterPromiseAdapter.Read(
-                s, Resolver.Resolve(RuleSetId, s.LifeMatterId, subjects, karakas, focusRules), details, asc, stats, shadbala, significations, houseMatters))
+            .Select(s =>
+            {
+                var focus = Resolver.Resolve(RuleSetId, s.LifeMatterId, subjects, karakas, focusRules);
+                var reading = LifeMatterPromiseAdapter.Read(s, focus, details, asc, stats, shadbala, significations, houseMatters);
+                var chartType = focus.Subject?.ChartTypeCode ?? "D1";
+                if (!includeVarga || string.Equals(chartType, "D1", StringComparison.OrdinalIgnoreCase) || Varga(chartType) is not { } v)
+                    return reading;
+                return reading with
+                {
+                    Targets = reading.Targets
+                        .Select(t => t with { Promise = t.Promise with { Domain = LifeMatterVargaConfirmationAdapter.Read(
+                            t, focus, chartType, v.Details, v.Ascendant, v.Stats, shadbala, significations, houseMatters) } })
+                        .ToList(),
+                };
+            })
             .ToList();
     }
 }

@@ -173,7 +173,7 @@ public sealed class LifeMatterTimingDataService(
                 var domainStats = new LifeMatterStatistics(requiredChart, domainAscendant,
                     ashtakavarga.GetByBirthDetailId(birthDetailId), [], shadbala,
                     ArgalaFacts.ForChart(argala.GetByBirthDetailId(birthDetailId), requiredChart,
-                        domainAscendant, domainDetails), null, amsabala.GetByBirthDetailId(birthDetailId));
+                        domainAscendant, domainDetails.Where(row => row.PointKind == "Graha")), null, amsabala.GetByBirthDetailId(birthDetailId));
                 var naturalRules = naisargika.LoadActive();
                 var domain = LifeMatterVargaConfirmationAdapter.Read(reading.Primary, focus,
                     requiredChart, domainDetails, domainAscendant, domainStats, shadbala,
