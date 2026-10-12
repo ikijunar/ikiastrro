@@ -22,6 +22,10 @@
 .dp-verdict.is-adverse, .dp-chip.is-adverse { background: var(--status-weak-bg); color: var(--status-weak); border: 1px solid var(--status-weak); }
 .dp-verdict.is-indeterminate, .dp-chip.is-indeterminate { border: 1px dashed var(--brand-muted); color: var(--brand-muted); }
 .dp-chip.is-on.is-strongpositive, .dp-chip.is-on.is-positiveconditional, .dp-chip.is-on.is-mixed, .dp-chip.is-on.is-weaklimited, .dp-chip.is-on.is-adverse, .dp-chip.is-on.is-indeterminate { outline: 2px solid var(--brand-midnight); }
+.dp-recon { display: inline-block; padding: 0 7px; border-radius: 3px; border: 1px solid var(--brand-line); font-size: .78em; font-weight: 700; white-space: nowrap; }
+.dp-recon.is-good { color: var(--status-strong); border-color: var(--status-strong); }
+.dp-recon.is-bad { color: var(--status-weak); border-color: var(--status-weak); border-style: dashed; }
+.dp-recon.is-neutral { color: var(--brand-muted); }
 .dp-roles { display: inline-flex; gap: 3px; }
 .dp-dir { display: inline-block; min-width: 1.5em; padding: 0 5px; border-radius: 3px; text-align: center; font-size: .78em; font-weight: 800; border: 1px solid var(--brand-line); }
 .dp-dir.is-supportive { color: var(--status-strong); border-color: var(--status-strong); }
