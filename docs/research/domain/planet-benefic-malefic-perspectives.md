@@ -187,7 +187,7 @@ for D60 only, **the shashtiamsa's own benefic/malefic flag**.
 varga, houses counted from that chart's own Lagna). rammyps chose **all schools as columns** and
 a **small rule table + live compute**:
 
-| Planet | Natural | Functional: PVR · BPHS · Raman | House placement: PVR · BPHS · Saravali · Phaladeepika | Sign (dignity, sign lord's nature) | Nakshatra (star lord's nature and house, KP sub-lord) |
+| Planet | Natural | Functional: PVR · BPHS · Raman | House (final): lord, conjunctions and aspects of the occupied house | Sign (dignity, sign lord's nature) | Nakshatra (star lord's nature and house, KP sub-lord) |
 
 A dash means the school states nothing, never "neutral". No blended verdict. A second grid shows
 PVR's functional nature for every stored varga. Rules: migration 180 (`tbl_Dim_BeneficMaleficSchools`,
