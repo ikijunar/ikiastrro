@@ -61,7 +61,7 @@ else
                         @if (_dasha?.FirstOrDefault(d => d.Planet == r.Planet) is { } dr)
                         {
                             <td>
-                                @if (dr.Running is { } run) { <span class="pbm-b pbm-run" title="@run.Level, running until @run.End.ToString("d MMM yyyy")">@RunLabel(run.Level) · until @run.End.ToString("MMM yyyy")</span><br /> }
+                                @foreach (var run in dr.Runs) { <span class="pbm-b pbm-run" title="@run.Level, running until @run.End.ToString("d MMM yyyy HH:mm")">@RunLabel(run.Level) · until @RunEnd(run)</span><br /> }
                                 <span class="kit-muted">Lordship: @dr.Lordship</span><br />
                                 @if (dr.HasAdverseFlag) { <span class="pbm-b pbm-bad" title="Phaladeepika ch.20 marks this dasa adverse; open the rules for why">Adverse flag</span> }
                                 else { <span class="kit-muted">No adverse flag</span> }
@@ -93,6 +93,14 @@ else
                                 @if (r.NakshatraInfo.SubLord is { } sub)
                                 {
                                     <br /><span class="kit-muted">KP sub-lord @(sub.Planet): @(Related(sub, false))</span>
+                                }
+                                @if (r.NakshatraInfo.Temperament is { } temper)
+                                {
+                                    <br /><span class="kit-muted" title="Muhurta Prakarana, nature of nakshatras. It says what work the star suits; it is not a verdict on the planet.">Nature @temper.Class (@temper.Suits)</span>
+                                }
+                                @if (r.NakshatraInfo.StarAspects is { } sa && (sa.Aspects.Count > 0 || sa.AspectedBy.Count > 0))
+                                {
+                                    <br /><span class="kit-muted" title="PVR Integrated Approach §26.5: a natural benefic gives good results related to the stars it aspects, a natural malefic bad ones.">@StarAspectText(sa)</span>
                                 }
                             }
                             else { <span class="kit-muted">—</span> }
@@ -188,7 +196,17 @@ else
         return int.TryParse(digits, out var n) ? n : int.MaxValue;
     }
 
-    private static string RunLabel(string level) => level switch { "Mahadasha" => "MD", "Antardasha" => "AD", _ => "PD" };
+    private static string RunLabel(string level) => level switch { "Mahadasha" => "MD", "Antardasha" => "AD", "Pratyantardasha" => "PD", "Sookshma" => "SD", "Prana" => "PR", "Deha" => "DE", _ => "L7" };
+    private static string Nth(int n) => n switch { 1 => "1st", 2 => "2nd", 3 => "3rd", _ => $"{n}th" };
+    private static string StarAspectText(NakshatraAspectReading a)
+    {
+        string L(IEnumerable<NakshatraAspectLink> ls) => string.Join(", ", ls.Select(l => $"{l.Planet} ({Nth(l.Nth)})"));
+        var parts = new List<string>();
+        if (a.Aspects.Count > 0) parts.Add($"Star-aspects {L(a.Aspects)}");
+        if (a.AspectedBy.Count > 0) parts.Add($"aspected by {L(a.AspectedBy)}");
+        return string.Join(" · ", parts);
+    }
+    private static string RunEnd(RunningLord run) => run.Level switch { "Mahadasha" or "Antardasha" => run.End.ToString("MMM yyyy"), "Pratyantardasha" or "Sookshma" => run.End.ToString("d MMM yyyy"), _ => run.End.ToString("d MMM HH:mm") };
 
     private static string SignName(string s) => s == "Capricornus" ? "Capricorn" : s;
 

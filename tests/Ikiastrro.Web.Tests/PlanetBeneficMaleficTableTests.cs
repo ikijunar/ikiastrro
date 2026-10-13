@@ -71,6 +71,27 @@ public sealed class PlanetBeneficMaleficTableTests : BunitContext
     }
 
     [Fact]
+    public void Dasha_column_shows_seven_running_levels()
+    {
+        var pd = new Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord { Lord = "Venus", LevelNumber = 3, StartDate = new DateTime(2010, 3, 1), EndDate = new DateTime(2010, 4, 1) };
+        var ad = new Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord { Lord = "Sun", LevelNumber = 2, StartDate = new DateTime(2010, 1, 1), EndDate = new DateTime(2011, 1, 1) };
+        var md = new Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord { Lord = "Mars", LevelNumber = 1, StartDate = new DateTime(2005, 1, 1), EndDate = new DateTime(2012, 1, 1) };
+        ad.Children.Add(pd); md.Children.Add(ad);
+        var cut = Render<PlanetBeneficMaleficTable>(p => p.Add(x => x.Chart, D1()).Add(x => x.Rules, Book()).Add(x => x.MoonWaxing, true)
+            .Add(x => x.DashaPeriods, new[] { md }).Add(x => x.AsOf, new DateTime(2010, 3, 15)));
+        var badges = cut.FindAll(".pbm-run").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(7, badges.Count);
+        Assert.Equal(new[] { "AD", "DE", "L7", "MD", "PD", "PR", "SD" }, badges.Select(b => b.Split(' ')[0]).OrderBy(x => x));   // badges sit in their planet's row
+    }
+
+    [Fact]
+    public void Nakshatra_cell_shows_the_class_from_the_muhurta_literature()
+    {
+        var sun = RenderIt(D1()).FindAll("tbody tr").Single(r => r.QuerySelector("b")!.TextContent == "Sun").Normalized();
+        Assert.Contains("Nature Mishra", sun);   // Krittika
+    }
+
+    [Fact]
     public void Without_a_dasha_tree_there_is_no_dasha_column()
     {
         Assert.DoesNotContain("Dasha period", RenderIt(D1()).FindAll("thead th").Select(h => h.TextContent.Trim()));
