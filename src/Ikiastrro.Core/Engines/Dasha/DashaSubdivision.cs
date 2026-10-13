@@ -19,12 +19,13 @@ public static class DashaSubdivision
         var chain = lords.Select(l => Enum.Parse<Astronomy.PlanetName>(l)).ToList();
         var fullDays = chain.Aggregate(1.0, (acc, l) => acc * years[l] / 120.0) * 120 * DaysPerYear;
         var cursor = parent.EndDate.AddDays(-fullDays);
+        if ((cursor - parent.StartDate).Duration() < TimeSpan.FromMinutes(1)) cursor = parent.StartDate;   // AddDays rounds to the millisecond; a whole period starts exactly where its parent does
         var from = order.ToList().IndexOf(chain[^1]);
         var result = new List<DashaPeriodRecord>();
         for (var slot = 0; slot < 9; slot++)
         {
             var lord = order[(from + slot) % 9];
-            var end = cursor.AddDays(fullDays * years[lord] / 120.0);
+            var end = slot == 8 ? parent.EndDate : cursor.AddDays(fullDays * years[lord] / 120.0);
             if (end > parent.StartDate)
                 result.Add(new DashaPeriodRecord
                 {
