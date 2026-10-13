@@ -45,6 +45,9 @@ public static class PvrDignityEvaluator
             [PlanetName.Saturn] = (new[] { PlanetName.Mercury, PlanetName.Venus }, new[] { PlanetName.Sun, PlanetName.Moon, PlanetName.Mars })
         };
 
+    public static bool IsNaturalEnemy(PlanetName a, PlanetName b) =>
+        Natural.TryGetValue(a, out var natural) && natural.Enemies.Contains(b);
+
     /// <summary>True if <paramref name="b"/> is a natural friend of <paramref name="a"/>
     /// (the fixed Parashari friendship table above — no temporary/compound relationship).
     /// False, not an error, for a planet outside this table (Rahu, Ketu).</summary>

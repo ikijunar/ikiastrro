@@ -1,5 +1,7 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.Dasha;
+using Ikiastrro.Core.Engines.Houses;
+using Ikiastrro.Core.Engines.Strength;
 using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Engines.PlanetNature;
@@ -131,7 +133,21 @@ public static class DashaNatureReader
                 facts.Add(new($"Holds the {Ord(n)} house from {parent.Planet}, the {parent.Level.ToLowerInvariant()} lord — {tail}{note}", "Phaladeepika 20.29", adverse));
             }
 
-            var lordship = string.Join(" · ", row.Functional.Select(f => $"{ShortName(f.SchoolCode)} {Label(f.Verdict)}"));
+            if (run is { Level: "Antardasha" or "Pratyantardasha" } && ParentOf(run, running) is { } dasaLord && Enum.TryParse<PlanetName>(row.Planet, out var me))
+            {
+                var tests = new List<string>();
+                if (Enum.TryParse<PlanetName>(dasaLord.Planet, out var dl) && PvrDignityEvaluator.IsNaturalEnemy(me, dl)) tests.Add($"inimical to {dasaLord.Planet}, the {dasaLord.Level.ToLowerInvariant()} lord");
+                if (g.DignityStatus is "Enemy" or "Great Enemy" or "Debilitated") tests.Add("in an inimical sign");
+                if (g.HouseNumberFromLagna == 6) tests.Add("posited in the 6th");
+                if (Enum.TryParse<PlanetName>(HouseEngine.GetSignLord(lagna), out var ll) && ll != me && PvrDignityEvaluator.IsNaturalEnemy(me, ll)) tests.Add($"inimical to {ll}, the Lagna lord");
+                if (tests.Count > 0)
+                {
+                    var note = run.Level == "Pratyantardasha" ? " (the rule is the book's for antardasa; applied one level down here)" : "";
+                    facts.Add(new($"Danger from enemies, loss of position, hostility of former friends in the {run.Level.ToLowerInvariant()}: it is {string.Join(" and ", tests)}{note}", "Phaladeepika 20.28", true));
+                }
+            }
+
+            var lordship = string.Join(" · ",row.Functional.Select(f => $"{ShortName(f.SchoolCode)} {Label(f.Verdict)}"));
             readings.Add(new DashaReading(row.Planet, runs, lordship, facts));
         }
         return readings;
