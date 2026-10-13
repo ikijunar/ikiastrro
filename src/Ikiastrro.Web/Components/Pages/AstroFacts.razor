@@ -396,10 +396,9 @@ else
                                     <option value="">Select Mahadasha</option>
                                     @foreach (var period in _selection.Periods)
                                     {
-                                        <option value="@period.Id">@PlanetGlyph(period.Lord) @period.Lord · @PeriodDates(period)</option>
+                                        <option value="@period.Id">@PlanetGlyph(period.Lord) · @PeriodDates(period)</option>
                                     }
                                 </select>
-                                @SpanCaption(_selection.Maha)
                             </label>
                             <label class="ki-field">
                                 <span>ANTARDASHA</span>
@@ -407,10 +406,9 @@ else
                                     <option value="">Select Antardasha</option>
                                     @foreach (var period in _selection.AntarPeriods)
                                     {
-                                        <option value="@period.Id">@PlanetGlyph(period.Lord) @period.Lord · @PeriodDates(period)</option>
+                                        <option value="@period.Id">@PlanetGlyph(period.Lord) · @PeriodDates(period)</option>
                                     }
                                 </select>
-                                @SpanCaption(_selection.Antar)
                             </label>
                             <label class="ki-field">
                                 <span>PRATYANTAR</span>
@@ -418,10 +416,9 @@ else
                                     <option value="">Select Pratyantar</option>
                                     @foreach (var period in _selection.PratyantarPeriods)
                                     {
-                                        <option value="@period.Id">@PlanetGlyph(period.Lord) @period.Lord · @PeriodDates(period)</option>
+                                        <option value="@period.Id">@PlanetGlyph(period.Lord) · @PeriodDates(period)</option>
                                     }
                                 </select>
-                                @SpanCaption(_selection.Pratyantar)
                             </label>
                             @for (var lv = 0; lv < DeepNames.Length; lv++)
                             {
@@ -433,10 +430,9 @@ else
                                         <option value="">Select @DeepNames[idx].ToLowerInvariant()</option>
                                         @foreach (var period in _selection.DeepPeriods(idx))
                                         {
-                                            <option value="@period.Id">@PlanetGlyph(period.Lord) @period.Lord · @PeriodDates(period)</option>
+                                            <option value="@period.Id">@PlanetGlyph(period.Lord) · @PeriodDates(period)</option>
                                         }
                                     </select>
-                                    @SpanCaption(_selection.Deep(idx))
                                 </label>
                             }
                         </section>
@@ -1265,26 +1261,12 @@ else
         RefreshSelection();
     }
 
-    private static string PeriodStart(Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord period) => SpanDate(period.StartDate, period.LevelNumber);
-
-    private static string SpanDate(DateTime d, int level) => level >= 5 ? d.ToString("dd MMM yyyy HH:mm") : d.ToString("dd MMM yyyy");
-
-    /// <summary>The chosen period's start and end, one per line, under its selector (the closed select only has room for the lord).</summary>
-    private static RenderFragment SpanCaption(Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord? p) => b =>
-    {
-        if (p is null) return;
-        b.OpenElement(0, "small"); b.AddAttribute(1, "class", "ki-span");
-        b.OpenElement(2, "span"); b.AddContent(3, "Start " + SpanDate(p.StartDate, p.LevelNumber)); b.CloseElement();
-        b.OpenElement(4, "span"); b.AddContent(5, "End " + SpanDate(p.EndDate, p.LevelNumber)); b.CloseElement();
-        b.CloseElement();
-    };
-
     private static string PeriodDates(Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord period) =>
         period.LevelNumber switch
         {
-            <= 3 => $"{period.StartDate:MM/yyyy} – {period.EndDate:MM/yyyy}",
-            4 => $"{period.StartDate:dd/MM/yyyy} – {period.EndDate:dd/MM/yyyy}",
-            _ => $"{period.StartDate:dd/MM HH:mm} – {period.EndDate:dd/MM HH:mm}",
+            <= 3 => $"{period.StartDate:MM/yy} – {period.EndDate:MM/yy}",
+            4 => $"{period.StartDate:dd/MM/yyyy}",   // deep levels: the start only, so the closed select reads in full; the end sits in the caption below
+            _ => $"{period.StartDate:dd/MM HH:mm}",
         };
 
     private static string PlanetGlyph(string planet) =>
