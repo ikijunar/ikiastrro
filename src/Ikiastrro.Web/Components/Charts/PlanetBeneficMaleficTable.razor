@@ -1,4 +1,5 @@
 @using Ikiastrro.Core.Engines.Astronomy
+@using Ikiastrro.Core.Engines.Houses
 @using Ikiastrro.Core.Engines.PlanetNature
 @using Ikiastrro.Web.Components.Workspace
 @* Astro Facts 1.2 — planet benefic / malefic by school, in the chart shown. Facts side by side, no blended verdict: the
@@ -18,13 +19,12 @@ else
                     <th rowspan="2">Planet</th>
                     <th rowspan="2" title="Fixed nature of the planet, with the Moon by paksha and Mercury by its company (PVR §3.2.2)">Natural</th>
                     <th colspan="@_lordSchools.Count" class="pbm-group" title="What the houses a planet rules make of it for this Lagna">Functional (house lordship)</th>
-                    <th colspan="@_placeSchools.Count" class="pbm-group" title="How the planet fares in the house it occupies">House placement</th>
+                    <th rowspan="2" title="The nature of the house the planet sits in, counting its lord, the planets in it (this planet and its conjunctions) and the planets aspecting it, each by functional nature">House (final)</th>
                     <th rowspan="2">Sign</th>
                     <th rowspan="2">Nakṣatra</th>
                 </tr>
                 <tr>
                     @foreach (var s in _lordSchools) { <th class="pbm-school" title="@s.Name">@s.ShortName</th> }
-                    @foreach (var s in _placeSchools) { <th class="pbm-school" title="@s.Name">@s.ShortName</th> }
                 </tr>
             </thead>
             <tbody>
@@ -44,11 +44,16 @@ else
                             var f = r.Functional.FirstOrDefault(x => x.SchoolCode == s.Code);
                             <td>@if (f is null) { <span class="kit-muted">—</span> } else { <span class="@FnClass(f.Verdict)" title="@f.Why">@FnLabel(f.Verdict)</span> }</td>
                         }
-                        @foreach (var s in _placeSchools)
-                        {
-                            var p = r.Placement.FirstOrDefault(x => x.SchoolCode == s.Code);
-                            <td>@if (p is null) { <span class="kit-muted">—</span> } else { <span class="@EffClass(p.Effect)" title="@p.Why">@EffLabel(p.Effect)</span> }</td>
-                        }
+                        <td>
+                            @if (r.HouseVerdict is { } hv)
+                            {
+                                <span class="@HouseClass(hv.Verdict)" title="@hv.Rationale">@hv.Verdict</span>
+                                <br /><span class="kit-muted">Lord @(hv.LordPlanet): @(hv.LordFunctionalNature.ToString().ToLowerInvariant())</span>
+                                @if (With(hv, r.Planet) is { Length: > 0 } with) { <br /><span class="kit-muted">With @with</span> }
+                                @if (Aspects(hv) is { Length: > 0 } asp) { <br /><span class="kit-muted">Aspected by @asp</span> }
+                            }
+                            else { <span class="kit-muted">—</span> }
+                        </td>
                         <td>
                             <b>@(r.SignInfo.Dignity ?? "—")</b>
                             @if (r.SignInfo.IsOwnLord) { <br /><span class="kit-muted">Its own sign</span> }
@@ -76,9 +81,10 @@ else
     </div>
     <p class="pbm-note">
         Hover a cell for the rule and its source. <b>—</b> means that school states nothing for the case; it is not a neutral verdict.
-        Natural nature does not change between charts; the functional columns recount the houses from this chart's own Lagna.
-        PVR judges placement by functional nature, the other schools by natural nature, so one planet can read well in one column
-        and badly in another. Strength is not applied: every school says a strong planet does better.
+        Natural nature does not change between charts; the functional columns and the final house recount from this chart's own Lagna.
+        <b>House (final)</b> counts, with equal weight, the house lord, every planet in the house (this planet and its conjunctions)
+        and every planet aspecting it, each as benefic or malefic by its functional nature (PVR Table 30; a neutral planet counts on
+        the malefic side, nodes are malefic) — B.V. Raman's method for judging a house. Strength and dignity are not folded in.
         @if (_chart.ChartType == "D60") { <text>The shashtiamsa's own benefic or malefic flag (BPHS) is in the Ṣaṣṭyaṃśa (D60) deities table under Vargas.</text> }
     </p>
 
@@ -119,7 +125,6 @@ else
     private LoadedChart _chart = default!;
     private IReadOnlyList<PlanetNatureRow>? _rows;
     private List<BeneficMaleficSchool> _lordSchools = new();
-    private List<BeneficMaleficSchool> _placeSchools = new();
     private Dictionary<string, IReadOnlyDictionary<PlanetName, SchoolFunctional>>? _across;
     private static readonly PlanetName[] _acrossPlanets =
         { PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury, PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn };
@@ -134,7 +139,6 @@ else
 
         _lordSchools = Rules.WithTopic("LORDSHIP").Append(Rules.Schools.First(s => s.Code == SchoolCodes.Pvr)).Distinct()
             .OrderBy(s => s.DisplayOrder).ToList();
-        _placeSchools = Rules.WithTopic("PLACEMENT").OrderBy(s => s.DisplayOrder).ToList();
         _rows = PlanetBeneficMaleficReader.Read(Chart.KeyDetails, lagna, MoonWaxing, Rules);
 
         if (Charts is { Count: > 1 })
@@ -182,15 +186,19 @@ else
         _ => "pbm-b pbm-none",
     };
 
-    private static string EffLabel(PlacementEffect e) => e switch
+    private static string HouseClass(HouseBeneficMaleficVerdict v) => v switch
     {
-        PlacementEffect.Good => "Good", PlacementEffect.Challenging => "Challenging", PlacementEffect.Mixed => "Mixed", _ => "—",
+        HouseBeneficMaleficVerdict.Benefic => "pbm-b pbm-good",
+        HouseBeneficMaleficVerdict.Malefic => "pbm-b pbm-bad",
+        HouseBeneficMaleficVerdict.Mixed => "pbm-b pbm-mixed",
+        _ => "pbm-b pbm-neutral",
     };
-    private static string EffClass(PlacementEffect e) => e switch
-    {
-        PlacementEffect.Good => "pbm-b pbm-good",
-        PlacementEffect.Challenging => "pbm-b pbm-bad",
-        PlacementEffect.Mixed => "pbm-b pbm-mixed",
-        _ => "pbm-b pbm-none",
-    };
+
+    /// <summary>The other planets in the house with their side: "Venus (malefic), Mars (malefic)". The planet itself is left out.</summary>
+    private static string With(HouseBeneficMaleficResult h, string self) => string.Join(", ",
+        h.BeneficOccupants.Where(p => p != self).Select(p => $"{p} (benefic)")
+            .Concat(h.MaleficOccupants.Where(p => p != self).Select(p => $"{p} (malefic)")));
+
+    private static string Aspects(HouseBeneficMaleficResult h) => string.Join(", ",
+        h.BeneficAspectors.Select(p => $"{p} (benefic)").Concat(h.MaleficAspectors.Select(p => $"{p} (malefic)")));
 }

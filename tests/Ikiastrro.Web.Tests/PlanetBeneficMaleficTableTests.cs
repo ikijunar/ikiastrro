@@ -57,23 +57,32 @@ public sealed class PlanetBeneficMaleficTableTests : BunitContext
         var heads = cut.FindAll("thead th").Select(h => h.TextContent.Trim()).ToList();
         Assert.Contains("PVR", heads);
         Assert.Contains("BPHS", heads);
-        Assert.Contains("Saravali", heads);
+        Assert.Contains("House (final)", heads);
+        Assert.DoesNotContain("Saravali", heads);                       // per-school placement columns were replaced by the final-house verdict
         Assert.Equal(9, cut.FindAll("tbody tr").Count);
     }
 
     [Fact]
     public void Jupiter_row_shows_each_schools_own_reading()
     {
-        // Taurus Lagna: PVR malefic; BPHS: 8th with 11th is extremely harmful; Jupiter in the 5th (Virgo is the 5th from Taurus): Saravali benefic in the 5th is good.
+        // Taurus Lagna: PVR malefic; BPHS: 8th with 11th is extremely harmful; Jupiter sits in Virgo, the 5th.
         var cut = RenderIt(D1());
         var row = cut.FindAll("tbody tr").Single(r => r.QuerySelector("b")!.TextContent == "Jupiter");
         var cells = row.QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToList();
         Assert.Equal("Benefic", cells[1]);                  // natural
         Assert.Equal("Malefic", cells[2]);                  // PVR functional
         Assert.Equal("Malefic", cells[3]);                  // BPHS functional (8th + 11th)
-        Assert.Equal("—", cells[4]);                        // PVR placement: functional malefic in the 5th, no rule seeded in this book
-        Assert.Equal("Good", cells[5]);                     // Saravali placement
+        Assert.Matches("^(Benefic|Malefic|Mixed|Neutral)", cells[4]);   // final house verdict
+        Assert.Contains("Lord Mercury", cells[4]);                      // Virgo, the 5th, is ruled by Mercury
         Assert.Contains("Lord Mercury", row.Normalized());
+    }
+
+    [Fact]
+    public void Final_house_names_the_conjunctions()
+    {
+        // Venus and Ketu share Libra, the 6th from a Taurus Lagna.
+        var venus = RenderIt(D1()).FindAll("tbody tr").Single(r => r.QuerySelector("b")!.TextContent == "Venus");
+        Assert.Contains("With Ketu (malefic)", venus.Normalized());
     }
 
     [Fact]
@@ -81,8 +90,7 @@ public sealed class PlanetBeneficMaleficTableTests : BunitContext
     {
         var cut = RenderIt(D1());
         var rahu = cut.FindAll("tbody tr").Single(r => r.QuerySelector("b")!.TextContent == "Rahu");
-        Assert.DoesNotContain("Neutral", rahu.Normalized());
-        Assert.Contains("—", rahu.Normalized());
+        Assert.Equal("—", rahu.QuerySelectorAll("td")[2].TextContent.Trim());   // PVR Table 30 lists the seven planets only
     }
 
     [Fact]
