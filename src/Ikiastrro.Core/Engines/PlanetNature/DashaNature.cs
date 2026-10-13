@@ -4,26 +4,62 @@ using Ikiastrro.Core.Models;
 
 namespace Ikiastrro.Core.Engines.PlanetNature;
 
-/// <param name="Level">Mahadasha, Antardasha or Pratyantardasha.</param>
+/// <param name="Level">Mahadasha, Antardasha, Pratyantardasha, Sookshma, Prana, Deha, or "Level 7" (the classics name six).</param>
 public sealed record RunningLord(string Level, string Planet, DateTime End);
 
 /// <summary>The Vimshottari lords running on a date, read from the stored dasha tree.</summary>
 public static class RunningDasha
 {
-    private static readonly string[] Levels = { "Mahadasha", "Antardasha", "Pratyantardasha" };
+    private static readonly string[] Levels = { "Mahadasha", "Antardasha", "Pratyantardasha", "Sookshma", "Prana", "Deha", "Level 7" };
+    private const int StoredLevels = 3;
+    private const double DaysPerYear = 365.2425;
 
     public static IReadOnlyList<RunningLord> At(IReadOnlyList<DashaPeriodRecord> roots, DateTime date)
     {
         var result = new List<RunningLord>();
         var level = roots;
-        for (var depth = 0; depth < Levels.Length; depth++)
+        for (var depth = 0; depth < StoredLevels; depth++)
         {
             var hit = level.FirstOrDefault(p => p.StartDate <= date && date < p.EndDate);
             if (hit is null) break;
             result.Add(new RunningLord(Levels[depth], hit.Lord, hit.EndDate));
             level = hit.Children;
         }
+        if (result.Count == StoredLevels) Descend(result, date);
         return result;
+    }
+
+    /// <summary>
+    /// Levels 4-7 are not stored (9^7 rows per chart); they follow from the Vimshottari proportions. The stored pratyantardasha may be
+    /// the cut-off first period of the chart, so its full span is rebuilt from the three lords and anchored on its end date, and each
+    /// deeper level splits its parent in the usual order, starting with the parent's own lord.
+    /// </summary>
+    private static void Descend(List<RunningLord> result, DateTime date)
+    {
+        var order = AstroMath.NakshatraLordOrder;
+        var years = AstroMath.VimshottariYearsByLord;
+        var lords = result.Select(r => Enum.Parse<PlanetName>(r.Planet)).ToList();
+        var fullDays = lords.Aggregate(1.0, (acc, l) => acc * years[l] / 120.0) * 120 * DaysPerYear;
+        var start = result[2].End.AddDays(-fullDays);
+        var parent = lords[2];
+        while (result.Count < Levels.Length)
+        {
+            var from = order.ToList().IndexOf(parent);
+            var cursor = start;
+            for (var slot = 0; slot < 9; slot++)
+            {
+                var lord = order[(from + slot) % 9];
+                var days = fullDays * years[lord] / 120.0;
+                var end = cursor.AddDays(days);
+                if (date < end || slot == 8)
+                {
+                    result.Add(new RunningLord(Levels[result.Count], lord.ToString(), end));
+                    parent = lord; start = cursor; fullDays = days;
+                    break;
+                }
+                cursor = end;
+            }
+        }
     }
 }
 
@@ -35,8 +71,10 @@ public sealed record DashaFact(string Text, string Source, bool Adverse);
 /// <param name="Running">The level this planet is running at, or null when its dasha is not running.</param>
 /// <param name="Lordship">Its functional nature by school, restated so the dasha cell is self-contained.</param>
 public sealed record DashaReading(
-    string Planet, RunningLord? Running, string Lordship, IReadOnlyList<DashaFact> Facts)
+    string Planet, IReadOnlyList<RunningLord> Runs, string Lordship, IReadOnlyList<DashaFact> Facts)
 {
+    /// <summary>The highest level this planet is running at, or null.</summary>
+    public RunningLord? Running => Runs.FirstOrDefault();
     public bool HasAdverseFlag => Facts.Any(f => f.Adverse);
 }
 
@@ -62,7 +100,8 @@ public static class DashaNatureReader
         {
             if (!grahas.TryGetValue(row.Planet, out var g)) continue;
             var facts = new List<DashaFact>();
-            var run = running.FirstOrDefault(r => r.Planet == row.Planet);
+            var runs = running.Where(r => r.Planet == row.Planet).ToList();
+            var run = runs.FirstOrDefault();
 
             if (Enum.TryParse<PlanetName>(row.Planet, out var pn))
             {
@@ -93,7 +132,7 @@ public static class DashaNatureReader
             }
 
             var lordship = string.Join(" · ", row.Functional.Select(f => $"{ShortName(f.SchoolCode)} {Label(f.Verdict)}"));
-            readings.Add(new DashaReading(row.Planet, run, lordship, facts));
+            readings.Add(new DashaReading(row.Planet, runs, lordship, facts));
         }
         return readings;
     }

@@ -261,8 +261,11 @@ public class PlanetBeneficMaleficReaderTests
         md.Children.Add(ad);
 
         var run = RunningDasha.At(new[] { md }, new DateTime(2010, 3, 15));
-        Assert.Equal(new[] { "Mars", "Sun", "Venus" }, run.Select(r => r.Planet));
-        Assert.Equal(new[] { "Mahadasha", "Antardasha", "Pratyantardasha" }, run.Select(r => r.Level));
+        Assert.Equal(new[] { "Mars", "Sun", "Venus" }, run.Take(3).Select(r => r.Planet));
+        Assert.Equal(7, run.Count);                        // levels 4-7 follow from the Vimshottari proportions
+        Assert.Equal(new[] { "Sookshma", "Prana", "Deha", "Level 7" }, run.Skip(3).Select(r => r.Level));
+        for (var i = 1; i < run.Count; i++) Assert.True(run[i].End <= run[i - 1].End && run[i].End > new DateTime(2010, 3, 15), run[i].Level);
+        Assert.Equal(new[] { "Mahadasha", "Antardasha", "Pratyantardasha" }, run.Take(3).Select(r => r.Level));
         Assert.Single(RunningDasha.At(new[] { md }, new DateTime(2006, 1, 1)));   // no antardasa stored for that date
         Assert.Empty(RunningDasha.At(new[] { md }, new DateTime(2020, 1, 1)));
     }
