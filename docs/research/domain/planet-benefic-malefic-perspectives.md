@@ -180,14 +180,21 @@ for D60 only, **the shashtiamsa's own benefic/malefic flag**.
 | Nakshatra | `tbl_Nakshatras` (lord, gana, nadi…) | No nakshatra-lord nature; no PVR §26.5 aspect table; no temperament |
 | Varga | `ShashtiamsaDeityTable`, Vimsopaka, per-varga key details | Nature/house reads not run for non-D1 charts |
 
-## 9. Proposed table (for decision — nothing is built)
+## 9. The table — built 2026-10-13
 
-**"Benefic / Malefic" in Astro Facts → About Planets (1.2), under the dignity table**, one row per
-graha (Sun…Ketu), chart picked by the existing Natal Chart picker (D1 and every varga):
+**"Benefic / malefic by school" in Astro Facts → About planets, under the dignity table**
+(`PlanetBeneficMaleficTable`), one row per graha, following the chart picker (D1 and every
+varga, houses counted from that chart's own Lagna). rammyps chose **all schools as columns** and
+a **small rule table + live compute**:
 
-| Planet | **Nature** (natural, with phase/association note) | **Functional** (from this chart's Lagna; PVR default, other schools on expand) | **House** (placement + Good / Mixed / Challenging by PVR rule, with Saravali/BPHS differences on expand) | **Sign** (dignity · sign lord and its nature) | **Nakshatra** (star lord · its natural + functional nature · PVR §26.5 aspected stars) | **D60 flag** (D60 only) |
+| Planet | Natural | Functional: PVR · BPHS · Raman | House placement: PVR · BPHS · Saravali · Phaladeepika | Sign (dignity, sign lord's nature) | Nakshatra (star lord's nature and house, KP sub-lord) |
 
-Facts side by side, **no blended verdict**, each cell with its source code and, where the schools
-disagree, an "other schools say" disclosure. Computed live in Core from the stored key details
-(same pattern as `RudraMaheswaraTable`); the school-by-school rules go in a small rule table so
-the citations are data, not code.
+A dash means the school states nothing, never "neutral". No blended verdict. A second grid shows
+PVR's functional nature for every stored varga. Rules: migration 180 (`tbl_Dim_BeneficMaleficSchools`,
+`tbl_Rule_BeneficMaleficSchool`, 77 cited rows); Core `Engines/PlanetNature`. PVR's lordship
+verdict stays Table 30 (`LagnaFunctionalNature`).
+
+**Not built / open:** Saravali's and BPHS's placement rules name no kendra or trikona results, so
+those cells are dashes; Raman and BPHS 74.25's benefic-in-6th/12th reading is not seeded (needs a
+Santhanam check); no nakshatra temperament (Ugra, Mridu…) or PVR §26.5 nakshatra aspects in the
+table; D60's per-part flag stays in the Ṣaṣṭyaṃśa deities table; strength is not applied.
