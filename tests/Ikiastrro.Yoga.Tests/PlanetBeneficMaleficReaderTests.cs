@@ -215,6 +215,28 @@ public class PlanetBeneficMaleficReaderTests
     }
 
     [Fact]
+    public void Final_house_verdict_counts_conjunct_and_aspecting_planets()
+    {
+        // Taurus Lagna. Jupiter and Venus (both functional malefics) sit together in Gemini, the 2nd; Mars in Scorpio
+        // aspects it (8th sight). Mercury, the 2nd lord, is a functional benefic.
+        var chart = new List<ChartKeyDetail>
+        {
+            G("Ascendant", ZodiacName.Taurus, 1, 40),
+            G("Sun", ZodiacName.Leo, 4, 130), G("Moon", ZodiacName.Cancer, 3, 100), G("Mars", ZodiacName.Scorpio, 7, 220),
+            G("Mercury", ZodiacName.Virgo, 5, 170), G("Jupiter", ZodiacName.Gemini, 2, 70), G("Venus", ZodiacName.Gemini, 2, 72),
+            G("Saturn", ZodiacName.Pisces, 11, 340), G("Rahu", ZodiacName.Aquarius, 10, 310), G("Ketu", ZodiacName.Leo, 4, 130),
+        };
+        var rows = PlanetBeneficMaleficReader.Read(chart, ZodiacName.Taurus, true, Book);
+        var jupiter = rows.Single(r => r.Planet == "Jupiter");
+        Assert.NotNull(jupiter.HouseVerdict);
+        Assert.Equal(2, jupiter.HouseVerdict!.HouseNumber);
+        Assert.Contains("Venus", jupiter.HouseVerdict.MaleficOccupants);          // the conjunction
+        Assert.Contains("Jupiter", jupiter.HouseVerdict.MaleficOccupants);        // the planet itself is an occupant
+        Assert.Contains("Mars", jupiter.HouseVerdict.MaleficAspectors);           // Mars in Scorpio aspects the 2nd (8th from itself)
+        Assert.Equal(Ikiastrro.Core.Engines.Houses.HouseBeneficMaleficVerdict.Malefic, jupiter.HouseVerdict.Verdict);
+    }
+
+    [Fact]
     public void Pvr_across_charts_uses_each_charts_own_lagna()
     {
         var m = PlanetBeneficMaleficReader.PvrAcrossCharts(new[] { ("D1", ZodiacName.Taurus), ("D10", ZodiacName.Gemini) }, true);
