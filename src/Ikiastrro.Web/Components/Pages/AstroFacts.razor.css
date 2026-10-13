@@ -459,3 +459,14 @@
 .ki-panelbody ::deep .ki-table td.ki-group-natal {
     background: color-mix(in srgb, var(--brand-sunrise) 35%, transparent);
 }
+
+/* Month dial beside the TRANSIT mm/yyyy: a ticked face whose needle points at the month, with ‹ › to step. */
+.ki-dial { display: inline-flex; align-items: center; gap: 2px; margin-left: 6px; border-radius: 999px; }
+.ki-dial:focus-visible { outline: 2px solid var(--brand-sunrise); outline-offset: 2px; }
+.ki-dial button { min-width: 24px; min-height: 28px; border: 1px solid var(--brand-line); border-radius: 8px; background: var(--brand-canvas); color: var(--brand-midnight); font-weight: 700; cursor: pointer; }
+.ki-dial svg { width: 34px; height: 34px; }
+.ki-dial-face { fill: var(--brand-canvas); stroke: var(--brand-line); stroke-width: 1.2; }
+.ki-dial-tick { stroke: var(--brand-muted); stroke-width: 1; }
+.ki-dial-on { stroke: var(--brand-midnight); stroke-width: 2; }
+.ki-dial-needle { stroke: var(--brand-midnight); stroke-width: 2; stroke-linecap: round; transition: transform .18s ease; }
+.ki-dial-hub { fill: var(--brand-midnight); }

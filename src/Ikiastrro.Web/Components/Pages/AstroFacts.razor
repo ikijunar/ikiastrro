@@ -388,6 +388,20 @@ else
                                             <option value="@y">@y</option>
                                         }
                                     </select>
+                                    <span class="ki-dial" role="spinbutton" tabindex="0" aria-label="Step the transit month" aria-valuetext="@SelMonth.ToString("00")/@SelYear"
+                                          @onwheel="OnDialWheel" @onwheel:preventDefault @onkeydown="OnDialKey" title="Click ‹ › or use the mouse wheel / arrow keys to step by month">
+                                        <button type="button" aria-label="Previous month" @onclick="() => StepMonth(-1)">‹</button>
+                                        <svg viewBox="0 0 40 40" aria-hidden="true">
+                                            <circle cx="20" cy="20" r="17" class="ki-dial-face" />
+                                            @for (var t = 0; t < 12; t++)
+                                            {
+                                                <line x1="20" y1="4.5" x2="20" y2="@(t == SelMonth - 1 ? "9.5" : "7")" class="@(t == SelMonth - 1 ? "ki-dial-on" : "ki-dial-tick")" transform="rotate(@(t * 30) 20 20)" />
+                                            }
+                                            <line x1="20" y1="20" x2="20" y2="9" class="ki-dial-needle" transform="rotate(@((SelMonth - 1) * 30) 20 20)" />
+                                            <circle cx="20" cy="20" r="2" class="ki-dial-hub" />
+                                        </svg>
+                                        <button type="button" aria-label="Next month" @onclick="() => StepMonth(1)">›</button>
+                                    </span>
                                 </span>
                             </label>
                             <label class="ki-field">
@@ -1203,6 +1217,22 @@ else
             var end = _selection.Periods.Max(p => p.EndDate.Year);
             return Enumerable.Range(start, end - start + 1);
         }
+    }
+
+    /// <summary>The month dial: step the transit date by whole months, staying inside the years the dasha tree covers.</summary>
+    private void StepMonth(int delta)
+    {
+        var next = new DateTime(SelYear, SelMonth, 1).AddMonths(delta);
+        if (!YearOptions.Contains(next.Year)) return;
+        ApplyMonthYear(next.Month, next.Year);
+    }
+
+    private void OnDialWheel(WheelEventArgs e) => StepMonth(e.DeltaY < 0 ? 1 : -1);
+
+    private void OnDialKey(KeyboardEventArgs e)
+    {
+        if (e.Key is "ArrowRight" or "ArrowUp") StepMonth(1);
+        else if (e.Key is "ArrowLeft" or "ArrowDown") StepMonth(-1);
     }
 
     private void OnMonthChanged(ChangeEventArgs args)
