@@ -92,6 +92,10 @@ public static class AstroFactsGuides
             "How comfortable each planet is in its sign: exalted, own sign, friend, neutral, enemy or debilitated, plus the planet's natural role (kāraka).",
             "Think of each planet as a person: in its own or an exalted sign it is at home and delivers well; debilitated or in an enemy's sign it struggles. The exaltation bar shows how close it is to its peak degree.",
             Pvr, Bphs),
+        ["af-benefic-malefic"] = new(
+            "Whether each planet acts as a friend or a foe in this chart, read by what it is (natural), what its house ownership makes of it (functional) and how it fares in the house it sits in — one column per school, because the schools do not agree.",
+            "A planet's natural nature is fixed (Jupiter and Venus benefic, Sun, Mars and Saturn malefic, the Moon by waxing or waning, Mercury by its company). Its functional nature depends on the Lagna: a natural benefic that owns a quadrant is neutral in BPHS but malefic for PVR and Raman. Hover any cell for the rule and its source. A dash means the school says nothing, not that the planet is neutral. In a varga the table recounts the houses from that varga's own Lagna.",
+            Pvr, Bphs, RamanHtjh, "Kalyāṇa Varma, Saravali (ch.30 v.86-87)", "Mantreśvara, Phaladeepika (ch.6 notes)", "docs/research/domain/planet-benefic-malefic-perspectives.md"),
         ["af-motion"] = new(
             "Speed and direction of each planet, whether it is too close to the Sun (combust), and whether two planets are in a \"planetary war\".",
             "A combust planet is overpowered by the Sun and its results are dimmed. In a planetary war the planet that loses gives weaker results. Retrograde planets turn their energy inward.",
