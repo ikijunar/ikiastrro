@@ -51,7 +51,7 @@
 /* Current Transit tab — migrated from Natal_Transit_Comp_Wheel.razor.css (tw-controls/tw-wheel). */
 .ki-controls {
     display: grid;
-    grid-template-columns: minmax(120px, .55fr) repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));   /* 8 fields (date + 7 dasha levels) wrap to the width; print locks it below */
     gap: 6px;
     margin: 0 0 16px;
     padding: 6px 8px;
@@ -340,8 +340,11 @@
 }
 .ki-col { min-width: 0; }
 
+@media print {
+    .ki-controls { grid-template-columns: repeat(4, minmax(0, 1fr)); }   /* locked: two rows of four on the sheet */
+}
+
 @media (max-width: 900px) {
-    .ki-controls { grid-template-columns: 1fr; }
     .ki-panelbody ::deep .ki-table table { font-size: 0.72em; }
     .ki-twocol { grid-template-columns: 1fr; }
     .ki-d1layout { flex-direction: column; }

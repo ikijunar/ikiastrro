@@ -420,6 +420,21 @@ else
                                     }
                                 </select>
                             </label>
+                            @for (var lv = 0; lv < DeepNames.Length; lv++)
+                            {
+                                var idx = lv;
+                                var above = idx == 0 ? _selection.Pratyantar : _selection.Deep(idx - 1);
+                                <label class="ki-field">
+                                    <span>@DeepNames[idx]</span>
+                                    <select value="@(_selection.Deep(idx)?.Id.ToString() ?? string.Empty)" @onchange="e => OnDeepChanged(idx, e)" disabled="@(above is null)">
+                                        <option value="">Select @DeepNames[idx].ToLowerInvariant()</option>
+                                        @foreach (var period in _selection.DeepPeriods(idx))
+                                        {
+                                            <option value="@period.Id">@PlanetGlyph(period.Lord) @period.Lord · @PeriodDates(period)</option>
+                                        }
+                                    </select>
+                                </label>
+                            }
                         </section>
                     }
 
@@ -1237,8 +1252,22 @@ else
         LoadTransits();
     }
 
+    private static readonly string[] DeepNames = { "SOOKSHMA", "PRANA", "DEHA", "LEVEL 7" };
+
+    private void OnDeepChanged(int index, ChangeEventArgs args)
+    {
+        if (_selection is null || !int.TryParse(args.Value?.ToString(), out var id)) return;
+        _selection.SelectDeep(index, id);
+        RefreshSelection();
+    }
+
     private static string PeriodDates(Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord period) =>
-        $"{period.StartDate:MM/yyyy} – {period.EndDate:MM/yyyy}";
+        period.LevelNumber switch
+        {
+            <= 3 => $"{period.StartDate:MM/yyyy} – {period.EndDate:MM/yyyy}",
+            4 => $"{period.StartDate:dd/MM/yyyy} – {period.EndDate:dd/MM/yyyy}",
+            _ => $"{period.StartDate:dd/MM HH:mm} – {period.EndDate:dd/MM HH:mm}",
+        };
 
     private static string PlanetGlyph(string planet) =>
         Ikiastrro.Core.Presentation.ChartViewModel.PlanetGlyph(planet);

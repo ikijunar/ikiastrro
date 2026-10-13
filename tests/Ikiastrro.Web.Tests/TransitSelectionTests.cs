@@ -57,6 +57,26 @@ public class TransitSelectionTests
         Assert.Null(state.Antar);
     }
 
+    [Fact]
+    public void Deep_levels_follow_the_selected_pratyantar_and_keep_the_chosen_instant()
+    {
+        var days = 7.0 * 6 * 20 / 14400 * 365.2425;
+        var pdEnd = new DateTime(2026, 5, 1);
+        var pd = Period(3, pdEnd.AddDays(-days), pdEnd); pd.Lord = "Venus"; pd.LevelNumber = 3;
+        var ad = Period(2, pd.StartDate.AddDays(-30), pdEnd.AddDays(30)); ad.Lord = "Sun"; ad.Children.Add(pd);
+        var md = Period(1, ad.StartDate.AddYears(-1), ad.EndDate.AddYears(1)); md.Lord = "Mars"; md.Children.Add(ad);
+        var state = new TransitSelection([md], TimeSpan.Zero, DateTimeOffset.UtcNow);
+        state.SelectMaha(1); state.SelectAntar(2); state.SelectPratyantar(3);
+        Assert.Equal(9, state.DeepPeriods(0).Count);
+        Assert.Equal("Venus", state.Sookshma!.Lord);                 // the first child starts with the parent's own lord
+        Assert.NotNull(state.Level7);
+        var second = state.DeepPeriods(0)[3];
+        state.SelectDeep(0, second.Id);
+        Assert.Equal(second.Id, state.Sookshma!.Id);
+        Assert.Equal(state.PeriodUtc(second.StartDate), state.ActiveUtc);
+        Assert.Equal(second.Lord, state.Prana!.Lord);                // re-resolved under the new sookshma
+    }
+
     private static DashaPeriodRecord Period(int id, DateTime start, DateTime end) =>
         new() { Id = id, StartDate = start, EndDate = end, Lord = "Venus" };
 }
