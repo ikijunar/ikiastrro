@@ -262,7 +262,7 @@ else
                     @if (!Printing) { <PlainWords Lines="DignityLines(natalChart)" Title="Dignity in plain words" /> }
 
                     @Head(NatalSection.BeneficMalefic)
-                    <PlanetBeneficMaleficTable Chart="natalChart" Charts="_data.Charts" Rules="_beneficMaleficRules" MoonWaxing="MoonPhase.Of(natalChart.Grahas)" />
+                    <PlanetBeneficMaleficTable Chart="natalChart" Charts="_data.Charts" Rules="_beneficMaleficRules" MoonWaxing="MoonPhase.Of(natalChart.Grahas)" DashaPeriods="_dashaTree" AsOf="DateTime.Today" />
 
                     @Head(NatalSection.Motion)
                     <PlanetMotionTable KeyDetails="D1KeyDetails" />

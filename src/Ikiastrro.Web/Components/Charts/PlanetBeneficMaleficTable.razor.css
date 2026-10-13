@@ -14,3 +14,8 @@
 .pbm-across td:first-child { text-align: left; }
 .pbm-note { margin: 8px 2px 0; color: var(--brand-muted); font-size: .9em; line-height: 1.45; }
 .pbm-subhead { margin: 18px 0 8px; color: var(--brand-midnight); font-size: 1em; font-weight: 700; }
+.pbm .pbm-run { border: 1px solid var(--brand-line); background: var(--brand-sunrise); color: var(--brand-midnight); cursor: help; margin-bottom: 3px; }
+.pbm .pbm-facts { margin-top: 4px; max-width: 320px; }
+.pbm .pbm-facts summary { color: var(--brand-muted); cursor: pointer; font-weight: 700; }
+.pbm .pbm-facts ul { margin: 5px 0 0; padding-left: 16px; line-height: 1.4; }
+.pbm .pbm-factbad { color: var(--dignity-enemy); }
