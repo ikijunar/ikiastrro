@@ -15,13 +15,17 @@ public sealed record SignReading(string Sign, string? Dignity, RelatedPlanetNatu
 /// <param name="SubLord">The KP sub-lord (Vimshottari level 2), natural nature only.</param>
 public sealed record NakshatraReading(string? Nakshatra, int? Pada, RelatedPlanetNature? StarLord, RelatedPlanetNature? SubLord);
 
+/// <param name="HouseVerdict">The occupied house's final nature: its lord, the planets in it (this planet and its conjunctions) and
+/// the planets aspecting it, each by functional nature from this chart's Lagna (<see cref="HouseBeneficMaleficCalculator"/>,
+/// Raman HTJH p.14-15). Null only if the house could not be computed.</param>
 public sealed record PlanetNatureRow(
     string Planet, int House, string Sign,
     NaturalNatureReading Natural,
     IReadOnlyList<SchoolFunctionalReading> Functional,
     IReadOnlyList<SchoolPlacementReading> Placement,
     SignReading SignInfo,
-    NakshatraReading NakshatraInfo);
+    NakshatraReading NakshatraInfo,
+    HouseBeneficMaleficResult? HouseVerdict = null);
 
 /// <summary>
 /// Astro Facts "Benefic / malefic": per planet, in the chart shown (D1 or any varga, with that chart's own Lagna), the planet's
@@ -52,6 +56,8 @@ public static class PlanetBeneficMaleficReader
             return new(planet, n.Nature, pvr, house);
         }
 
+        var houses = HouseBeneficMaleficCalculator.ComputeAll(lagna, grahas).ToDictionary(h => h.HouseNumber);
+
         foreach (var planet in Order)
         {
             var g = grahas.FirstOrDefault(k => k.Planet == planet.ToString());
@@ -62,7 +68,8 @@ public static class PlanetBeneficMaleficReader
             var sign = new SignReading(g.Sign, g.DignityStatus, Related(g.SignLordPlanet), g.SignLordPlanet == g.Planet);
             var nak = new NakshatraReading(g.Nakshatra, g.NakshatraPada, Related(g.NakshatraLordPlanet),
                 g.NakshatraSubLordPlanet is { } sub && natural.TryGetValue(sub, out var sn) ? new(sub, sn.Nature, null, null) : null);
-            rows.Add(new(g.Planet, g.HouseNumberFromLagna, g.Sign, nat, functional, placement, sign, nak));
+            rows.Add(new(g.Planet, g.HouseNumberFromLagna, g.Sign, nat, functional, placement, sign, nak,
+                houses.GetValueOrDefault(g.HouseNumberFromLagna)));
         }
         return rows;
     }
