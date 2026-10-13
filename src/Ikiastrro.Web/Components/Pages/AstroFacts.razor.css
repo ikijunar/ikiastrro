@@ -84,7 +84,7 @@
 
 /* TRANSIT mm/yyyy — two plain numeric selects instead of the browser's native month input,
    so the value always reads as digits (mm / yyyy) and never a spelled-out month name. */
-.ki-monthyear { display: flex; align-items: center; gap: 4px; }
+.ki-monthyear { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .ki-monthyear select { width: auto; min-width: 3.4em; }
 .ki-monthyear span[aria-hidden] { color: var(--brand-muted); font-weight: 700; }
 
@@ -461,7 +461,7 @@
 }
 
 /* Month dial beside the TRANSIT mm/yyyy: a ticked face whose needle points at the month, with ‹ › to step. */
-.ki-dial { display: inline-flex; align-items: center; gap: 2px; margin-left: 6px; border-radius: 999px; }
+.ki-dial { display: inline-flex; flex-basis: 100%; justify-content: center; align-items: center; gap: 2px; border-radius: 999px; }
 .ki-dial:focus-visible { outline: 2px solid var(--brand-sunrise); outline-offset: 2px; }
 .ki-dial button { min-width: 24px; min-height: 28px; border: 1px solid var(--brand-line); border-radius: 8px; background: var(--brand-canvas); color: var(--brand-midnight); font-weight: 700; cursor: pointer; }
 .ki-dial svg { width: 34px; height: 34px; }
