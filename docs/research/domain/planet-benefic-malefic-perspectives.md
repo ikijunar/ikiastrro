@@ -196,8 +196,7 @@ verdict stays Table 30 (`LagnaFunctionalNature`).
 
 **Not built / open:** Saravali's and BPHS's placement rules name no kendra or trikona results, so
 those cells are dashes; Raman and BPHS 74.25's benefic-in-6th/12th reading is not seeded (needs a
-Santhanam check); no nakshatra temperament (Ugra, Mridu…) or PVR §26.5 nakshatra aspects in the
-table; D60's per-part flag stays in the Ṣaṣṭyaṃśa deities table; strength is not applied.
+Santhanam check); D60's per-part flag stays in the Ṣaṣṭyaṃśa deities table; strength is not applied.
 
 ## 10. Dasha period — built 2026-10-13
 
@@ -211,5 +210,9 @@ Vimshottari lords (as of today) and these facts for every planet; the lordship l
 Laghu Parashari, PVR, Raman), which is where the schools' dasa-by-lordship rules already live. PVR's dasa-lagna principles
 (§15.5, natural malefics in the 3rd/6th from the dasa lagna good, etc.) are for rasi dasas and are not in this column.
 
-Not done: v.28's "inimical to the dasa lord" and "inimical to the lagna lord" tests; the BPHS verse on a benefic dasa lord in the
+Added later the same day: v.28 (the antardasa lord inimical to the dasa lord or the Lagna lord, in an inimical sign, or in the 6th; "inimical" is the Parashari natural enmity table) and running lords to 7 levels - Mahadasha, Antardasha, Pratyantardasha, Sookshma, Prana, Deha and a 7th the classics do not name. Only three levels are stored (9^7 rows per chart would be millions), so levels 4-7 are computed for the date from the Vimshottari proportions, anchored on the stored pratyantardasha's end date.
+
+Nakshatra column additions: the class from the Muhurta literature (Kusum Vashistha, *Muhurta Prakarana* pp.56-58: Dhruva, Chara, Ugra, Mishra, Kshipra, Mridu, Tikshna; the English table drops Mula from Tikshna, restored from the classical list) shown as a fact about what the star suits, never as a benefic/malefic verdict; and PVR §26.5 star-aspects (planets standing in the stars a planet aspects, and those aspecting its star; the book lists the seven planets only).
+
+Not done: the BPHS verse on a benefic dasa lord in the
 6th/8th/12th or with a malefic (web-only, not found in the local text); the pratyantar level uses v.29 one level down, flagged as such.
