@@ -51,6 +51,32 @@ public sealed class PlanetBeneficMaleficTableTests : BunitContext
         Render<PlanetBeneficMaleficTable>(p => p.Add(x => x.Chart, chart).Add(x => x.Charts, charts).Add(x => x.Rules, Book()).Add(x => x.MoonWaxing, true));
 
     [Fact]
+    public void Dasha_column_marks_running_lords_and_flags_adverse_ones()
+    {
+        // Mars Mahadasha, Sun Antardasha on 1 Jun 2020. Taurus Lagna: Mars rules the 7th and 12th (Phaladeepika 20.24).
+        var ad = new Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord { Lord = "Sun", LevelNumber = 2, StartDate = new DateTime(2020, 1, 1), EndDate = new DateTime(2021, 1, 1) };
+        var md = new Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord { Lord = "Mars", LevelNumber = 1, StartDate = new DateTime(2015, 1, 1), EndDate = new DateTime(2022, 1, 1) };
+        md.Children.Add(ad);
+        var cut = Render<PlanetBeneficMaleficTable>(p => p.Add(x => x.Chart, D1()).Add(x => x.Rules, Book()).Add(x => x.MoonWaxing, true)
+            .Add(x => x.DashaPeriods, new[] { md }).Add(x => x.AsOf, new DateTime(2020, 6, 1)));
+
+        Assert.Contains("Dasha period", cut.FindAll("thead th").Select(h => h.TextContent.Trim()));
+        var rows = cut.FindAll("tbody tr");
+        var mars = rows.Single(r => r.QuerySelector("b")!.TextContent == "Mars").Normalized();
+        Assert.Contains("MD · until Jan 2022", mars);
+        Assert.Contains("Adverse flag", mars);
+        Assert.Contains("Lord of the 12th: its dasa brings misery (Phaladeepika 20.24)", mars);
+        Assert.Contains("AD · until Jan 2021", rows.Single(r => r.QuerySelector("b")!.TextContent == "Sun").Normalized());
+        Assert.DoesNotContain(" until ", rows.Single(r => r.QuerySelector("b")!.TextContent == "Moon").Normalized());   // not running
+    }
+
+    [Fact]
+    public void Without_a_dasha_tree_there_is_no_dasha_column()
+    {
+        Assert.DoesNotContain("Dasha period", RenderIt(D1()).FindAll("thead th").Select(h => h.TextContent.Trim()));
+    }
+
+    [Fact]
     public void Shows_one_column_per_school_and_one_row_per_graha()
     {
         var cut = RenderIt(D1());

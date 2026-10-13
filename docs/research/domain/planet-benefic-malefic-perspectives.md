@@ -187,7 +187,7 @@ for D60 only, **the shashtiamsa's own benefic/malefic flag**.
 varga, houses counted from that chart's own Lagna). rammyps chose **all schools as columns** and
 a **small rule table + live compute**:
 
-| Planet | Natural | Functional: PVR · BPHS · Raman | House (final): lord, conjunctions and aspects of the occupied house | Sign (dignity, sign lord's nature) | Nakshatra (star lord's nature and house, KP sub-lord) |
+| Planet | Natural | Functional: PVR · BPHS · Raman | House (final): lord, conjunctions and aspects of the occupied house | Dasha period: running lords and Phaladeepika ch.20 facts | Sign (dignity, sign lord's nature) | Nakshatra (star lord's nature and house, KP sub-lord) |
 
 A dash means the school states nothing, never "neutral". No blended verdict. A second grid shows
 PVR's functional nature for every stored varga. Rules: migration 180 (`tbl_Dim_BeneficMaleficSchools`,
@@ -198,3 +198,18 @@ verdict stays Table 30 (`LagnaFunctionalNature`).
 those cells are dashes; Raman and BPHS 74.25's benefic-in-6th/12th reading is not seeded (needs a
 Santhanam check); no nakshatra temperament (Ugra, Mridu…) or PVR §26.5 nakshatra aspects in the
 table; D60's per-part flag stays in the Ṣaṣṭyaṃśa deities table; strength is not applied.
+
+## 10. Dasha period — built 2026-10-13
+
+Rules read in the local Phaladeepika (tr. Kapoor) ch.20, "Effects of the dasas of the lords of houses": v.24 the dasas of the
+lords of the 6th, 8th and 12th bring misery; v.27 benefics and malefics alike placed in debilitation, an inimical sign or the
+6th/12th give adverse results in their dasa; v.28-29 an antardasa lord gives the effects of the house it holds from the dasa lord,
+bad in the 6th, 8th or 12th; v.30 a benefic's good effect by sign: exalted maximum, Moolatrikona three-quarters, own half,
+friend's one-quarter, inimical very little, debilitated almost nil, combustion like debilitation (the book says the results reverse
+for malefics without saying how, so the table quotes it and makes no score). The Dasha period column shows the running
+Vimshottari lords (as of today) and these facts for every planet; the lordship line restates the functional columns (BPHS ch.34 /
+Laghu Parashari, PVR, Raman), which is where the schools' dasa-by-lordship rules already live. PVR's dasa-lagna principles
+(§15.5, natural malefics in the 3rd/6th from the dasa lagna good, etc.) are for rasi dasas and are not in this column.
+
+Not done: v.28's "inimical to the dasa lord" and "inimical to the lagna lord" tests; the BPHS verse on a benefic dasa lord in the
+6th/8th/12th or with a malefic (web-only, not found in the local text); the pratyantar level uses v.29 one level down, flagged as such.

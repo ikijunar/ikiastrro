@@ -20,6 +20,10 @@ else
                     <th rowspan="2" title="Fixed nature of the planet, with the Moon by paksha and Mercury by its company (PVR §3.2.2)">Natural</th>
                     <th colspan="@_lordSchools.Count" class="pbm-group" title="What the houses a planet rules make of it for this Lagna">Functional (house lordship)</th>
                     <th rowspan="2" title="The nature of the house the planet sits in, counting its lord, the planets in it (this planet and its conjunctions) and the planets aspecting it, each by functional nature">House (final)</th>
+                    @if (_dasha is not null)
+                    {
+                        <th rowspan="2" title="The Vimshottari lords running on @AsOf.ToString("d MMM yyyy"), and what the classics say about each planet's dasa (Phaladeepika ch.20)">Dasha period</th>
+                    }
                     <th rowspan="2">Sign</th>
                     <th rowspan="2">Nakṣatra</th>
                 </tr>
@@ -54,6 +58,25 @@ else
                             }
                             else { <span class="kit-muted">—</span> }
                         </td>
+                        @if (_dasha?.FirstOrDefault(d => d.Planet == r.Planet) is { } dr)
+                        {
+                            <td>
+                                @if (dr.Running is { } run) { <span class="pbm-b pbm-run" title="@run.Level, running until @run.End.ToString("d MMM yyyy")">@RunLabel(run.Level) · until @run.End.ToString("MMM yyyy")</span><br /> }
+                                <span class="kit-muted">Lordship: @dr.Lordship</span><br />
+                                @if (dr.HasAdverseFlag) { <span class="pbm-b pbm-bad" title="Phaladeepika ch.20 marks this dasa adverse; open the rules for why">Adverse flag</span> }
+                                else { <span class="kit-muted">No adverse flag</span> }
+                                <details class="pbm-facts">
+                                    <summary>Rules</summary>
+                                    <ul>
+                                        @foreach (var f in dr.Facts)
+                                        {
+                                            <li class="@(f.Adverse ? "pbm-factbad" : "")">@f.Text <span class="kit-muted">(@f.Source)</span></li>
+                                        }
+                                        @if (dr.Facts.Count == 0) { <li class="kit-muted">Phaladeepika ch.20 states nothing further for this planet here.</li> }
+                                    </ul>
+                                </details>
+                            </td>
+                        }
                         <td>
                             <b>@(r.SignInfo.Dignity ?? "—")</b>
                             @if (r.SignInfo.IsOwnLord) { <br /><span class="kit-muted">Its own sign</span> }
@@ -121,6 +144,11 @@ else
     [Parameter, EditorRequired] public SchoolRuleBook Rules { get; set; } = default!;
     /// <summary>The birth Moon's phase; real longitudes are in every chart, so any chart's grahas give it.</summary>
     [Parameter] public bool? MoonWaxing { get; set; }
+    /// <summary>The stored Vimshottari tree (Maha roots with their children); leave null to omit the Dasha period column.</summary>
+    [Parameter] public IReadOnlyList<Ikiastrro.Core.Engines.Dasha.DashaPeriodRecord>? DashaPeriods { get; set; }
+    /// <summary>The date the running lords are read for.</summary>
+    [Parameter] public DateTime AsOf { get; set; } = DateTime.Today;
+    private IReadOnlyList<DashaReading>? _dasha;
 
     private LoadedChart _chart = default!;
     private IReadOnlyList<PlanetNatureRow>? _rows;
@@ -140,6 +168,9 @@ else
         _lordSchools = Rules.WithTopic("LORDSHIP").Append(Rules.Schools.First(s => s.Code == SchoolCodes.Pvr)).Distinct()
             .OrderBy(s => s.DisplayOrder).ToList();
         _rows = PlanetBeneficMaleficReader.Read(Chart.KeyDetails, lagna, MoonWaxing, Rules);
+        _dasha = DashaPeriods is { Count: > 0 }
+            ? DashaNatureReader.Read(_rows, Chart.KeyDetails, lagna, RunningDasha.At(DashaPeriods, AsOf))
+            : null;
 
         if (Charts is { Count: > 1 })
         {
@@ -156,6 +187,8 @@ else
         var digits = new string(chartType.Skip(1).TakeWhile(char.IsDigit).ToArray());
         return int.TryParse(digits, out var n) ? n : int.MaxValue;
     }
+
+    private static string RunLabel(string level) => level switch { "Mahadasha" => "MD", "Antardasha" => "AD", _ => "PD" };
 
     private static string SignName(string s) => s == "Capricornus" ? "Capricorn" : s;
 
