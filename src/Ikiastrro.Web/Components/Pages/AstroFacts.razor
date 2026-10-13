@@ -24,6 +24,7 @@
 @inject Ikiastrro.Data.AmsabalaRepository AmsabalaRepo
 @inject Ikiastrro.Data.AmsabalaSchemeRepository AmsabalaSchemeRepo
 @inject Ikiastrro.Data.TransitStrengthRuleRepository TransitStrengthRuleRepo
+@inject Ikiastrro.Data.BeneficMaleficSchoolRepository BeneficMaleficRepo
 @inject Ikiastrro.Data.VargottamaRepository VargottamaRepo
 @inject Ikiastrro.Data.YogaEvaluationRepository YogaEvaluationRepo
 @inject Ikiastrro.Data.InterpretationRepository InterpretationRepo
@@ -259,6 +260,9 @@ else
                     @Head(NatalSection.Dignity)
                     <PlanetDignityTable Rows="ExaltationRows(natalChart)" LagnaSign="@natalChart.AscendantSign" MoonWaxing="MoonPhase.Of(natalChart.Grahas)" />
                     @if (!Printing) { <PlainWords Lines="DignityLines(natalChart)" Title="Dignity in plain words" /> }
+
+                    @Head(NatalSection.BeneficMalefic)
+                    <PlanetBeneficMaleficTable Chart="natalChart" Charts="_data.Charts" Rules="_beneficMaleficRules" MoonWaxing="MoonPhase.Of(natalChart.Grahas)" />
 
                     @Head(NatalSection.Motion)
                     <PlanetMotionTable KeyDetails="D1KeyDetails" />
@@ -730,12 +734,13 @@ else
 
         public static readonly Section Moon = new("af-moon", "Moon context", D1Only: true);
         public static readonly Section Dignity = new("af-dignity", "Planets — dignity, kāraka, exaltation");
+        public static readonly Section BeneficMalefic = new("af-benefic-malefic", "Benefic / malefic by school");
         public static readonly Section Motion = new("af-motion", "Motion, combustion & planetary war", D1Only: true);
         public static readonly Section MrityuPushkara = new("af-mrityu-pushkara", "Mrityu bhāga & Puṣkara", D1Only: true);
         public static readonly Section RudraMaheswara = new("af-rudra-maheswara", "Rudra, Trishoola & Maheswara", D1Only: true);
         public static readonly Section States = new("af-states", "Planet states (avasthas)", D1Only: true);
         public static readonly Section Sayanadi = new("af-sayanadi", "Śayanādi working", D1Only: true);
-        public static readonly Section[] AboutPlanetsTab = [Moon, Dignity, Motion, MrityuPushkara, RudraMaheswara, States, Sayanadi];
+        public static readonly Section[] AboutPlanetsTab = [Moon, Dignity, BeneficMalefic, Motion, MrityuPushkara, RudraMaheswara, States, Sayanadi];
 
         public static readonly Section HouseLords = new("af-house-lords", "House lord placement");
         public static readonly Section HouseFindings = new("af-house-findings", "House lord key findings");
@@ -929,6 +934,8 @@ else
     private IReadOnlyList<Ikiastrro.Core.Models.AmsabalaGroupMember> _amsabalaGroups = Array.Empty<Ikiastrro.Core.Models.AmsabalaGroupMember>();
     private IReadOnlyList<Ikiastrro.Data.VargottamaRow> _vargottama = Array.Empty<Ikiastrro.Data.VargottamaRow>();
     private IReadOnlyList<Ikiastrro.Core.Engines.Strength.VimsopakaWeight> _vimsopakaWeights = Array.Empty<Ikiastrro.Core.Engines.Strength.VimsopakaWeight>();
+    private Ikiastrro.Core.Engines.PlanetNature.SchoolRuleBook _beneficMaleficRules =
+        new(Array.Empty<Ikiastrro.Core.Engines.PlanetNature.BeneficMaleficSchool>(), Array.Empty<Ikiastrro.Core.Engines.PlanetNature.SchoolRule>());
     /// <summary>Aṁśabala's scheme pill, shared with Vimśopaka Bala below it.</summary>
     private string _vargaScheme = "VARGOTTAMA";
     private IReadOnlyList<Ikiastrro.Core.Engines.Transits.GocharaVedhaRule> _vedhaRules = Array.Empty<Ikiastrro.Core.Engines.Transits.GocharaVedhaRule>();
@@ -1116,6 +1123,7 @@ else
         _amsabalaGroups = AmsabalaSchemeRepo.GetGroups(1);
         _vargottama = VargottamaRepo.GetByBirthDetailId(Id);
         _vimsopakaWeights = TransitStrengthRuleRepo.GetVimsopakaWeights(1);
+        _beneficMaleficRules = BeneficMaleficRepo.GetRuleBook(1);
         _vedhaRules = TransitStrengthRuleRepo.GetGocharaVedhaRules(1);
         _yogaVarga = "D1";
         _yogaEvaluations = YogaEvaluationRepo.GetByBirthDetailId(Id);

@@ -1,0 +1,16 @@
+/* Astro Facts 1.2 Benefic / malefic. Table format follows the standard kit table (design-language.md); badge colours reuse the
+   dignity tokens so a benefic reads green and a malefic red as in the dignity table. */
+.pbm th, .pbm td { vertical-align: top; }
+.pbm .pbm-group { text-align: center; border-bottom: 1px solid var(--brand-line); }
+.pbm .pbm-school { font-weight: 700; white-space: nowrap; }
+.pbm .pbm-b { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-weight: 700; white-space: nowrap; cursor: help; }
+.pbm .pbm-good { background: color-mix(in srgb, var(--dignity-good) 18%, transparent); }
+.pbm .pbm-bad { background: color-mix(in srgb, var(--dignity-enemy) 18%, transparent); }
+.pbm .pbm-neutral { background: color-mix(in srgb, var(--dignity-neutral) 22%, transparent); }
+.pbm .pbm-mixed { border: 1px dashed var(--brand-line); }
+.pbm .pbm-none { color: var(--brand-muted); background: transparent; cursor: help; }
+.pbm .pbm-diff { color: var(--brand-muted); font-size: .85em; text-decoration: underline dotted; cursor: help; }
+.pbm-across td { text-align: center; }
+.pbm-across td:first-child { text-align: left; }
+.pbm-note { margin: 8px 2px 0; color: var(--brand-muted); font-size: .9em; line-height: 1.45; }
+.pbm-subhead { margin: 18px 0 8px; color: var(--brand-midnight); font-size: 1em; font-weight: 700; }

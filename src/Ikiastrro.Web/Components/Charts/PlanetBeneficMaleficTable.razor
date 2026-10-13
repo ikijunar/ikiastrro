@@ -1,0 +1,196 @@
+@using Ikiastrro.Core.Engines.Astronomy
+@using Ikiastrro.Core.Engines.PlanetNature
+@using Ikiastrro.Web.Components.Workspace
+@* Astro Facts 1.2 — planet benefic / malefic by school, in the chart shown. Facts side by side, no blended verdict: the
+   schools disagree (what a kendra lordship does; where a benefic or malefic does well) and each is a column with its source.
+   Computed live in Core (PlanetBeneficMaleficReader) from the stored key details and the rule rows of migration 180.
+   docs/research/domain/planet-benefic-malefic-perspectives.md *@
+@if (_rows is null)
+{
+    <p class="kit-muted">Needs a complete chart with all nine grahas and the Lagna.</p>
+}
+else
+{
+    <div class="kit-scroll">
+        <table class="kit pbm">
+            <thead>
+                <tr>
+                    <th rowspan="2">Planet</th>
+                    <th rowspan="2" title="Fixed nature of the planet, with the Moon by paksha and Mercury by its company (PVR §3.2.2)">Natural</th>
+                    <th colspan="@_lordSchools.Count" class="pbm-group" title="What the houses a planet rules make of it for this Lagna">Functional (house lordship)</th>
+                    <th colspan="@_placeSchools.Count" class="pbm-group" title="How the planet fares in the house it occupies">House placement</th>
+                    <th rowspan="2">Sign</th>
+                    <th rowspan="2">Nakṣatra</th>
+                </tr>
+                <tr>
+                    @foreach (var s in _lordSchools) { <th class="pbm-school" title="@s.Name">@s.ShortName</th> }
+                    @foreach (var s in _placeSchools) { <th class="pbm-school" title="@s.Name">@s.ShortName</th> }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in _rows)
+                {
+                    <tr>
+                        <td><b>@r.Planet</b><br /><span class="kit-muted">H@(r.House) · @SignName(r.Sign)</span></td>
+                        <td>
+                            <span class="@NatClass(r.Natural.Nature)" title="@r.Natural.Why">@NatLabel(r.Natural.Nature)</span>
+                            @if (r.Natural.BphsDiffers is { } differs)
+                            {
+                                <br /><span class="pbm-diff" title="@differs">other schools differ</span>
+                            }
+                        </td>
+                        @foreach (var s in _lordSchools)
+                        {
+                            var f = r.Functional.FirstOrDefault(x => x.SchoolCode == s.Code);
+                            <td>@if (f is null) { <span class="kit-muted">—</span> } else { <span class="@FnClass(f.Verdict)" title="@f.Why">@FnLabel(f.Verdict)</span> }</td>
+                        }
+                        @foreach (var s in _placeSchools)
+                        {
+                            var p = r.Placement.FirstOrDefault(x => x.SchoolCode == s.Code);
+                            <td>@if (p is null) { <span class="kit-muted">—</span> } else { <span class="@EffClass(p.Effect)" title="@p.Why">@EffLabel(p.Effect)</span> }</td>
+                        }
+                        <td>
+                            <b>@(r.SignInfo.Dignity ?? "—")</b>
+                            @if (r.SignInfo.IsOwnLord) { <br /><span class="kit-muted">Its own sign</span> }
+                            else if (r.SignInfo.Lord is { } sl) { <br /><span class="kit-muted">Lord @(sl.Planet): @(Related(sl, false))</span> }
+                        </td>
+                        <td>
+                            @if (r.NakshatraInfo.Nakshatra is { } nk)
+                            {
+                                <b>@(nk + (r.NakshatraInfo.Pada is { } pada ? $" {pada}" : ""))</b>
+                                @if (r.NakshatraInfo.StarLord is { } star)
+                                {
+                                    <br /><span class="kit-muted">Star lord @(star.Planet): @(Related(star, true))</span>
+                                }
+                                @if (r.NakshatraInfo.SubLord is { } sub)
+                                {
+                                    <br /><span class="kit-muted">KP sub-lord @(sub.Planet): @(Related(sub, false))</span>
+                                }
+                            }
+                            else { <span class="kit-muted">—</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="pbm-note">
+        Hover a cell for the rule and its source. <b>—</b> means that school states nothing for the case; it is not a neutral verdict.
+        Natural nature does not change between charts; the functional columns recount the houses from this chart's own Lagna.
+        PVR judges placement by functional nature, the other schools by natural nature, so one planet can read well in one column
+        and badly in another. Strength is not applied: every school says a strong planet does better.
+        @if (_chart.ChartType == "D60") { <text>The shashtiamsa's own benefic or malefic flag (BPHS) is in the Ṣaṣṭyaṃśa (D60) deities table under Vargas.</text> }
+    </p>
+
+    @if (_across is { Count: > 1 })
+    {
+        <h4 class="pbm-subhead">PVR functional nature across the vargas</h4>
+        <div class="kit-scroll">
+            <table class="kit pbm pbm-across">
+                <thead><tr><th>Planet</th>@foreach (var c in _across.Keys) { <th class="pbm-school">@c</th> }</tr></thead>
+                <tbody>
+                    @foreach (var planet in _acrossPlanets)
+                    {
+                        <tr>
+                            <td><b>@planet</b></td>
+                            @foreach (var (chartType, byPlanet) in _across)
+                            {
+                                var v = byPlanet[planet];
+                                <td><span class="@FnClass(v)" title="@planet in @chartType: @FnLabel(v).ToLowerInvariant() for that chart's Lagna">@FnLetter(v)</span></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="pbm-note">Y yogakāraka · B benefic · N neutral · M malefic. Each column reads PVR's Table 30 for that varga's own Lagna,
+            the way PVR reads functional nature in the dasamsa (Example 54). Rāhu and Ketu own no sign and are not in Table 30.</p>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public LoadedChart Chart { get; set; } = default!;
+    /// <summary>Every stored chart, for the across-vargas grid; leave empty to omit it.</summary>
+    [Parameter] public IReadOnlyDictionary<string, LoadedChart>? Charts { get; set; }
+    [Parameter, EditorRequired] public SchoolRuleBook Rules { get; set; } = default!;
+    /// <summary>The birth Moon's phase; real longitudes are in every chart, so any chart's grahas give it.</summary>
+    [Parameter] public bool? MoonWaxing { get; set; }
+
+    private LoadedChart _chart = default!;
+    private IReadOnlyList<PlanetNatureRow>? _rows;
+    private List<BeneficMaleficSchool> _lordSchools = new();
+    private List<BeneficMaleficSchool> _placeSchools = new();
+    private Dictionary<string, IReadOnlyDictionary<PlanetName, SchoolFunctional>>? _across;
+    private static readonly PlanetName[] _acrossPlanets =
+        { PlanetName.Sun, PlanetName.Moon, PlanetName.Mars, PlanetName.Mercury, PlanetName.Jupiter, PlanetName.Venus, PlanetName.Saturn };
+
+    protected override void OnParametersSet()
+    {
+        _chart = Chart;
+        _rows = null;
+        _across = null;
+        var grahas = Chart.Grahas;
+        if (grahas.Count(k => k.Planet != "Ascendant") < 9 || !Enum.TryParse<ZodiacName>(Chart.AscendantSign, out var lagna)) return;
+
+        _lordSchools = Rules.WithTopic("LORDSHIP").Append(Rules.Schools.First(s => s.Code == SchoolCodes.Pvr)).Distinct()
+            .OrderBy(s => s.DisplayOrder).ToList();
+        _placeSchools = Rules.WithTopic("PLACEMENT").OrderBy(s => s.DisplayOrder).ToList();
+        _rows = PlanetBeneficMaleficReader.Read(Chart.KeyDetails, lagna, MoonWaxing, Rules);
+
+        if (Charts is { Count: > 1 })
+        {
+            var ordered = Charts.Values.OrderBy(c => DivisionalNumber(c.ChartType)).ThenBy(c => c.ChartType)
+                .Where(c => Enum.TryParse<ZodiacName>(c.AscendantSign, out _))
+                .Select(c => (c.ChartType, Enum.Parse<ZodiacName>(c.AscendantSign)));
+            var map = PlanetBeneficMaleficReader.PvrAcrossCharts(ordered, MoonWaxing);
+            _across = ordered.ToDictionary(c => c.ChartType, c => map[c.ChartType]);
+        }
+    }
+
+    private static int DivisionalNumber(string chartType)
+    {
+        var digits = new string(chartType.Skip(1).TakeWhile(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var n) ? n : int.MaxValue;
+    }
+
+    private static string SignName(string s) => s == "Capricornus" ? "Capricorn" : s;
+
+    /// <summary>"Benefic · PVR malefic · H8": the related planet's natural nature, PVR functional verdict and (for a star lord) house.</summary>
+    private static string Related(RelatedPlanetNature r, bool withHouse) =>
+        NatLabel(r.Natural)
+        + (r.Pvr is { } f && f != SchoolFunctional.NotStated ? $" · PVR {FnLabel(f).ToLowerInvariant()}" : "")
+        + (withHouse && r.House is { } h ? $" · H{h}" : "");
+
+    private static string NatLabel(NaturalNature n) => n switch { NaturalNature.Benefic => "Benefic", NaturalNature.Malefic => "Malefic", _ => "Mixed" };
+    private static string NatClass(NaturalNature n) => n switch { NaturalNature.Benefic => "pbm-b pbm-good", NaturalNature.Malefic => "pbm-b pbm-bad", _ => "pbm-b pbm-mixed" };
+
+    private static string FnLabel(SchoolFunctional f) => f switch
+    {
+        SchoolFunctional.Yogakaraka => "Yogakāraka", SchoolFunctional.Benefic => "Benefic", SchoolFunctional.Neutral => "Neutral",
+        SchoolFunctional.Malefic => "Malefic", SchoolFunctional.Mixed => "Mixed", _ => "—",
+    };
+    private static string FnLetter(SchoolFunctional f) => f switch
+    {
+        SchoolFunctional.Yogakaraka => "Y", SchoolFunctional.Benefic => "B", SchoolFunctional.Neutral => "N", SchoolFunctional.Malefic => "M", _ => "—",
+    };
+    private static string FnClass(SchoolFunctional f) => f switch
+    {
+        SchoolFunctional.Yogakaraka or SchoolFunctional.Benefic => "pbm-b pbm-good",
+        SchoolFunctional.Malefic => "pbm-b pbm-bad",
+        SchoolFunctional.Neutral => "pbm-b pbm-neutral",
+        SchoolFunctional.Mixed => "pbm-b pbm-mixed",
+        _ => "pbm-b pbm-none",
+    };
+
+    private static string EffLabel(PlacementEffect e) => e switch
+    {
+        PlacementEffect.Good => "Good", PlacementEffect.Challenging => "Challenging", PlacementEffect.Mixed => "Mixed", _ => "—",
+    };
+    private static string EffClass(PlacementEffect e) => e switch
+    {
+        PlacementEffect.Good => "pbm-b pbm-good",
+        PlacementEffect.Challenging => "pbm-b pbm-bad",
+        PlacementEffect.Mixed => "pbm-b pbm-mixed",
+        _ => "pbm-b pbm-none",
+    };
+}
