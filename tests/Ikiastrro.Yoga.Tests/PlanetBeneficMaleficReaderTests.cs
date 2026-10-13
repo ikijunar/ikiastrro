@@ -306,6 +306,38 @@ public class PlanetBeneficMaleficReaderTests
     }
 
     [Fact]
+    public void Antardasha_lord_inimical_to_the_mahadasha_lord_is_flagged()
+    {
+        // Phaladeepika 20.28: Venus is a natural enemy of the Sun, so a Venus antardasa in a Sun dasa brings danger from enemies.
+        var chart = TaurusChart();
+        var rows = PlanetBeneficMaleficReader.Read(chart, ZodiacName.Taurus, true, Book);
+        var run = new[] { new RunningLord("Mahadasha", "Sun", new DateTime(2030, 1, 1)), new RunningLord("Antardasha", "Venus", new DateTime(2027, 1, 1)) };
+        var venus = DashaNatureReader.Read(rows, chart, ZodiacName.Taurus, run).Single(r => r.Planet == "Venus");
+        var fact = venus.Facts.Single(f => f.Source == "Phaladeepika 20.28");
+        Assert.True(fact.Adverse);
+        Assert.Contains("inimical to Sun, the mahadasha lord", fact.Text);
+        // Not running as an antardasa: the rule is silent.
+        Assert.DoesNotContain(DashaNatureReader.Read(rows, chart, ZodiacName.Taurus, Array.Empty<RunningLord>()).SelectMany(r => r.Facts), f => f.Source == "Phaladeepika 20.28");
+    }
+
+    [Fact]
+    public void Nakshatra_temperament_and_star_aspects_follow_the_books()
+    {
+        Assert.Equal("Ugra", NakshatraTemperament.Of("Magha")!.Class);
+        Assert.Equal("Tikshna", NakshatraTemperament.Of("Mula")!.Class);
+        Assert.Equal("Dhruva", NakshatraTemperament.Of("Uttara Ashadha")!.Class);
+        Assert.Null(NakshatraTemperament.Of("Nowhere"));
+        // PVR 26.5: Saturn aspects the 3rd, 5th, 15th, 19th; counting is inclusive, so the 3rd from Ashwini is Krittika.
+        Assert.Equal("Krittika", NakshatraAspects.Aspected("Ashwini", 3));
+        Assert.Equal("Ashwini", NakshatraAspects.Aspected("Revati", 2));   // wraps
+        var stars = new Dictionary<string, string?> { ["Saturn"] = "Ashwini", ["Moon"] = "Krittika", ["Mars"] = "Ashwini", ["Sun"] = "Bharani" };
+        var saturn = NakshatraAspects.Read("Saturn", stars);
+        Assert.Contains(saturn.Aspects, a => a.Planet == "Moon" && a.Nth == 3);
+        Assert.Contains(saturn.AspectedBy, a => a.Planet == "Mars" && a.Nth == 1);   // Mars aspects its own star
+        Assert.DoesNotContain(saturn.Aspects, a => a.Planet == "Sun");
+    }
+
+    [Fact]
     public void Pvr_across_charts_uses_each_charts_own_lagna()
     {
         var m = PlanetBeneficMaleficReader.PvrAcrossCharts(new[] { ("D1", ZodiacName.Taurus), ("D10", ZodiacName.Gemini) }, true);

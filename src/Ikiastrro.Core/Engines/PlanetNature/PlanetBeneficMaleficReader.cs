@@ -13,7 +13,8 @@ public sealed record SignReading(string Sign, string? Dignity, RelatedPlanetNatu
 
 /// <param name="StarLord">The nakshatra's Vimshottari lord, with its house in this chart.</param>
 /// <param name="SubLord">The KP sub-lord (Vimshottari level 2), natural nature only.</param>
-public sealed record NakshatraReading(string? Nakshatra, int? Pada, RelatedPlanetNature? StarLord, RelatedPlanetNature? SubLord);
+public sealed record NakshatraReading(string? Nakshatra, int? Pada, RelatedPlanetNature? StarLord, RelatedPlanetNature? SubLord,
+    NakshatraTemperamentInfo? Temperament = null, NakshatraAspectReading? StarAspects = null);
 
 /// <param name="HouseVerdict">The occupied house's final nature: its lord, the planets in it (this planet and its conjunctions) and
 /// the planets aspecting it, each by functional nature from this chart's Lagna (<see cref="HouseBeneficMaleficCalculator"/>,
@@ -56,6 +57,7 @@ public static class PlanetBeneficMaleficReader
             return new(planet, n.Nature, pvr, house);
         }
 
+        var stars = grahas.Where(k => k.Nakshatra is not null).ToDictionary(k => k.Planet, k => (string?)k.Nakshatra);
         var houses = HouseBeneficMaleficCalculator.ComputeAll(lagna, grahas).ToDictionary(h => h.HouseNumber);
 
         foreach (var planet in Order)
@@ -67,7 +69,8 @@ public static class PlanetBeneficMaleficReader
             var placement = SchoolPlacement.ReadAll(g.HouseNumberFromLagna, nat, functional[0], rules);
             var sign = new SignReading(g.Sign, g.DignityStatus, Related(g.SignLordPlanet), g.SignLordPlanet == g.Planet);
             var nak = new NakshatraReading(g.Nakshatra, g.NakshatraPada, Related(g.NakshatraLordPlanet),
-                g.NakshatraSubLordPlanet is { } sub && natural.TryGetValue(sub, out var sn) ? new(sub, sn.Nature, null, null) : null);
+                g.NakshatraSubLordPlanet is { } sub && natural.TryGetValue(sub, out var sn) ? new(sub, sn.Nature, null, null) : null,
+                NakshatraTemperament.Of(g.Nakshatra), g.Nakshatra is null ? null : NakshatraAspects.Read(g.Planet, stars));
             rows.Add(new(g.Planet, g.HouseNumberFromLagna, g.Sign, nat, functional, placement, sign, nak,
                 houses.GetValueOrDefault(g.HouseNumberFromLagna)));
         }
