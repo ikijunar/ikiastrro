@@ -1,4 +1,5 @@
 using Ikiastrro.Core.Engines.Astronomy;
+using Ikiastrro.Core.Engines.Dasha;
 using Ikiastrro.Core.Engines.PlanetNature;
 using Ikiastrro.Core.Models;
 using Xunit;
@@ -234,6 +235,71 @@ public class PlanetBeneficMaleficReaderTests
         Assert.Contains("Jupiter", jupiter.HouseVerdict.MaleficOccupants);        // the planet itself is an occupant
         Assert.Contains("Mars", jupiter.HouseVerdict.MaleficAspectors);           // Mars in Scorpio aspects the 2nd (8th from itself)
         Assert.Equal(Ikiastrro.Core.Engines.Houses.HouseBeneficMaleficVerdict.Malefic, jupiter.HouseVerdict.Verdict);
+    }
+
+    private static List<ChartKeyDetail> TaurusChart()
+    {
+        var chart = new List<ChartKeyDetail>
+        {
+            G("Ascendant", ZodiacName.Taurus, 1, 40),
+            G("Sun", ZodiacName.Leo, 4, 130), G("Moon", ZodiacName.Cancer, 3, 100), G("Mars", ZodiacName.Scorpio, 7, 220),
+            G("Mercury", ZodiacName.Virgo, 5, 170), G("Jupiter", ZodiacName.Gemini, 2, 70), G("Venus", ZodiacName.Gemini, 2, 72),
+            G("Saturn", ZodiacName.Pisces, 11, 340), G("Rahu", ZodiacName.Aquarius, 10, 310), G("Ketu", ZodiacName.Leo, 4, 130),
+        };
+        chart.Single(k => k.Planet == "Mars").DignityStatus = "Own Sign";
+        chart.Single(k => k.Planet == "Jupiter").DignityStatus = "Enemy";
+        return chart;
+    }
+
+    [Fact]
+    public void Running_dasha_picks_maha_antar_and_pratyantar_for_a_date()
+    {
+        var pd = new DashaPeriodRecord { Lord = "Venus", LevelNumber = 3, StartDate = new DateTime(2010, 3, 1), EndDate = new DateTime(2010, 4, 1) };
+        var ad = new DashaPeriodRecord { Lord = "Sun", LevelNumber = 2, StartDate = new DateTime(2010, 1, 1), EndDate = new DateTime(2011, 1, 1) };
+        ad.Children.Add(pd);
+        var md = new DashaPeriodRecord { Lord = "Mars", LevelNumber = 1, StartDate = new DateTime(2005, 1, 1), EndDate = new DateTime(2012, 1, 1) };
+        md.Children.Add(ad);
+
+        var run = RunningDasha.At(new[] { md }, new DateTime(2010, 3, 15));
+        Assert.Equal(new[] { "Mars", "Sun", "Venus" }, run.Select(r => r.Planet));
+        Assert.Equal(new[] { "Mahadasha", "Antardasha", "Pratyantardasha" }, run.Select(r => r.Level));
+        Assert.Single(RunningDasha.At(new[] { md }, new DateTime(2006, 1, 1)));   // no antardasa stored for that date
+        Assert.Empty(RunningDasha.At(new[] { md }, new DateTime(2020, 1, 1)));
+    }
+
+    [Fact]
+    public void Dasha_facts_flag_the_lord_of_the_twelfth_and_a_planet_in_an_inimical_sign()
+    {
+        // Taurus Lagna: Mars rules the 7th and 12th (Phaladeepika 20.24: the 12th lord's dasa brings misery);
+        // Jupiter sits in an inimical sign (20.27) and rules the 8th and 11th.
+        var chart = TaurusChart();
+        var rows = PlanetBeneficMaleficReader.Read(chart, ZodiacName.Taurus, true, Book);
+        var run = new[] { new RunningLord("Mahadasha", "Mars", new DateTime(2030, 1, 1)), new RunningLord("Antardasha", "Venus", new DateTime(2027, 1, 1)) };
+        var read = DashaNatureReader.Read(rows, chart, ZodiacName.Taurus, run);
+
+        var mars = read.Single(r => r.Planet == "Mars");
+        Assert.Equal("Mahadasha", mars.Running!.Level);
+        Assert.Contains(mars.Facts, f => f.Source == "Phaladeepika 20.24" && f.Adverse && f.Text.Contains("12th"));
+        Assert.Contains(mars.Facts, f => f.Source == "Phaladeepika 20.30" && f.Text.StartsWith("In its own sign"));
+
+        var jupiter = read.Single(r => r.Planet == "Jupiter");
+        Assert.Null(jupiter.Running);
+        Assert.Contains(jupiter.Facts, f => f.Source == "Phaladeepika 20.24" && f.Text.Contains("8th"));
+        Assert.Contains(jupiter.Facts, f => f.Source == "Phaladeepika 20.27" && f.Text.Contains("inimical sign"));
+        Assert.True(jupiter.HasAdverseFlag);
+    }
+
+    [Fact]
+    public void Antardasha_lord_is_judged_by_its_house_from_the_mahadasha_lord()
+    {
+        // Mars in Scorpio, Venus in Gemini: Gemini is the 8th from Scorpio, so Phaladeepika 20.29 reads the antardasa as bad.
+        var chart = TaurusChart();
+        var rows = PlanetBeneficMaleficReader.Read(chart, ZodiacName.Taurus, true, Book);
+        var run = new[] { new RunningLord("Mahadasha", "Mars", new DateTime(2030, 1, 1)), new RunningLord("Antardasha", "Venus", new DateTime(2027, 1, 1)) };
+        var venus = DashaNatureReader.Read(rows, chart, ZodiacName.Taurus, run).Single(r => r.Planet == "Venus");
+        var fact = venus.Facts.Single(f => f.Source == "Phaladeepika 20.29");
+        Assert.True(fact.Adverse);
+        Assert.Contains("8th house from Mars", fact.Text);
     }
 
     [Fact]
