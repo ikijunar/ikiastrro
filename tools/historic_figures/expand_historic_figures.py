@@ -1,4 +1,4 @@
-"""Extend the historic-figures reference database from ~10 per cell to ~1000 per cell (49 cells -> 49,000).
+"""Extend the historic-figures reference database to 100 per cell (49 cells -> 4,900).
 
   python expand_historic_figures.py discover   # Wikidata -> candidates.json (per cell: QID + sitelink count)
   python expand_historic_figures.py select     # candidates.json -> picked.json (one cell per person, top N per cell, shortfall redistributed)
@@ -30,15 +30,17 @@ CANDIDATES, PICKED, FACTS, EXPANDED, REPORT = (HERE / n for n in
                                               ("candidates.json", "picked.json", "facts.json", "expanded.json", "expand_report.md"))
 CURATED = HERE / "selected.json"                # the 488 hand-seeded people: kept as they are, counted toward their cell
 UA = "ikiastrro-historic-figures/0.2 (research; rammyps23@gmail.com)"
-PER_CELL = 1000
+PER_CELL = 100
 MIN_LINKS = 6          # floor on Wikipedia editions; keeps stubs out and every query fast
+MIN_LINKS_CELL = {"ART/AUTHOR": 40, "ART/JOURN": 30, "IND/CONST": 10, "MIL/GEN": 10, "MIL/ADM": 6, "ART/ATHLETE": 45}   # huge cells time out at the default
 PAGE = 20000
 
 INDIA = "wd:Q668 wd:Q129286"                    # India, British Raj (undivided-India births)
 # ---- atoms: a SPARQL fragment about ?p (a human). Fragments in one cell are UNIONed.
 def occ(*q): return "?p wdt:P106 ?o . VALUES ?o { %s }" % " ".join("wd:" + x for x in q)
 def pos(*q): return "?p wdt:P39 ?pos . ?pos wdt:P279* ?pc . VALUES ?pc { %s }" % " ".join("wd:" + x for x in q)
-def rel(r, *q): return "?p wdt:P106 ?o . VALUES ?o { %s } ?p wdt:P140 wd:%s" % (" ".join("wd:" + x for x in q), r)
+def rel(r, *q): return "?p wdt:P106 ?o . VALUES ?o { %s } ?p wdt:P140 wd:%s ." % (" ".join("wd:" + x for x in q), r)
+def rank(*q): return "?p wdt:P410 ?rk . ?rk wdt:P279* ?rc . VALUES ?rc { %s }" % " ".join("wd:" + x for x in q)
 def founder(*industry): return "?c wdt:P112 ?p ; wdt:P452 ?i . VALUES ?i { %s }" % " ".join("wd:" + x for x in industry)
 def indian(f): return f + " ?p wdt:P27 ?cit . VALUES ?cit { %s }" % INDIA
 
@@ -50,7 +52,7 @@ CELLS: list[tuple[str, str, list[str]]] = [
     ("IND", "CM", [indian(pos("Q5096847", "Q1670755"))]),
     ("IND", "PRESGOV", [indian(pos("Q30461", "Q132050"))]),
     ("IND", "FFIGHT", [indian(occ("Q11571698", "Q3242115"))]),
-    ("IND", "CONST", [indian(occ("Q185351", "Q16533", "Q40348"))]),
+    ("IND", "CONST", [indian(occ("Q185351")), indian(occ("Q16533")), indian(occ("Q40348"))]),
     ("IND", "PRINCE", [indian(occ("Q116", "Q1163330")), indian(pos("Q116"))]),
     ("IND", "REFORM", [indian(occ("Q16611574", "Q15253558"))]),
     ("POL", "PRES", [pos("Q30461")]),
@@ -60,8 +62,8 @@ CELLS: list[tuple[str, str, list[str]]] = [
     ("POL", "REVOL", [occ("Q3242115")]),
     ("POL", "DICT", [occ("Q183318", "Q180095")]),               # dictator, tyrant
     ("POL", "DIPL", [occ("Q193391")]),
-    ("MIL", "ADM", [occ("Q132851")]),
-    ("MIL", "GEN", [occ("Q83460")]),
+    ("MIL", "ADM", [occ("Q132851"), rank("Q132851")]),
+    ("MIL", "GEN", [occ("Q83460"), rank("Q83460")]),
     ("MIL", "RESIST", [occ("Q212948", "Q1397808")]),           # partisan, resistance fighter
     ("MIL", "INTEL", [occ("Q5121444", "Q9352089")]),
     ("MIL", "STRAT", [occ("Q12806039")]),
@@ -92,10 +94,10 @@ CELLS: list[tuple[str, str, list[str]]] = [
     ("ART", "DIRECT", [occ("Q2526255", "Q3282637")]),
     ("ART", "ACTOR", [occ("Q10800557", "Q33999", "Q2259451")]),
     ("ART", "MUSIC", [occ("Q639669", "Q177220", "Q36834")]),
-    ("ART", "AUTHOR", [occ("Q36180", "Q49757", "Q482980")]),
-    ("ART", "JOURN", [occ("Q1930187", "Q947873", "Q2722764")]),
-    ("ART", "ATHLETE", [occ("Q937857", "Q10833314", "Q3665646", "Q11338576", "Q10873124", "Q11513337", "Q10843402",
-                            "Q11303721", "Q2309784", "Q378622", "Q10871364", "Q11774891", "Q13382576", "Q2066131")]),
+    ("ART", "AUTHOR", [occ("Q49757"), occ("Q482980"), occ("Q36180")]),
+    ("ART", "JOURN", [occ("Q1930187"), occ("Q947873"), occ("Q2722764")]),
+    ("ART", "ATHLETE", [occ(q) for q in ("Q937857", "Q10833314", "Q3665646", "Q11338576", "Q10873124", "Q11513337", "Q10843402",
+                                                "Q11303721", "Q2309784", "Q378622", "Q10871364", "Q11774891", "Q13382576", "Q2066131")]),
 ]
 assert len(CELLS) == 49 and len({(a, s) for a, s, _ in CELLS}) == 49
 
@@ -131,10 +133,11 @@ def discover() -> None:
         if key in out and out[key]["done"]:
             continue
         found: dict[str, int] = {}
+        failed = False
         for i, atom in enumerate(atoms):
             query = f"""
             SELECT ?p (MAX(?l) AS ?links) WHERE {{
-              ?p wdt:P31 wd:Q5 ; wikibase:sitelinks ?l . FILTER(?l >= {MIN_LINKS})
+              ?p wdt:P31 wd:Q5 ; wikibase:sitelinks ?l . FILTER(?l >= {MIN_LINKS_CELL.get(key, MIN_LINKS)})
               {atom}
               ?p p:P569/psv:P569 ?n . ?n wikibase:timePrecision ?prec . FILTER(?prec >= 11)
             }} GROUP BY ?p ORDER BY DESC(?links) LIMIT {PAGE}"""
@@ -142,18 +145,20 @@ def discover() -> None:
                 rows = sparql(query)
             except Exception as ex:
                 print(f"  {key} atom {i}: FAILED {type(ex).__name__}: {str(ex)[:80]}", flush=True)
+                failed = True
                 continue
             for r in rows:
                 found[r["p"]["value"].rsplit("/", 1)[1]] = int(r["links"]["value"])
             print(f"  {key} atom {i}: {len(rows)} rows (cell total {len(found)})", flush=True)
             time.sleep(1.5)
-        out[key] = {"people": found, "done": True}
+        out[key] = {"people": found, "done": not failed}
         CANDIDATES.write_text(json.dumps(out), "utf-8")
     print("discover done:", {k: len(v["people"]) for k, v in out.items()})
 
 
 TOTAL = 49 * PER_CELL
 MAX_CELL = 3 * PER_CELL                          # a cell never grows past 3x the base even when topping up
+SPARES = 6                                       # extra next-ranked people per cell; replace anyone whose birth date turns out not day-precise
 
 
 def select() -> None:
@@ -185,25 +190,34 @@ def select() -> None:
                 grew = True
         if not grew:
             break
-    picked = [{"area": a, "sub": s, "qid": q, "links": l} for (a, s), people in pool.items() for q, l in people[:take[(a, s)]]]
+    picked = [{"area": a, "sub": s, "qid": q, "links": l, "spare": i >= take[(a, s)]}
+              for (a, s), people in pool.items() for i, (q, l) in enumerate(people[:take[(a, s)] + SPARES])]
     PICKED.write_text(json.dumps(picked), "utf-8")
-    print(f"picked {len(picked)} new + {len(curated)} curated = {len(picked) + len(curated)} (target {TOTAL}); unmet {short}")
+    firm = sum(1 for p in picked if not p["spare"])
+    print(f"picked {firm} new + {len(curated)} curated = {firm + len(curated)} (target {TOTAL}); unmet {short}; "
+          f"{len(picked) - firm} spares")
 
 
 def facts_stage() -> None:
     from build_historic_figures import facts, to_record      # reuse the audited fact fetch / date conversion
     picked = json.loads(PICKED.read_text("utf-8"))
-    have: dict[str, dict] = json.loads(FACTS.read_text("utf-8")) if FACTS.exists() else {}
-    todo = [p["qid"] for p in picked if p["qid"] not in have]
-    print(f"fetching facts for {len(todo)} people ({len(have)} cached)")
+    shard, shards = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (0, 1)
+    out_file = FACTS if shards == 1 else HERE / f"facts.{shard}.json"        # parallel workers each own a file
+    done: dict[str, dict] = json.loads(FACTS.read_text("utf-8")) if FACTS.exists() else {}
+    have: dict[str, dict] = json.loads(out_file.read_text("utf-8")) if out_file.exists() and out_file != FACTS else dict(done)
+    todo = [p["qid"] for i, p in enumerate(picked) if i % shards == shard and p["qid"] not in have and p["qid"] not in done]
+    print(f"shard {shard}/{shards}: fetching facts for {len(todo)} people ({len(have)} cached)")
     for i in range(0, len(todo), 500):
         chunk = todo[i:i + 500]
         for qid, f in facts(chunk).items():
-            record = to_record(qid, f)
+            try:
+                record = to_record(qid, f)
+            except (TypeError, ValueError):                  # e.g. Wikidata "unknown value" placeholders instead of a date
+                record = None
             have[qid] = record or {"skip": True}
         for qid in chunk:
             have.setdefault(qid, {"skip": True})
-        FACTS.write_text(json.dumps(have, ensure_ascii=False), "utf-8")
+        out_file.write_text(json.dumps(have, ensure_ascii=False), "utf-8")
         print(f"  {min(i + 500, len(todo))}/{len(todo)}", flush=True)
 
 
@@ -216,16 +230,25 @@ def geo_for(links: int, india: bool) -> str:
 
 def build() -> None:
     picked = json.loads(PICKED.read_text("utf-8"))
-    have = json.loads(FACTS.read_text("utf-8"))
+    have: dict[str, dict] = {}
+    for f in [FACTS, *sorted(HERE.glob("facts.*.json"))]:                       # main file + parallel-worker files
+        if f.exists():
+            have.update(json.loads(f.read_text("utf-8")))
     cand = json.loads(CANDIDATES.read_text("utf-8"))
     links_of = {q: l for c in cand.values() for q, l in c["people"].items()}
     curated = json.loads(CURATED.read_text("utf-8")) if CURATED.exists() else []
     out, dropped = [], Counter()
-    for p in picked:
+    firm = Counter((p["area"], p["sub"]) for p in picked if not p["spare"])      # each cell's quota
+    got: Counter = Counter()
+    for p in sorted(picked, key=lambda p: p["spare"]):                         # firm picks first, then spares fill any gaps
+        cell = (p["area"], p["sub"])
         r = have.get(p["qid"])
         if not r or r.get("skip"):
-            dropped[(p["area"], p["sub"])] += 1
+            dropped[cell] += 1
             continue
+        if got[cell] >= firm[cell]:
+            continue
+        got[cell] += 1
         india = p["area"] == "IND" or (r["country"] in ("India", "British Raj"))
         out.append({**r, "area": p["area"], "sub": p["sub"], "links": p["links"], "geo": geo_for(p["links"], india)})
     for r in curated:                                              # curated rows keep their hand-assigned geo; just add links
@@ -247,6 +270,8 @@ def build() -> None:
 def load() -> None:
     from ikiastrro_analytics.sql import connect
     people = json.loads(EXPANDED.read_text("utf-8"))
+    if len(people) != TOTAL:
+        raise RuntimeError(f"refusing partial load: expanded.json has {len(people)} people; expected exactly {TOTAL}")
     sql = """
         MERGE dbo.tbl_Ref_HistoricFigure AS t
         USING (SELECT ? AS WikidataQid) AS s ON t.WikidataQid = s.WikidataQid
@@ -266,8 +291,9 @@ def load() -> None:
             if n % 2000 == 0:
                 connection.commit()
                 print(f"  {n}/{len(people)}", flush=True)
+        cursor.execute("EXEC dbo.usp_RefreshHistoricFigureTags")
         connection.commit()
-    print(f"loaded {len(people)} historic figures")
+    print(f"loaded {len(people)} historic figures and refreshed hierarchical tags")
 
 
 if __name__ == "__main__":
