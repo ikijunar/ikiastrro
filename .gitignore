@@ -52,3 +52,9 @@ __pycache__/
 
 # Saved-people CSV safety copies (personal data)
 /exports/
+
+# Historic-figures expansion pipeline intermediates (regenerable)
+/tools/historic_figures/candidates.json
+/tools/historic_figures/picked.json
+/tools/historic_figures/facts.json
+/tools/historic_figures/expanded.json
