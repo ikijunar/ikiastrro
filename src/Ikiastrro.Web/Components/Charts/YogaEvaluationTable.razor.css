@@ -104,3 +104,9 @@
 .yg-varga.is-on { background: var(--brand-sunrise); border-color: var(--brand-midnight); }
 .yg-varga-note { margin: 6px 16px 0; color: var(--brand-muted); font-size: .76rem; }
 .yg-varga-cell { white-space: nowrap; font-weight: 700; font-size: .75rem; }
+
+/* Set headings: rows are grouped under their Set (2026-10-16) */
+.yg-group th { text-align: left; padding: 8px 12px; background: var(--brand-soft, rgba(0,0,0,.04)); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-ink, inherit); }
+.yg-group th small { margin-left: 6px; color: var(--brand-muted); font-weight: 400; }
+.yg-variants { font-size: .78rem; }
+.yg-variants small { color: var(--brand-muted); margin-left: 4px; }

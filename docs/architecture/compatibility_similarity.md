@@ -144,6 +144,17 @@ Feature types, simple to rich:
 - `tbl_Person_Tag`: controlled vocabulary for occupation, notable traits and outcomes. This allows the search to run both ways: patterns to people, and charts tagged X to the patterns they share. It connects to the parked base-rate and Validation items in `ROADMAP.md`.
 - Privacy: only public figures go in the reference corpus. Personal and family charts are never mixed into a public search unless the user opts in.
 
+### 5.5 Status of the feature layer (2026-10-16)
+
+Built first as views over what is already stored, so there is nothing to refresh:
+
+- `vw_Chart_Feature` (migrations 184, 185): one narrow row per person, chart/varga, feature type, subject and value. Types so far: `YOGA` (presence, one atom per YogaCode however many sources catalogue it), `PLANET_SIGN`, `PLANET_HOUSE`, `PLANET_NAKSHATRA`, `DIGNITY`. A new type is one more `UNION ALL` branch.
+- `vw_Feature_BaseRate` (migration 186): how many saved people have each atom. This is the rate in the **saved population only**, not the generated baseline of 5.3; the screens label it "saved people".
+- `FeatureCompareRepository` and `FeatureComparer` (Data): compare chosen people (all / shared / differences), overlap of two people, who has this fact, and the rates. A fact is shared only when subject and value both match. Counts, never a similarity score.
+- UI: Astro Facts, READINGS, COMPARE (`FeatureCompare`).
+
+Not built, deliberately: the materialised `tbl_Chart_Feature` and `tbl_Dim_FeatureType` (the views read in about a quarter of a second at 70 people; build the table when a C#-only feature, such as a strength band, needs persisting, or when the corpus grows), the generated-baseline `tbl_Feature_BaseRate`, weighted similarity ranking (needs that baseline), and the pattern builder and saved searches (5.2).
+
 ## 6. Roadmap
 
 Shared foundation:

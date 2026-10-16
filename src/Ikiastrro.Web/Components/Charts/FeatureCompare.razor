@@ -1,0 +1,351 @@
+@using Ikiastrro.Data
+@using Ikiastrro.Core.Models
+@inject FeatureCompareRepository FeatureRepo
+@inject BirthDetailsRepository PeopleRepo
+
+@* Any comparable fact across saved people (rammyps, 2026-10-16). Reads feature atoms (vw_Chart_Feature, migrations
+   184/185) and compares them with FeatureComparer, so one grid serves yogas and planet placements alike: a new
+   feature type is one more entry in Types below once the view carries it. Presence facts (yogas) show a tick; valued
+   facts (a planet's sign) show the value, shaded where everyone agrees. *@
+<section class="ygc" aria-labelledby="ygc-title">
+    <article class="ygc-card">
+        <header class="ygc-head">
+            <h2 id="ygc-title">Compare @TypeLabel.ToLowerInvariant() across people</h2>
+            <p>@Rows.Count rows across @_chosen.Count @(_chosen.Count == 1 ? "person" : "people") · @ChartLabel</p>
+        </header>
+        <div class="ygc-types" role="group" aria-label="What to compare">
+            @foreach (var t in Types)
+            {
+                <button type="button" class="ygc-type @(t.Code == _type ? "is-on" : null)" aria-pressed="@(t.Code == _type ? "true" : "false")"
+                        @onclick="() => SelectType(t.Code)">@t.Label</button>
+            }
+        </div>
+        <div class="ygc-controls">
+            <label>
+                <span>Add a person</span>
+                <select @onchange="OnAdd">
+                    <option value="">Choose…</option>
+                    @foreach (var p in Available)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                </select>
+            </label>
+            <label>
+                <span>Chart</span>
+                <select value="@_chart" @onchange="OnChart">
+                    @foreach (var c in Charts)
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </label>
+            <label>
+                <span>Show</span>
+                <select @bind="_mode">
+                    <option value="@FeatureCompareMode.All">All</option>
+                    <option value="@FeatureCompareMode.Differences">Differences only</option>
+                    <option value="@FeatureCompareMode.Shared">Common to everyone</option>
+                </select>
+            </label>
+            <div class="ygc-chips">
+                @foreach (var id in _chosen)
+                {
+                    <span class="ygc-chip">@NameOf(id)
+                        @if (id != CurrentId)
+                        {
+                            <button type="button" aria-label="@($"Remove {NameOf(id)}")" @onclick="() => Remove(id)">×</button>
+                        }
+                    </span>
+                }
+            </div>
+        </div>
+        @if (_chosen.Count < 2)
+        {
+            <p class="ygc-empty">Add at least one more person to compare against @NameOf(CurrentId).</p>
+        }
+        else if (Rows.Count == 0)
+        {
+            <p class="ygc-empty">Nothing matches this view.</p>
+        }
+        else
+        {
+            <div class="ygc-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">@SubjectHeading</th>
+                            @if (IsPresence)
+                            {
+                                <th scope="col">Good / Bad</th>
+                            }
+                            @foreach (var id in _chosen)
+                            {
+                                <th scope="col" class="ygc-person">@NameOf(id)</th>
+                            }
+                            <th scope="col" class="ygc-count">@(IsPresence ? "Shared by" : "Agree")</th>
+                            @if (IsPresence)
+                            {
+                                <th scope="col" class="ygc-count" title="Share of the saved people who have this yoga">Seen in</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ string? lastGroup = null; var span = _chosen.Count + (IsPresence ? 4 : 2); }
+                        @foreach (var r in Rows)
+                        {
+                            var group = r.GroupName ?? "Other";
+                            @if (group != lastGroup && IsPresence)
+                            {
+                                lastGroup = group;
+                                <tr class="ygc-group"><th colspan="@span" scope="colgroup">@group</th></tr>
+                            }
+                            <tr class="@(IsPicked(r.SubjectKey, null) ? "is-picked" : null)">
+                                <td>
+                                    @if (IsPresence)
+                                    {
+                                        <button type="button" class="ygc-name" title="Who else has this?" aria-pressed="@(IsPicked(r.SubjectKey, null) ? "true" : "false")"
+                                                @onclick="() => ToggleWho(r.SubjectKey, null)">@SubjectLabel(r.SubjectKey)</button>
+                                    }
+                                    else
+                                    {
+                                        @SubjectLabel(r.SubjectKey)
+                                    }
+                                </td>
+                                @if (IsPresence)
+                                {
+                                    <td><span class="yg-nature yg-nature-@(r.NatureCode?.ToLowerInvariant() ?? "none")">@NatureLabel(r.NatureCode)</span></td>
+                                }
+                                @foreach (var id in _chosen)
+                                {
+                                    <td class="ygc-cell">
+                                        @if (!r.Values.TryGetValue(id, out var value))
+                                        {
+                                            <span class="ygc-no">·</span>
+                                        }
+                                        else if (IsPresence)
+                                        {
+                                            <span class="ygc-yes" title="@($"{NameOf(id)} has this")">✓</span>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="ygc-value @(r.SharedBy == _chosen.Count ? "is-agreed" : null) @(IsPicked(r.SubjectKey, value) ? "is-picked" : null)"
+                                                    title="@($"Who else has this? Seen in {RateText(r.SubjectKey, value)} of saved people")" @onclick="() => ToggleWho(r.SubjectKey, value)">@ValueLabel(value)</button>
+                                        }
+                                    </td>
+                                }
+                                <td class="ygc-count">@r.SharedBy / @_chosen.Count</td>
+                                @if (IsPresence)
+                                {
+                                    <td class="ygc-count ygc-rate">@RateText(r.SubjectKey, "PRESENT")</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="@(IsPresence ? 2 : 1)" scope="row">@(IsPresence ? "Yogas present" : "Facts recorded")</th>
+                            @foreach (var id in _chosen)
+                            {
+                                <td class="ygc-cell"><b>@_atoms.Count(x => x.BirthDetailId == id)</b></td>
+                            }
+                            <td></td>
+                            @if (IsPresence) { <td></td> }
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+    </article>
+
+    @if (_whoKey is not null)
+    {
+        <article class="ygc-card" aria-labelledby="ygc-who-title">
+            <header class="ygc-head">
+                <h2 id="ygc-who-title">Who has @SubjectLabel(_whoKey)@(_whoValue is null ? "" : $" — {ValueLabel(_whoValue)}")</h2>
+                <p>@_who.Count of @(PopulationOf(_whoKey, _whoValue ?? "PRESENT")) people with a @ChartLabel chart · @RateText(_whoKey, _whoValue ?? "PRESENT")</p>
+            </header>
+            <p class="ygc-names">
+                @foreach (var p in _who)
+                {
+                    <span class="ygc-chip @(_chosen.Contains(p.BirthDetailId) ? "is-chosen" : null)">@p.PersonName</span>
+                }
+            </p>
+        </article>
+    }
+
+    @if (_chosen.Count >= 2 && Overlap is { } overlap)
+    {
+        <article class="ygc-card" aria-labelledby="ygc-pair-title">
+            <header class="ygc-head">
+                <h2 id="ygc-pair-title">Two people side by side</h2>
+                <p>@overlap.Count in common</p>
+            </header>
+            <div class="ygc-controls">
+                <label>
+                    <span>First</span>
+                    <select value="@_pairA" @onchange="e => _pairA = ParseId(e)">
+                        @foreach (var id in _chosen) { <option value="@id">@NameOf(id)</option> }
+                    </select>
+                </label>
+                <label>
+                    <span>Second</span>
+                    <select value="@_pairB" @onchange="e => _pairB = ParseId(e)">
+                        @foreach (var id in _chosen) { <option value="@id">@NameOf(id)</option> }
+                    </select>
+                </label>
+            </div>
+            <div class="ygc-pair">
+                <div><h3>Both (@overlap.Shared.Count)</h3>@Facts(overlap.Shared)</div>
+                <div><h3>Only @NameOf(_pairA) (@overlap.OnlyA.Count)</h3>@Facts(overlap.OnlyA)</div>
+                <div><h3>Only @NameOf(_pairB) (@overlap.OnlyB.Count)</h3>@Facts(overlap.OnlyB)</div>
+            </div>
+            <p class="ygc-note">A count of shared facts, not a similarity score. The percentage beside each fact is how many saved people have it, so a low one is the more telling match.</p>
+        </article>
+    }
+</section>
+
+@code {
+    private sealed record FeatureKind(string Code, string Label, string SubjectHeading, bool Presence);
+
+    // Add a row here when vw_Chart_Feature learns a new feature type.
+    private static readonly FeatureKind[] Types =
+    {
+        new("YOGA", "Yogas", "Yoga", true),
+        new("PLANET_SIGN", "Planet in sign", "Planet", false),
+        new("PLANET_HOUSE", "Planet in house", "Planet", false),
+        new("PLANET_NAKSHATRA", "Nakshatra", "Planet", false),
+        new("DIGNITY", "Dignity", "Planet", false),
+    };
+
+    // The charts the yoga engine confirms per varga; the planet types exist on every chart.
+    private static readonly string[] Charts = { "D1", "D2", "D3", "D9", "D12", "D30" };
+
+    [Parameter, EditorRequired] public int CurrentId { get; set; }
+
+    private IReadOnlyList<BirthDetails> _everyone = Array.Empty<BirthDetails>();
+    private readonly List<int> _chosen = new();
+    private IReadOnlyList<FeatureAtom> _atoms = Array.Empty<FeatureAtom>();
+    private FeatureCompareMode _mode = FeatureCompareMode.All;
+    private string _type = "YOGA";
+    private string _chart = "D1";
+    private int _loadedFor = -1;
+    private string? _whoKey, _whoValue;
+    private IReadOnlyList<FeaturePerson> _who = Array.Empty<FeaturePerson>();
+    private int _pairA, _pairB;
+    private IReadOnlyDictionary<FeatureFact, FeatureRate> _rates = new Dictionary<FeatureFact, FeatureRate>();
+
+    private FeatureKind Kind => Types.First(t => t.Code == _type);
+    private bool IsPresence => Kind.Presence;
+    private string TypeLabel => Kind.Label;
+    private string SubjectHeading => Kind.SubjectHeading;
+    private string ChartLabel => _chart == "D1" ? "D1 Rasi" : _chart;
+
+    private IEnumerable<BirthDetails> Available => _everyone.Where(p => !_chosen.Contains(p.Id)).OrderBy(p => p.Name);
+
+    private IReadOnlyList<FeatureRow> Rows => FeatureComparer.Compare(_atoms, _chosen, _mode);
+
+    private FeatureOverlap? Overlap => _pairA != _pairB && _chosen.Contains(_pairA) && _chosen.Contains(_pairB)
+        ? FeatureComparer.Overlap(_atoms, _pairA, _pairB, _type)
+        : null;
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedFor == CurrentId) return;
+        _loadedFor = CurrentId;
+        _everyone = PeopleRepo.GetAll();
+        _chosen.Clear();
+        _chosen.Add(CurrentId);
+        ClearWho();
+        Reload();
+    }
+
+    private void Reload()
+    {
+        _atoms = FeatureRepo.GetAtoms(_type, _chosen, _chart);
+        _rates = FeatureRepo.GetBaseRates(_type, _chart);
+        if (!_chosen.Contains(_pairA) || !_chosen.Contains(_pairB) || _pairA == _pairB)
+        {
+            _pairA = _chosen[0];
+            _pairB = _chosen.Count > 1 ? _chosen[1] : _chosen[0];
+        }
+    }
+
+    private void SelectType(string code)
+    {
+        if (code == _type) return;
+        _type = code;
+        ClearWho();
+        Reload();
+    }
+
+    private void OnChart(ChangeEventArgs e)
+    {
+        _chart = e.Value?.ToString() ?? "D1";
+        ClearWho();
+        Reload();
+    }
+
+    private void OnAdd(ChangeEventArgs e)
+    {
+        if (ParseId(e) is var id && id != 0 && !_chosen.Contains(id))
+        {
+            _chosen.Add(id);
+            Reload();
+        }
+    }
+
+    private void Remove(int id)
+    {
+        if (id == CurrentId) return;
+        _chosen.Remove(id);
+        Reload();
+    }
+
+    private void ClearWho() { _whoKey = null; _whoValue = null; _who = Array.Empty<FeaturePerson>(); }
+
+    private bool IsPicked(string key, string? value) => _whoKey == key && _whoValue == value;
+
+    private void ToggleWho(string key, string? value)
+    {
+        if (IsPicked(key, value)) { ClearWho(); return; }
+        _whoKey = key;
+        _whoValue = value;
+        _who = FeatureRepo.WhoHas(_type, key, _chart, value);
+    }
+
+    private string RateText(string subject, string value) =>
+        _rates.TryGetValue(new FeatureFact(subject, value), out var r) ? r.Percent : "—";
+
+    private int PopulationOf(string subject, string value) =>
+        _rates.TryGetValue(new FeatureFact(subject, value), out var r) ? r.Population : _everyone.Count;
+
+    private static int ParseId(ChangeEventArgs e) => int.TryParse(e.Value?.ToString(), out var id) ? id : 0;
+
+    private string NameOf(int id) => _everyone.FirstOrDefault(p => p.Id == id)?.Name ?? $"#{id}";
+
+    private RenderFragment Facts(IReadOnlyList<FeatureFact> facts) => builder =>
+    {
+        if (facts.Count == 0) { builder.AddMarkupContent(0, "<p class=\"ygc-none\">—</p>"); return; }
+        builder.OpenElement(1, "ul");
+        foreach (var f in facts)
+        {
+            builder.OpenElement(2, "li");
+            builder.AddContent(3, (IsPresence ? SubjectLabel(f.SubjectKey) : $"{SubjectLabel(f.SubjectKey)}: {ValueLabel(f.ValueKey)}") + $" ({RateText(f.SubjectKey, f.ValueKey)})");
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+    };
+
+    private static string Title(string text) => System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+        text.Replace('_', ' ').ToLowerInvariant());
+
+    private static string SubjectLabel(string key) => Title(key.StartsWith("YOGA_", StringComparison.OrdinalIgnoreCase) ? key[5..] : key);
+
+    private string ValueLabel(string value) => _type == "PLANET_HOUSE" ? $"House {value}" : Title(value);
+
+    private static string NatureLabel(string? code) => code switch
+    {
+        "AUSPICIOUS" => "Good", "INAUSPICIOUS" => "Bad", "MIXED" => "Mixed", "CONTEXTUAL" => "Depends", _ => "—",
+    };
+}

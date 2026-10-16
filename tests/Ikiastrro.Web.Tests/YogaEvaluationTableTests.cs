@@ -54,61 +54,43 @@ public sealed class YogaEvaluationTableTests : BunitContext
     }
 
     [Fact]
-    public void ResolvesInterpretationBySourceThenFallsBackToGeneric()
+    public void ListsAYogaOnceWithEveryCataloguedVariantInTheVariantsColumn()
     {
         var rows = new[]
         {
-            new YogaEvaluationRow("SRC_RAMAN_300_COMBINATIONS", "YOGA_BUDHA_ADITYA", true, "EVALUATED", "SUN",
-                "Sun and Mercury conjunct, more than 10 degrees apart", null),
-            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_GAJAKESARI", true, "EVALUATED", "MOON",
-                "Jupiter in a kendra from Moon", null),
-        };
-        var interpretations = new[]
-        {
-            new InterpretationRow(1, "YOGA", "YOGA_BUDHA_ADITYA", "SRC_RAMAN_300_COMBINATIONS", "Raman-specific standard text.", "Raman short."),
-            new InterpretationRow(2, "YOGA", "YOGA_GAJAKESARI", null, "Generic fallback standard text.", "Generic short."),
+            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_RUCHAKA", true, "EVALUATED", "LAGNA", "Mars own/exalted in a kendra", null,
+                SourceVariantCode: "PVR_CH11_RUCHAKA", SourceLocator: "ch.11 11.3.1", VariantDisplayName: "Ruchaka Yoga"),
+            new YogaEvaluationRow("SRC_RAMAN_300_COMBINATIONS", "YOGA_RUCHAKA", true, "EVALUATED", "LAGNA", "Mars own/exalted in a kendra", null,
+                SourceVariantCode: "RAMAN_300_022", SourceLocator: "combination 22; printed p.30"),
         };
 
-        var cut = Render<YogaEvaluationTable>(p => p
-            .Add(x => x.Rows, rows)
-            .Add(x => x.Interpretations, interpretations));
+        var cut = Render<YogaEvaluationTable>(p => p.Add(x => x.Rows, rows));
 
-        Assert.Contains("Raman-specific standard text.", cut.Markup);
-        Assert.Contains("Generic fallback standard text.", cut.Markup);
+        Assert.Single(cut.FindAll("tbody tr:not(.yg-group)"));
+        var variants = cut.Find(".yg-variants").Normalized();
+        Assert.Contains("Ruchaka Yoga", variants);
+        Assert.Contains("combination 22", variants);
+        Assert.Contains("Pvr Integrated", variants);
+        Assert.Contains("1 present of", cut.Find(".yg-card-head p").Normalized());
     }
 
     [Fact]
-    public void EditConfirmSaveRoundTripsThroughCallbackWithoutTouchingARepository()
+    public void GroupsRowsUnderTheirSetAndDropsTheVargaInterpretationSourceAndFindFields()
     {
         var rows = new[]
         {
-            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_BUDHA_ADITYA", true, "EVALUATED", "SUN",
-                "Sun and Mercury conjunct (same sign)", null),
+            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_RUCHAKA", true, "EVALUATED", "LAGNA", "Mars own in a kendra", null, SourceVariantCode: "V1", YogaSetName: "Mahapurusha Yogas"),
+            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_BHADRA", true, "EVALUATED", "LAGNA", "Mercury own in a kendra", null, SourceVariantCode: "V2", YogaSetName: "Mahapurusha Yogas"),
+            new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_ADHI", true, "EVALUATED", "MOON", "Benefics 6/7/8 from Moon", null, SourceVariantCode: "V3", YogaSetName: "Moon Yogas"),
         };
-        YogaEvaluationTable.InterpretationEditRequest? saved = null;
 
-        var cut = Render<YogaEvaluationTable>(p => p
-            .Add(x => x.Rows, rows)
-            .Add(x => x.OnSaveInterpretation, (YogaEvaluationTable.InterpretationEditRequest r) => saved = r));
+        var cut = Render<YogaEvaluationTable>(p => p.Add(x => x.Rows, rows));
 
-        cut.Find(".edit-icon-btn").Click();
-        cut.FindAll("textarea")[0].Input("A conservative interpretation.");
-        cut.FindAll("textarea")[1].Input("Short form.");
-        cut.Find(".yg-edit-actions .btn-confirm").Click();
-
-        // Save is confirm-gated: the write hasn't happened yet, the ConfirmDialog is now open.
-        Assert.Null(saved);
-        Assert.Contains("Save this interpretation for", cut.Markup);
-
-        cut.Find(".dialog-actions .btn-confirm").Click();
-
-        Assert.NotNull(saved);
-        Assert.Equal("YOGA_BUDHA_ADITYA", saved!.SubjectCode);
-        Assert.Equal("SRC_PVR_INTEGRATED", saved.SourceRefCode);
-        Assert.Equal("A conservative interpretation.", saved.StandardText);
-        Assert.Equal("Short form.", saved.ShortText);
-        // Optimistic local update shows the new text immediately, without waiting on the page to re-fetch.
-        Assert.Contains("A conservative interpretation.", cut.Markup);
+        Assert.Equal(new[] { "Mahapurusha Yogas 2", "Moon Yogas 1" }, cut.FindAll(".yg-group th").Select(t => t.Normalized()));
+        var headers = cut.FindAll("thead th").Select(t => t.Normalized()).ToList();
+        Assert.DoesNotContain(headers, h => h.StartsWith("Varga") || h.StartsWith("Interpretation") || h.StartsWith("Source") || h.StartsWith("Set"));
+        Assert.Contains(headers, h => h.StartsWith("Variants"));
+        Assert.Empty(cut.FindAll("input[type=search]"));
     }
 
     [Fact]
@@ -132,12 +114,12 @@ public sealed class YogaEvaluationTableTests : BunitContext
     }
 
     [Fact]
-    public void ShowsTheVargaOfEachRowAndHidesTheSelectorWithASingleChart()
+    public void HidesTheVargaSelectorWithASingleChart()
     {
         var rows = new[] { new YogaEvaluationRow("SRC_PVR_INTEGRATED", "YOGA_RUCHAKA", true, "EVALUATED", "LAGNA", "Mars own in a kendra", null, ChartType: "D30") };
         var withSelector = Render<YogaEvaluationTable>(p => p.Add(x => x.Rows, rows).Add(x => x.Varga, "D30")
             .Add(x => x.Vargas, new[] { "D1", "D30" }));
-        Assert.Equal("D30", withSelector.Find(".yg-varga-cell").Normalized());
+        Assert.Equal(2, withSelector.FindAll(".yg-varga").Count);
 
         var plain = Render<YogaEvaluationTable>(p => p.Add(x => x.Rows, rows));
         Assert.Empty(plain.FindAll(".yg-varga"));
