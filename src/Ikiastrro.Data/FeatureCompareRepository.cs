@@ -83,7 +83,8 @@ public static class FeatureComparer
         };
 
         return rows
-            .OrderBy(r => r.GroupName ?? "~")
+            .OrderBy(r => r.GroupName is null)
+            .ThenBy(r => r.GroupName, StringComparer.CurrentCulture)
             .ThenByDescending(r => r.SharedBy)
             .ThenBy(r => r.SubjectKey, StringComparer.Ordinal)
             .ToList();
