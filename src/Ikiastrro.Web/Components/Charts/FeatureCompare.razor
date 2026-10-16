@@ -23,7 +23,7 @@
         <div class="ygc-controls">
             <label>
                 <span>Add a person</span>
-                <select @onchange="OnAdd">
+                <select @key="_addKey" @onchange="OnAdd">
                     <option value="">Choose…</option>
                     @foreach (var p in Available)
                     {
@@ -293,7 +293,10 @@
             _chosen.Add(id);
             Reload();
         }
+        _addKey++; // recreate the picker so it returns to "Choose…"
     }
+
+    private int _addKey;
 
     private void Remove(int id)
     {
