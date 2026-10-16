@@ -63,10 +63,6 @@
             }
         }
         <div class="yg-controls" aria-label="Yoga filters">
-            <label>
-                <span>Find yoga</span>
-                <input type="search" placeholder="Name, variant, set, source, good/bad or inference" @bind="_query" @bind:event="oninput" />
-            </label>
             <label class="yg-toggle">
                 <input type="checkbox" @bind="_showAll" />
                 <span>Show all evaluated variants</span>
@@ -96,13 +92,17 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{ string? lastSet = null; var span = VisibleColumns.Count(); }
                         @foreach (var r in DisplayRows)
                         {
-                            var interp = Resolve(r);
+                            var set = SetOf(r);
+                            @if (set != lastSet)
+                            {
+                                lastSet = set;
+                                <tr class="yg-group"><th colspan="@span" scope="colgroup">@set <small>@DisplayRows.Count(x => SetOf(x) == set)</small></th></tr>
+                            }
                             <tr>
-                                <td>@(r.YogaSetName ?? r.YogaTypeCode ?? "—")</td>
                                 <td>@DisplayYoga(r.YogaCode)</td>
-                                <td class="yg-varga-cell">@VargaCode(r)</td>
                                 <td>@BasedLabel(r)</td>
                                 <td><span class="yg-nature yg-nature-@NatureClass(r)">@NatureLabel(r)</span></td>
                                 @if (_showAll)
@@ -135,6 +135,12 @@
                                         <div class="yg-notes">@r.Notes</div>
                                     }
                                 </td>
+                                <td class="yg-variants">
+                                    @foreach (var m in SourcesOf(r))
+                                    {
+                                        <div><b>@VariantName(m)</b> <small>@DisplaySource(m.SourceRefCode)</small></div>
+                                    }
+                                </td>
                                 <td class="yg-inference">
                                     @if (!string.IsNullOrWhiteSpace(r.InferenceText))
                                     {
@@ -149,22 +155,6 @@
                                         <span class="yg-interp-empty">—</span>
                                     }
                                 </td>
-                                <td class="yg-interp">
-                                    @if (interp is not null)
-                                    {
-                                        <InterpretationText StandardText="@interp.StandardText" ShortText="@interp.ShortText" />
-                                    }
-                                    else
-                                    {
-                                        <span class="yg-interp-empty">—</span>
-                                    }
-                                    <EditIconButton Title="@($"Edit interpretation for {DisplayYoga(r.YogaCode)} ({DisplaySource(r.SourceRefCode)})")"
-                                                     OnClick="() => StartEdit(r, interp)" />
-                                </td>
-                                <td class="yg-source">
-                                    <div>@DisplaySource(r.SourceRefCode)</div>
-                                    <small>@r.SourceLocator</small>
-                                </td>
                             </tr>
                         }
                     </tbody>
@@ -175,39 +165,6 @@
 
     <PlainWords Lines="SummaryLines" Title="Yogas in plain words" />
 </section>
-
-@if (_editRow is not null && !_pendingSave)
-{
-    <div class="yg-edit-backdrop" @onclick="CancelEdit">
-        <div class="yg-edit-box" role="dialog" aria-modal="true" @onclick:stopPropagation="true">
-            <h2 class="yg-edit-title">Interpretation — @DisplayYoga(_editRow.YogaCode) (@DisplaySource(_editRow.SourceRefCode))</h2>
-
-            <label class="yg-edit-field">
-                <span>Standard text (desktop, up to 500 characters)</span>
-                <textarea @bind="_editStandardText" @bind:event="oninput" maxlength="500" rows="4"></textarea>
-            </label>
-            <label class="yg-edit-field">
-                <span>Short text (mobile/tablet, up to 160 characters)</span>
-                <textarea @bind="_editShortText" @bind:event="oninput" maxlength="160" rows="2"></textarea>
-            </label>
-
-            @if (_editError is not null)
-            {
-                <p class="yg-edit-error">@_editError</p>
-            }
-
-            <div class="yg-edit-actions">
-                <button type="button" class="btn-cancel" @onclick="CancelEdit">Cancel</button>
-                <button type="button" class="btn-confirm" @onclick="RequestSave">Save</button>
-            </div>
-        </div>
-    </div>
-}
-
-<ConfirmDialog IsOpen="_pendingSave"
-               Message="@ConfirmMessage"
-               ConfirmLabel="Save" BusyLabel="Saving…"
-               IsBusy="_isSaving" OnConfirm="ConfirmSave" OnCancel="() => _pendingSave = false" />
 
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<YogaEvaluationRow> Rows { get; set; } = Array.Empty<YogaEvaluationRow>();
@@ -222,12 +179,7 @@
     /// <summary>Charts offered in the selector; hidden when there is only one.</summary>
     [Parameter] public IReadOnlyList<string> Vargas { get; set; } = Array.Empty<string>();
     [Parameter] public EventCallback<string> OnVargaChanged { get; set; }
-    [Parameter] public IReadOnlyList<InterpretationRow> Interpretations { get; set; } = Array.Empty<InterpretationRow>();
-    [Parameter] public EventCallback<InterpretationEditRequest> OnSaveInterpretation { get; set; }
-
-    public sealed record InterpretationEditRequest(string SubjectCode, string? SourceRefCode, string? SourceVariantCode, string StandardText, string ShortText);
-
-    private IReadOnlyList<string> SummaryLines => YogaSummary.Build(VariantRows.Select(r =>
+    private IReadOnlyList<string> SummaryLines => YogaSummary.Build(VariantRows.Where(r => r.Present != true).Concat(PresentYogas).Select(r =>
     {
         var planets = PlanetsOf(r);
         var weakest = WeakestPercent(r);
@@ -242,7 +194,6 @@
 
     private static string VargaLabel(string code) => VargaNames.TryGetValue(code, out var n) ? $"{code} {n}" : code;
 
-    private string VargaCode(YogaEvaluationRow r) => string.IsNullOrEmpty(r.ChartType) ? Varga : r.ChartType;
 
     private async Task SelectVarga(string code)
     {
@@ -252,10 +203,23 @@
     }
 
     private bool _showAll;
-    private string _query = "";
     private IReadOnlyList<YogaEvaluationRow> VariantRows => Rows
         .GroupBy(r => (r.SourceRefCode, r.SourceVariantCode))
         .Select(g => g.First()).ToList();
+
+    // One yoga is often catalogued several times (PVR ch.11 and Raman 300 both list Adhi; Daridra has seven
+    // variants) with the same rule, inference and nature, so a present yoga would repeat as identical rows.
+    // Present yogas are therefore counted and listed once per YogaCode (and chart); the source cell lists every
+    // catalogue entry behind it. "Show all evaluated variants" lifts the collapse.
+    private IReadOnlyList<YogaEvaluationRow> PresentYogas => VariantRows
+        .Where(r => r.Present == true)
+        .GroupBy(r => r.YogaCode)
+        .Select(g => g.OrderBy(r => r.SourceRefCode).ThenBy(r => r.SourceVariantCode).First()).ToList();
+
+    private IReadOnlyList<YogaEvaluationRow> SourcesOf(YogaEvaluationRow r) => _showAll || r.Present != true
+        ? new[] { r }
+        : VariantRows.Where(x => x.Present == true && x.YogaCode == r.YogaCode)
+            .OrderBy(x => x.SourceRefCode).ThenBy(x => x.SourceVariantCode).ToList();
 
     // rammyps's requested default order: Lagna, Sun, Moon, Combination first, any other
     // YogaTypeCode that shows up later follows alphabetically after those four.
@@ -270,7 +234,7 @@
     // Every column sorts on its header; before any click the rows keep the Set → type → variant
     // order above. Status only shows when "Show all" lets absent/pending rows in — otherwise every
     // row is Present by the filter itself.
-    private enum Col { Set, Yoga, Varga, Based, Nature, Status, Strength, Rule, Inference, Interpretation, Source }
+    private enum Col { Yoga, Based, Nature, Status, Strength, Rule, Variants, Inference }
 
     private static string BasedLabel(YogaEvaluationRow r) => r.YogaTypeCode?.ToUpperInvariant() switch
     {
@@ -312,7 +276,6 @@
 
     private static string ColumnHeader(Col c) => c switch
     {
-        Col.Varga => "Varga",
         Col.Based => "Based on",
         Col.Nature => "Good / Bad",
         Col.Strength => "Planet strength (Ṣaḍbala)",
@@ -329,17 +292,14 @@
 
     private IComparable SortValue(YogaEvaluationRow r, Col c) => c switch
     {
-        Col.Set => r.YogaSetName ?? r.YogaTypeCode ?? "",
         Col.Yoga => DisplayYoga(r.YogaCode),
-        Col.Varga => VargaCode(r),
         Col.Based => TypeRank(r.YogaTypeCode),
         Col.Nature => NatureRank(r.OutcomeNatureCode),
         Col.Status => StatusLabel(r),
         Col.Strength => WeakestPercent(r),
         Col.Rule => r.YogaRule ?? "",
+        Col.Variants => SourcesOf(r).Count,
         Col.Inference => r.InferenceText ?? "",
-        Col.Interpretation => Resolve(r)?.StandardText ?? "",
-        Col.Source => DisplaySource(r.SourceRefCode),
         _ => "",
     };
 
@@ -347,14 +307,15 @@
     {
         get
         {
-            var rows = VariantRows
+            var rows = (_showAll ? VariantRows : PresentYogas)
                 .Where(r => _showAll || r.Present == true)
-                .Where(r => _nature is null || (r.OutcomeNatureCode ?? "") == _nature)
-                .Where(r => string.IsNullOrWhiteSpace(_query) || SearchText(r).Contains(_query.Trim(), StringComparison.OrdinalIgnoreCase));
+                .Where(r => _nature is null || (r.OutcomeNatureCode ?? "") == _nature);
             if (_sortKey is not { } key)
-                return rows.OrderBy(r => r.YogaSetName).ThenBy(r => TypeRank(r.YogaTypeCode)).ThenBy(r => r.SourceVariantCode).ToList();
-            var ordered = _desc ? rows.OrderByDescending(r => SortValue(r, key)) : rows.OrderBy(r => SortValue(r, key));
-            return ordered.ThenBy(r => DisplayYoga(r.YogaCode)).ThenBy(r => r.SourceVariantCode).ToList();
+                return rows.OrderBy(SetOf).ThenBy(r => TypeRank(r.YogaTypeCode)).ThenBy(r => DisplayYoga(r.YogaCode)).ToList();
+            // Rows stay grouped under their Set; the clicked column sorts within each set.
+            var ordered = rows.OrderBy(SetOf);
+            ordered = _desc ? ordered.ThenByDescending(r => SortValue(r, key)) : ordered.ThenBy(r => SortValue(r, key));
+            return ordered.ThenBy(r => DisplayYoga(r.YogaCode)).ToList();
         }
     }
 
@@ -388,14 +349,20 @@
 
     private void ToggleNature(string code) => _nature = _nature == code ? null : code;
 
-    private int PresentByNature(string code) => VariantRows.Count(r => r.Present == true && r.OutcomeNatureCode == code);
+    private int PresentByNature(string code) => PresentYogas.Count(r => r.OutcomeNatureCode == code);
 
-    private int PresentCount => VariantRows.Count(r => r.Present == true);
+    private int PresentCount => PresentYogas.Count;
     private int EvaluatedCount => VariantRows.Count(r => r.EvaluationStatus == "EVALUATED");
     private int NotEvaluatedCount => VariantRows.Count - EvaluatedCount;
 
-    private string SearchText(YogaEvaluationRow r) =>
-        $"{r.YogaCode} {r.SourceVariantCode} {r.YogaSetName} {r.SourceRefCode} {r.YogaRule} {r.InferenceText} {NatureLabel(r)} {BasedLabel(r)} {string.Join(' ', PlanetsOf(r))}";
+    private static string SetOf(YogaEvaluationRow r) => r.YogaSetName ?? r.YogaTypeCode ?? "Other";
+
+    // Display name of one catalogued variant: PVR's own title, else the catalogue entry from its locator
+    // ("combination 104; printed p.128" -> "combination 104").
+    private static string VariantName(YogaEvaluationRow r) =>
+        !string.IsNullOrWhiteSpace(r.VariantDisplayName) ? r.VariantDisplayName
+        : !string.IsNullOrWhiteSpace(r.SourceLocator) ? r.SourceLocator.Split(';')[0].Trim()
+        : r.SourceVariantCode;
 
     private static string StatusLabel(YogaEvaluationRow r) => r.EvaluationStatus == "NOT_EVALUATED"
         ? "Pending" : r.Present == true ? "Present" : "Absent";
@@ -408,80 +375,4 @@
 
     private static string DisplaySource(string code) => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
         code.Replace("SRC_", "", StringComparison.OrdinalIgnoreCase).Replace('_', ' ').ToLowerInvariant());
-
-    // Locally-saved edits take precedence over what the page passed in via Interpretations, so a
-    // save shows immediately without waiting on the parent page to re-fetch and re-render.
-    private readonly Dictionary<string, InterpretationRow> _overrides = new();
-
-    private static string OverrideKey(string subjectCode, string? sourceRefCode, string? variant) => $"{subjectCode}|{sourceRefCode}|{variant}";
-
-    private InterpretationRow? Resolve(YogaEvaluationRow row)
-    {
-        if (_overrides.TryGetValue(OverrideKey(row.YogaCode, row.SourceRefCode, row.SourceVariantCode), out var exact)) return exact;
-        return InterpretationRepository.Resolve(Interpretations, row.YogaCode, row.SourceRefCode, row.SourceVariantCode);
-    }
-
-    // --- interpretation edit state ---
-    private YogaEvaluationRow? _editRow;
-    private string _editStandardText = "";
-    private string _editShortText = "";
-    private string? _editError;
-    private bool _pendingSave;
-    private bool _isSaving;
-
-    private string ConfirmMessage => _editRow is null ? "" :
-        $"Save this interpretation for {DisplayYoga(_editRow.YogaCode)} ({DisplaySource(_editRow.SourceRefCode)})? This will be visible to everyone using this tool.";
-
-    private void StartEdit(YogaEvaluationRow row, InterpretationRow? existing)
-    {
-        _editRow = row;
-        _editStandardText = existing?.StandardText ?? "";
-        _editShortText = existing?.ShortText ?? "";
-        _editError = null;
-        _pendingSave = false;
-    }
-
-    private void CancelEdit()
-    {
-        if (_isSaving) return;
-        _editRow = null;
-        _pendingSave = false;
-        _editError = null;
-    }
-
-    private void RequestSave()
-    {
-        if (_editRow is null) return;
-        if (string.IsNullOrWhiteSpace(_editStandardText) || string.IsNullOrWhiteSpace(_editShortText))
-        {
-            _editError = "Both the standard and short text need content.";
-            return;
-        }
-        _editError = null;
-        _pendingSave = true;
-    }
-
-    private async Task ConfirmSave()
-    {
-        if (_editRow is null || _isSaving) return;
-        _isSaving = true;
-        try
-        {
-            var standardText = _editStandardText.Trim();
-            var shortText = _editShortText.Trim();
-            var subjectCode = _editRow.YogaCode;
-            var sourceRefCode = _editRow.SourceRefCode;
-            var sourceVariantCode = _editRow.SourceVariantCode;
-
-            await OnSaveInterpretation.InvokeAsync(new InterpretationEditRequest(subjectCode, sourceRefCode, sourceVariantCode, standardText, shortText));
-
-            _overrides[OverrideKey(subjectCode, sourceRefCode, sourceVariantCode)] = new InterpretationRow(0, "YOGA", subjectCode, sourceRefCode, standardText, shortText, sourceVariantCode);
-            _editRow = null;
-            _pendingSave = false;
-        }
-        finally
-        {
-            _isSaving = false;
-        }
-    }
 }

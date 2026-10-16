@@ -27,7 +27,6 @@
 @inject Ikiastrro.Data.BeneficMaleficSchoolRepository BeneficMaleficRepo
 @inject Ikiastrro.Data.VargottamaRepository VargottamaRepo
 @inject Ikiastrro.Data.YogaEvaluationRepository YogaEvaluationRepo
-@inject Ikiastrro.Data.InterpretationRepository InterpretationRepo
 @inject Ikiastrro.Data.ArgalaRuleRepository ArgalaRuleRepo
 @inject Ikiastrro.Data.NaisargikaKarakaRepository NaisargikaRepo
 @inject Ikiastrro.Data.ArgalaFactRepository ArgalaFactRepo
@@ -604,11 +603,14 @@ else
 
     @if (Shows(4))
     {
-        @* No chart column here (rammyps, 2026-10-02): yogas are read off the whole chart set, so the
-           D1 grid and chart picker added nothing. *@
+        @* Chart column back (rammyps, 2026-10-16): the natal chart stays fixed on the left while the
+           yogas are read, as on STRENGTH/VARGAS. *@
         <div class="ki-panelbody" id="ki-panel-4" role="tabpanel" aria-labelledby="ki-tab-4">
             @PrintHead(4)
             @Guide("yogas")
+          <div class="ki-natal-layout @(_natalChartCollapsed ? "is-chart-collapsed" : null)">
+            @ChartColumn
+            <div class="ki-natal-detail">
             <div class="ki-stephead">
                 <h1 class="ki-heading">YOGAS</h1>
             </div>
@@ -621,10 +623,21 @@ else
             }
             else
             {
-                <YogaEvaluationTable Rows="_yogaEvaluations" HouseLords="YogaHouseLords" Placements="YogaPlacements" Shadbala="_shadbala" Interpretations="_interpretations"
-                                     Varga="@_yogaVarga" Vargas="Ikiastrro.Core.Engines.Yoga.ProductionYogaEngine.VargaReferenceCharts" OnVargaChanged="SelectYogaVarga"
-                                     OnSaveInterpretation="SaveInterpretation" />
+                <YogaEvaluationTable Rows="_yogaEvaluations" HouseLords="YogaHouseLords" Placements="YogaPlacements" Shadbala="_shadbala"
+                                     Varga="@_yogaVarga" Vargas="Ikiastrro.Core.Engines.Yoga.ProductionYogaEngine.VargaReferenceCharts" OnVargaChanged="SelectYogaVarga" />
             }
+            </div>
+          </div>
+        </div>
+    }
+
+    @if (PrintModules is null && _masterTab == 10)
+    {
+        <div class="ki-panelbody" id="ki-panel-10" role="tabpanel" aria-labelledby="ki-tab-10">
+            <div class="ki-stephead">
+                <h1 class="ki-heading">COMPARE</h1>
+            </div>
+            <FeatureCompare CurrentId="Id" />
         </div>
     }
 
@@ -840,7 +853,7 @@ else
     private static readonly string[] SubLabels =
     {
         "NATAL", "TRANSIT", "BALAS & ASHTAVARGA", "SPL LAGNAS", "YOGAS", "VARGAS",
-        "ALL CHARTS", "D1-PROMISE", "PHALITA DASAS", "DASHA MATTERS",
+        "ALL CHARTS", "D1-PROMISE", "PHALITA DASAS", "DASHA MATTERS", "COMPARE",
     };
 
     /// <summary>The rail's pills (2026-10-07, rammyps: merge tabs) — six groups over the ten panels.
@@ -853,7 +866,7 @@ else
         ("NATAL", new[] { 0 }),
         ("TRANSIT", new[] { 1 }),
         ("STRENGTH", new[] { 2, 5 }),
-        ("READINGS", new[] { 4, 3, 7 }),
+        ("READINGS", new[] { 4, 10, 3, 7 }),
         ("DASHAS", new[] { 8, 9 }),
         ("ALL CHARTS", new[] { 6 }),
     };
@@ -969,7 +982,6 @@ else
     private string _vargaScheme = "VARGOTTAMA";
     private IReadOnlyList<Ikiastrro.Core.Engines.Transits.GocharaVedhaRule> _vedhaRules = Array.Empty<Ikiastrro.Core.Engines.Transits.GocharaVedhaRule>();
     private IReadOnlyList<Ikiastrro.Data.YogaEvaluationRow> _yogaEvaluations = Array.Empty<Ikiastrro.Data.YogaEvaluationRow>();
-    private IReadOnlyList<Ikiastrro.Data.InterpretationRow> _interpretations = Array.Empty<Ikiastrro.Data.InterpretationRow>();
     private IReadOnlyDictionary<int, string> _argalaSignificanceNotes = new Dictionary<int, string>();
     private IReadOnlyDictionary<int, string> _argalaHouseMatters = new Dictionary<int, string>();
     private IReadOnlyList<Ikiastrro.Data.ArgalaFactRow> _argalaFacts = Array.Empty<Ikiastrro.Data.ArgalaFactRow>();
@@ -1067,8 +1079,6 @@ else
             .ToDictionary(g => g.Key, g => new Ikiastrro.Core.Engines.Yoga.YogaPlacement(
                 g.First().HouseNumberFromLagna, g.First().HouseNumberFromSun, g.First().HouseNumberFromMoon));
 
-    private void SaveInterpretation(YogaEvaluationTable.InterpretationEditRequest request) =>
-        InterpretationRepo.Upsert(1, "YOGA", request.SubjectCode, request.SourceRefCode, request.StandardText, request.ShortText, request.SourceVariantCode);
 
     private static readonly string[] SignById =
         { "", "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio",
@@ -1096,6 +1106,7 @@ else
         if (Step is "2" or "transit") _masterTab = 1;
         if (Step is "4" or "karakas" or "spllagnas") _masterTab = 3;
         if (Step is "5" or "yogas") _masterTab = 4;
+        if (Step is "yogacompare" or "compare" or "11") _masterTab = 10;
         if (Step is "6" or "vargas") _masterTab = 5;
         if (Step is "7" or "allcharts") _masterTab = 6;
         if (Step is "8" or "promise" or "d1promise") _masterTab = 7;
@@ -1156,7 +1167,6 @@ else
         _vedhaRules = TransitStrengthRuleRepo.GetGocharaVedhaRules(1);
         _yogaVarga = "D1";
         _yogaEvaluations = YogaEvaluationRepo.GetByBirthDetailId(Id);
-        _interpretations = InterpretationRepo.GetBySubjectType(1, "YOGA");
         _argalaSignificanceNotes = ArgalaRuleRepo.GetArgalaSignificanceNotes(1);
         _argalaHouseMatters = Ikiastrro.Data.Statistics.LifeMatterPromiseAdapter.HouseMatters(NaisargikaRepo.LoadActive().Houses);
         _argalaFacts = ArgalaFactRepo.GetByBirthDetailId(Id);
