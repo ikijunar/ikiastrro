@@ -57,3 +57,33 @@
 .at-role { display: block; font-size: .8em; font-weight: 500; color: var(--brand-muted); }
 
 .at-house { display: block; margin-top: 2px; font-size: .8em; font-weight: 500; color: var(--brand-muted); }
+
+/* ---- unified table: pick a house / lane, read the force and what it means (2026-10-16) ----
+   Selection drives the page's South-Indian chart (SindUniDtlGrid's Argala overlay). Benefic/malefic is
+   colour plus the planet's underline and title, never colour alone; the obstructing side is hatched. */
+.at-row { cursor: pointer; }
+.at-row-on td { background: var(--brand-sunrise); }
+.at-row-on td:first-child { box-shadow: inset 4px 0 0 var(--brand-midnight); }
+.at-pick { font: inherit; font-weight: 700; color: var(--brand-midnight); background: none; border: 1px solid var(--brand-line); border-radius: 8px; padding: 1px 8px; cursor: pointer; }
+.at-pick[aria-pressed="true"] { background: var(--brand-midnight); color: var(--brand-surface); border-color: var(--brand-midnight); }
+.at-cell { cursor: pointer; }
+.at-cell-on { outline: 2px solid var(--brand-midnight); outline-offset: -2px; }
+.at-vir { display: inline-block; padding: 0 5px; border-radius: 6px; background-image: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in srgb, var(--brand-midnight) 14%, transparent) 4px 6px); }
+
+.at-meter { display: block; height: 6px; margin-top: 3px; border-radius: 999px; overflow: hidden; background: var(--status-weak-bg); border: 1px solid var(--brand-line); }
+.at-meter-arg { display: block; height: 100%; background: var(--status-strong); }
+
+.at-reading { margin-top: 10px; border: 1px solid var(--card-line); border-left-width: 6px; border-radius: var(--card-radius); background: var(--card-bg); padding: 10px 14px; }
+.at-reading-arg { border-left-color: var(--status-strong); }
+.at-reading-vir { border-left-color: var(--status-weak); }
+.at-reading-tie { border-left-color: var(--status-moderate); }
+.at-reading-quiet { border-left-color: var(--brand-line); }
+.at-reading-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.at-reading-badge { padding: 2px 10px; border-radius: 999px; font-size: var(--font-size-meta); font-weight: 800; background: var(--brand-sunrise); white-space: nowrap; }
+.at-reading-title { font-size: var(--font-size-control); font-weight: 700; }
+.at-reading-clear { margin-left: auto; font: inherit; font-size: var(--font-size-meta); padding: 1px 10px; border: 1px solid var(--brand-line); border-radius: 999px; background: var(--card-bg); color: var(--card-fg); cursor: pointer; }
+.at-reading-text { margin: 6px 0 0; }
+.at-reading-varga { margin: 4px 0 0; color: var(--brand-muted); font-size: var(--font-size-meta); }
+.at-reading-sub { margin: 10px 0 2px; font-size: var(--font-size-support); }
+.at-reading-list { margin: 0; padding-left: 18px; }
+.at-reading-list li { margin: 2px 0; }

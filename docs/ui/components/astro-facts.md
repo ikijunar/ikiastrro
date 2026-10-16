@@ -151,6 +151,21 @@ flow above instead of sitting in a side panel:
   have none (PVR gives no parallel gloss for them in sec.10.7). The 3rd-from column shows a small
   "→arg" badge when the sec.10.6 "2+ malefics in 3rd" exception fires for that house; a row whose
   target sign holds Ketu gets a `*` (anti-zodiacal counting, sec.10.6 note).
+- **Built (2026-10-16) — the Argala table is now one unified, clickable view** (`ArgalaTable` +
+  `ArgalaForceModel`, rammyps's request). Click a house (or a planet cell, which picks that argala/virodhargala
+  *lane* — the 12th/10th/3rd/9th columns map to the 2nd/4th/11th/5th they obstruct) and it is drawn on the
+  page's left chart (`SindUniDtlGrid`'s new optional `Argala` overlay: target outlined, argala signs ringed
+  green/red by the planets' functional nature with an arrow into the target — solid = holds, dashed =
+  contested, crossed = obstructed — obstructing signs hatched with a blocked-bar onto the argala they obstruct).
+  Each row's Net cell gains a force meter (argala share vs virodhargala). Below the table an interpretation panel
+  gives the winner (Net verdict = sec.10.7 count, then dignity), the plain-language meaning, which varga is
+  being read (D1, or the chart's Table 11 domain via `tbl_Dim_ChartType.ChartShortDescription`), the planets and
+  houses behind the result (planet significations from the naisargika karakatwa, house matters from ch.7, the
+  position's role from sec.10.7 "Use of Argala") and each lane's pair verdict (the same one Key Inference
+  shows). The wording is this app's own (`PROJECT_SYNTHESIS`); PVR only says to compare, then "guess the
+  meaning". The overlay only shows while About Houses is open and the chart picker still shows the chart the
+  pick was made in; switching chart clears the pick. Also fixed: the per-cell "H@argalaHouse" label printed
+  literally, and it now follows the anti-zodiacal count for Ketu houses.
 - **Built (2026-09-14):** 2.2 About Planets — Moon-context fact chips (new
   `ChartMoonContextRepository` over `vw_ChartMoonContext`, loaded outside `WorkspaceData` like
   the Current Transit tab's Gochara/Dasha, since only this page needs it) above the "Planets —

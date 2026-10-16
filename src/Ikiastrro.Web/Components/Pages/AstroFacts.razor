@@ -168,7 +168,7 @@ else
                             @if (!_natalChartCollapsed)
                             {
                                 <SindUniDtlGrid AscendantSign="@natalChart.AscendantSign" MoonSign="@natalChart.MoonSign" PlanetsBySign="PlanetsBySign(natalChart)" CenterTitle="@natalChart.ChartType"
-                                                 HighlightSign="@LinkedPoint?.Sign" HighlightLabel="@LinkedPoint?.Label">
+                                                 HighlightSign="@LinkedPoint?.Sign" HighlightLabel="@LinkedPoint?.Label" Argala="ArgalaOverlayFor(natalChart.ChartType)">
                                     <CenterMeta><b>Lagna</b> @Disp(natalChart.AscendantSign)</CenterMeta>
                                 </SindUniDtlGrid>
                             }
@@ -298,7 +298,7 @@ else
                     <HouseVerdictTable Rows="ArgalaFacts.HouseVerdicts(natalChart.AscendantSign, natalChart.Grahas, ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas))" />
 
                     @Head(NatalSection.Argala)
-                    <ArgalaTable Facts="ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas)" Grahas="natalChart.Grahas" AscendantSign="@natalChart.AscendantSign" SignificanceNotes="_argalaSignificanceNotes" HouseMatters="_argalaHouseMatters" />
+                    <ArgalaTable Facts="ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas)" Grahas="natalChart.Grahas" AscendantSign="@natalChart.AscendantSign" SignificanceNotes="_argalaSignificanceNotes" HouseMatters="_argalaHouseMatters" ChartType="@natalChart.ChartType" Domain="@_chartDomains.GetValueOrDefault(natalChart.ChartType)" PlanetMatters="_argalaPlanetMatters" OnOverlayChanged="o => _argalaOverlay = o" />
 
                     @Head(NatalSection.StrongerRasi)
                     <StrongerRasiTable Chart="natalChart" />
@@ -952,7 +952,7 @@ else
         @if (!_natalChartCollapsed && NatalChart is { } chartForGrid)
         {
             <SindUniDtlGrid AscendantSign="@chartForGrid.AscendantSign" MoonSign="@chartForGrid.MoonSign" PlanetsBySign="PlanetsBySign(chartForGrid)" CenterTitle="@chartForGrid.ChartType"
-                             HighlightSign="@LinkedPoint?.Sign" HighlightLabel="@LinkedPoint?.Label">
+                             HighlightSign="@LinkedPoint?.Sign" HighlightLabel="@LinkedPoint?.Label" Argala="ArgalaOverlayFor(chartForGrid.ChartType)">
                 <CenterMeta><b>Lagna</b> @Disp(chartForGrid.AscendantSign)</CenterMeta>
             </SindUniDtlGrid>
         }
@@ -984,6 +984,13 @@ else
     private IReadOnlyList<Ikiastrro.Data.YogaEvaluationRow> _yogaEvaluations = Array.Empty<Ikiastrro.Data.YogaEvaluationRow>();
     private IReadOnlyDictionary<int, string> _argalaSignificanceNotes = new Dictionary<int, string>();
     private IReadOnlyDictionary<int, string> _argalaHouseMatters = new Dictionary<int, string>();
+    private IReadOnlyDictionary<string, string> _argalaPlanetMatters = new Dictionary<string, string>();
+    private IReadOnlyDictionary<string, string?> _chartDomains = new Dictionary<string, string?>();
+    /// <summary>The house the Argala table picked, drawn on the page's chart while About Houses is open and the
+    /// chart picker still shows the chart the pick was made in.</summary>
+    private ArgalaOverlay? _argalaOverlay;
+    private ArgalaOverlay? ArgalaOverlayFor(string chartType) =>
+        _argalaOverlay is { } o && o.ChartType == chartType && _masterTab == 0 && _activeTab == 2 ? o : null;
     private IReadOnlyList<Ikiastrro.Data.ArgalaFactRow> _argalaFacts = Array.Empty<Ikiastrro.Data.ArgalaFactRow>();
     private IReadOnlyList<Ikiastrro.Core.Models.NakshatraReference> _nakshatraReferences = Array.Empty<Ikiastrro.Core.Models.NakshatraReference>();
 
@@ -1168,7 +1175,11 @@ else
         _yogaVarga = "D1";
         _yogaEvaluations = YogaEvaluationRepo.GetByBirthDetailId(Id);
         _argalaSignificanceNotes = ArgalaRuleRepo.GetArgalaSignificanceNotes(1);
-        _argalaHouseMatters = Ikiastrro.Data.Statistics.LifeMatterPromiseAdapter.HouseMatters(NaisargikaRepo.LoadActive().Houses);
+        var naisargika = NaisargikaRepo.LoadActive();
+        _argalaHouseMatters = Ikiastrro.Data.Statistics.LifeMatterPromiseAdapter.HouseMatters(naisargika.Houses);
+        _argalaPlanetMatters = ArgalaForceModel.PlanetMatters(naisargika.Details);
+        _chartDomains = ChartTypeRepo.GetAll().ToDictionary(c => c.Code, c => c.ChartShortDescription);
+        _argalaOverlay = null;
         _argalaFacts = ArgalaFactRepo.GetByBirthDetailId(Id);
         _rasiNakshatraCombinations = RasiNakshatraCombinationRepo.GetAll(1);
         _nakshatraReferences = NakshatraReferenceRepo.GetAll();
