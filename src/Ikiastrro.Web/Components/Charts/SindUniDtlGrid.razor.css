@@ -8,6 +8,7 @@
 * { box-sizing: border-box; }
 
 .chart {
+    position: relative;
     container-type: inline-size;
     width: 480px;
     max-width: 100%;
@@ -72,3 +73,32 @@
 .cell.link-hl { background: linear-gradient(var(--brand-sunrise), var(--brand-sunrise)), var(--paper-raised); box-shadow: inset 0 0 0 3px var(--brand-midnight); }
 .cell.link-hl.ascendant { box-shadow: inset 0 0 0 3px var(--brand-midnight), inset 0 0 0 5px var(--accent); }
 .cell.link-hl .special-label.link-label { color: var(--brand-midnight); border-color: var(--brand-midnight); font-weight: 700; background: color-mix(in srgb, var(--brand-sunrise) 60%, transparent); }
+
+/* Argala overlay (2026-10-16): the Argala table's picked house drawn on this chart. Target = sunrise fill with a
+   midnight ring (same look as the linked-row highlight); argala signs ringed in benefic/malefic colour; obstructing
+   signs dashed. Always paired with a text label in the cell, so colour is never the only cue. */
+.cell.arg-target { background: linear-gradient(var(--brand-sunrise), var(--brand-sunrise)), var(--paper-raised); box-shadow: inset 0 0 0 3px var(--brand-midnight); }
+.cell.arg-src.arg-good { box-shadow: inset 0 0 0 3px var(--status-strong); }
+.cell.arg-src.arg-bad { box-shadow: inset 0 0 0 3px var(--status-weak); }
+.cell.arg-src.arg-none { box-shadow: inset 0 0 0 3px var(--brand-muted); }
+.cell.arg-vir { box-shadow: inset 0 0 0 2px var(--brand-midnight); background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--brand-midnight) 10%, transparent) 6px 8px); }
+.cell.arg-dim { opacity: .45; }
+.special-label.arg-label { font-weight: 700; color: var(--brand-midnight); border-color: var(--brand-midnight); }
+
+.arg-arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.arg-ln { fill: none; stroke-width: 4; stroke-linecap: round; }
+.arg-ln.arg-good { stroke: var(--status-strong); }
+.arg-ln.arg-bad { stroke: var(--status-weak); }
+.arg-ln.arg-none { stroke: var(--brand-muted); }
+.arg-ln.arg-contested { stroke-dasharray: 9 7; }
+.arg-ln.arg-obstructed { stroke-dasharray: 2 8; opacity: .6; }
+.arg-ln-block { stroke: var(--brand-midnight); stroke-width: 2.5; stroke-dasharray: 3 5; }
+.arg-ln.arg-dim, .arg-x.arg-dim { opacity: .25; }
+.arg-mk path { fill: currentColor; }
+.arg-mk-good { color: var(--status-strong); }
+.arg-mk-bad { color: var(--status-weak); }
+.arg-mk-none { color: var(--brand-muted); }
+.arg-mk-block { color: var(--brand-midnight); }
+.arg-mk-block path { fill: none; stroke: currentColor; stroke-width: 3; }
+.arg-x circle { fill: var(--paper-raised); stroke: var(--status-weak); stroke-width: 2.5; }
+.arg-x path { stroke: var(--status-weak); stroke-width: 3; fill: none; }

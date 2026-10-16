@@ -47,11 +47,13 @@ else
             <tbody>
                 @foreach (var row in Rows)
                 {
-                    <tr>
-                        <td class="mono">@row.HouseNumber@(row.CountedAntiZodiacally ? "*" : "")</td>
+                    var selected = row.HouseNumber == _house;
+                    <tr class="at-row @(selected ? "at-row-on" : "")" @onclick="() => Select(row.HouseNumber, null)">
+                        <td class="mono"><button type="button" class="at-pick" aria-pressed="@(selected ? "true" : "false")" title="Show house @row.HouseNumber on the chart" @onclick="() => Select(row.HouseNumber, null)" @onclick:stopPropagation="true">@row.HouseNumber@(row.CountedAntiZodiacally ? "*" : "")</button></td>
                         <td>@Disp(row.Sign)</td>
                         <td>
                             <span class="at-net @NetCss(row.Compare)">@NetLabel(row.Compare) @row.Compare.ArgalaCount&ndash;@row.Compare.VirodhargalaCount</span>
+                            <span class="at-meter" title="Argala @row.Compare.ArgalaCount : Virodhargala @row.Compare.VirodhargalaCount"><span class="at-meter-arg" style="width:@(MeterShare(row.Compare))%"></span></span>
                         </td>
                         <td>
                             <span class="at-nat @NatureCss(row.Nature)">@NatureLabel(row.Nature)</span>
@@ -59,7 +61,7 @@ else
                         @foreach (var offset in ArgalaOffsetOrder)
                         {
                             var occupants = row.Occupants(offset);
-                            <td>
+                            <td class="at-cell @(CellOn(row, offset) ? "at-cell-on" : "")" @onclick="() => Select(row.HouseNumber, ArgalaForceModel.LaneOf(offset, row.ThirdHouseExceptionApplied))" @onclick:stopPropagation="true">
                                 @if (occupants.Count == 0)
                                 {
                                     <text>—</text>
@@ -71,22 +73,22 @@ else
                                         var d = D1PromiseEngine.NatureDirection(ascendant, occupants[i], moonWaxing);
                                         <span class="at-p @PlanetCss(d)" title="@PlanetTitle(d)">@occupants[i]</span>@(i < occupants.Count - 1 ? ", " : "")
                                     }
-                                    var argalaHouse = (row.HouseNumber + offset - 2) % 12 + 1;
-                                    <span class="at-house" title="Argala planets stand in house @argalaHouse from lagna">H@argalaHouse@(HouseMatters.TryGetValue(argalaHouse, out var matters) ? " · " + matters : "")</span>
+                                    var argalaHouse = ArgalaForceModel.HouseFrom(row.HouseNumber, offset, row.CountedAntiZodiacally);
+                                    <span class="at-house" title="Argala planets stand in house @argalaHouse from lagna">H@(argalaHouse)@(HouseMatters.TryGetValue(argalaHouse, out var matters) ? " · " + matters : "")</span>
                                 }
                             </td>
                         }
                         @foreach (var offset in VirodhargalaOffsetOrder)
                         {
                             var occupants = row.Occupants(offset);
-                            <td>
+                            <td class="at-cell @(CellOn(row, offset) ? "at-cell-on" : "")" @onclick="() => Select(row.HouseNumber, ArgalaForceModel.LaneOf(offset, row.ThirdHouseExceptionApplied))" @onclick:stopPropagation="true">
                                 @if (occupants.Count == 0)
                                 {
                                     <text>—</text>
                                 }
                                 else
                                 {
-                                    @string.Join(", ", occupants)
+                                    <span class="at-vir" title="Virodhargala from the @Ordinal(offset)">@string.Join(", ", occupants)</span>
                                     @if (offset == 3 && row.ThirdHouseExceptionApplied)
                                     {
                                         <span class="at-exception" title="2+ malefics here act as argala, not virodhargala (sec.10.6 exception)">&rarr;arg</span>
@@ -104,6 +106,39 @@ else
     {
         <p class="at-footnote">* Ketu occupies this house's sign — argala/virodhargala counted anti-zodiacally (sec.10.6 note).</p>
     }
+
+    @if (Selected is { } force)
+    {
+        var reading = force.Reading;
+        <section class="at-reading @ReadingCss(force.Outcome)" aria-label="What the argala on house @force.House means">
+            <div class="at-reading-head">
+                <span class="at-reading-badge">@OutcomeWord(force.Outcome) · @force.ArgalaForce&ndash;@force.VirodhargalaForce</span>
+                <span class="at-reading-title">House @force.House (@Disp(force.Sign)) — @reading.Headline</span>
+                <button type="button" class="at-reading-clear" @onclick="Clear">Clear</button>
+            </div>
+            <p class="at-reading-text">@reading.Summary</p>
+            <p class="at-reading-varga">@reading.Varga</p>
+            @if (reading.Causes.Count > 0)
+            {
+                <h4 class="at-reading-sub">Planets and houses behind it</h4>
+                <ul class="at-reading-list">
+                    @foreach (var cause in reading.Causes) { <li>@cause</li> }
+                </ul>
+            }
+            @if (reading.Lanes.Count > 0)
+            {
+                <h4 class="at-reading-sub">Each argala against its virodhargala</h4>
+                <ul class="at-reading-list">
+                    @foreach (var lane in reading.Lanes) { <li>@lane</li> }
+                </ul>
+            }
+            <p class="at-footnote">PVR sec.10.7: more planets win; equal numbers are decided by strength; then &ldquo;based on the signs, houses and planets involved, guess the meaning&rdquo;. Wording is this app's own summary. Colours: green = benefic, red = malefic for this lagna.</p>
+        </section>
+    }
+    else
+    {
+        <p class="at-footnote">Click a house, or a planet cell, to see its argala and virodhargala on the chart and read what it means.</p>
+    }
 }
 
 @code {
@@ -114,6 +149,63 @@ else
     /// <summary>House number → its leading matters (PVR ch. 7), shown under the planets causing argala.</summary>
     [Parameter] public IReadOnlyDictionary<int, string> HouseMatters { get; set; } = new Dictionary<int, string>();
     [Parameter] public IReadOnlyDictionary<int, string> SignificanceNotes { get; set; } = new Dictionary<int, string>();
+    /// <summary>The chart these facts belong to (D1, D9 …) and its Table 11 domain, so the reading says which varga it is in.</summary>
+    [Parameter] public string ChartType { get; set; } = "D1";
+    [Parameter] public string? Domain { get; set; }
+    /// <summary>Planet name → its first few significations (PVR ch.8 naisargika karakatwa), for the reading.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string> PlanetMatters { get; set; } = new Dictionary<string, string>();
+    /// <summary>Raised on every pick with what the page's South-Indian chart should draw — null when the pick is cleared.</summary>
+    [Parameter] public EventCallback<ArgalaOverlay?> OnOverlayChanged { get; set; }
+
+    // Selection state: the picked house and, optionally, one lane (its argala offset) inside it.
+    private int? _house;
+    private int? _lane;
+    private string? _shownChart;
+    private IReadOnlyList<HouseForce> _forces = Array.Empty<HouseForce>();
+
+    private HouseForce? Selected => _house is int h && h <= _forces.Count ? _forces[h - 1] : null;
+
+    protected override void OnParametersSet()
+    {
+        if (_shownChart != ChartType) { _house = null; _lane = null; _shownChart = ChartType; }
+        _forces = Grahas.Count == 0 ? Array.Empty<HouseForce>()
+            : ArgalaForceModel.BuildAll(Facts, Grahas, AscendantSign,
+                new ArgalaMeaningContext(ChartType, Domain, HouseMatters, PlanetMatters));
+    }
+
+    /// <summary>Pick a house (lane null = the whole house) or one of its lanes. Picking the same thing again lets go of it.</summary>
+    private async Task Select(int house, int? lane)
+    {
+        if (_house == house && lane is null) { await Clear(); return; }
+        if (_house == house && _lane == lane) lane = null;   // same lane again: back to the whole house
+        _house = house;
+        _lane = lane;
+        await OnOverlayChanged.InvokeAsync(Selected is { } f ? ArgalaForceModel.Overlay(ChartType, f, _lane) : null);
+    }
+
+    private async Task Clear()
+    {
+        _house = null; _lane = null;
+        await OnOverlayChanged.InvokeAsync(null);
+    }
+
+    private bool CellOn(HouseRow row, int offset) =>
+        row.HouseNumber == _house && _lane is not null && _lane == ArgalaForceModel.LaneOf(offset, row.ThirdHouseExceptionApplied);
+
+    private static int MeterShare(ComparisonResult c) =>
+        c.ArgalaCount + c.VirodhargalaCount == 0 ? 0 : (int)Math.Round(100.0 * c.ArgalaCount / (c.ArgalaCount + c.VirodhargalaCount));
+
+    private static string OutcomeWord(ArgalaOutcome o) => o switch
+    {
+        ArgalaOutcome.ArgalaWins => "ARGALA WINS", ArgalaOutcome.VirodhargalaWins => "VIRODHARGALA WINS",
+        ArgalaOutcome.Tie => "TIE", ArgalaOutcome.Idle => "IDLE", _ => "QUIET"
+    };
+
+    private static string ReadingCss(ArgalaOutcome o) => o switch
+    {
+        ArgalaOutcome.ArgalaWins => "at-reading-arg", ArgalaOutcome.VirodhargalaWins => "at-reading-vir",
+        ArgalaOutcome.Tie => "at-reading-tie", _ => "at-reading-quiet"
+    };
 
     private static readonly int[] ArgalaOffsetOrder = { 2, 4, 11, 5 };
     private static readonly int[] VirodhargalaOffsetOrder = { 12, 10, 3, 9 };

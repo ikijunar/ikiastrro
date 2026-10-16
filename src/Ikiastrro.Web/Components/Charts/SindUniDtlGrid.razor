@@ -33,7 +33,9 @@
                 : AstroMath.CountFromSignToSign(Enum.Parse<ZodiacName>(MoonSign), cellSign);
             var aspectedBy = !Compact && AspectedByGlyphs.TryGetValue(cell.MatchSign, out var byList) ? byList : Array.Empty<string>();
 
-            <div class="cell @(isAscendant ? "ascendant" : "") @(isLinked ? "link-hl" : "")" data-sign="@cell.MatchSign" style="grid-column:@cell.Col;grid-row:@cell.Row;">
+            var argalaRole = !Compact ? ArgalaRole(cellSign) : null;
+
+            <div class="cell @(isAscendant ? "ascendant" : "") @(isLinked ? "link-hl" : "") @argalaRole?.Css" data-sign="@cell.MatchSign" style="grid-column:@cell.Col;grid-row:@cell.Row;">
                 <span class="house-nums">
                     <span class="house-num from-lagna" title="House @houseFromLagna from Lagna">@houseFromLagna</span>
                     @if (houseFromMoon is int hm)
@@ -45,6 +47,10 @@
                 @if (isLinked && !string.IsNullOrEmpty(HighlightLabel))
                 {
                     <div class="special-labels"><span class="special-label link-label">@HighlightLabel</span></div>
+                }
+                @if (argalaRole is not null)
+                {
+                    <div class="special-labels"><span class="special-label arg-label">@argalaRole.Label</span></div>
                 }
                 @if (SpecialPointLabels.TryGetValue(cell.MatchSign, out var sp) && sp.Count > 0)
                 {
@@ -84,6 +90,42 @@
             <div class="center-title">@CenterTitle</div>
             <div class="center-meta">@CenterMeta</div>
         </div>
+
+        @if (!Compact && Argala is { Links.Count: > 0 } overlay)
+        {
+            @* Argala overlay: arrows from each argala sign into the target, a blocked-bar from each obstructing
+               sign onto the argala it obstructs. 400x400 box = the 4x4 grid, so a cell is 100 units. *@
+            <svg class="arg-arrows" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                    <marker id="arg-ah-good" class="arg-mk arg-mk-good" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" /></marker>
+                    <marker id="arg-ah-bad" class="arg-mk arg-mk-bad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" /></marker>
+                    <marker id="arg-ah-none" class="arg-mk arg-mk-none" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" /></marker>
+                    <marker id="arg-tbar" class="arg-mk arg-mk-block" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M5,0 L5,10" /></marker>
+                </defs>
+                @foreach (var link in overlay.Links)
+                {
+                    var (sx, sy) = Centre(link.ArgalaSign);
+                    if (link.HasArgala)
+                    {
+                        var (tx, ty) = Centre(overlay.Target);
+                        var (x1, y1, x2, y2) = Shorten(sx, sy, tx, ty, 38);
+                        <line class="arg-ln @NatureCss(link.Nature) @VerdictCss(link.Verdict) @(link.Dimmed ? "arg-dim" : "")" x1="@x1" y1="@y1" x2="@x2" y2="@y2" marker-end="url(#@MarkerId(link.Nature))" />
+                        @if (link.Verdict == Ikiastrro.Data.Statistics.ArgalaVerdict.Obstructed)
+                        {
+                            <g class="arg-x @(link.Dimmed ? "arg-dim" : "")" transform="translate(@((x1 + x2) / 2) @((y1 + y2) / 2))">
+                                <circle r="10" /><path d="M-4,-4 L4,4 M4,-4 L-4,4" />
+                            </g>
+                        }
+                    }
+                    @if (link.ObstructionSign is { } obstruction)
+                    {
+                        var (ox, oy) = Centre(obstruction);
+                        var (a1, b1, a2, b2) = Shorten(ox, oy, sx, sy, 38);
+                        <line class="arg-ln arg-ln-block @(link.Dimmed ? "arg-dim" : "")" x1="@a1" y1="@b1" x2="@a2" y2="@b2" marker-end="url(#arg-tbar)" />
+                    }
+                }
+            </svg>
+        }
     </div>
 </div>
 
@@ -123,6 +165,63 @@
     /// (AL / A2..A12 / HL / Gk / Md). Empty → nothing rendered.</summary>
     [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<string>> SpecialPointLabels { get; set; }
         = new Dictionary<string, IReadOnlyList<string>>();
+
+    /// <summary>The Argala table's selection, drawn on the chart: the target house outlined, each argala sign
+    /// outlined in its planets' nature colour with an arrow into the target (solid = holds, dashed = contested,
+    /// crossed = obstructed), each obstructing sign dashed with a blocked-bar onto the argala it obstructs.
+    /// Null = nothing drawn. Hidden in Compact mode.</summary>
+    [Parameter] public ArgalaOverlay? Argala { get; set; }
+
+    private sealed record ArgalaCellRole(string Css, string Label);
+
+    private ArgalaCellRole? ArgalaRole(ZodiacName sign)
+    {
+        if (Argala is not { } overlay) return null;
+        if (sign == overlay.Target) return new("arg-target", $"ARGALA ON H{overlay.House}");
+        var source = overlay.Links.FirstOrDefault(l => l.HasArgala && l.ArgalaSign == sign);
+        if (source is not null)
+            return new($"arg-src {NatureCss(source.Nature)} {(source.Dimmed ? "arg-dim" : "")}", "ARGALA");
+        var obstructor = overlay.Links.FirstOrDefault(l => l.ObstructionSign == sign);
+        return obstructor is not null ? new($"arg-vir {(obstructor.Dimmed ? "arg-dim" : "")}", "VIRODHARGALA") : null;
+    }
+
+    private static string NatureCss(Ikiastrro.Core.LifeMatters.Promise.Direction d) => d switch
+    {
+        Ikiastrro.Core.LifeMatters.Promise.Direction.Supportive => "arg-good",
+        Ikiastrro.Core.LifeMatters.Promise.Direction.Obstructive => "arg-bad",
+        _ => "arg-none"
+    };
+
+    private static string MarkerId(Ikiastrro.Core.LifeMatters.Promise.Direction d) => d switch
+    {
+        Ikiastrro.Core.LifeMatters.Promise.Direction.Supportive => "arg-ah-good",
+        Ikiastrro.Core.LifeMatters.Promise.Direction.Obstructive => "arg-ah-bad",
+        _ => "arg-ah-none"
+    };
+
+    private static string VerdictCss(Ikiastrro.Data.Statistics.ArgalaVerdict? v) => v switch
+    {
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Contested => "arg-contested",
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Obstructed => "arg-obstructed",
+        _ => ""
+    };
+
+    private static (int X, int Y) Centre(ZodiacName sign)
+    {
+        var cell = GridCells.First(c => c.MatchSign == sign.ToString());
+        return ((cell.Col - 1) * 100 + 50, (cell.Row - 1) * 100 + 50);
+    }
+
+    /// <summary>The segment pulled in by <paramref name="inset"/> at both ends, so arrows start and end outside the glyphs.</summary>
+    private static (int X1, int Y1, int X2, int Y2) Shorten(int x1, int y1, int x2, int y2, double inset)
+    {
+        double dx = x2 - x1, dy = y2 - y1;
+        var len = Math.Sqrt(dx * dx + dy * dy);
+        if (len <= inset * 2) return (x1, y1, x2, y2);
+        double ux = dx / len, uy = dy / len;
+        return ((int)Math.Round(x1 + ux * inset), (int)Math.Round(y1 + uy * inset),
+                (int)Math.Round(x2 - ux * inset), (int)Math.Round(y2 - uy * inset));
+    }
 
     // Fixed South Indian grid: sign never moves. MatchSign uses this project's internal
     // ZodiacName spelling ("Capricornus"); DisplayEn is the reader-facing label.
