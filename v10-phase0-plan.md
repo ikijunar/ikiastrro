@@ -161,6 +161,9 @@ For each field, record a stable feature code, name, type/unit/range, canonical C
 
 Deliverable: `Feature Dictionary v1` for the four D1 measures and provenance fields.
 
+Addendum (2026-10-17): candidate avastha and argala-delivery features are recorded as *proposed, not frozen* in the feature
+dictionary. Agree the counted-once rule and the collinearity handling (`docs/research/domain/argala-avastha-linkage.md`) before any is added to Phase 1.
+
 ### WP0.3 — Dataset and privacy decision
 
 Define research-eligibility states, anonymous subject keys, test/demo exclusion, deletion/rebuild rules, and person-level access.
@@ -178,6 +181,16 @@ Approve labels for score, percentile, uncertainty and sample size; non-predictio
 ### WP0.6 — Phase 1 implementation backlog
 
 Convert the contract into scoped database, Python, C# repository, UI and test tasks. Assign files to their owning workstreams before implementation.
+
+Backlog items from the Argala / avastha work (2026-10-17), each with its owning workstream:
+
+- **UI:** unified Argala table, left-chart overlay, avastha definitions and per-state reasons (built, `workstream/ui`).
+- **Core:** `StateReason` and `Evaluate`/`Explain` in the Deeptadi and Lajjitadi calculators (built); persist reasons only if a
+  feature snapshot needs them.
+- **Database:** decide whether `tbl_Fact_PlanetaryState` needs per-chart Baaladi/Sayanaadi columns kept D1-only, and whether
+  the proposed delivery features become analytics-view columns.
+- **Python:** descriptive tables for "argala win rests on a sleeping or damaged planet" before any modelling.
+- **Research:** audit the house-lord interpretation text (partly from B.V. Raman) against PVR before the reading uses it.
 
 ## 10. Acceptance criteria
 

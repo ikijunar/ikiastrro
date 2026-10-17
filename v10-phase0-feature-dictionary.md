@@ -121,6 +121,28 @@ Each readable axis receives equal weight regardless of how many component signal
 **Missing when:** all three axes are missing.
 **Interpretation direction:** higher means stronger combined evidence under this presentation scale; it is not a probability.
 
+## Proposed features: avasthas and argala (2026-10-17, not persisted, not frozen)
+
+Nothing in this section is part of Feature Dictionary v1; the four D1 measures above are unchanged. These are candidates
+for Phase 1, recorded here so the definitions are agreed before any column is added. Background and sourcing:
+`docs/research/domain/argala-avastha-linkage.md`.
+
+| Proposed code | Grain | Definition | Scale | Source | Missing when |
+|---|---|---|---|---|---|
+| `KI_PLANET_ALERTNESS_V1` | planet x chart | Jagradadi state: Jagrat = 2, Swapna = 1, Sushupti = 0 | Ordinal, no weights (PVR gives only full / medium / negligible) | PVR §15.4.2 | No dignity for the planet |
+| `KI_PLANET_DAMAGE_FLAGS_V1` | planet x chart | Which of Lajjita, Kshudhita, Kshobhita hold | Three booleans | PVR §15.4.3 | No conjunction/aspect rows for the chart |
+| `KI_HOUSE_ARGALA_DELIVERY_V1` | house x chart | Per lane, the best alertness among the argala planets; per house, the count of lanes by delivery | Ordinal counts | PROJECT_SYNTHESIS on PVR §15.4.2 | No argala planet, or no alertness for any |
+| `KI_HOUSE_ARGALA_DECIDED_BY_WEAK_V1` | house x chart | The argala result is a one-planet margin (or was level and decided by dignity) and a deciding planet is Sushupti or damaged | Boolean | PROJECT_SYNTHESIS | Outcome is Quiet, Idle or Tie |
+
+Rules for these features:
+
+- They **do not alter** `KI_D1_HOUSE_CONTEXT_V1`. Its Argala component stays the share of judged pairs that hold; the
+  winner stays count first, dignity second (PVR §10.7).
+- `KI_PLANET_ALERTNESS_V1` is a recoding of dignity. It must be flagged as redundant with the dignity score in any model.
+- Baaladi and Sayanaadi are D1-only and are not proposed as features here; if added later they carry `ChartScope = D1`.
+- A missing value is never replaced by zero (see Shared numeric rules). Sushupti is a real zero on the ordinal scale;
+  "alertness not available" is a missing reason.
+
 ## Shared numeric rules
 
 `LifeMatterStatistics` applies these rules before persistence:
@@ -172,6 +194,8 @@ No missing value may be replaced by zero. The extraction must publish both eligi
 4. The view exposes `Name`; Python's analytics view must exclude it and use an anonymous subject key.
 5. Null component reasons are not persisted.
 6. The current cohort contains only six people, so all statistical display remains in the insufficient-data state.
+7. Avasthas overlap dignity, conjunctions and aspects (see the proposed-features section). Any future feature that combines
+   an avastha with one of those inputs double counts it unless the overlap is removed first.
 
 ## WP0.2 acceptance checks
 

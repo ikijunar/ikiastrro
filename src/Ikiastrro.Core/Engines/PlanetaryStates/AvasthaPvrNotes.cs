@@ -52,6 +52,50 @@ public static class AvasthaPvrNotes
         [("Lajjitadi", "Kshobhita")] = "shaken, agitated: conjoined by the Sun and aspected by malefics or enemies",
     };
 
+    /// <summary>One avastha set: what PVR says it looks at and how this app reads it. <see cref="Uses"/> is the list of
+    /// inputs the set depends on, <see cref="AppReading"/> where the app's reading is narrower than, or follows a
+    /// source other than, the PVR wording, and <see cref="Scope"/> which charts it is computed for.</summary>
+    public sealed record AvasthaSystemInfo(
+        string System, string Title, string Section, IReadOnlyList<string> Uses, string AppReading, string Scope);
+
+    /// <summary>The five sets in PVR order, with the inputs each uses (rammyps, 2026-10-17). The one-line reason
+    /// for each planet's state comes from <see cref="StateReason"/>; this is the set-level definition.</summary>
+    public static readonly IReadOnlyList<AvasthaSystemInfo> Systems =
+    [
+        new("Baaladi", "Age", "15.4.1",
+            ["Degree within the sign", "Odd or even sign"],
+            "Five degree bands per sign parity (tbl_Rule_AgeState), each with the share of results PVR gives it.",
+            "D1 only: a varga sign has no continuous degree."),
+        new("Jagradadi", "Alertness", "15.4.2",
+            ["Dignity of the sign it occupies"],
+            "Dignity maps to awake, dreaming or asleep (tbl_Rule_WakefulnessState); moolatrikona counts with own sign, great enemy and debilitation with enemy.",
+            "Every chart."),
+        new("Deeptadi", "Attitude and mood: nine states", "15.4.3",
+            ["Exaltation or own sign", "Friendship with the sign lord", "Conjunction with malefics", "Sign lord is a malefic", "Closeness to the Sun"],
+            "Follows Jagannatha Hora's Mood column (decision 012): Deepta or Swastha kept alongside the sign-lord friendship tier; Vikala needs two or more natural malefics; Kopita uses a 5° orb; malefics are the fixed set Sun, Mars, Saturn, Rahu, Ketu.",
+            "Every chart."),
+        new("Lajjitadi", "Attitude and mood: six more states", "15.4.3",
+            ["House position (Lajjita: 5th)", "Conjunctions", "Aspects received", "Friendship with the planets joining or aspecting it", "Watery sign", "Exaltation or moolatrikona"],
+            "Friend and enemy are the directional Panchadha friendship of this planet to the other. Every match is kept; PVR orders none. Only Lajjita and Garvita can be checked against Jagannatha Hora.",
+            "Every chart."),
+        new("Sayanadi", "Activity: twelve states", "15.4.4",
+            ["Own nakshatra", "Planet index", "Navamsa within its sign", "Moon's nakshatra", "Birth ghati", "Lagna sign"],
+            "PVR's formula exactly ((C × P × A) + M + G + L) mod 12; matches Jagannatha Hora. PVR calls this the most important of the states.",
+            "D1 only: needs the exact degree and the birth ghati."),
+    ];
+
+    /// <summary>What no avastha set looks at. These sit beside the states, never inside them, so the reading shows
+    /// each once and does not count a dignity, aspect or conjunction twice.</summary>
+    public static readonly IReadOnlyList<string> NotCoveredByAvasthas =
+    [
+        "Functional nature for the lagna (benefic or malefic by the houses a planet owns)",
+        "Houses owned and the house stood in, beyond Lajjita's 5th",
+        "Retrogression, and combustion as a test in its own right (Kopita covers closeness to the Sun only)",
+        "Strength measures: Ṣaḍbala, Aṣṭakavarga, Vimśopaka",
+        "Aspects the planet casts (avasthas read only the aspects it receives)",
+        "Argala position, pairing and counts",
+    ];
+
     /// <summary>PVR's meaning of one state, or null when the book gives none for it (the Śayanādi states).</summary>
     public static string? Meaning(string avasthaSystem, string stateName) =>
         Meanings.GetValueOrDefault((avasthaSystem, stateName));

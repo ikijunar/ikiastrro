@@ -1,0 +1,355 @@
+@page "/af-v10/{Id:int}"
+@using Direction = Ikiastrro.Core.LifeMatters.Promise.Direction
+@using Ikiastrro.Core.Engines.Astronomy
+@using Ikiastrro.Core.Engines.Lords
+@using Ikiastrro.Core.Engines.PlanetaryStates
+@using Ikiastrro.Core.Models
+@using Ikiastrro.Core.Presentation
+@using Ikiastrro.Web.Components.AstroV10
+@using Ikiastrro.Web.Components.Charts
+@using Ikiastrro.Web.Components.Workspace
+@inject BirthDetailsRepository BirthDetailsRepo
+@inject ChartResultsRepository ChartResultsRepo
+@inject ChartKeyDetailsRepository ChartKeyDetailsRepo
+@inject ChartHouseLordsRepository ChartHouseLordsRepo
+@inject ChartHouseLordInterpretationRepository ChartHouseLordInterpretationRepo
+@inject ChartAspectsRepository ChartAspectsRepo
+@inject ChartConjunctionsRepository ChartConjunctionsRepo
+@inject ChartMultiGrahaConjunctionRepository ChartMultiGrahaConjunctionRepo
+@inject ChartTypeRepository ChartTypeRepo
+@inject Ikiastrro.Data.ArgalaFactRepository ArgalaFactRepo
+@inject Ikiastrro.Data.NaisargikaKarakaRepository NaisargikaRepo
+@inject Ikiastrro.Data.PlanetaryStateRuleRepository PlanetaryStateRuleRepo
+@inject Ikiastrro.Data.PanchangaRepository PanchangaRepo
+@inject ActivePerson Active
+@* AF-v10 (Astro Facts v10) — one connected screen instead of ten tabs (docs/ui/af-v10-design.md). The chart stays pinned on the
+   left; everything on the right is a view of the same chart and shares ONE selection: pick a house tile, a planet card or a
+   lord chip and the chart, the summary at the top right and the rails all follow (brushing and linking). First slice: houses
+   (argala force and meaning), planets (avasthas and why, lords and their nature), the chart overlay. The classic tabbed page
+   at /astro-facts/{id} is untouched and linked from the foot of this one. Read-only; nothing here is stored. "av10" = this page. *@
+<PageTitle>AF-v10</PageTitle>
+@if (_data is null)
+{
+    <section class="av10-empty"><p>No chart found for this person. <a href="/charts">Back to Saved Charts</a></p></section>
+}
+else if (Chart is { } chart)
+{
+    <div class="av10">
+        <header class="av10-ribbon">
+            <span class="av10-chip"><b>Lagna</b> @Disp(chart.AscendantSign)</span>
+            @if (!string.IsNullOrEmpty(chart.MoonSign))
+            {
+                <span class="av10-chip"><b>Moon</b> @Disp(chart.MoonSign)@(string.IsNullOrEmpty(chart.MoonNakshatra) ? "" : " · " + chart.MoonNakshatra)</span>
+            }
+            <span class="av10-chip av10-chip-domain">@Domain(chart.ChartType)</span>
+            <label class="av10-pick">Chart
+                <select aria-label="Chart" value="@_chartType" @onchange="OnChartChanged">
+                    @foreach (var c in ChartOptions) { <option value="@c.ChartType">@c.Label</option> }
+                </select>
+            </label>
+            <span class="av10-crumb">@Crumb</span>
+            @if (_kind != Kind.None) { <button type="button" class="av10-clear" @onclick="Clear">Clear</button> }
+        </header>
+
+        <div class="av10-main">
+            <aside class="av10-chartcol" aria-label="Chart">
+                <SindUniDtlGrid AscendantSign="@chart.AscendantSign" MoonSign="@chart.MoonSign" PlanetsBySign="PlanetsBySign(chart)" CenterTitle="@chart.ChartType"
+                                HighlightSign="@HighlightSign" HighlightLabel="@HighlightLabel" Argala="Overlay(chart)">
+                    <CenterMeta><b>Lagna</b> @Disp(chart.AscendantSign)</CenterMeta>
+                </SindUniDtlGrid>
+            </aside>
+
+            <div class="av10-detail">
+                <section class="av10-inspector" aria-live="polite" aria-label="Summary of the selection">
+                    @if (_kind == Kind.House && SelectedForce is { } force)
+                    {
+                        var reading = force.Reading;
+                        <div class="av10-insp-head">
+                            <span class="av10-badge @OutcomeCss(force.Outcome)">@OutcomeWord(force.Outcome) · @force.ArgalaForce&ndash;@force.VirodhargalaForce</span>
+                            <h2 class="av10-insp-title">House @force.House (@Disp(force.Sign)) &mdash; @reading.Headline</h2>
+                        </div>
+                        <div class="av10-meter" role="img" aria-label="Argala @force.ArgalaForce against virodhargala @force.VirodhargalaForce">
+                            <span class="av10-meter-arg" style="width:@(ArgalaForceModel.ArgalaShare(force))%"></span>
+                        </div>
+                        <p class="av10-text">@reading.Summary</p>
+                        <p class="av10-meta">@reading.Varga</p>
+                        @foreach (var caveat in reading.Caveats) { <p class="av10-caveat">&#9888; @caveat</p> }
+                        @if (HouseLordOf(force.House) is { } lordPlanet && Triads.GetValueOrDefault(lordPlanet) is { } lordTriad)
+                        {
+                            <h3 class="av10-sub">Lord of this house: @lordPlanet</h3>
+                            <LordChain Triad="lordTriad" Natures="Natures" OnLord="SelectPlanet" />
+                        }
+                        @if (force.Lanes.Any(l => l.Argala.Count > 0))
+                        {
+                            <h3 class="av10-sub">Each argala against its virodhargala <span class="av10-meta">(pick one to show only it on the chart)</span></h3>
+                            <div class="av10-lanes">
+                                @foreach (var lane in force.Lanes.Where(l => l.Argala.Count > 0))
+                                {
+                                    <button type="button" class="av10-lane @LaneCss(lane) @(_lane == lane.ArgalaOffset ? "av10-lane-on" : "")" @onclick="() => PickLane(lane.ArgalaOffset)">
+                                        <span class="av10-lane-h">@(lane.ArgalaOffset == 3 ? "3rd (malefic exception)" : Ordinal(lane.ArgalaOffset)) &middot; H@(lane.ArgalaHouse)</span>
+                                        <span class="av10-lane-p">@string.Join(", ", lane.Argala.Select(p => p.Planet))@(lane.Virodhargala.Count > 0 && lane.ArgalaOffset != 3 ? " vs " + string.Join(", ", lane.Virodhargala.Select(p => p.Planet)) : "")</span>
+                                        <span class="av10-lane-v">@LaneWord(lane)</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                        @if (reading.Causes.Count > 0)
+                        {
+                            <details class="av10-more">
+                                <summary>Planets and houses behind it (@reading.Causes.Count)</summary>
+                                <ul class="av10-list">@foreach (var cause in reading.Causes) { <li>@cause</li> }</ul>
+                            </details>
+                        }
+                    }
+                    else if (_kind == Kind.Planet && SelectedRow is { } row && Triads.GetValueOrDefault(row.Planet) is { } triad)
+                    {
+                        <div class="av10-insp-head">
+                            <span class="av10-badge">@row.Planet</span>
+                            <h2 class="av10-insp-title">@row.Planet in house @row.HouseNumberFromLagna, @Disp(row.Sign)@(string.IsNullOrEmpty(row.DignityStatus) ? "" : " (" + row.DignityStatus + ")")</h2>
+                        </div>
+                        <h3 class="av10-sub">Its lords <span class="av10-meta">(only the sign lord changes by varga; star and pada lords come from the true longitude)</span></h3>
+                        <LordChain Triad="triad" Natures="Natures" OnLord="SelectPlanet" />
+                        @if (Natures.GetValueOrDefault(row.Planet) is { HousesOwned.Count: > 0 } own)
+                        {
+                            <p class="av10-meta">Owns house @string.Join(" and ", own.HousesOwned.Select(h => h.ToString())):
+                                @foreach (var h in own.HousesOwned) { <button type="button" class="av10-link" @onclick="() => SelectHouse(h)">H@(h)</button> }
+                            </p>
+                        }
+                        <h3 class="av10-sub">States, and how each was reached</h3>
+                        @foreach (var group in ReasonGroups(row.Planet))
+                        {
+                            <div class="av10-state"><b>@group.Key</b>
+                                <ul class="av10-list">@foreach (var r in group) { <li><b>@r.State</b> &mdash; @r.Reason</li> }</ul></div>
+                        }
+                        @foreach (var line in DamageLines(row)) { <p class="av10-caveat">&#9888; @line</p> }
+                        @if (ArgalaRole(row.Planet).Count > 0)
+                        {
+                            <h3 class="av10-sub">Its part in argala</h3>
+                            <ul class="av10-list">@foreach (var line in ArgalaRole(row.Planet)) { <li>@line</li> }</ul>
+                        }
+                    }
+                    else
+                    {
+                        <p class="av10-text">Pick a house, a planet or a lord. The chart, this summary and both rails follow one selection. Houses show who wins the argala contest; planets show their lords, states and part in argala.</p>
+                        <p class="av10-meta">Ring on a planet: heavy = awake (Jg), dashed = dreaming (Sw), dotted = asleep (Su). Coloured edge: benefic or malefic for this lagna.</p>
+                    }
+                </section>
+
+                <section class="av10-section" aria-label="Houses">
+                    <h2 class="av10-h">Houses <span class="av10-meta">argala against virodhargala, one tile per house</span></h2>
+                    <div class="av10-bhavas">
+                        @foreach (var f in _forces)
+                        {
+                            <BhavaTile Force="f" Selected="@(_kind == Kind.House && _house == f.House)" OnPick="SelectHouse" />
+                        }
+                    </div>
+                </section>
+
+                <section class="av10-section" aria-label="Planets">
+                    <h2 class="av10-h">Planets <span class="av10-meta">place, nature, alertness</span></h2>
+                    <div class="av10-planets">
+                        @foreach (var p in PlanetRows(chart))
+                        {
+                            <PlanetCard Row="p" State="@(States.GetValueOrDefault(p.Planet) ?? PlanetStateInfo.None)" Nature="Natures.GetValueOrDefault(p.Planet)"
+                                        Selected="@(_kind == Kind.Planet && _planet == p.Planet)" OnPick="SelectPlanet" />
+                        }
+                    </div>
+                </section>
+
+                <p class="av10-foot"><a href="/astro-facts/@Id">Full tables and the classic tabbed view</a></p>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private enum Kind { None, House, Planet }
+
+    private WorkspaceData? _data;
+    private int _loadedId = -1;
+    private string _chartType = "D1";
+    private Kind _kind;
+    private int _house;
+    private string? _planet;
+    private int? _lane;
+
+    private IReadOnlyList<ArgalaFactRow> _storedFacts = Array.Empty<ArgalaFactRow>();
+    private IReadOnlyDictionary<int, string> _houseMatters = new Dictionary<int, string>();
+    private IReadOnlyDictionary<string, string> _planetMatters = new Dictionary<string, string>();
+    private IReadOnlyDictionary<string, string?> _domains = new Dictionary<string, string?>();
+    private PlanetaryStateRuleSet? _rules;
+    private double? _ghatis;
+
+    // Per shown chart, rebuilt whenever the chart changes.
+    private IReadOnlyList<HouseForce> _forces = Array.Empty<HouseForce>();
+    private IReadOnlyDictionary<string, PlanetStateInfo> States { get; set; } = new Dictionary<string, PlanetStateInfo>();
+    private IReadOnlyDictionary<string, IReadOnlyList<StateReason>> Reasons { get; set; } = new Dictionary<string, IReadOnlyList<StateReason>>();
+    private IReadOnlyDictionary<string, LordNature> Natures { get; set; } = new Dictionary<string, LordNature>();
+    private IReadOnlyDictionary<string, PlanetLordTriad> Triads { get; set; } = new Dictionary<string, PlanetLordTriad>();
+
+    private static readonly string[] PlanetOrder = { "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu" };
+    private static readonly string[] SystemOrder = { "Baaladi", "Jagradadi", "Sayanadi", "Deeptadi", "Lajjitadi" };
+
+    private LoadedChart? Chart => _data?.Charts.GetValueOrDefault(_chartType);
+    private HouseForce? SelectedForce => _kind == Kind.House && _house is >= 1 and <= 12 && _forces.Count == 12 ? _forces[_house - 1] : null;
+    private ChartKeyDetail? SelectedRow => _kind == Kind.Planet ? Chart?.Grahas.FirstOrDefault(k => k.Planet == _planet) : null;
+
+    private IEnumerable<LoadedChart> ChartOptions => _data?.Charts.Values
+        .OrderBy(c => DivisionalNumber(c.ChartType)).ThenBy(c => c.ChartType) ?? Enumerable.Empty<LoadedChart>();
+
+    private static int DivisionalNumber(string chartType)
+    {
+        var digits = new string(chartType.Skip(1).TakeWhile(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var n) ? n : int.MaxValue;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedId == Id) return;
+        _loadedId = Id;
+        _kind = Kind.None; _lane = null;
+        _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo, ChartHouseLordsRepo,
+            ChartHouseLordInterpretationRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartMultiGrahaConjunctionRepo, ChartTypeRepo.GetAll());
+        if (_data is null || !_data.Charts.ContainsKey("D1")) { _data = null; return; }
+        var person = _data.Person;
+        Active.Set(Id, person.Name,
+            $"{person.DateOfBirth:dd MMM yyyy} · {person.TimeOfBirth:HH':'mm} · {person.PlaceCity}, {person.PlaceCountry}");
+        Active.SetHeaderExtra(null);   // no master step rail on this page
+        _chartType = "D1";
+
+        var naisargika = NaisargikaRepo.LoadActive();
+        _houseMatters = Ikiastrro.Data.Statistics.LifeMatterPromiseAdapter.HouseMatters(naisargika.Houses);
+        _planetMatters = ArgalaForceModel.PlanetMatters(naisargika.Details);
+        _domains = _data.ChartTypes.ToDictionary(c => c.Code, c => c.ChartShortDescription);
+        _storedFacts = ArgalaFactRepo.GetByBirthDetailId(Id);
+        _rules = PlanetaryStateRuleRepo.GetActiveRuleSet();
+        _ghatis = (double?)PanchangaRepo.GetByBirthDetailId(Id)?.JanmaGhatis;
+        Recompute();
+    }
+
+    /// <summary>Everything the page shows for the chart now on screen. Selections survive a chart change: the same house or
+    /// planet is rebuilt from the new varga's own positions.</summary>
+    private void Recompute()
+    {
+        if (Chart is not { } chart) return;
+        var facts = ArgalaFacts.ForChart(_storedFacts, chart.ChartType, chart.AscendantSign, chart.Grahas);
+        Triads = chart.Grahas.Where(k => k.Planet != "Ascendant").ToDictionary(k => k.Planet, PlanetLordTriad.For);
+        Natures = LordNature.For(chart);
+        if (_rules is not null)
+        {
+            var live = AvasthaLive.For(chart, _rules, chart.ChartType == "D1" ? _ghatis : null);
+            States = live.ToDictionary(f => f.Planet, f => PlanetStateInfo.From(f.Reasons));
+            Reasons = AvasthaLive.ReasonsByPlanet(live);
+        }
+        _forces = ArgalaForceModel.BuildAll(facts, chart.Grahas, chart.AscendantSign,
+            new ArgalaMeaningContext(chart.ChartType, _domains.GetValueOrDefault(chart.ChartType), _houseMatters, _planetMatters, States));
+    }
+
+    private void OnChartChanged(ChangeEventArgs e)
+    {
+        _chartType = e.Value?.ToString() ?? "D1";
+        Recompute();
+    }
+
+    private void SelectHouse(int house)
+    {
+        if (_kind == Kind.House && _house == house) { Clear(); return; }
+        _kind = Kind.House; _house = house; _planet = null; _lane = null;
+    }
+
+    private void SelectPlanet(string planet)
+    {
+        if (_kind == Kind.Planet && _planet == planet) { Clear(); return; }
+        _kind = Kind.Planet; _planet = planet; _lane = null;
+    }
+
+    private void PickLane(int offset) => _lane = _lane == offset ? null : offset;
+
+    private void Clear() { _kind = Kind.None; _planet = null; _lane = null; }
+
+    private ArgalaOverlay? Overlay(LoadedChart chart) =>
+        SelectedForce is { } f ? ArgalaForceModel.Overlay(chart.ChartType, f, _lane) : null;
+
+    private string? HighlightSign => SelectedRow?.Sign;
+    private string? HighlightLabel => SelectedRow?.Planet;
+
+    private string Crumb => _kind switch
+    {
+        Kind.House => $"House {_house}" + (_lane is { } l ? $" · {(l == 3 ? "3rd" : Ordinal(l))} argala" : ""),
+        Kind.Planet => _planet ?? "",
+        _ => "Nothing picked"
+    };
+
+    private string Domain(string chartType) => _domains.GetValueOrDefault(chartType) ?? (chartType == "D1" ? "Self / Overall Life" : "");
+
+    private string? HouseLordOf(int house) => Chart?.HouseLords.FirstOrDefault(h => h.HouseNumber == house)?.LordPlanet;
+
+    private IEnumerable<ChartKeyDetail> PlanetRows(LoadedChart chart) =>
+        PlanetOrder.Select(n => chart.Grahas.FirstOrDefault(k => k.Planet == n)).Where(k => k is not null)!;
+
+    private IEnumerable<IGrouping<string, StateReason>> ReasonGroups(string planet) =>
+        (Reasons.GetValueOrDefault(planet) ?? Array.Empty<StateReason>())
+            .OrderBy(r => Array.IndexOf(SystemOrder, r.System)).GroupBy(r => r.System);
+
+    private IEnumerable<string> DamageLines(ChartKeyDetail row) =>
+        AvasthaPvrNotes.HouseResults(
+            (States.GetValueOrDefault(row.Planet)?.Damaging ?? []).Select(d => d.State), row.HouseNumberFromLagna);
+
+    /// <summary>Where this planet takes part in argala across the 12 houses: causing it, or obstructing it.</summary>
+    private List<string> ArgalaRole(string planet)
+    {
+        var lines = new List<string>();
+        foreach (var f in _forces)
+            foreach (var lane in f.Lanes)
+            {
+                var mine = lane.Argala.FirstOrDefault(p => p.Planet.ToString() == planet);
+                if (mine is not null)
+                    lines.Add($"House {f.House}: causes {(mine.Nature == Direction.Supportive ? "subhaargala" : mine.Nature == Direction.Obstructive ? "paapaargala" : "argala")} from H{lane.ArgalaHouse} ({LaneWord(lane).ToLowerInvariant()}).");
+                if (lane.ArgalaOffset != 3 && lane.Virodhargala.Any(p => p.Planet.ToString() == planet))
+                    lines.Add($"House {f.House}: obstructs the argala from H{lane.ArgalaHouse}.");
+            }
+        return lines;
+    }
+
+    private static string LaneWord(ForceLane lane) => lane.Verdict switch
+    {
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Holds => "HOLDS",
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Contested => "CONTESTED",
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Obstructed => "OBSTRUCTED",
+        _ => "—"
+    };
+
+    private static string LaneCss(ForceLane lane) => lane.Verdict switch
+    {
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Holds => "av10-lane-holds",
+        Ikiastrro.Data.Statistics.ArgalaVerdict.Contested => "av10-lane-contested",
+        _ => "av10-lane-obstructed"
+    };
+
+    private static string OutcomeWord(ArgalaOutcome o) => o switch
+    {
+        ArgalaOutcome.ArgalaWins => "ARGALA WINS", ArgalaOutcome.VirodhargalaWins => "VIRODHARGALA WINS",
+        ArgalaOutcome.Tie => "TIE", ArgalaOutcome.Idle => "IDLE", _ => "QUIET"
+    };
+
+    private static string OutcomeCss(ArgalaOutcome o) => o switch
+    {
+        ArgalaOutcome.ArgalaWins => "av10-badge-arg", ArgalaOutcome.VirodhargalaWins => "av10-badge-vir", _ => ""
+    };
+
+    private static string Ordinal(int offset) => offset switch
+    {
+        2 => "2nd", 3 => "3rd", 4 => "4th", 5 => "5th", 9 => "9th", 10 => "10th", 11 => "11th", 12 => "12th", _ => offset.ToString()
+    };
+
+    private static string Disp(string sign) => sign == "Capricornus" ? "Capricorn" : sign;
+    private static string Disp(ZodiacName sign) => Disp(sign.ToString());
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<GridPlanetGlyph>> PlanetsBySign(LoadedChart lc) =>
+        lc.Grahas.Where(k => k.Planet != "Ascendant")
+            .GroupBy(k => k.Sign)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<GridPlanetGlyph>)g.Select(k => new GridPlanetGlyph(
+                k.Planet, ChartViewModel.DignityToken(k.DignityStatus), k.IsRetrograde ?? false, k.IsCombust ?? false)).ToList());
+}

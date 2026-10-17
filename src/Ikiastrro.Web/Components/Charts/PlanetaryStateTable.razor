@@ -17,6 +17,28 @@
     them with dignity, strength, houses and aspects. Combined inference keeps capacity, baseline
     condition and relational context separate so dignity is not counted repeatedly.
 </div>
+<details class="pst-defs">
+    <summary>What each avastha set looks at, and how this app reads it</summary>
+    <table class="pst-defs-table">
+        <thead><tr><th>Set</th><th>PVR</th><th>Uses</th><th>How this app reads it</th><th>Computed for</th></tr></thead>
+        <tbody>
+        @foreach (var set in AvasthaPvrNotes.Systems)
+        {
+            <tr>
+                <td><strong>@set.System</strong><span class="pst-meaning">@set.Title</span></td>
+                <td>§@set.Section</td>
+                <td><ul>@foreach (var use in set.Uses) { <li>@use</li> }</ul></td>
+                <td>@set.AppReading</td>
+                <td>@set.Scope</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="pst-defs-not"><strong>Not part of any avastha</strong> (shown beside them, so nothing is counted twice):</p>
+    <ul class="pst-defs-list">
+        @foreach (var item in AvasthaPvrNotes.NotCoveredByAvasthas) { <li>@item</li> }
+    </ul>
+</details>
 <div class="pst-scroll">
     <table class="pst">
         <thead><tr>
@@ -30,17 +52,34 @@
                 <td>
                     <strong>@StateLabel(r.AgeStateId)@(r.AgeEffectFraction is { } f ? $" · {f:0.#%}" : null)</strong>
                     @if (StateMeaning(r.AgeStateId) is { } ageMeaning) { <span class="pst-meaning">@ageMeaning</span> }
+                    @if (Why(r.Planet, "Baaladi", r.AgeStateId) is { } ageWhy) { <span class="pst-why">@ageWhy</span> }
                 </td>
                 <td>
                     <strong>@StateLabel(r.WakefulnessStateId)</strong>
                     @if (StateMeaning(r.WakefulnessStateId) is { } wakeMeaning) { <span class="pst-meaning">@wakeMeaning</span> }
+                    @if (Why(r.Planet, "Jagradadi", r.WakefulnessStateId) is { } wakeWhy) { <span class="pst-why">@wakeWhy</span> }
                 </td>
                 <td>
                     <strong>@StateLabel(r.PostureStateId)@(StateIndex(r.PostureStateId) is { } idx ? $" · {idx}/12" : null)</strong>
                     @if (StateMeaning(r.PostureStateId) is { } postureMeaning) { <span class="pst-meaning">@postureMeaning</span> }
+                    @if (Why(r.Planet, "Sayanadi", r.PostureStateId) is { } postureWhy) { <span class="pst-why">@postureWhy</span> }
                 </td>
-                <td><strong>@StateNamesJoined(r.DeeptadiStateIds)</strong></td>
-                <td><strong>@StateNamesJoined(r.LajjitadiStateIds)</strong></td>
+                <td>
+                    @if (r.DeeptadiStateIds.Count == 0) { <strong>—</strong> }
+                    @foreach (var id in r.DeeptadiStateIds)
+                    {
+                        <div class="pst-state"><strong>@StateLabel(id)</strong>
+                            @if (Why(r.Planet, "Deeptadi", id) is { } why) { <span class="pst-why">@why</span> }</div>
+                    }
+                </td>
+                <td>
+                    @if (r.LajjitadiStateIds.Count == 0) { <strong>—</strong> }
+                    @foreach (var id in r.LajjitadiStateIds)
+                    {
+                        <div class="pst-state"><strong>@StateLabel(id)</strong>
+                            @if (Why(r.Planet, "Lajjitadi", id) is { } why) { <span class="pst-why">@why</span> }</div>
+                    }
+                </td>
                 <td class="pst-inference">
                     @{ var synthesis = CombinedInference(r); }
                     <span class="pst-verdict pst-verdict-@synthesis.Tone">@synthesis.Headline</span>
@@ -76,6 +115,18 @@
         new Dictionary<(byte PlanetaryStateId, byte PlanetId), PostureStateInterpretationRow>();
     [Parameter, EditorRequired] public IReadOnlyList<ChartKeyDetail> KeyDetails { get; set; } = Array.Empty<ChartKeyDetail>();
     [Parameter, EditorRequired] public IReadOnlyList<ShadbalaSummaryRow> Strengths { get; set; } = Array.Empty<ShadbalaSummaryRow>();
+
+    /// <summary>How each state was reached, per planet — from <c>PlanetaryStateComputer</c> run live on this chart
+    /// (the stored facts carry only ids). A state with no matching reason shows none, so the two can never disagree.</summary>
+    [Parameter] public IReadOnlyDictionary<string, IReadOnlyList<StateReason>> Reasons { get; set; } =
+        new Dictionary<string, IReadOnlyList<StateReason>>();
+
+    private string? Why(string planet, string system, byte? stateId)
+    {
+        if (stateId is null || !Reasons.TryGetValue(planet, out var list)) return null;
+        var name = StateLabel(stateId);
+        return list.FirstOrDefault(x => x.System == system && x.State == name)?.Reason;
+    }
 
     private static readonly HashSet<string> Supportive = new(StringComparer.OrdinalIgnoreCase)
         { "Deepta", "Swastha", "Mudita", "Saanta", "Garvita" };

@@ -69,6 +69,7 @@ Every table below reads a persisted view/TVF; the component ⇄ view binding is 
 | Helper | Role | File |
 |---|---|---|
 | `ChartViewModel.PlanetGlyph(string)` | canonical glyph for a planet name — every glyphs-only module | `src/Ikiastrro.Core/Presentation/ChartViewModel.cs` |
+| `BhavaTile`, `PlanetCard`, `LordChain` (+ `LordNature`) | AF-v10 building blocks: a house with its argala force meter, a planet with alertness ring and nature edge, the planet-to-lords chain | `src/Ikiastrro.Web/Components/AstroV10/` · page `Pages/AFv10.razor` · spec [`../af-v10-design.md`](../af-v10-design.md) · tests `AstroV10ComponentTests.cs` |
 | `GridPlanetGlyph` (record + component) | one dignity-dot glyph inside a `SindUniDtlGrid` cell | `src/Ikiastrro.Web/Components/Charts/GridPlanetGlyph.cs` |
 | `AstroMath.CountFromSignToSign` | whole-sign house count — `SindUniDtlGrid`, `D1TemplateGrid` | `src/Ikiastrro.Core/Engines/Astronomy/` |
 

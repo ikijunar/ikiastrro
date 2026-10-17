@@ -59,6 +59,12 @@ The D1 statistics table contains 72 rows: 6 people × 12 houses.
 
 Every house number 1–12 has six rows and no missing values in the four v10 measures.
 
+Avastha inputs (note added 2026-10-17, outside the audit's measured scope): `tbl_Fact_PlanetaryState` holds state ids for
+Jagradadi, Deeptadi and Lajjitadi on every chart type, and Baaladi and Sayanaadi on D1 only. It does not store the reason for
+a state; reasons are recomputed from key details, conjunctions and aspects. Per-person coverage of these facts was not
+audited here and should be added to the next readiness audit before any avastha feature is proposed for Phase 1.
+See `docs/research/domain/argala-avastha-linkage.md`.
+
 ## Birth-input completeness
 
 Across the six saved people:

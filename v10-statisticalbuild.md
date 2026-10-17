@@ -149,6 +149,39 @@ The feature views should include:
 
 Acceptance criterion: given the same `ChartResultId` and `RuleSetId`, C# and the analytics view always return the same feature values.
 
+### Avasthas and argala (added 2026-10-17)
+
+Full note: [`docs/research/domain/argala-avastha-linkage.md`](docs/research/domain/argala-avastha-linkage.md).
+
+"Dignity and planetary condition" above is the avastha input. What each set actually uses (PVR §15.4):
+
+| Set | Inputs | Overlaps with |
+|---|---|---|
+| Jagradadi (alertness) | Dignity only | Dignity score: a pure re-coding |
+| Deeptadi (9 states) | Dignity, sign-lord friendship, conjunction with malefics, sign lord a malefic, closeness to the Sun | Dignity, conjunction counts, combustion |
+| Lajjitadi (6 states) | House position (5th), conjunctions, aspects received, friendship with joining/aspecting planets, watery sign, dignity | Dignity, conjunctions, aspects |
+| Baaladi (age) | Degree in sign, odd/even sign | None (D1 only) |
+| Sayanaadi (12 states) | Nakshatra, planet index, navamsa, Moon's nakshatra, birth ghati, lagna | None (D1 only) |
+
+Rules for the build:
+
+1. **Counted once.** Argala Context keeps its current definition (counts of holds, contested and obstructed pairs). Avasthas
+   must never be folded into Context, Capacity or Consistency; they enter as their own planetary-condition features. This
+   is the same reason Independent Bhava Bala excludes the lord's Ṣaḍbala.
+2. **Collinearity in modelling.** Jagradadi is dignity recoded, and Deeptadi and Lajjitadi contain dignity, conjunctions
+   and aspects. Phase 4 descriptives may show them side by side; a Phase 6 model must not enter dignity and Jagradadi
+   (or Deeptadi's tier) as independent predictors, and must report the overlap.
+3. **Chart scope.** Jagradadi, Deeptadi and Lajjitadi exist for every varga; Baaladi and Sayanaadi are D1-only and are
+   excluded from any cross-varga feature.
+4. **Reasons are not persisted.** `PlanetaryStateFact` carries state ids only; per-state reasons (`StateReason`) are
+   recomputed by `PlanetaryStateComputer` from the chart's key details, conjunctions and aspects. A feature snapshot
+   (`tbl_Fact_AnalyticsFeatureSnapshots`) that needs a reason must store it with the snapshot.
+5. **Argala x avastha interaction** is a Phase 4 descriptive question first (how often does a one-planet argala win rest
+   on a sleeping or damaged planet?), not a model input. The proposed features are in the feature dictionary.
+6. **Sourcing labels.** Delivery levels and the damaged-house results are PVR §15.4; lane delivery (strongest planet),
+   the deciding-planet test and the caveat wording are `PROJECT_SYNTHESIS` and must be labelled so in any Key Inference
+   surface that uses them.
+
 ## Phase 2 — Add a statistical dataset layer
 
 Keep research datasets separate from operational chart tables. Suggested concepts:

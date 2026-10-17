@@ -1,0 +1,59 @@
+@using Direction = Ikiastrro.Core.LifeMatters.Promise.Direction
+@using Ikiastrro.Core.Engines.Lords
+@using Ikiastrro.Core.Presentation
+@* LordChain — the three lords behind a planet in one line: planet → sign lord → star lord → pada lord. Each lord is a chip that
+   carries its own nature in three separate parts (functional colour, natural benefic/malefic in text, houses owned) and is a
+   button: picking a lord hands it to the page, which selects that planet (brushing and linking, docs/ui/af-v10-design.md).
+   The sign lord is the only link that changes by varga; the star and pada lords come from the true longitude.
+   Colour is never the only cue: every chip says "ben" or "mal" and lists the houses it owns. "lc" = LordChain. *@
+<div class="lc" role="group" aria-label="Lords of @Triad.Planet">
+    <span class="lc-self" title="@Triad.Planet">@ChartViewModel.PlanetGlyph(Triad.Planet)</span>
+    @foreach (var (role, planet) in Links)
+    {
+        <span class="lc-arrow" aria-hidden="true">&rarr;</span>
+        var nature = Natures.GetValueOrDefault(planet);
+        <button type="button" class="lc-node @NatureCss(nature)" title="@Title(role, planet, nature)" @onclick="() => OnLord.InvokeAsync(planet)">
+            <span class="lc-role">@role</span>
+            <span class="lc-name">@(planet == Triad.Planet ? "itself" : planet)</span>
+            <span class="lc-meta">@Meta(nature)</span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PlanetLordTriad Triad { get; set; } = null!;
+    /// <summary>Nature of every graha in the chart, keyed by planet name (<see cref="LordNature.For"/>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, LordNature> Natures { get; set; } = new Dictionary<string, LordNature>();
+    [Parameter] public EventCallback<string> OnLord { get; set; }
+
+    private IEnumerable<(string Role, string Planet)> Links =>
+        new[] { ("Sign lord", Triad.SignLord), ("Star lord", Triad.StarLord), ("Pada lord", Triad.PadaLord) }
+            .Where(l => !string.IsNullOrEmpty(l.Item2)).Select(l => (l.Item1, l.Item2!));
+
+    private static string NatureCss(LordNature? n) => n?.Functional switch
+    {
+        Direction.Supportive => "lc-good", Direction.Obstructive => "lc-bad", _ => "lc-neutral"
+    };
+
+    private static string Meta(LordNature? n)
+    {
+        if (n is null) return "";
+        var owns = n.HousesOwned.Count > 0 ? "L" + string.Join(",", n.HousesOwned) : "";
+        return $"{(n.NaturalMalefic ? "mal" : "ben")} {owns}".Trim();
+    }
+
+    private static string Title(string role, string planet, LordNature? n)
+    {
+        if (n is null) return $"{role}: {planet}";
+        var functional = n.Functional switch
+        {
+            Direction.Supportive => "benefic for this lagna",
+            Direction.Obstructive => "malefic for this lagna",
+            _ => "neutral for this lagna"
+        };
+        var owns = n.HousesOwned.Count > 0 ? $"; lord of house {string.Join(" and ", n.HousesOwned)}" : "";
+        var stands = n.HouseStood is { } h ? $"; stands in house {h}" : "";
+        return $"{role}: {planet}, {(n.NaturalMalefic ? "natural malefic" : "natural benefic")}, {functional}{owns}{stands}"
+               + (string.IsNullOrEmpty(n.Dignity) ? "" : $"; dignity {n.Dignity}");
+    }
+}

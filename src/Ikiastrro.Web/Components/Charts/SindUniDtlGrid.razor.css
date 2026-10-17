@@ -102,3 +102,13 @@
 .arg-mk-block path { fill: none; stroke: currentColor; stroke-width: 3; }
 .arg-x circle { fill: var(--paper-raised); stroke: var(--status-weak); stroke-width: 2.5; }
 .arg-x path { stroke: var(--status-weak); stroke-width: 3; fill: none; }
+
+/* Avasthas on the overlay (2026-10-17): arrow thickness = how much the strongest argala planet can deliver
+   (PVR 15.4.2: awake full, dreaming medium, asleep negligible); a tag per planet shows its alertness (Jg/Sw/Su),
+   a warning mark a damaging state (Lajjita/Kshudhita/Kshobhita), a ring the planet the result rests on. */
+.arg-ln.arg-d-full { stroke-width: 6; }
+.arg-ln.arg-d-medium { stroke-width: 3.5; }
+.arg-ln.arg-d-negligible { stroke-width: 1.5; }
+.special-label.arg-tag { font-weight: 700; color: var(--brand-midnight); border-color: var(--brand-line); }
+.special-label.arg-tag-warn { border-color: var(--status-weak); color: var(--status-weak); }
+.special-label.arg-tag-deciding { box-shadow: 0 0 0 2px var(--brand-midnight); }

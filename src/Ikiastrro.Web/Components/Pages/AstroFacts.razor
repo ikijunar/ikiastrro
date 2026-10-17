@@ -275,7 +275,7 @@ else
                     @Head(NatalSection.States)
                     <PlanetaryStateTable Rows="_planetaryStates" StateNames="_stateNames"
                                            PostureInterpretations="_postureInterpretations"
-                                           KeyDetails="D1KeyDetails" Strengths="_shadbala" />
+                                           KeyDetails="D1KeyDetails" Strengths="_shadbala" Reasons="_avasthaReasons" />
 
                     @Head(NatalSection.Sayanadi)
                     <SayanadiWorkingTable KeyDetails="D1KeyDetails" JanmaGhatis="_panchanga?.JanmaGhatis" StateNames="_stateNames" />
@@ -298,7 +298,7 @@ else
                     <HouseVerdictTable Rows="ArgalaFacts.HouseVerdicts(natalChart.AscendantSign, natalChart.Grahas, ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas))" />
 
                     @Head(NatalSection.Argala)
-                    <ArgalaTable Facts="ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas)" Grahas="natalChart.Grahas" AscendantSign="@natalChart.AscendantSign" SignificanceNotes="_argalaSignificanceNotes" HouseMatters="_argalaHouseMatters" ChartType="@natalChart.ChartType" Domain="@_chartDomains.GetValueOrDefault(natalChart.ChartType)" PlanetMatters="_argalaPlanetMatters" OnOverlayChanged="o => _argalaOverlay = o" />
+                    <ArgalaTable Facts="ArgalaFacts.ForChart(_argalaFacts, natalChart.ChartType, natalChart.AscendantSign, natalChart.Grahas)" Grahas="natalChart.Grahas" AscendantSign="@natalChart.AscendantSign" SignificanceNotes="_argalaSignificanceNotes" HouseMatters="_argalaHouseMatters" ChartType="@natalChart.ChartType" Domain="@_chartDomains.GetValueOrDefault(natalChart.ChartType)" PlanetMatters="_argalaPlanetMatters" PlanetStates="AvasthaStatesFor(natalChart)" OnOverlayChanged="o => _argalaOverlay = o" />
 
                     @Head(NatalSection.StrongerRasi)
                     <StrongerRasiTable Chart="natalChart" />
@@ -989,6 +989,26 @@ else
     /// <summary>The house the Argala table picked, drawn on the page's chart while About Houses is open and the
     /// chart picker still shows the chart the pick was made in.</summary>
     private ArgalaOverlay? _argalaOverlay;
+    private Ikiastrro.Core.Engines.PlanetaryStates.PlanetaryStateRuleSet? _avasthaRules;
+    private readonly Dictionary<string, IReadOnlyDictionary<string, PlanetStateInfo>> _avasthaByChart = new();
+
+    /// <summary>Each planet's alertness and damaging avasthas in the chart being shown, worked out live per chart type
+    /// (Baaladi and Sayanaadi are D1-only and are not used here). Feeds the Argala table's reading and chart overlay.</summary>
+    private IReadOnlyDictionary<string, PlanetStateInfo> AvasthaStatesFor(LoadedChart chart)
+    {
+        if (_avasthaRules is null) return new Dictionary<string, PlanetStateInfo>();
+        if (!_avasthaByChart.TryGetValue(chart.ChartType, out var states))
+        {
+            var ghatis = chart.ChartType == "D1" ? (double?)_panchanga?.JanmaGhatis : null;
+            states = AvasthaLive.For(chart, _avasthaRules, ghatis)
+                .ToDictionary(f => f.Planet, f => PlanetStateInfo.From(f.Reasons));
+            _avasthaByChart[chart.ChartType] = states;
+        }
+        return states;
+    }
+    /// <summary>D1 avasthas worked out live with their reasons (the stored rows carry only ids).</summary>
+    private IReadOnlyDictionary<string, IReadOnlyList<Ikiastrro.Core.Engines.PlanetaryStates.StateReason>> _avasthaReasons =
+        new Dictionary<string, IReadOnlyList<Ikiastrro.Core.Engines.PlanetaryStates.StateReason>>();
     private ArgalaOverlay? ArgalaOverlayFor(string chartType) =>
         _argalaOverlay is { } o && o.ChartType == chartType && _masterTab == 0 && _activeTab == 2 ? o : null;
     private IReadOnlyList<Ikiastrro.Data.ArgalaFactRow> _argalaFacts = Array.Empty<Ikiastrro.Data.ArgalaFactRow>();
@@ -1192,6 +1212,11 @@ else
         var avasthaRuleSetId = _planetaryStates.FirstOrDefault()?.RuleSetId ?? (byte)1;
         _postureInterpretations = PostureStateInterpretationRepo.GetByRuleSet(avasthaRuleSetId);
         _panchanga = PanchangaRepo.GetByBirthDetailId(Id);
+        _avasthaRules = PlanetaryStateRuleRepo.GetRuleSet(avasthaRuleSetId);
+        _avasthaByChart.Clear();
+        _avasthaReasons = _data!.Charts.TryGetValue("D1", out var d1Chart)
+            ? AvasthaLive.ReasonsByPlanet(AvasthaLive.For(d1Chart, _avasthaRules, (double?)_panchanga?.JanmaGhatis))
+            : _avasthaReasons;
         _houseMatters = LifeMatterHouseIndex.ByHouse(LifeMatterReferenceRepo.GetAllSteps(1), LifeMatterFocusRepo.GetFoci(1));
 
         var offset = TimeSpan.TryParse(p.UtcOffset.TrimStart('+'), out var parsedOffset)
