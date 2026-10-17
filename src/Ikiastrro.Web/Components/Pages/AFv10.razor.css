@@ -1,0 +1,55 @@
+/* Astro Facts v10 — one connected screen. Tokens only (wwwroot/css/tokens.css). Chart pinned left, one right-hand column whose
+   first block (the summary of the selection) sits at the top, so a pick is read without scrolling. */
+.av10 { display: flex; flex-direction: column; gap: 12px; padding-block: 8px; color: var(--brand-midnight); font: 500 var(--font-size-support) / 1.4 'Manrope', 'Segoe UI', sans-serif; }
+
+.av10-ribbon { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: var(--brand-surface); border: 1px solid var(--brand-line); border-radius: 12px; }
+.av10-chip { padding: 2px 10px; border: 1px solid var(--brand-line); border-radius: 999px; }
+.av10-chip b { color: var(--brand-muted); font-weight: 600; margin-right: 4px; }
+.av10-chip-domain { color: var(--brand-muted); }
+.av10-pick { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-weight: 600; }
+.av10-pick select { font: inherit; padding: 3px 8px; color: var(--card-fg); background: var(--card-bg); border: 1px solid var(--brand-line); border-radius: 8px; }
+.av10-crumb { font-weight: 700; }
+.av10-clear { font: inherit; font-size: var(--font-size-meta); padding: 1px 10px; border: 1px solid var(--brand-line); border-radius: 999px; background: var(--card-bg); color: var(--card-fg); cursor: pointer; }
+
+.av10-main { display: grid; grid-template-columns: minmax(300px, 440px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.av10-chartcol { position: sticky; top: 72px; }
+@media (max-width: 900px) { .av10-main { grid-template-columns: minmax(0, 1fr); } .av10-chartcol { position: static; } }
+.av10-detail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.av10-inspector { padding: 10px 14px; background: var(--card-bg); border: 1px solid var(--card-line); border-left: 6px solid var(--brand-midnight); border-radius: var(--card-radius); }
+.av10-insp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.av10-insp-title { margin: 0; font-size: var(--font-size-control); font-weight: 700; }
+.av10-badge { padding: 2px 10px; border-radius: 999px; font-size: var(--font-size-meta); font-weight: 800; background: var(--brand-sunrise); white-space: nowrap; }
+.av10-badge-arg { background: var(--status-strong-bg); color: var(--status-strong); }
+.av10-badge-vir { background: var(--status-weak-bg); color: var(--status-weak); }
+.av10-meter { height: 10px; margin: 8px 0; border-radius: 999px; overflow: hidden; border: 1px solid var(--brand-line); background-image: repeating-linear-gradient(135deg, var(--status-weak-bg) 0 5px, transparent 5px 8px); }
+.av10-meter-arg { display: block; height: 100%; background: var(--status-strong); }
+.av10-text { margin: 6px 0 0; }
+.av10-meta { margin: 4px 0 0; color: var(--brand-muted); font-size: var(--font-size-meta); font-weight: 500; }
+.av10-caveat { margin: 6px 0 0; color: var(--status-weak); font-weight: 600; }
+.av10-sub { margin: 12px 0 4px; font-size: var(--font-size-support); font-weight: 700; }
+.av10-list { margin: 2px 0 0; padding-left: 18px; }
+.av10-list li { margin: 2px 0; }
+.av10-more { margin-top: 8px; }
+.av10-more > summary { cursor: pointer; font-weight: 700; }
+.av10-state { margin-top: 4px; }
+.av10-link { font: inherit; font-weight: 700; padding: 0 8px; margin-left: 4px; border: 1px solid var(--brand-line); border-radius: 999px; background: var(--card-bg); color: var(--card-fg); cursor: pointer; }
+
+.av10-lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px; }
+.av10-lane { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 5px 10px; font: inherit; color: var(--card-fg); text-align: left; background: var(--card-bg); border: 1px solid var(--card-line); border-left-width: 5px; border-radius: 10px; cursor: pointer; }
+.av10-lane-holds { border-left-color: var(--status-strong); }
+.av10-lane-contested { border-left-color: var(--status-moderate); }
+.av10-lane-obstructed { border-left-color: var(--status-weak); }
+.av10-lane-on { background: var(--brand-sunrise); border-color: var(--brand-midnight); }
+.av10-lane-h { font-weight: 700; }
+.av10-lane-p { font-size: var(--font-size-meta); color: var(--brand-muted); }
+.av10-lane-v { font-size: var(--font-size-meta); font-weight: 800; }
+
+.av10-section { display: flex; flex-direction: column; gap: 6px; }
+.av10-h { margin: 0; font-size: var(--font-size-control); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.av10-h .av10-meta { text-transform: none; letter-spacing: 0; margin-left: 8px; }
+.av10-bhavas { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.av10-planets { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+.av10-foot { margin: 0; font-size: var(--font-size-meta); }
+.av10-foot a { color: var(--brand-midnight); }
+.av10-empty { padding: 24px; }

@@ -85,6 +85,8 @@ public static class PlanetaryStateComputer
             // Wakefulness state — every chart type, from dignity.
             var wake = WakefulnessStateCalculator.For(kd.DignityStatus, rules.WakefulnessByDignity);
             fact.WakefulnessStateId = wake?.AvasthaStateId;
+            if (wake is not null)
+                fact.Reasons.Add(new StateReason("Jagradadi", wake.StateName, $"Dignity is {kd.DignityStatus}"));
 
             // Age state — D1 only, from within-sign degree.
             if (isRasiChart && kd.DegreesInSignDecimal is { } degree
@@ -93,6 +95,8 @@ public static class PlanetaryStateComputer
                 var age = AgeStateCalculator.For(sign, degree, rules.AgeBands);
                 fact.AgeStateId = age.AvasthaStateId;
                 fact.AgeEffectFraction = age.EffectFraction;
+                fact.Reasons.Add(new StateReason("Baaladi", age.StateName,
+                    $"{degree:0.0}° in {sign}, {(AgeStateCalculator.IsOddSign(sign) ? "an odd" : "an even")} sign, falls in the {age.StateName} band ({age.EffectFraction:0.###} of its results)"));
             }
 
             // Posture (Sayanaadi) state — D1 only, needs the within-sign degree (for the
@@ -104,7 +108,11 @@ public static class PlanetaryStateComputer
             {
                 var navamsa = PostureStateCalculator.NavamsaIndex(degreeForNavamsa);
                 var index = PostureStateCalculator.ComputeIndex(c, planetIndex, navamsa, m, g, l);
-                fact.PostureStateId = PostureStateCalculator.For(index, rules.PostureStatesBySequence)?.Id;
+                var posture = PostureStateCalculator.For(index, rules.PostureStatesBySequence);
+                fact.PostureStateId = posture?.Id;
+                if (posture is not null)
+                    fact.Reasons.Add(new StateReason("Sayanadi", posture.StateName,
+                        $"((C {c} × P {planetIndex} × A {navamsa}) + M {m} + G {g} + L {l}) mod 12 = {index}"));
             }
 
             // Dīptādi + Lajjitādi — every chart type, from dignity + this chart's own
@@ -127,6 +135,8 @@ public static class PlanetaryStateComputer
 
             fact.DeeptadiStateIds = DeeptadiStateCalculator.For(
                 kd.DignityStatus, relationToSignLord, kd.SignLordPlanet, conjunctWith, distanceFromSun, rules);
+            fact.Reasons.AddRange(DeeptadiStateCalculator.Explain(
+                kd.DignityStatus, relationToSignLord, kd.SignLordPlanet, conjunctWith, distanceFromSun, rules));
 
             if (signByPlanet.TryGetValue(kd.Planet, out var ownSign))
             {
@@ -138,6 +148,9 @@ public static class PlanetaryStateComputer
                 fact.LajjitadiStateIds = LajjitadiStateCalculator.For(
                     kd.Sign, kd.DignityStatus, kd.HouseNumberFromLagna, conjunctWith, aspectedBy,
                     IsNaturalMalefic, RelationshipOf, rules);
+                fact.Reasons.AddRange(LajjitadiStateCalculator.Explain(
+                    kd.Sign, kd.DignityStatus, kd.HouseNumberFromLagna, conjunctWith, aspectedBy,
+                    IsNaturalMalefic, RelationshipOf, rules));
             }
 
             facts.Add(fact);

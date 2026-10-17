@@ -30,31 +30,61 @@ public static class DeeptadiStateCalculator
         string? signLordPlanet,
         IReadOnlyList<string> conjunctPlanets,
         decimal? distanceFromSunDegrees,
+        PlanetaryStateRuleSet rules) =>
+        Evaluate(dignityStatus, relationToSignLord, signLordPlanet, conjunctPlanets, distanceFromSunDegrees, rules)
+            .Select(m => m.Id).ToList();
+
+    /// <summary>The same states as <see cref="For"/>, each with the inputs that produced it.</summary>
+    public static List<StateReason> Explain(
+        string? dignityStatus,
+        string? relationToSignLord,
+        string? signLordPlanet,
+        IReadOnlyList<string> conjunctPlanets,
+        decimal? distanceFromSunDegrees,
+        PlanetaryStateRuleSet rules) =>
+        Evaluate(dignityStatus, relationToSignLord, signLordPlanet, conjunctPlanets, distanceFromSunDegrees, rules)
+            .Select(m => m.Reason).ToList();
+
+    private static List<(byte Id, StateReason Reason)> Evaluate(
+        string? dignityStatus,
+        string? relationToSignLord,
+        string? signLordPlanet,
+        IReadOnlyList<string> conjunctPlanets,
+        decimal? distanceFromSunDegrees,
         PlanetaryStateRuleSet rules)
     {
-        var ids = new List<byte>();
+        const string system = "Deeptadi";
+        var found = new List<(byte Id, StateReason Reason)>();
 
         // Placement tier: exaltation / own sign.
         var isPlacementTier = dignityStatus is "Exalted" or "Own Sign" or "Moolatrikona";
         if (isPlacementTier && rules.DeeptadiByDignity.TryGetValue(dignityStatus!, out var placement))
-            ids.Add(placement.AvasthaStateId);
+            found.Add((placement.AvasthaStateId, new StateReason(system, placement.StateName,
+                $"Dignity is {dignityStatus} (placement tier: exaltation or own sign)")));
 
         // Relationship tier to the sign lord. Nodes have no Naisargika table, so for them (relation
         // null) the engine's own dignity label stands in, as before.
         var relationKey = relationToSignLord ?? (isPlacementTier ? null : dignityStatus);
         if (relationKey is not null && rules.DeeptadiByDignity.TryGetValue(relationKey, out var tier)
-            && !ids.Contains(tier.AvasthaStateId))
-            ids.Add(tier.AvasthaStateId);
+            && found.All(f => f.Id != tier.AvasthaStateId))
+            found.Add((tier.AvasthaStateId, new StateReason(system, tier.StateName,
+                relationToSignLord is not null
+                    ? $"Compound relationship to its sign lord {signLordPlanet} is {relationToSignLord}"
+                    : $"No sign-lord relationship available (node); dignity {dignityStatus} stands in")));
 
-        if (conjunctPlanets.Count(ClassicalMalefics.Contains) >= 2)
-            ids.Add(rules.DeeptadiStatesByName["Vikala"].Id);
+        var malefics = conjunctPlanets.Where(ClassicalMalefics.Contains).ToList();
+        if (malefics.Count >= 2)
+            found.Add((rules.DeeptadiStatesByName["Vikala"].Id, new StateReason(system, "Vikala",
+                $"Joined by {malefics.Count} natural malefics: {string.Join(", ", malefics)}")));
 
         if (signLordPlanet is not null && ClassicalMalefics.Contains(signLordPlanet))
-            ids.Add(rules.DeeptadiStatesByName["Khala"].Id);
+            found.Add((rules.DeeptadiStatesByName["Khala"].Id, new StateReason(system, "Khala",
+                $"Its sign is owned by {signLordPlanet}, a natural malefic")));
 
         if (distanceFromSunDegrees is { } d && d <= KopitaOrbDegrees)
-            ids.Add(rules.DeeptadiStatesByName["Kopita"].Id);
+            found.Add((rules.DeeptadiStatesByName["Kopita"].Id, new StateReason(system, "Kopita",
+                $"{d:0.0}° from the Sun (within the {KopitaOrbDegrees:0}° orb)")));
 
-        return ids;
+        return found;
     }
 }

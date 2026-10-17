@@ -24,3 +24,16 @@
 .pst-condition, .pst-source { display: block; margin-top: 5px; font-size: .78em; }
 .pst-condition { color: var(--brand-midnight); }
 .pst-source { color: var(--brand-muted); letter-spacing: .01em; }
+
+/* "How it got there" (2026-10-17): the inputs behind each state, under the state name. */
+.pst-why { display: block; margin-top: 2px; color: var(--brand-muted); font-size: .8em; font-style: italic; }
+.pst-state { margin-bottom: 6px; }
+.pst-state:last-child { margin-bottom: 0; }
+.pst-defs { margin: 0 0 10px; border: 1px solid var(--brand-line); border-radius: 10px; background: var(--brand-surface); }
+.pst-defs > summary { padding: 8px 12px; cursor: pointer; font-weight: 700; color: var(--brand-midnight); }
+.pst-defs-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-support); }
+.pst-defs-table th, .pst-defs-table td { text-align: left; vertical-align: top; padding: 6px 10px; border-top: 1px solid var(--brand-line); color: var(--brand-midnight); }
+.pst-defs-table th { font-weight: 700; }
+.pst-defs-table ul { margin: 0; padding-left: 16px; }
+.pst-defs-not { margin: 8px 12px 2px; color: var(--brand-midnight); }
+.pst-defs-list { margin: 0 0 10px; padding-left: 30px; color: var(--brand-muted); font-size: var(--font-size-support); }

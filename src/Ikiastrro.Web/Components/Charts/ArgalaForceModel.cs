@@ -1,5 +1,6 @@
 using Ikiastrro.Core.Engines.Astronomy;
 using Ikiastrro.Core.Engines.Houses;
+using Ikiastrro.Core.Engines.PlanetaryStates;
 using Ikiastrro.Core.LifeMatters.Promise;
 using Ikiastrro.Core.Models;
 using Ikiastrro.Core.Presentation;
@@ -21,9 +22,37 @@ public enum ArgalaOutcome
     Tie
 }
 
+/// <summary>How much of its results a planet can deliver, from its Jagradadi state (PVR sec.15.4.2): awake gives
+/// full results, dreaming medium, asleep negligible. Unknown when no state is available for the chart.</summary>
+public enum Delivery { Full, Medium, Negligible, Unknown }
+
+/// <summary>A planet's avasthas as the argala reading uses them: <see cref="Delivery"/> from Jagradadi, and the
+/// states PVR says damage the matters of the house the planet stands in (Lajjita, Kshudhita, Kshobhita, sec.15.4.3),
+/// each with its reason. Only these two ideas are used, so a dignity or conjunction already inside a state is not
+/// counted a second time.</summary>
+public sealed record PlanetStateInfo(
+    Delivery Delivery, string? Alertness, string? AlertnessReason,
+    IReadOnlyList<StateReason> Damaging)
+{
+    public static readonly PlanetStateInfo None = new(Delivery.Unknown, null, null, []);
+
+    public static PlanetStateInfo From(IEnumerable<StateReason> reasons)
+    {
+        var list = reasons.ToList();
+        var alert = list.FirstOrDefault(r => r.System == "Jagradadi");
+        var delivery = alert?.State switch
+        {
+            "Jagrat" => Delivery.Full, "Swapna" => Delivery.Medium, "Sushupti" => Delivery.Negligible, _ => Delivery.Unknown
+        };
+        var damaging = list.Where(r => r.System == "Lajjitadi" && r.State is "Lajjita" or "Kshudhita" or "Kshobhita").ToList();
+        return new PlanetStateInfo(delivery, alert?.State, alert?.Reason, damaging);
+    }
+}
+
 /// <summary>One planet as a unit of force: nature is its functional nature for the lagna (the same reading
-/// subhaargala / paapaargala uses), dignity only matters for the tie-break.</summary>
-public sealed record ForcePlanet(PlanetName Planet, Direction Nature, int Dignity);
+/// subhaargala / paapaargala uses), dignity only matters for the tie-break, <see cref="State"/> says how much
+/// it can deliver.</summary>
+public sealed record ForcePlanet(PlanetName Planet, Direction Nature, int Dignity, PlanetStateInfo State);
 
 /// <summary>One argala-vs-virodhargala duel: planets in the <see cref="ArgalaOffset"/>th from the house push,
 /// planets in the paired <see cref="ObstructionOffset"/>th push back. <see cref="Verdict"/> is the lane's own
@@ -41,10 +70,11 @@ public sealed record ForceLane(
 /// planets and which houses' matters cause the win, and the lane-by-lane reasoning.
 /// <see cref="Headline"/> is the one-line result, <see cref="Summary"/> the plain-language meaning,
 /// <see cref="Varga"/> says which chart is being read, <see cref="Causes"/> names the planets and houses behind the
-/// result (the winning side first), <see cref="Lanes"/> reads each pair.</summary>
+/// result (the winning side first), <see cref="Lanes"/> reads each pair and <see cref="Caveats"/> flags a win that
+/// rests on a planet which is asleep (Sushupti) or damaged (Lajjita, Kshudhita, Kshobhita).</summary>
 public sealed record ArgalaReading(
     string Headline, string Summary, string Varga,
-    IReadOnlyList<string> Causes, IReadOnlyList<string> Lanes);
+    IReadOnlyList<string> Causes, IReadOnlyList<string> Lanes, IReadOnlyList<string> Caveats);
 
 /// <summary>Reference text the reading draws on, all optional: the chart being read (code and its Table 11 domain
 /// such as "Marriage / Dharma"), each house's matters (PVR ch.7) and each planet's significations (PVR ch.8
@@ -52,7 +82,8 @@ public sealed record ArgalaReading(
 public sealed record ArgalaMeaningContext(
     string ChartType = "D1", string? Domain = null,
     IReadOnlyDictionary<int, string>? HouseMatters = null,
-    IReadOnlyDictionary<string, string>? PlanetMatters = null)
+    IReadOnlyDictionary<string, string>? PlanetMatters = null,
+    IReadOnlyDictionary<string, PlanetStateInfo>? PlanetStates = null)
 {
     public static readonly ArgalaMeaningContext Empty = new();
 }
@@ -68,7 +99,12 @@ public sealed record HouseForce(
 /// <summary>One argala (and its obstruction) as the page's South-Indian chart draws it: an arrow from the argala
 /// sign to the target, and a dashed marker on the obstructing sign.</summary>
 public sealed record ArgalaOverlayLink(
-    ZodiacName ArgalaSign, ZodiacName? ObstructionSign, bool HasArgala, Direction Nature, ArgalaVerdict? Verdict, bool Dimmed);
+    ZodiacName ArgalaSign, ZodiacName? ObstructionSign, bool HasArgala, Direction Nature, ArgalaVerdict? Verdict, bool Dimmed,
+    Delivery Delivery, IReadOnlyList<OverlayPlanet> ArgalaPlanets, IReadOnlyList<OverlayPlanet> ObstructionPlanets);
+
+/// <summary>A planet's tag on the chart: its alertness code (Jg, Sw, Su), whether a damaging state applies
+/// (<see cref="Warn"/>), whether the result rests on it (<see cref="Deciding"/>), and the full wording for the tooltip.</summary>
+public sealed record OverlayPlanet(string Planet, string Tag, bool Warn, bool Deciding, string Title);
 
 /// <summary>What the Argala table asks the page's South-Indian chart to show for the selected house.
 /// <see cref="ChartType"/> is the chart the facts were read from, so the page can drop an overlay left over from
@@ -116,7 +152,8 @@ public static class ArgalaForceModel
         IReadOnlyList<ForcePlanet> Force(IEnumerable<string> names) => names
             .Select(n => Enum.Parse<PlanetName>(n))
             .OrderBy(p => p)
-            .Select(p => new ForcePlanet(p, D1PromiseEngine.NatureDirection(lagna, p, moonWaxing), Dignity(p)))
+            .Select(p => new ForcePlanet(p, D1PromiseEngine.NatureDirection(lagna, p, moonWaxing), Dignity(p),
+                ctx.PlanetStates is not null && ctx.PlanetStates.TryGetValue(p.ToString(), out var st) ? st : PlanetStateInfo.None))
             .ToList();
 
         var summary = LifeMatterStatistics.BuildArgala(houseFacts);
@@ -153,7 +190,10 @@ public static class ArgalaForceModel
         var decidedByDignity = compare.ArgalaCount == compare.VirodhargalaCount
                                && outcome is ArgalaOutcome.ArgalaWins or ArgalaOutcome.VirodhargalaWins;
         var nature = NatureOf(lanes.SelectMany(l => l.Argala).ToList());
-        var reading = Read(house, outcome, nature, decidedByDignity, lanes, ctx);
+        var shell = new HouseForce(house, houseSign, reverse, lanes, argalaPlanets.Count, virodhPlanets.Count,
+            compare.ArgalaDignitySum, compare.VirodhargalaDignitySum, outcome, decidedByDignity, nature,
+            new ArgalaReading("", "", "", [], [], []));
+        var reading = Read(house, outcome, nature, decidedByDignity, lanes, ctx, DecidingPlanets(shell));
 
         return new HouseForce(house, houseSign, reverse, lanes,
             argalaPlanets.Count, virodhPlanets.Count, compare.ArgalaDignitySum, compare.VirodhargalaDignitySum,
@@ -164,15 +204,65 @@ public static class ArgalaForceModel
     /// (<paramref name="selectedArgalaOffset"/>) the other lanes are dimmed.</summary>
     public static ArgalaOverlay Overlay(string chartType, HouseForce force, int? selectedArgalaOffset)
     {
+        var deciding = DecidingPlanets(force);
+        OverlayPlanet Tag(ForcePlanet p, int house) => ToOverlay(p, house, deciding.Contains(p.Planet));
         var links = force.Lanes
             .Where(l => l.IsActive)
             .Select(l => new ArgalaOverlayLink(
                 l.ArgalaSign,
                 l.Virodhargala.Count > 0 && l.ArgalaOffset != 3 ? l.ObstructionSign : null,
                 l.Argala.Count > 0, NatureOf(l.Argala), l.Verdict,
-                selectedArgalaOffset is not null && l.ArgalaOffset != selectedArgalaOffset))
+                selectedArgalaOffset is not null && l.ArgalaOffset != selectedArgalaOffset,
+                LaneDelivery(l.Argala),
+                l.Argala.Select(p => Tag(p, l.ArgalaHouse)).ToList(),
+                l.ArgalaOffset == 3 ? [] : l.Virodhargala.Select(p => Tag(p, l.ObstructionHouse)).ToList()))
             .ToList();
         return new ArgalaOverlay(chartType, force.Sign, force.House, links);
+    }
+
+    /// <summary>The strongest delivery among a lane's argala planets: one awake planet is enough to deliver, so the
+    /// lane is drawn by its best planet. This is the app's own rule (PROJECT_SYNTHESIS); the levels are PVR 15.4.2.</summary>
+    public static Delivery LaneDelivery(IReadOnlyList<ForcePlanet> planets)
+    {
+        var known = planets.Select(p => p.State.Delivery).Where(d => d != Delivery.Unknown).ToList();
+        return known.Count == 0 ? Delivery.Unknown : known.Min();   // enum order: Full < Medium < Negligible
+    }
+
+    /// <summary>Planets the result rests on: those on the winning side when the margin is a single planet (or the count
+    /// was level and dignity decided it) — take one away and the winner could change.</summary>
+    public static IReadOnlySet<PlanetName> DecidingPlanets(HouseForce force)
+    {
+        if (force.Outcome is not (ArgalaOutcome.ArgalaWins or ArgalaOutcome.VirodhargalaWins))
+            return new HashSet<PlanetName>();
+        if (!force.DecidedByDignity && Math.Abs(force.ArgalaForce - force.VirodhargalaForce) != 1)
+            return new HashSet<PlanetName>();
+        var winners = force.Outcome == ArgalaOutcome.ArgalaWins
+            ? force.Lanes.SelectMany(l => l.Argala)
+            : force.Lanes.Where(l => l.ArgalaOffset != 3).SelectMany(l => l.Virodhargala);
+        return winners.Select(p => p.Planet).ToHashSet();
+    }
+
+    private static string DeliveryCode(Delivery d) => d switch
+    {
+        Delivery.Full => "Jg", Delivery.Medium => "Sw", Delivery.Negligible => "Su", _ => ""
+    };
+
+    private static string DeliveryWords(Delivery d) => d switch
+    {
+        Delivery.Full => "awake: gives full results",
+        Delivery.Medium => "dreaming: gives medium results",
+        Delivery.Negligible => "asleep: its results are negligible",
+        _ => "alertness not available"
+    };
+
+    private static OverlayPlanet ToOverlay(ForcePlanet p, int house, bool deciding)
+    {
+        var damaging = AvasthaPvrNotes.HouseResults(p.State.Damaging.Select(d => d.State), house);
+        var title = $"{p.Planet}: {DeliveryWords(p.State.Delivery)}"
+                    + (p.State.Damaging.Count > 0 ? $"; {string.Join(", ", p.State.Damaging.Select(d => d.State))}" : "")
+                    + (deciding ? "; the result rests on this planet" : "");
+        if (damaging.Count > 0) title += ". " + string.Join(" ", damaging);
+        return new OverlayPlanet(p.Planet.ToString(), DeliveryCode(p.State.Delivery), p.State.Damaging.Count > 0, deciding, title);
     }
 
     /// <summary>The lane an obstruction column belongs to: 12th→2nd, 10th→4th, 3rd→11th (or the 3rd's own exception
@@ -215,7 +305,7 @@ public static class ArgalaForceModel
             g => string.Join(", ", g.OrderBy(d => d.HouseNumber).ThenBy(d => d.DisplayOrder)
                 .Select(d => d.Matter.Trim().ToLowerInvariant()).Distinct().Take(3)));
 
-    private static string Describe(ForcePlanet p, ArgalaMeaningContext ctx)
+    private static string Describe(ForcePlanet p, ArgalaMeaningContext ctx, int house)
     {
         var nature = p.Nature switch
         {
@@ -225,7 +315,12 @@ public static class ArgalaForceModel
         };
         var signifies = ctx.PlanetMatters is not null && ctx.PlanetMatters.TryGetValue(p.Planet.ToString(), out var m)
             ? $"; signifies {m}" : "";
-        return $"{p.Planet} ({nature}{signifies})";
+        var state = p.State.Delivery == Delivery.Unknown ? ""
+            : $"; {DeliveryWords(p.State.Delivery)} ({p.State.Alertness}: {p.State.AlertnessReason})";
+        var damage = p.State.Damaging.Count == 0 ? ""
+            : $"; {string.Join(", ", p.State.Damaging.Select(d => $"{d.State} ({d.Reason})"))}";
+        var housewise = AvasthaPvrNotes.HouseResults(p.State.Damaging.Select(d => d.State), house);
+        return $"{p.Planet} ({nature}{signifies}{state}{damage})" + (housewise.Count > 0 ? " " + string.Join(" ", housewise) : "");
     }
 
     /// <summary>"H6 (service and employment, mental tension, injuries)": the house with its first three matters
@@ -239,7 +334,7 @@ public static class ArgalaForceModel
 
     private static ArgalaReading Read(
         int house, ArgalaOutcome outcome, Direction nature, bool decidedByDignity,
-        IReadOnlyList<ForceLane> lanes, ArgalaMeaningContext ctx)
+        IReadOnlyList<ForceLane> lanes, ArgalaMeaningContext ctx, IReadOnlySet<PlanetName> rests)
     {
         var target = HouseText(house, ctx);
         var dignityNote = decidedByDignity ? " The planet counts were equal, so the stronger (better-placed) side decided it." : "";
@@ -294,7 +389,7 @@ public static class ArgalaForceModel
                         Direction.Obstructive => "paapaargala, so that house's matters obstruct",
                         _ => "argala, so that house's matters take part"
                     };
-                    causes.Add($"{Describe(p, ctx)} in {HouseText(lane.ArgalaHouse, ctx)}: {effect}. It is {role}.");
+                    causes.Add($"{Describe(p, ctx, lane.ArgalaHouse)} in {HouseText(lane.ArgalaHouse, ctx)}: {effect}. It is {role}.");
                 }
             }
         }
@@ -305,7 +400,7 @@ public static class ArgalaForceModel
                 var what = lane.Argala.Count > 0
                     ? $"obstruct the argala from H{lane.ArgalaHouse}"
                     : $"stand ready to obstruct the argala from H{lane.ArgalaHouse}";
-                causes.Add($"{string.Join(", ", lane.Virodhargala.Select(p => Describe(p, ctx)))} in {HouseText(lane.ObstructionHouse, ctx)}: virodhargala, {what}.");
+                causes.Add($"{string.Join(", ", lane.Virodhargala.Select(p => Describe(p, ctx, lane.ObstructionHouse)))} in {HouseText(lane.ObstructionHouse, ctx)}: virodhargala, {what}.");
             }
         }
         if (outcome == ArgalaOutcome.VirodhargalaWins) { VirodhCauses(); ArgalaCauses(); } else { ArgalaCauses(); VirodhCauses(); }
@@ -324,6 +419,17 @@ public static class ArgalaForceModel
             });
         }
 
-        return new ArgalaReading(headline, summary, varga, causes, laneNotes);
+        var caveats = new List<string>();
+        var restingPlanets = lanes.SelectMany(l => l.Argala.Concat(l.ArgalaOffset == 3 ? [] : l.Virodhargala))
+            .Where(p => rests.Contains(p.Planet)).DistinctBy(p => p.Planet);
+        foreach (var p in restingPlanets)
+        {
+            if (p.State.Delivery == Delivery.Negligible)
+                caveats.Add($"The result rests on {p.Planet}, who is asleep ({p.State.Alertness}): PVR says its results are negligible, so this win may deliver little.");
+            if (p.State.Damaging.Count > 0)
+                caveats.Add($"The result rests on {p.Planet}, who is {string.Join(" and ", p.State.Damaging.Select(d => d.State))}: PVR says that state affects the matters of its house.");
+        }
+
+        return new ArgalaReading(headline, summary, varga, causes, laneNotes, caveats);
     }
 }

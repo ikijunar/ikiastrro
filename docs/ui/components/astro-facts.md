@@ -166,6 +166,27 @@ flow above instead of sitting in a side panel:
   meaning". The overlay only shows while About Houses is open and the chart picker still shows the chart the
   pick was made in; switching chart clears the pick. Also fixed: the per-cell "H@argalaHouse" label printed
   literally, and it now follows the anti-zodiacal count for Ketu houses.
+- **Built (2026-10-17) — avastha definitions, "how it got there", and the argala link** (rammyps's request; design and
+  sourcing in `docs/research/domain/argala-avastha-linkage.md`, v10 notes in `v10-statisticalbuild.md` and
+  `v10-phase0-feature-dictionary.md`).
+  - **About Planets, the States table** gains a collapsible "What each avastha set looks at, and how this app reads it"
+    panel (`AvasthaPvrNotes.Systems`: the inputs each set uses, the app's reading, which charts it is computed for) and a
+    list of what no avastha covers (`NotCoveredByAvasthas`). Every state in the table now has a one-line reason under it
+    ("Dignity is Great Friend", "Joined by 2 natural malefics: Saturn, Rahu", the Sayanaadi formula with its six inputs).
+    Reasons come from the same calculation that picks the state (`Evaluate`/`Explain` in the Deeptadi and Lajjitadi
+    calculators, `StateReason` on `PlanetaryStateFact`); they are not stored, `AvasthaLive` recomputes them from the chart.
+  - **Argala reading** now names, for each causing planet, its alertness (Jagrat full, Swapna medium, Sushupti negligible,
+    PVR 15.4.2) with the reason, any Lajjita/Kshudhita/Kshobhita with PVR's house result, and a caveat when a win by one
+    planet rests on a sleeping or damaged planet. The winner is unchanged (count, then dignity).
+  - **Left chart overlay** shows arrow thickness by the lane's best delivery, an alertness tag per planet (`Jg`/`Sw`/`Su`),
+    a warning mark for damaging states and a ring on the deciding planet.
+  - **The pick now follows the chart dropdown**: the same house and lane are rebuilt from the new varga (alertness and the
+    Lajjitadi states are computed live for every varga; Baaladi and Sayanaadi stay D1-only).
+- **Built (2026-10-17) — AF-v10 (AF-v10)**, a separate connected page at `/af-v10/{id}` (design, research and roadmap in
+  `docs/ui/af-v10-design.md`). One screen, one shared selection: pinned chart with the argala overlay, a summary at
+  the top right of it, 12 house tiles (`BhavaTile`), 9 planet cards (`PlanetCard`) and a lord chain (`LordChain`: sign, star and
+  pada lord with each one's nature). Reads the same engines as this page; the classic tabs are unchanged and linked from the
+  foot of v10.
 - **Built (2026-09-14):** 2.2 About Planets — Moon-context fact chips (new
   `ChartMoonContextRepository` over `vw_ChartMoonContext`, loaded outside `WorkspaceData` like
   the Current Transit tab's Gochara/Dasha, since only this page needs it) above the "Planets —

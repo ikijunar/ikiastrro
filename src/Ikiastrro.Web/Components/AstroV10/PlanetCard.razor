@@ -1,0 +1,58 @@
+@using Direction = Ikiastrro.Core.LifeMatters.Promise.Direction
+@using Ikiastrro.Core.Presentation
+@using Ikiastrro.Web.Components.Charts
+@* PlanetCard — one graha as a compact card: glyph and name, where it stands (house, sign, dignity), its alertness (Jg awake,
+   Sw dreaming, Su asleep, PVR sec.15.4.2) as a ring around the glyph, a warning mark when it is Lajjita, Kshudhita or Kshobhita
+   (sec.15.4.3), and its functional nature as a coloured edge plus the words benefic/malefic. The whole card is the button.
+   Alertness is the avasthas' only appearance here, so a dignity or conjunction already inside a state is not repeated.
+   "pc" = PlanetCard. *@
+<button type="button" class="pc @NatureCss @(Selected ? "pc-on" : "")" aria-pressed="@(Selected ? "true" : "false")"
+        title="@Title" @onclick="() => OnPick.InvokeAsync(Row.Planet)">
+    <span class="pc-glyph pc-ring-@RingCss" title="@AlertnessWords">@ChartViewModel.PlanetGlyph(Row.Planet)</span>
+    <span class="pc-body">
+        <span class="pc-name">@Row.Planet@(Row.IsRetrograde == true ? " (R)" : "")@(Row.IsCombust == true ? " 🔥" : "")</span>
+        <span class="pc-where">H@(Row.HouseNumberFromLagna) · @Short(Row.Sign)@(string.IsNullOrEmpty(Row.DignityStatus) ? "" : " · " + Row.DignityStatus)</span>
+        <span class="pc-tags">
+            <span class="pc-nature">@NatureWord</span>
+            @if (State.Delivery != Delivery.Unknown) { <span class="pc-tag">@Code</span> }
+            @if (State.Damaging.Count > 0) { <span class="pc-tag pc-warn" title="@string.Join(", ", State.Damaging.Select(d => d.State))">&#9888; @State.Damaging[0].State</span> }
+        </span>
+    </span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public Ikiastrro.Core.Models.ChartKeyDetail Row { get; set; } = null!;
+    [Parameter] public PlanetStateInfo State { get; set; } = PlanetStateInfo.None;
+    [Parameter] public LordNature? Nature { get; set; }
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback<string> OnPick { get; set; }
+
+    private string NatureCss => Nature?.Functional switch
+    {
+        Direction.Supportive => "pc-good", Direction.Obstructive => "pc-bad", _ => "pc-neutral"
+    };
+
+    private string NatureWord => Nature is null ? "" : Nature.Functional switch
+    {
+        Direction.Supportive => "benefic", Direction.Obstructive => "malefic", _ => "neutral"
+    } + (Nature.HousesOwned.Count > 0 ? " · L" + string.Join(",", Nature.HousesOwned) : "");
+
+    private string RingCss => State.Delivery switch
+    {
+        Delivery.Full => "full", Delivery.Medium => "medium", Delivery.Negligible => "negligible", _ => "unknown"
+    };
+
+    private string Code => State.Delivery switch { Delivery.Full => "Jg", Delivery.Medium => "Sw", _ => "Su" };
+
+    private string AlertnessWords => State.Delivery switch
+    {
+        Delivery.Full => "Awake (Jagrat): gives full results",
+        Delivery.Medium => "Dreaming (Swapna): gives medium results",
+        Delivery.Negligible => "Asleep (Sushupti): results are negligible",
+        _ => "Alertness not available"
+    };
+
+    private string Title => $"{Row.Planet}: {AlertnessWords}" + (State.Damaging.Count > 0 ? $"; {string.Join(", ", State.Damaging.Select(d => d.State))}" : "");
+
+    private static string Short(string sign) => (sign == "Capricornus" ? "Capricorn" : sign)[..3];
+}

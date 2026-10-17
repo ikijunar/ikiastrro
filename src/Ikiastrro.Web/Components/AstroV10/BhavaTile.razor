@@ -1,0 +1,40 @@
+@using Ikiastrro.Core.Engines.Astronomy
+@* BhavaTile — one house as a small instrument: its number, sign, and the argala contest as a force meter with the winner
+   in words. The whole tile is the button; the picked house is outlined. The meter is green for the argala share and hatched
+   for virodhargala, and the word under it (Argala / Virodhargala / Tie / Quiet) carries the result when colour does not.
+   Built from ArgalaForceModel's HouseForce, so it agrees with the Argala table and the chart overlay. "bt" = BhavaTile. *@
+<button type="button" class="bt @OutcomeCss @(Selected ? "bt-on" : "")" aria-pressed="@(Selected ? "true" : "false")"
+        title="@Force.Reading.Headline" @onclick="() => OnPick.InvokeAsync(Force.House)">
+    <span class="bt-num">@Force.House</span>
+    <span class="bt-sign">@Short(Force.Sign)</span>
+    <span class="bt-meter" aria-hidden="true"><span class="bt-meter-arg" style="width:@(Share)%"></span></span>
+    <span class="bt-word">@Word</span>
+    <span class="bt-score">@Force.ArgalaForce&ndash;@Force.VirodhargalaForce</span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public Ikiastrro.Web.Components.Charts.HouseForce Force { get; set; } = null!;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback<int> OnPick { get; set; }
+
+    private int Share => Ikiastrro.Web.Components.Charts.ArgalaForceModel.ArgalaShare(Force);
+
+    private string Word => Force.Outcome switch
+    {
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.ArgalaWins => "Argala",
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.VirodhargalaWins => "Virodha",
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Tie => "Tie",
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Idle => "Idle",
+        _ => "Quiet"
+    };
+
+    private string OutcomeCss => Force.Outcome switch
+    {
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.ArgalaWins => "bt-arg",
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.VirodhargalaWins => "bt-vir",
+        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Tie => "bt-tie",
+        _ => "bt-quiet"
+    };
+
+    private static string Short(ZodiacName sign) => (sign == ZodiacName.Capricornus ? "Capricorn" : sign.ToString())[..3];
+}

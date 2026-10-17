@@ -118,6 +118,10 @@ else
             </div>
             <p class="at-reading-text">@reading.Summary</p>
             <p class="at-reading-varga">@reading.Varga</p>
+            @foreach (var caveat in reading.Caveats)
+            {
+                <p class="at-reading-caveat">&#9888; @caveat</p>
+            }
             @if (reading.Causes.Count > 0)
             {
                 <h4 class="at-reading-sub">Planets and houses behind it</h4>
@@ -165,12 +169,27 @@ else
 
     private HouseForce? Selected => _house is int h && h <= _forces.Count ? _forces[h - 1] : null;
 
+    /// <summary>Each planet's avasthas in this chart (alertness and damaging states), from <c>AvasthaLive</c>: how much a
+    /// causing planet can deliver, and whether it is damaged in its house. Empty = the reading simply omits them.</summary>
+    [Parameter] public IReadOnlyDictionary<string, PlanetStateInfo> PlanetStates { get; set; } =
+        new Dictionary<string, PlanetStateInfo>();
+
+    private bool _overlayStale;
+
     protected override void OnParametersSet()
     {
-        if (_shownChart != ChartType) { _house = null; _lane = null; _shownChart = ChartType; }
+        // The pick follows the chart dropdown: same house (and lane), rebuilt from the new varga's own positions.
+        if (_shownChart != ChartType) { _shownChart = ChartType; _overlayStale = _house is not null; }
         _forces = Grahas.Count == 0 ? Array.Empty<HouseForce>()
             : ArgalaForceModel.BuildAll(Facts, Grahas, AscendantSign,
-                new ArgalaMeaningContext(ChartType, Domain, HouseMatters, PlanetMatters));
+                new ArgalaMeaningContext(ChartType, Domain, HouseMatters, PlanetMatters, PlanetStates));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_overlayStale) return;
+        _overlayStale = false;
+        await OnOverlayChanged.InvokeAsync(Selected is { } f ? ArgalaForceModel.Overlay(ChartType, f, _lane) : null);
     }
 
     /// <summary>Pick a house (lane null = the whole house) or one of its lanes. Picking the same thing again lets go of it.</summary>

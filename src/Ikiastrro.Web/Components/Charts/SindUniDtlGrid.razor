@@ -50,7 +50,13 @@
                 }
                 @if (argalaRole is not null)
                 {
-                    <div class="special-labels"><span class="special-label arg-label">@argalaRole.Label</span></div>
+                    <div class="special-labels">
+                        <span class="special-label arg-label">@argalaRole.Label</span>
+                        @foreach (var tag in argalaRole.Tags)
+                        {
+                            <span class="special-label arg-tag @(tag.Warn ? "arg-tag-warn" : "") @(tag.Deciding ? "arg-tag-deciding" : "")" title="@tag.Title">@ChartViewModel.PlanetGlyph(tag.Planet)@(tag.Tag.Length > 0 ? "·" + tag.Tag : "")@(tag.Warn ? " ⚠" : "")</span>
+                        }
+                    </div>
                 }
                 @if (SpecialPointLabels.TryGetValue(cell.MatchSign, out var sp) && sp.Count > 0)
                 {
@@ -109,7 +115,7 @@
                     {
                         var (tx, ty) = Centre(overlay.Target);
                         var (x1, y1, x2, y2) = Shorten(sx, sy, tx, ty, 38);
-                        <line class="arg-ln @NatureCss(link.Nature) @VerdictCss(link.Verdict) @(link.Dimmed ? "arg-dim" : "")" x1="@x1" y1="@y1" x2="@x2" y2="@y2" marker-end="url(#@MarkerId(link.Nature))" />
+                        <line class="arg-ln @NatureCss(link.Nature) @VerdictCss(link.Verdict) @DeliveryCss(link.Delivery) @(link.Dimmed ? "arg-dim" : "")" x1="@x1" y1="@y1" x2="@x2" y2="@y2" marker-end="url(#@MarkerId(link.Nature))" />
                         @if (link.Verdict == Ikiastrro.Data.Statistics.ArgalaVerdict.Obstructed)
                         {
                             <g class="arg-x @(link.Dimmed ? "arg-dim" : "")" transform="translate(@((x1 + x2) / 2) @((y1 + y2) / 2))">
@@ -172,17 +178,17 @@
     /// Null = nothing drawn. Hidden in Compact mode.</summary>
     [Parameter] public ArgalaOverlay? Argala { get; set; }
 
-    private sealed record ArgalaCellRole(string Css, string Label);
+    private sealed record ArgalaCellRole(string Css, string Label, IReadOnlyList<OverlayPlanet> Tags);
 
     private ArgalaCellRole? ArgalaRole(ZodiacName sign)
     {
         if (Argala is not { } overlay) return null;
-        if (sign == overlay.Target) return new("arg-target", $"ARGALA ON H{overlay.House}");
+        if (sign == overlay.Target) return new("arg-target", $"ARGALA ON H{overlay.House}", []);
         var source = overlay.Links.FirstOrDefault(l => l.HasArgala && l.ArgalaSign == sign);
         if (source is not null)
-            return new($"arg-src {NatureCss(source.Nature)} {(source.Dimmed ? "arg-dim" : "")}", "ARGALA");
+            return new($"arg-src {NatureCss(source.Nature)} {(source.Dimmed ? "arg-dim" : "")}", "ARGALA", source.ArgalaPlanets);
         var obstructor = overlay.Links.FirstOrDefault(l => l.ObstructionSign == sign);
-        return obstructor is not null ? new($"arg-vir {(obstructor.Dimmed ? "arg-dim" : "")}", "VIRODHARGALA") : null;
+        return obstructor is not null ? new($"arg-vir {(obstructor.Dimmed ? "arg-dim" : "")}", "VIRODHARGALA", obstructor.ObstructionPlanets) : null;
     }
 
     private static string NatureCss(Ikiastrro.Core.LifeMatters.Promise.Direction d) => d switch
@@ -197,6 +203,11 @@
         Ikiastrro.Core.LifeMatters.Promise.Direction.Supportive => "arg-ah-good",
         Ikiastrro.Core.LifeMatters.Promise.Direction.Obstructive => "arg-ah-bad",
         _ => "arg-ah-none"
+    };
+
+    private static string DeliveryCss(Delivery d) => d switch
+    {
+        Delivery.Full => "arg-d-full", Delivery.Medium => "arg-d-medium", Delivery.Negligible => "arg-d-negligible", _ => ""
     };
 
     private static string VerdictCss(Ikiastrro.Data.Statistics.ArgalaVerdict? v) => v switch

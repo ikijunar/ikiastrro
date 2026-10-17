@@ -1,5 +1,10 @@
 namespace Ikiastrro.Core.Engines.PlanetaryStates;
 
+/// <summary>Why one avastha state was assigned: the state and the inputs that produced it, in words
+/// ("3.8° from the Sun (within the 5° orb)"). Built by the same calculation that picks the state, so the
+/// reason can never disagree with the result. Not persisted — recomputed from the chart when shown.</summary>
+public sealed record StateReason(string System, string State, string Reason);
+
 /// <summary>One row of dbo.tbl_Dim_PlanetaryState — the vocabulary of avastha states across every
 /// avastha system (Baaladi, Jagradadi, Deeptadi, Lajjitadi, Sayanadi). Read-only reference.</summary>
 public record PlanetaryStateRow(
@@ -85,4 +90,8 @@ public class PlanetaryStateFact
     /// 0-6 independent condition flags, PVR sec 15.4.3's unnamed 6-state group. Same
     /// keep-every-match reasoning as <see cref="DeeptadiStateIds"/>.</summary>
     public List<byte> LajjitadiStateIds { get; set; } = new();
+
+    /// <summary>How each state above was reached (Baaladi, Jagradadi, Sayanadi, Deeptadi, Lajjitadi), filled by
+    /// PlanetaryStateComputer on every run. Not a DB column — stored facts carry only the ids.</summary>
+    public List<StateReason> Reasons { get; set; } = new();
 }
