@@ -1,56 +1,68 @@
 @using Ikiastrro.Core.Engines.Astronomy
-@* BhavaTile — one house as a small instrument: its number, sign, and the argala contest as a force meter with the winner
-   in words. The whole tile is the button; the picked house is outlined. The meter is green for the argala share and hatched
-   for virodhargala, and the word under it (Argala / Virodhargala / Tie / Quiet) carries the result when colour does not.
-   Built from ArgalaForceModel's HouseForce, so it agrees with the Argala table and the chart overlay. "bt" = BhavaTile. *@
+@using Ikiastrro.Core.Engines.Strength
+@using Ikiastrro.Web.Components.Charts
+@* BhavaTile — one house as a small instrument. It always shows its number and sign; the rest depends on the layer the page is
+   on, so a tile carries ONE fact at a time: Argala = the contest as a force meter with the winner in words; Strength = the SAV
+   bindus of its sign and Bhava Bala; Yogas = how many yogas run through its lord. The whole tile is the button; the picked
+   house is outlined. Built from ArgalaForceModel's HouseForce so it agrees with the Argala table and the chart. "bt" = BhavaTile. *@
 <button type="button" class="bt @OutcomeCss @(Selected ? "bt-on" : "")" aria-pressed="@(Selected ? "true" : "false")"
         title="@Force.Reading.Headline" @onclick="() => OnPick.InvokeAsync(Force.House)">
     <span class="bt-num">@Force.House</span>
     <span class="bt-sign">@Short(Force.Sign)</span>
-    <span class="bt-meter" aria-hidden="true"><span class="bt-meter-arg" style="width:@(Share)%"></span></span>
-    <span class="bt-word">@Word</span>
-    <span class="bt-score">@Force.ArgalaForce&ndash;@Force.VirodhargalaForce</span>
-    @if (Strength is { } st && (st.SavBindus is not null || st.BhavaRupas is not null))
+    @if (Layer == AfLayer.Argala)
     {
-        <span class="bt-str" title="@StrengthTitle(st)">
-            @if (st.SavBindus is { } sav) { <span class="bt-pip bt-@TierCss(st.SavTier)">@sav<small> SAV</small></span> }
-            @if (st.BhavaRupas is { } r) { <span class="bt-pip bt-@TierCss(st.BhavaTier)">@r.ToString("0.0")<small> r</small></span> }
-        </span>
+        <span class="bt-meter" aria-hidden="true"><span class="bt-meter-arg" style="width:@(Share)%"></span></span>
+        <span class="bt-row"><span class="bt-word">@Word</span><span class="bt-score">@Force.ArgalaForce&ndash;@Force.VirodhargalaForce</span></span>
+    }
+    else if (Layer == AfLayer.Strength)
+    {
+        if (Strength is { } st && (st.SavBindus is not null || st.BhavaRupas is not null))
+        {
+            <span class="bt-str" title="@StrengthTitle(st)">
+                @if (st.SavBindus is { } sav) { <span class="bt-pip bt-@TierCss(st.SavTier)">@sav<small> SAV</small></span> }
+                @if (st.BhavaRupas is { } r) { <span class="bt-pip bt-@TierCss(st.BhavaTier)">@r.ToString("0.0")<small> r</small></span> }
+            </span>
+        }
+    }
+    else
+    {
+        <span class="bt-word">@(YogaCount == 0 ? "no yoga" : YogaCount + (YogaCount == 1 ? " yoga" : " yogas"))</span>
     }
 </button>
 
 @code {
-    [Parameter, EditorRequired] public Ikiastrro.Web.Components.Charts.HouseForce Force { get; set; } = null!;
-    [Parameter] public Ikiastrro.Web.Components.AstroV10.HouseStrength? Strength { get; set; }
+    [Parameter, EditorRequired] public HouseForce Force { get; set; } = null!;
+    [Parameter] public HouseStrength? Strength { get; set; }
+    [Parameter] public AfLayer Layer { get; set; } = AfLayer.Argala;
+    [Parameter] public int YogaCount { get; set; }
     [Parameter] public bool Selected { get; set; }
     [Parameter] public EventCallback<int> OnPick { get; set; }
 
-    private int Share => Ikiastrro.Web.Components.Charts.ArgalaForceModel.ArgalaShare(Force);
+    private int Share => ArgalaForceModel.ArgalaShare(Force);
 
     private string Word => Force.Outcome switch
     {
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.ArgalaWins => "Argala",
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.VirodhargalaWins => "Virodha",
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Tie => "Tie",
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Idle => "Idle",
+        ArgalaOutcome.ArgalaWins => "Argala",
+        ArgalaOutcome.VirodhargalaWins => "Virodha",
+        ArgalaOutcome.Tie => "Tie",
+        ArgalaOutcome.Idle => "Idle",
         _ => "Quiet"
     };
 
-    private string OutcomeCss => Force.Outcome switch
+    private string OutcomeCss => Layer != AfLayer.Argala ? "" : Force.Outcome switch
     {
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.ArgalaWins => "bt-arg",
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.VirodhargalaWins => "bt-vir",
-        Ikiastrro.Web.Components.Charts.ArgalaOutcome.Tie => "bt-tie",
+        ArgalaOutcome.ArgalaWins => "bt-arg",
+        ArgalaOutcome.VirodhargalaWins => "bt-vir",
+        ArgalaOutcome.Tie => "bt-tie",
         _ => "bt-quiet"
     };
 
-    private static string TierCss(Ikiastrro.Core.Engines.Strength.StrengthTier t) => t switch
+    private static string TierCss(StrengthTier t) => t switch
     {
-        Ikiastrro.Core.Engines.Strength.StrengthTier.Strong => "strong", Ikiastrro.Core.Engines.Strength.StrengthTier.Weak => "weak",
-        Ikiastrro.Core.Engines.Strength.StrengthTier.Moderate => "mid", _ => "none"
+        StrengthTier.Strong => "strong", StrengthTier.Weak => "weak", StrengthTier.Moderate => "mid", _ => "none"
     };
 
-    private static string StrengthTitle(Ikiastrro.Web.Components.AstroV10.HouseStrength s) =>
+    private static string StrengthTitle(HouseStrength s) =>
         (s.SavBindus is { } v ? $"Sarvashtakavarga {v} bindus ({s.SavTier}). " : "") +
         (s.BhavaRupas is { } r ? $"Bhava Bala {r:0.0} rupas ({s.BhavaTier})." : "");
 

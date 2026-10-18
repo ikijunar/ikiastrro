@@ -112,3 +112,14 @@
 .special-label.arg-tag { font-weight: 700; color: var(--brand-midnight); border-color: var(--brand-line); }
 .special-label.arg-tag-warn { border-color: var(--status-weak); color: var(--status-weak); }
 .special-label.arg-tag-deciding { box-shadow: 0 0 0 2px var(--brand-midnight); }
+
+/* AF-v10: layer tint, one short value beside the sign name, clickable cells, planets lit by a picked yoga. */
+.cell.clickable { cursor: pointer; }
+.cell.clickable:hover { box-shadow: inset 0 0 0 2px var(--brand-muted); }
+.cell.clickable:focus-visible { outline: 3px solid var(--brand-midnight); outline-offset: -3px; }
+.cell.cell-good { background: linear-gradient(var(--status-strong-bg), var(--status-strong-bg)), var(--paper-raised); }
+.cell.cell-mid { background: linear-gradient(var(--status-moderate-bg), var(--status-moderate-bg)), var(--paper-raised); }
+.cell.cell-bad { background: linear-gradient(var(--status-weak-bg), var(--status-weak-bg)), var(--paper-raised); }
+.sign-label { display: flex; align-items: baseline; gap: 1cqi; flex-wrap: wrap; }
+.cell-note { font-size: 2.2cqi; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--brand-midnight); }
+.planet-glyph.lit { box-shadow: 0 0 0 0.5cqi var(--brand-midnight); background: var(--brand-sunrise); }

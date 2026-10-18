@@ -11,12 +11,23 @@
 .av10-crumb { font-weight: 700; }
 .av10-clear { font: inherit; font-size: var(--font-size-meta); padding: 1px 10px; border: 1px solid var(--brand-line); border-radius: 999px; background: var(--card-bg); color: var(--card-fg); cursor: pointer; }
 
-.av10-main { display: grid; grid-template-columns: minmax(300px, 440px) minmax(0, 1fr); gap: 16px; align-items: start; }
-.av10-chartcol { position: sticky; top: 72px; }
-@media (max-width: 900px) { .av10-main { grid-template-columns: minmax(0, 1fr); } .av10-chartcol { position: static; } }
-.av10-detail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* Three zones: pinned chart | tiles and cards | sticky inspector. Narrower, the inspector moves above the tiles; on a phone it is a bottom sheet. */
+.av10-main { display: grid; gap: 16px; align-items: start; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr) minmax(300px, 360px); grid-template-areas: "chart rails insp"; }
+.av10-chartcol { grid-area: chart; position: sticky; top: 72px; }
+.av10-detail { grid-area: rails; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+@media (max-width: 1280px) { .av10-main { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); grid-template-areas: "chart insp" "chart rails"; } }
+@media (max-width: 900px) {
+    .av10-main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "chart" "rails" "insp"; padding-bottom: 40vh; }
+    .av10-chartcol { position: static; }
+    .av10-insp-empty { display: none; }
+}
 
-.av10-inspector { padding: 10px 14px; background: var(--card-bg); border: 1px solid var(--card-line); border-left: 6px solid var(--brand-midnight); border-radius: var(--card-radius); }
+.av10-inspector { grid-area: insp; position: sticky; top: 72px; max-height: calc(100vh - 88px); overflow: auto; padding: 12px 16px; background: var(--card-bg); border: 1px solid transparent; box-shadow: 0 1px 3px color-mix(in srgb, var(--brand-midnight) 16%, transparent); border-radius: 18px; }
+@media (max-width: 1280px) { .av10-inspector { position: static; max-height: none; } }
+@media (max-width: 900px) {
+    .av10-inspector { position: fixed; left: 8px; right: 8px; bottom: 8px; top: auto; z-index: 20; max-height: 45vh; border-radius: 18px 18px 14px 14px; box-shadow: 0 -4px 24px color-mix(in srgb, var(--brand-midnight) 30%, transparent); }
+}
+.av10-insp-close { float: right; margin-left: 8px; }
 .av10-insp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
 .av10-insp-title { margin: 0; font-size: var(--font-size-control); font-weight: 700; }
 .av10-badge { padding: 2px 10px; border-radius: 999px; font-size: var(--font-size-meta); font-weight: 800; background: var(--brand-sunrise); white-space: nowrap; }
@@ -56,3 +67,18 @@
 .av10-yogas { display: flex; flex-wrap: wrap; gap: 6px; }
 .av10-badge-good { color: var(--status-strong); }
 .av10-badge-challenging { color: var(--status-weak); }
+
+/* Layer switch: one segmented control; each layer puts one fact on the tiles, cards and chart cells. */
+.av10-layers { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--card-bg); border: 1px solid var(--brand-line); margin-left: auto; }
+.av10-layers button { font: inherit; font-weight: 700; padding: 3px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--card-fg); cursor: pointer; }
+.av10-layers button.av10-layer-on { background: var(--brand-midnight); color: var(--card-bg); }
+.av10-pick { margin-left: 0; }
+.av10-ribbon { box-shadow: none; }
+
+.av10-ygroup { margin-top: 4px; }
+.av10-ygroup > summary { cursor: pointer; padding: 2px 0; list-style-position: inside; }
+.av10-ygroup .av10-yogas { margin: 6px 0 8px; }
+.av10-count { margin-left: 4px; padding: 0 8px; border-radius: 999px; background: var(--brand-surface); font-size: var(--font-size-meta); font-weight: 700; }
+.av10-bhavas { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.av10-planets { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.av10-lane, .av10-link { box-shadow: none; }
