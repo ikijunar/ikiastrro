@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 workstream: ui
 togaf: C — UI standards
 status: first slice built at /af-v10/{id}; classic tabbed page untouched at /astro-facts/{id}
@@ -128,6 +128,18 @@ These come from the tradition's own forms; none of the searches found a source f
 chain, pairs you can pick, causes; planet: lords, states with reasons, damage results, part in argala), 12 house tiles,
 9 planet cards, chart dropdown that keeps the selection. Backed by `ArgalaForceModel`, `AvasthaLive`, `PlanetLordTriad`
 and `LordNature`. Tests: `AstroV10ComponentTests`, `PlanetLordTriadTests`, `ArgalaForceModelTests`.
+
+## 6a. Strength layer (2026-10-18)
+
+Slices 2 (strength), 4 (yoga chips) and the nakshatra part of 5 are built, in `StrengthLayer` (a pure reshaping of rows the classic
+page reads; cut-offs are `StrengthBands`, so a planet never gets two labels).
+- **House tile**: SAV bindus of its sign and Bhava Bala (D1 only), each a pill, dashed when weak.
+- **Planet card**: nakshatra and pada (from the true longitude, same in every varga), Ṣaḍbala as a bar of 0-150% of the required minimum
+  with a tick at 100% (hatched when weak), and the planet's own Bhinnāṣṭakavarga bindus in its sign.
+- **Yogas**: one chip per present yoga (deduped by code, good first, 12 shown and the rest folded). A pick lights its planets on the
+  cards and opens the rule, inference and delivery (weakest planet's %). Planet and house summaries list the yogas they take part in.
+- Ṣaḍbala and Bhava Bala are natal facts; on a varga they stay D1 values, Ashtakavarga and yogas follow the chart on screen.
+- Still open: sign-level readout beyond SAV, nakshatra wheel, chart cells selecting houses/planets, yoga planets highlighted on the chart itself.
 
 ## 7. Next slices
 

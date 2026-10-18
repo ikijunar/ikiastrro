@@ -23,3 +23,16 @@
 .pc-nature { font-weight: 600; }
 .pc-tag { padding: 0 6px; border: 1px solid var(--brand-line); border-radius: 999px; font-weight: 700; }
 .pc-warn { color: var(--status-weak); border-color: var(--status-weak); }
+.pc-lit { outline: 2px solid var(--brand-midnight); outline-offset: 1px; }
+.pc-nak { font-size: var(--font-size-meta); color: var(--brand-muted); }
+.pc-str { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: var(--font-size-meta); }
+/* Bar runs 0-150% of the required minimum; the tick is 100%. Weak is hatched so it reads without colour. */
+.pc-bar { position: relative; flex: 1 1 auto; min-width: 48px; height: 6px; border-radius: 999px; overflow: hidden; border: 1px solid var(--brand-line); background: var(--brand-surface); }
+.pc-bar-fill { display: block; height: 100%; }
+.pc-strong { background: var(--status-strong); }
+.pc-mid { background: var(--status-moderate); }
+.pc-weak { background-image: repeating-linear-gradient(135deg, var(--status-weak) 0 4px, transparent 4px 6px); }
+.pc-bar-par { position: absolute; left: 66.7%; top: 0; bottom: 0; width: 2px; background: var(--brand-midnight); }
+.pc-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
+.pc-bav-strong { border-color: var(--status-strong); }
+.pc-bav-weak { border-color: var(--status-weak); border-style: dashed; }

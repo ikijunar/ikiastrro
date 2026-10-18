@@ -1,0 +1,18 @@
+@* YogaChip — one present yoga as a small button: its name, its nature as a coloured edge plus a word (good / mixed / challenging),
+   and the planets that make it as glyphs. A picked yoga is outlined and lights its planets on the planet cards. A weak-planet
+   yoga carries a dashed edge, so "promise there, delivery faint" reads without colour. "yc" = YogaChip. *@
+<button type="button" class="yc yc-@Fact.Nature @(Weak ? "yc-weak" : "") @(Selected ? "yc-on" : "")" aria-pressed="@(Selected ? "true" : "false")"
+        title="@Title" @onclick="() => OnPick.InvokeAsync(Fact.Code)">
+    <span class="yc-name">@Fact.Name</span>
+    <span class="yc-meta">@Fact.Nature@(Fact.Planets.Count > 0 ? " · " + string.Join(" ", Fact.Planets.Select(Ikiastrro.Core.Presentation.ChartViewModel.PlanetGlyph)) : "")</span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public YogaChipFact Fact { get; set; } = null!;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback<string> OnPick { get; set; }
+
+    private bool Weak => Fact.WeakestPercent is < 80m;
+
+    private string Title => $"{Fact.Name}: {Fact.Nature}. {StrengthLayer.Delivery(Fact)}.";
+}
