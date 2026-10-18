@@ -141,6 +141,17 @@ page reads; cut-offs are `StrengthBands`, so a planet never gets two labels).
 - Ṣaḍbala and Bhava Bala are natal facts; on a varga they stay D1 values, Ashtakavarga and yogas follow the chart on screen.
 - Still open: sign-level readout beyond SAV, nakshatra wheel, chart cells selecting houses/planets, yoga planets highlighted on the chart itself.
 
+## 6b. Simplified redesign (2026-10-18)
+
+- **Layer switch** (Argala | Strength | Yogas) in the ribbon. Each layer puts ONE fact on the tiles, cards and chart cells:
+  Argala = force meter / nature and alertness; Strength = SAV and Bhava Bala / nakshatra, Shadbala bar and bindus; Yogas = yoga counts.
+- **Clickable chart**: a cell picks its house, a planet chip picks the planet. Cells are tinted and carry one short value by layer
+  (argala score, or SAV total). `SindUniDtlGrid` gained `CellClass`, `CellNote`, `LitPlanets`, `OnCellPick`, `OnPlanetPick`.
+- **Three zones**: pinned chart | tiles and cards | sticky inspector. Under 1280px the inspector sits above the tiles; under 900px it is a
+  bottom sheet (CSS only; not yet checked on a real phone).
+- **Soft cards**: shadow instead of outlines, selection = ring; status stays colour plus a word or pattern.
+- **Yogas grouped** by nature with counts; good open by default, all open on the Yogas layer.
+
 ## 7. Next slices
 
 1. **Linked chart both ways**: click a chart cell to select the house or planet; highlight a pick's lords on the chart.

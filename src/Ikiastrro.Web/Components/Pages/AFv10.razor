@@ -48,151 +48,45 @@ else if (Chart is { } chart)
                 <span class="av10-chip"><b>Moon</b> @Disp(chart.MoonSign)@(string.IsNullOrEmpty(chart.MoonNakshatra) ? "" : " · " + chart.MoonNakshatra)</span>
             }
             <span class="av10-chip av10-chip-domain">@Domain(chart.ChartType)</span>
+            <div class="av10-layers" role="group" aria-label="Layer">
+                @foreach (var (layer, label) in Layers)
+                {
+                    <button type="button" class="@(_layer == layer ? "av10-layer-on" : "")" aria-pressed="@(_layer == layer ? "true" : "false")" @onclick="() => SetLayer(layer)">@label</button>
+                }
+            </div>
             <label class="av10-pick">Chart
                 <select aria-label="Chart" value="@_chartType" @onchange="OnChartChanged">
                     @foreach (var c in ChartOptions) { <option value="@c.ChartType">@c.Label</option> }
                 </select>
             </label>
-            <span class="av10-crumb">@Crumb</span>
-            @if (_kind != Kind.None) { <button type="button" class="av10-clear" @onclick="Clear">Clear</button> }
         </header>
 
         <div class="av10-main">
             <aside class="av10-chartcol" aria-label="Chart">
                 <SindUniDtlGrid AscendantSign="@chart.AscendantSign" MoonSign="@chart.MoonSign" PlanetsBySign="PlanetsBySign(chart)" CenterTitle="@chart.ChartType"
-                                HighlightSign="@HighlightSign" HighlightLabel="@HighlightLabel" Argala="Overlay(chart)">
+                                HighlightSign="@HighlightSign" HighlightLabel="@HighlightLabel" Argala="Overlay(chart)"
+                                CellClass="CellClasses" CellNote="CellNotes" LitPlanets="LitPlanets" OnCellPick="PickCell" OnPlanetPick="SelectPlanet">
                     <CenterMeta><b>Lagna</b> @Disp(chart.AscendantSign)</CenterMeta>
                 </SindUniDtlGrid>
             </aside>
 
             <div class="av10-detail">
-                <section class="av10-inspector" aria-live="polite" aria-label="Summary of the selection">
-                    @if (_kind == Kind.House && SelectedForce is { } force)
-                    {
-                        var reading = force.Reading;
-                        <div class="av10-insp-head">
-                            <span class="av10-badge @OutcomeCss(force.Outcome)">@OutcomeWord(force.Outcome) · @force.ArgalaForce&ndash;@force.VirodhargalaForce</span>
-                            <h2 class="av10-insp-title">House @force.House (@Disp(force.Sign)) &mdash; @reading.Headline</h2>
-                        </div>
-                        <div class="av10-meter" role="img" aria-label="Argala @force.ArgalaForce against virodhargala @force.VirodhargalaForce">
-                            <span class="av10-meter-arg" style="width:@(ArgalaForceModel.ArgalaShare(force))%"></span>
-                        </div>
-                        <p class="av10-text">@reading.Summary</p>
-                        <p class="av10-meta">@reading.Varga</p>
-                        @foreach (var caveat in reading.Caveats) { <p class="av10-caveat">&#9888; @caveat</p> }
-                        @if (HouseStrengths.Count == 12 && HouseStrengths[force.House - 1] is { } hs && (hs.SavBindus is not null || hs.BhavaRupas is not null))
-                        {
-                            <h3 class="av10-sub">Strength of this house</h3>
-                            <p class="av10-text">@HouseStrengthWords(hs)</p>
-                        }
-                        @if (YogasThroughHouse(force.House) is { Count: > 0 } houseYogas)
-                        {
-                            <h3 class="av10-sub">Yogas through this house's lord</h3>
-                            <div class="av10-yogas">@foreach (var y in houseYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
-                        }
-                        @if (HouseLordOf(force.House) is { } lordPlanet && Triads.GetValueOrDefault(lordPlanet) is { } lordTriad)
-                        {
-                            <h3 class="av10-sub">Lord of this house: @lordPlanet</h3>
-                            <LordChain Triad="lordTriad" Natures="Natures" OnLord="SelectPlanet" />
-                        }
-                        @if (force.Lanes.Any(l => l.Argala.Count > 0))
-                        {
-                            <h3 class="av10-sub">Each argala against its virodhargala <span class="av10-meta">(pick one to show only it on the chart)</span></h3>
-                            <div class="av10-lanes">
-                                @foreach (var lane in force.Lanes.Where(l => l.Argala.Count > 0))
-                                {
-                                    <button type="button" class="av10-lane @LaneCss(lane) @(_lane == lane.ArgalaOffset ? "av10-lane-on" : "")" @onclick="() => PickLane(lane.ArgalaOffset)">
-                                        <span class="av10-lane-h">@(lane.ArgalaOffset == 3 ? "3rd (malefic exception)" : Ordinal(lane.ArgalaOffset)) &middot; H@(lane.ArgalaHouse)</span>
-                                        <span class="av10-lane-p">@string.Join(", ", lane.Argala.Select(p => p.Planet))@(lane.Virodhargala.Count > 0 && lane.ArgalaOffset != 3 ? " vs " + string.Join(", ", lane.Virodhargala.Select(p => p.Planet)) : "")</span>
-                                        <span class="av10-lane-v">@LaneWord(lane)</span>
-                                    </button>
-                                }
-                            </div>
-                        }
-                        @if (reading.Causes.Count > 0)
-                        {
-                            <details class="av10-more">
-                                <summary>Planets and houses behind it (@reading.Causes.Count)</summary>
-                                <ul class="av10-list">@foreach (var cause in reading.Causes) { <li>@cause</li> }</ul>
-                            </details>
-                        }
-                    }
-                    else if (_kind == Kind.Planet && SelectedRow is { } row && Triads.GetValueOrDefault(row.Planet) is { } triad)
-                    {
-                        <div class="av10-insp-head">
-                            <span class="av10-badge">@row.Planet</span>
-                            <h2 class="av10-insp-title">@row.Planet in house @row.HouseNumberFromLagna, @Disp(row.Sign)@(string.IsNullOrEmpty(row.DignityStatus) ? "" : " (" + row.DignityStatus + ")")</h2>
-                        </div>
-                        <h3 class="av10-sub">Its lords <span class="av10-meta">(only the sign lord changes by varga; star and pada lords come from the true longitude)</span></h3>
-                        <LordChain Triad="triad" Natures="Natures" OnLord="SelectPlanet" />
-                        @if (Natures.GetValueOrDefault(row.Planet) is { HousesOwned.Count: > 0 } own)
-                        {
-                            <p class="av10-meta">Owns house @string.Join(" and ", own.HousesOwned.Select(h => h.ToString())):
-                                @foreach (var h in own.HousesOwned) { <button type="button" class="av10-link" @onclick="() => SelectHouse(h)">H@(h)</button> }
-                            </p>
-                        }
-                        <p class="av10-meta">Nakshatra @NakshatraPlace.Of(row).Name, pada @NakshatraPlace.Of(row).Pada.</p>
-                        @if (Strengths.GetValueOrDefault(row.Planet) is { Tier: not StrengthTier.None } ps)
-                        {
-                            <h3 class="av10-sub">Strength</h3>
-                            <p class="av10-text">@PlanetStrengthWords(ps)</p>
-                        }
-                        <h3 class="av10-sub">States, and how each was reached</h3>
-                        @foreach (var group in ReasonGroups(row.Planet))
-                        {
-                            <div class="av10-state"><b>@group.Key</b>
-                                <ul class="av10-list">@foreach (var r in group) { <li><b>@r.State</b> &mdash; @r.Reason</li> }</ul></div>
-                        }
-                        @foreach (var line in DamageLines(row)) { <p class="av10-caveat">&#9888; @line</p> }
-                        @if (YogasOfPlanet(row.Planet) is { Count: > 0 } planetYogas)
-                        {
-                            <h3 class="av10-sub">Yogas it takes part in</h3>
-                            <div class="av10-yogas">@foreach (var y in planetYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
-                        }
-                        @if (ArgalaRole(row.Planet).Count > 0)
-                        {
-                            <h3 class="av10-sub">Its part in argala</h3>
-                            <ul class="av10-list">@foreach (var line in ArgalaRole(row.Planet)) { <li>@line</li> }</ul>
-                        }
-                    }
-                    else if (_kind == Kind.Yoga && SelectedYoga is { } yoga)
-                    {
-                        <div class="av10-insp-head">
-                            <span class="av10-badge av10-badge-@yoga.Nature">@yoga.Nature.ToUpperInvariant()</span>
-                            <h2 class="av10-insp-title">@yoga.Name@(yoga.Based is null ? "" : " · " + yoga.Based)</h2>
-                        </div>
-                        @if (!string.IsNullOrWhiteSpace(yoga.Inference)) { <p class="av10-text">@yoga.Inference</p> }
-                        @if (!string.IsNullOrWhiteSpace(yoga.Rule)) { <p class="av10-meta">Rule: @yoga.Rule</p> }
-                        <p class="av10-meta">Delivery: @StrengthLayer.Delivery(yoga). A yoga shows potential; it usually matures in the dasha of one of its planets.</p>
-                        @if (yoga.Planets.Count > 0)
-                        {
-                            <h3 class="av10-sub">Made by <span class="av10-meta">(lit on the planet cards; pick one to read it)</span></h3>
-                            @foreach (var pl in yoga.Planets) { <button type="button" class="av10-link" @onclick="() => SelectPlanet(pl)">@pl@(Strengths.GetValueOrDefault(pl) is { PercentOfMinimum: { } pct } ? " " + (int)pct + "%" : "")</button> }
-                        }
-                    }
-                    else
-                    {
-                        <p class="av10-text">Pick a house, a planet, a lord or a yoga. The chart, this summary and both rails follow one selection. Houses show who wins the argala contest; planets show their lords, states and part in argala.</p>
-                        <p class="av10-meta">Ring on a planet: heavy = awake (Jg), dashed = dreaming (Sw), dotted = asleep (Su). Coloured edge: benefic or malefic for this lagna.</p>
-                    }
-                </section>
-
                 <section class="av10-section" aria-label="Houses">
-                    <h2 class="av10-h">Houses <span class="av10-meta">argala against virodhargala · SAV bindus of the sign · Bhava Bala</span></h2>
+                    <h2 class="av10-h">Houses <span class="av10-meta">@HouseHint</span></h2>
                     <div class="av10-bhavas">
                         @foreach (var f in _forces)
                         {
-                            <BhavaTile Force="f" Strength="@(HouseStrengths.Count == 12 ? HouseStrengths[f.House - 1] : null)" Selected="@(_kind == Kind.House && _house == f.House)" OnPick="SelectHouse" />
+                            <BhavaTile Force="f" Layer="_layer" YogaCount="YogasThroughHouse(f.House).Count" Strength="@(HouseStrengths.Count == 12 ? HouseStrengths[f.House - 1] : null)" Selected="@(_kind == Kind.House && _house == f.House)" OnPick="SelectHouse" />
                         }
                     </div>
                 </section>
 
                 <section class="av10-section" aria-label="Planets">
-                    <h2 class="av10-h">Planets <span class="av10-meta">place, nakshatra, strength (tick = 100% of minimum), nature, alertness</span></h2>
+                    <h2 class="av10-h">Planets <span class="av10-meta">@PlanetHint</span></h2>
                     <div class="av10-planets">
                         @foreach (var p in PlanetRows(chart))
                         {
-                            <PlanetCard Row="p" State="@(States.GetValueOrDefault(p.Planet) ?? PlanetStateInfo.None)" Nature="Natures.GetValueOrDefault(p.Planet)"
+                            <PlanetCard Row="p" Layer="_layer" YogaCount="YogasOfPlanet(p.Planet).Count" State="@(States.GetValueOrDefault(p.Planet) ?? PlanetStateInfo.None)" Nature="Natures.GetValueOrDefault(p.Planet)"
                                         Strength="Strengths.GetValueOrDefault(p.Planet)" Lit="@(SelectedYoga?.Planets.Contains(p.Planet) == true)"
                                         Selected="@(_kind == Kind.Planet && _planet == p.Planet)" OnPick="SelectPlanet" />
                         }
@@ -202,15 +96,12 @@ else if (Chart is { } chart)
                 @if (Yogas.Count > 0)
                 {
                     <section class="av10-section" aria-label="Yogas">
-                        <h2 class="av10-h">Yogas <span class="av10-meta">@Yogas.Count present in @_chartType · edge = good / mixed / challenging · dashed = rests on a weak planet</span></h2>
-                        <div class="av10-yogas">
-                            @foreach (var y in Yogas.Take(YogaShown)) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }
-                        </div>
-                        @if (Yogas.Count > YogaShown)
+                        <h2 class="av10-h">Yogas <span class="av10-meta">@Yogas.Count present in @_chartType · dashed = rests on a weak planet</span></h2>
+                        @foreach (var group in YogaGroups)
                         {
-                            <details class="av10-more" open="@(SelectedYoga is not null && Yogas.Skip(YogaShown).Any(y => y.Code == SelectedYoga.Code))">
-                                <summary>More yogas (@(Yogas.Count - YogaShown))</summary>
-                                <div class="av10-yogas">@foreach (var y in Yogas.Skip(YogaShown)) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                            <details class="av10-ygroup av10-ygroup-@group.Key" open="@(group.Key == "good" || _layer == AfLayer.Yogas || group.Any(y => SelectedYoga?.Code == y.Code))">
+                                <summary><b>@Cap(group.Key)</b> <span class="av10-count">@group.Count()</span></summary>
+                                <div class="av10-yogas">@foreach (var y in group) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
                             </details>
                         }
                     </section>
@@ -218,6 +109,118 @@ else if (Chart is { } chart)
 
                 <p class="av10-foot"><a href="/astro-facts/@Id">Full tables and the classic tabbed view</a></p>
             </div>
+
+        <section class="av10-inspector @(_kind == Kind.None ? "av10-insp-empty" : "")" aria-live="polite" aria-label="Summary of the selection">
+            @if (_kind != Kind.None) { <button type="button" class="av10-clear av10-insp-close" @onclick="Clear" aria-label="Clear the selection">&times; Clear</button> }
+            @if (_kind == Kind.House && SelectedForce is { } force)
+            {
+                var reading = force.Reading;
+                <div class="av10-insp-head">
+                    <span class="av10-badge @OutcomeCss(force.Outcome)">@OutcomeWord(force.Outcome) · @force.ArgalaForce&ndash;@force.VirodhargalaForce</span>
+                    <h2 class="av10-insp-title">House @force.House (@Disp(force.Sign)) &mdash; @reading.Headline</h2>
+                </div>
+                <div class="av10-meter" role="img" aria-label="Argala @force.ArgalaForce against virodhargala @force.VirodhargalaForce">
+                    <span class="av10-meter-arg" style="width:@(ArgalaForceModel.ArgalaShare(force))%"></span>
+                </div>
+                <p class="av10-text">@reading.Summary</p>
+                <p class="av10-meta">@reading.Varga</p>
+                @foreach (var caveat in reading.Caveats) { <p class="av10-caveat">&#9888; @caveat</p> }
+                @if (HouseStrengths.Count == 12 && HouseStrengths[force.House - 1] is { } hs && (hs.SavBindus is not null || hs.BhavaRupas is not null))
+                {
+                    <h3 class="av10-sub">Strength of this house</h3>
+                    <p class="av10-text">@HouseStrengthWords(hs)</p>
+                }
+                @if (YogasThroughHouse(force.House) is { Count: > 0 } houseYogas)
+                {
+                    <h3 class="av10-sub">Yogas through this house's lord</h3>
+                    <div class="av10-yogas">@foreach (var y in houseYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                }
+                @if (HouseLordOf(force.House) is { } lordPlanet && Triads.GetValueOrDefault(lordPlanet) is { } lordTriad)
+                {
+                    <h3 class="av10-sub">Lord of this house: @lordPlanet</h3>
+                    <LordChain Triad="lordTriad" Natures="Natures" OnLord="SelectPlanet" />
+                }
+                @if (force.Lanes.Any(l => l.Argala.Count > 0))
+                {
+                    <h3 class="av10-sub">Each argala against its virodhargala <span class="av10-meta">(pick one to show only it on the chart)</span></h3>
+                    <div class="av10-lanes">
+                        @foreach (var lane in force.Lanes.Where(l => l.Argala.Count > 0))
+                        {
+                            <button type="button" class="av10-lane @LaneCss(lane) @(_lane == lane.ArgalaOffset ? "av10-lane-on" : "")" @onclick="() => PickLane(lane.ArgalaOffset)">
+                                <span class="av10-lane-h">@(lane.ArgalaOffset == 3 ? "3rd (malefic exception)" : Ordinal(lane.ArgalaOffset)) &middot; H@(lane.ArgalaHouse)</span>
+                                <span class="av10-lane-p">@string.Join(", ", lane.Argala.Select(p => p.Planet))@(lane.Virodhargala.Count > 0 && lane.ArgalaOffset != 3 ? " vs " + string.Join(", ", lane.Virodhargala.Select(p => p.Planet)) : "")</span>
+                                <span class="av10-lane-v">@LaneWord(lane)</span>
+                            </button>
+                        }
+                    </div>
+                }
+                @if (reading.Causes.Count > 0)
+                {
+                    <details class="av10-more">
+                        <summary>Planets and houses behind it (@reading.Causes.Count)</summary>
+                        <ul class="av10-list">@foreach (var cause in reading.Causes) { <li>@cause</li> }</ul>
+                    </details>
+                }
+            }
+            else if (_kind == Kind.Planet && SelectedRow is { } row && Triads.GetValueOrDefault(row.Planet) is { } triad)
+            {
+                <div class="av10-insp-head">
+                    <span class="av10-badge">@row.Planet</span>
+                    <h2 class="av10-insp-title">@row.Planet in house @row.HouseNumberFromLagna, @Disp(row.Sign)@(string.IsNullOrEmpty(row.DignityStatus) ? "" : " (" + row.DignityStatus + ")")</h2>
+                </div>
+                <h3 class="av10-sub">Its lords <span class="av10-meta">(only the sign lord changes by varga; star and pada lords come from the true longitude)</span></h3>
+                <LordChain Triad="triad" Natures="Natures" OnLord="SelectPlanet" />
+                @if (Natures.GetValueOrDefault(row.Planet) is { HousesOwned.Count: > 0 } own)
+                {
+                    <p class="av10-meta">Owns house @string.Join(" and ", own.HousesOwned.Select(h => h.ToString())):
+                        @foreach (var h in own.HousesOwned) { <button type="button" class="av10-link" @onclick="() => SelectHouse(h)">H@(h)</button> }
+                    </p>
+                }
+                <p class="av10-meta">Nakshatra @NakshatraPlace.Of(row).Name, pada @NakshatraPlace.Of(row).Pada.</p>
+                @if (Strengths.GetValueOrDefault(row.Planet) is { Tier: not StrengthTier.None } ps)
+                {
+                    <h3 class="av10-sub">Strength</h3>
+                    <p class="av10-text">@PlanetStrengthWords(ps)</p>
+                }
+                <h3 class="av10-sub">States, and how each was reached</h3>
+                @foreach (var group in ReasonGroups(row.Planet))
+                {
+                    <div class="av10-state"><b>@group.Key</b>
+                        <ul class="av10-list">@foreach (var r in group) { <li><b>@r.State</b> &mdash; @r.Reason</li> }</ul></div>
+                }
+                @foreach (var line in DamageLines(row)) { <p class="av10-caveat">&#9888; @line</p> }
+                @if (YogasOfPlanet(row.Planet) is { Count: > 0 } planetYogas)
+                {
+                    <h3 class="av10-sub">Yogas it takes part in</h3>
+                    <div class="av10-yogas">@foreach (var y in planetYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                }
+                @if (ArgalaRole(row.Planet).Count > 0)
+                {
+                    <h3 class="av10-sub">Its part in argala</h3>
+                    <ul class="av10-list">@foreach (var line in ArgalaRole(row.Planet)) { <li>@line</li> }</ul>
+                }
+            }
+            else if (_kind == Kind.Yoga && SelectedYoga is { } yoga)
+            {
+                <div class="av10-insp-head">
+                    <span class="av10-badge av10-badge-@yoga.Nature">@yoga.Nature.ToUpperInvariant()</span>
+                    <h2 class="av10-insp-title">@yoga.Name@(yoga.Based is null ? "" : " · " + yoga.Based)</h2>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(yoga.Inference)) { <p class="av10-text">@yoga.Inference</p> }
+                @if (!string.IsNullOrWhiteSpace(yoga.Rule)) { <p class="av10-meta">Rule: @yoga.Rule</p> }
+                <p class="av10-meta">Delivery: @StrengthLayer.Delivery(yoga). A yoga shows potential; it usually matures in the dasha of one of its planets.</p>
+                @if (yoga.Planets.Count > 0)
+                {
+                    <h3 class="av10-sub">Made by <span class="av10-meta">(lit on the planet cards; pick one to read it)</span></h3>
+                    @foreach (var pl in yoga.Planets) { <button type="button" class="av10-link" @onclick="() => SelectPlanet(pl)">@pl@(Strengths.GetValueOrDefault(pl) is { PercentOfMinimum: { } pct } ? " " + (int)pct + "%" : "")</button> }
+                }
+            }
+            else
+            {
+                <p class="av10-text">Pick a house, a planet, a lord or a yoga. The chart, this summary and both rails follow one selection. Houses show who wins the argala contest; planets show their lords, states and part in argala.</p>
+                <p class="av10-meta">Ring on a planet: heavy = awake (Jg), dashed = dreaming (Sw), dotted = asleep (Su). Coloured edge: benefic or malefic for this lagna.</p>
+            }
+        </section>
         </div>
     </div>
 }
@@ -234,6 +237,7 @@ else if (Chart is { } chart)
     private int _house;
     private string? _planet;
     private int? _lane;
+    private AfLayer _layer = AfLayer.Argala;
     private string? _yoga;
 
     private IReadOnlyList<ArgalaFactRow> _storedFacts = Array.Empty<ArgalaFactRow>();
@@ -264,7 +268,6 @@ else if (Chart is { } chart)
 
     private LoadedChart? Chart => _data?.Charts.GetValueOrDefault(_chartType);
     private HouseForce? SelectedForce => _kind == Kind.House && _house is >= 1 and <= 12 && _forces.Count == 12 ? _forces[_house - 1] : null;
-    private const int YogaShown = 12;   // good yogas come first, so the fold hides the least useful
     private YogaChipFact? SelectedYoga => _kind == Kind.Yoga ? Yogas.FirstOrDefault(y => y.Code == _yoga) : null;
     private ChartKeyDetail? SelectedRow => _kind == Kind.Planet ? Chart?.Grahas.FirstOrDefault(k => k.Planet == _planet) : null;
 
@@ -344,6 +347,78 @@ else if (Chart is { } chart)
         if (_kind == Kind.Planet && _planet == planet) { Clear(); return; }
         _kind = Kind.Planet; _planet = planet; _lane = null;
     }
+
+    private static readonly (AfLayer Layer, string Label)[] Layers =
+        { (AfLayer.Argala, "Argala"), (AfLayer.Strength, "Strength"), (AfLayer.Yogas, "Yogas") };
+
+    private void SetLayer(AfLayer layer) => _layer = layer;
+
+    /// <summary>A click on a chart cell picks that cell's house.</summary>
+    private void PickCell(string sign)
+    {
+        var force = _forces.FirstOrDefault(f => f.Sign.ToString() == sign);
+        if (force is not null) SelectHouse(force.House);
+    }
+
+    /// <summary>The chart reads the same layer as the tiles: Argala tints a house by who wins, Strength by its SAV band.</summary>
+    private IReadOnlyDictionary<string, string> CellClasses
+    {
+        get
+        {
+            var map = new Dictionary<string, string>();
+            foreach (var f in _forces)
+            {
+                var css = _layer switch
+                {
+                    AfLayer.Argala => f.Outcome switch { ArgalaOutcome.ArgalaWins => "cell-good", ArgalaOutcome.VirodhargalaWins => "cell-bad", _ => null },
+                    AfLayer.Strength when HouseStrengths.Count == 12 => HouseStrengths[f.House - 1].SavTier switch
+                        { StrengthTier.Strong => "cell-good", StrengthTier.Moderate => "cell-mid", StrengthTier.Weak => "cell-bad", _ => null },
+                    _ => null
+                };
+                if (css is not null) map[f.Sign.ToString()] = css;
+            }
+            return map;
+        }
+    }
+
+    private IReadOnlyDictionary<string, string> CellNotes
+    {
+        get
+        {
+            var map = new Dictionary<string, string>();
+            foreach (var f in _forces)
+            {
+                var note = _layer switch
+                {
+                    AfLayer.Argala when f.Outcome != ArgalaOutcome.Idle => $"{f.ArgalaForce}–{f.VirodhargalaForce}",
+                    AfLayer.Strength when HouseStrengths.Count == 12 => HouseStrengths[f.House - 1].SavBindus?.ToString(),
+                    _ => null
+                };
+                if (note is not null) map[f.Sign.ToString()] = note;
+            }
+            return map;
+        }
+    }
+
+    private IReadOnlyCollection<string> LitPlanets => SelectedYoga?.Planets ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+
+    private IEnumerable<IGrouping<string, YogaChipFact>> YogaGroups => Yogas.GroupBy(y => y.Nature);
+
+    private static string Cap(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+
+    private string HouseHint => _layer switch
+    {
+        AfLayer.Argala => "argala against virodhargala; the chart is tinted green where argala wins, red where virodhargala wins",
+        AfLayer.Strength => "SAV bindus of the sign and Bhava Bala; the chart is tinted by the SAV band (over 30 good, under 25 weak)",
+        _ => "how many yogas run through each house's lord"
+    };
+
+    private string PlanetHint => _layer switch
+    {
+        AfLayer.Argala => "place, nature and alertness (ring: heavy = awake, dashed = dreaming, dotted = asleep)",
+        AfLayer.Strength => "nakshatra, Shadbala (tick = 100% of the minimum) and own bindus",
+        _ => "how many yogas each planet makes; pick a yoga to light its planets"
+    };
 
     private void SelectYoga(string code)
     {

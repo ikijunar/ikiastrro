@@ -128,7 +128,7 @@ public sealed class StrengthLayerTests : BunitContext
     public void PlanetCard_ShowsNakshatra_StrengthPercent_AndBindus()
     {
         var strength = new PlanetStrengthFacts("Jupiter", 7m, 130m, StrengthTier.Strong, 40m, 20m, 6, StrengthTier.Strong);
-        var cut = Render<PlanetCard>(p => p.Add(x => x.Row, Graha("Jupiter", ZodiacName.Cancer, 100)).Add(x => x.Strength, strength));
+        var cut = Render<PlanetCard>(p => p.Add(x => x.Row, Graha("Jupiter", ZodiacName.Cancer, 100)).Add(x => x.Strength, strength).Add(x => x.Layer, AfLayer.Strength));
         Assert.Contains("pada", cut.Find(".pc-nak").TextContent);
         Assert.Equal("130%", cut.Find(".pc-pct").TextContent);
         Assert.Contains("6", cut.Find(".pc-bav-strong").TextContent);
@@ -140,8 +140,23 @@ public sealed class StrengthLayerTests : BunitContext
         var strength = new HouseStrength(1, 33, StrengthTier.Strong, 8.0m, StrengthTier.Strong);
         var grahas = new[] { Graha("Ascendant", ZodiacName.Scorpio) };
         var force = Ikiastrro.Web.Components.Charts.ArgalaForceModel.Build(1, ArgalaFacts.Live("D1", "Scorpio", grahas), grahas, "Scorpio");
-        var cut = Render<BhavaTile>(p => p.Add(x => x.Force, force).Add(x => x.Strength, strength));
+        var cut = Render<BhavaTile>(p => p.Add(x => x.Force, force).Add(x => x.Strength, strength).Add(x => x.Layer, AfLayer.Strength));
         Assert.Contains("33", cut.Find(".bt-str").TextContent);
         Assert.Contains("8.0", cut.Find(".bt-str").TextContent);
+    }
+
+    [Fact]
+    public void Tiles_AndCards_CarryOneFactPerLayer()
+    {
+        var grahas = new[] { Graha("Ascendant", ZodiacName.Scorpio) };
+        var force = Ikiastrro.Web.Components.Charts.ArgalaForceModel.Build(1, ArgalaFacts.Live("D1", "Scorpio", grahas), grahas, "Scorpio");
+        var tile = Render<BhavaTile>(p => p.Add(x => x.Force, force).Add(x => x.Layer, AfLayer.Strength));
+        Assert.Empty(tile.FindAll(".bt-meter"));                    // the argala meter belongs to the Argala layer only
+        var yogas = Render<BhavaTile>(p => p.Add(x => x.Force, force).Add(x => x.Layer, AfLayer.Yogas).Add(x => x.YogaCount, 3));
+        Assert.Equal("3 yogas", yogas.Find(".bt-word").TextContent);
+
+        var card = Render<PlanetCard>(p => p.Add(x => x.Row, Graha("Sun", ZodiacName.Aries)).Add(x => x.Layer, AfLayer.Yogas).Add(x => x.YogaCount, 1));
+        Assert.Equal("1 yoga", card.Find(".pc-nature").TextContent);
+        Assert.Empty(card.FindAll(".pc-nak"));
     }
 }

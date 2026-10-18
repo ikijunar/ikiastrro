@@ -34,8 +34,22 @@
             var aspectedBy = !Compact && AspectedByGlyphs.TryGetValue(cell.MatchSign, out var byList) ? byList : Array.Empty<string>();
 
             var argalaRole = !Compact ? ArgalaRole(cellSign) : null;
+            var clickable = !Compact && OnCellPick.HasDelegate;
+            var cellSignName = cell.MatchSign;
+            // Handlers ride in only when the page asked for them, so every other page's markup is unchanged.
+            var cellAttrs = clickable
+                ? new Dictionary<string, object>
+                {
+                    ["onclick"] = EventCallback.Factory.Create(this, () => PickCell(cellSignName)),
+                    ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnCellKey(e, cellSignName))
+                }
+                : NoAttrs;
+            var tint = !Compact && CellClass.TryGetValue(cell.MatchSign, out var tintCss) ? tintCss : null;
+            var note = !Compact && CellNote.TryGetValue(cell.MatchSign, out var noteText) ? noteText : null;
 
-            <div class="cell @(isAscendant ? "ascendant" : "") @(isLinked ? "link-hl" : "") @argalaRole?.Css" data-sign="@cell.MatchSign" style="grid-column:@cell.Col;grid-row:@cell.Row;">
+            <div class="cell @(isAscendant ? "ascendant" : "") @(isLinked ? "link-hl" : "") @argalaRole?.Css @tint @(clickable ? "clickable" : "")" data-sign="@cell.MatchSign" style="grid-column:@cell.Col;grid-row:@cell.Row;"
+                 role="@(clickable ? "button" : null)" tabindex="@(clickable ? 0 : null)" aria-label="@(clickable ? $"House {houseFromLagna}, {cell.DisplayEn}" : null)"
+                 @attributes="cellAttrs">
                 <span class="house-nums">
                     <span class="house-num from-lagna" title="House @houseFromLagna from Lagna">@houseFromLagna</span>
                     @if (houseFromMoon is int hm)
@@ -43,7 +57,7 @@
                         <span class="house-num from-moon" title="House @hm from the Moon">@hm</span>
                     }
                 </span>
-                <div class="sign-label"><span class="sign-en">@cell.DisplayEn</span></div>
+                <div class="sign-label"><span class="sign-en">@cell.DisplayEn</span>@if (note is not null) { <span class="cell-note">@note</span> }</div>
                 @if (isLinked && !string.IsNullOrEmpty(HighlightLabel))
                 {
                     <div class="special-labels"><span class="special-label link-label">@HighlightLabel</span></div>
@@ -67,7 +81,11 @@
                 <div class="planets">
                     @foreach (var g in glyphs)
                     {
-                        <span class="planet-glyph" title="@g.PlanetName @(g.IsRetrograde ? "(retrograde)" : "(direct)")">
+                        var glyphName = g.PlanetName;
+                        var glyphAttrs = OnPlanetPick.HasDelegate
+                            ? new Dictionary<string, object> { ["onclick"] = EventCallback.Factory.Create(this, () => PickPlanet(glyphName)) }
+                            : NoAttrs;
+                        <span class="planet-glyph@(LitPlanets.Contains(g.PlanetName) ? " lit" : "")" title="@g.PlanetName @(g.IsRetrograde ? "(retrograde)" : "(direct)")" @attributes="glyphAttrs">
                             <span class="pg-name">@(g.IsRetrograde ? $"({ChartViewModel.PlanetGlyph(g.PlanetName)})" : ChartViewModel.PlanetGlyph(g.PlanetName))</span>
                             @if (g.DignityToken is not null)
                             {
@@ -177,6 +195,36 @@
     /// crossed = obstructed), each obstructing sign dashed with a blocked-bar onto the argala it obstructs.
     /// Null = nothing drawn. Hidden in Compact mode.</summary>
     [Parameter] public ArgalaOverlay? Argala { get; set; }
+
+    /// <summary>Sign (internal spelling) → extra CSS class on that cell, e.g. a layer tint (cell-good / cell-mid / cell-bad). Hidden in Compact mode.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string> CellClass { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>Sign → one short value printed beside the sign name (a SAV total, an argala score). Hidden in Compact mode.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string> CellNote { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>Planet names to outline on the chart (the planets behind a picked yoga).</summary>
+    [Parameter] public IReadOnlyCollection<string> LitPlanets { get; set; } = Array.Empty<string>();
+
+    /// <summary>Clicking a cell hands its sign to the page; when set, cells become buttons.</summary>
+    [Parameter] public EventCallback<string> OnCellPick { get; set; }
+
+    /// <summary>Clicking a planet chip hands the planet to the page instead of picking its cell.</summary>
+    [Parameter] public EventCallback<string> OnPlanetPick { get; set; }
+
+    private static readonly Dictionary<string, object> NoAttrs = new();
+    private bool _glyphClicked;   // a planet click bubbles to its cell; the planet pick wins
+
+    private void PickCell(string sign)
+    {
+        if (_glyphClicked) { _glyphClicked = false; return; }
+        _ = OnCellPick.InvokeAsync(sign);
+    }
+    private void PickPlanet(string planet)
+    {
+        _glyphClicked = OnCellPick.HasDelegate;
+        _ = OnPlanetPick.InvokeAsync(planet);
+    }
+    private void OnCellKey(KeyboardEventArgs e, string sign) { if (e.Key is "Enter" or " ") _ = OnCellPick.InvokeAsync(sign); }
 
     private sealed record ArgalaCellRole(string Css, string Label, IReadOnlyList<OverlayPlanet> Tags);
 

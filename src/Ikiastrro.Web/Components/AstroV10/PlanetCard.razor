@@ -1,31 +1,43 @@
 @using Direction = Ikiastrro.Core.LifeMatters.Promise.Direction
+@using Ikiastrro.Core.Engines.Strength
 @using Ikiastrro.Core.Presentation
 @using Ikiastrro.Web.Components.Charts
-@* PlanetCard — one graha as a compact card: glyph and name, where it stands (house, sign, dignity), its alertness (Jg awake,
-   Sw dreaming, Su asleep, PVR sec.15.4.2) as a ring around the glyph, a warning mark when it is Lajjita, Kshudhita or Kshobhita
-   (sec.15.4.3), and its functional nature as a coloured edge plus the words benefic/malefic. The whole card is the button.
-   Alertness is the avasthas' only appearance here, so a dignity or conjunction already inside a state is not repeated.
-   "pc" = PlanetCard. *@
+@* PlanetCard — one graha. The glyph in its alertness ring (heavy = awake Jg, dashed = dreaming Sw, dotted = asleep Su, PVR sec.15.4.2),
+   its name and place, and a coloured edge for functional benefic/malefic with the word beside it. What sits under that depends on
+   the page's layer, so the card carries one fact at a time: Argala = nature and alertness code, plus a warning when it is Lajjita,
+   Kshudhita or Kshobhita (sec.15.4.3); Strength = nakshatra and pada, the Shadbala bar and its own bindus; Yogas = how many yogas it
+   makes. The whole card is the button. Alertness is the avasthas' only appearance here, so a dignity already inside a state is not
+   repeated. "pc" = PlanetCard. *@
 <button type="button" class="pc @NatureCss @(Selected ? "pc-on" : "") @(Lit ? "pc-lit" : "")" aria-pressed="@(Selected ? "true" : "false")"
         title="@Title" @onclick="() => OnPick.InvokeAsync(Row.Planet)">
     <span class="pc-glyph pc-ring-@RingCss" title="@AlertnessWords">@ChartViewModel.PlanetGlyph(Row.Planet)</span>
     <span class="pc-body">
         <span class="pc-name">@Row.Planet@(Row.IsRetrograde == true ? " (R)" : "")@(Row.IsCombust == true ? " 🔥" : "")</span>
         <span class="pc-where">H@(Row.HouseNumberFromLagna) · @Short(Row.Sign)@(string.IsNullOrEmpty(Row.DignityStatus) ? "" : " · " + Row.DignityStatus)</span>
-        <span class="pc-nak" title="Nakshatra and pada, from the true longitude (the same in every chart)">@Nak.Name · pada @Nak.Pada</span>
-        @if (Strength is { Tier: not Ikiastrro.Core.Engines.Strength.StrengthTier.None } st)
+        @if (Layer == AfLayer.Argala)
         {
-            <span class="pc-str" title="@StrengthTitle(st)">
-                <span class="pc-bar" aria-hidden="true"><span class="pc-bar-fill pc-@TierCss(st.Tier)" style="width:@(Math.Min(100, (int)(st.PercentOfMinimum ?? 0) * 100 / 150))%"></span><span class="pc-bar-par"></span></span>
-                <span class="pc-pct">@((int)(st.PercentOfMinimum ?? 0))%</span>
-                @if (st.OwnBindus is { } b) { <span class="pc-tag pc-bav-@TierCss(st.BindusTier)" title="Own Bhinnashtakavarga bindus in the sign it stands in">@b&nbsp;bindu</span> }
+            <span class="pc-tags">
+                <span class="pc-nature">@NatureWord</span>
+                @if (State.Delivery != Delivery.Unknown) { <span class="pc-tag">@Code</span> }
+                @if (State.Damaging.Count > 0) { <span class="pc-tag pc-warn" title="@string.Join(", ", State.Damaging.Select(d => d.State))">&#9888; @State.Damaging[0].State</span> }
             </span>
         }
-        <span class="pc-tags">
-            <span class="pc-nature">@NatureWord</span>
-            @if (State.Delivery != Delivery.Unknown) { <span class="pc-tag">@Code</span> }
-            @if (State.Damaging.Count > 0) { <span class="pc-tag pc-warn" title="@string.Join(", ", State.Damaging.Select(d => d.State))">&#9888; @State.Damaging[0].State</span> }
-        </span>
+        else if (Layer == AfLayer.Strength)
+        {
+            <span class="pc-nak" title="Nakshatra and pada, from the true longitude (the same in every chart)">@Nak.Name · pada @Nak.Pada</span>
+            @if (Strength is { Tier: not StrengthTier.None } st)
+            {
+                <span class="pc-str" title="@StrengthTitle(st)">
+                    <span class="pc-bar" aria-hidden="true"><span class="pc-bar-fill pc-@TierCss(st.Tier)" style="width:@(Math.Min(100, (int)(st.PercentOfMinimum ?? 0) * 100 / 150))%"></span><span class="pc-bar-par"></span></span>
+                    <span class="pc-pct">@((int)(st.PercentOfMinimum ?? 0))%</span>
+                    @if (st.OwnBindus is { } b) { <span class="pc-tag pc-bav-@TierCss(st.BindusTier)" title="Own Bhinnashtakavarga bindus in the sign it stands in">@b&nbsp;bindu</span> }
+                </span>
+            }
+        }
+        else
+        {
+            <span class="pc-tags"><span class="pc-nature">@(YogaCount == 0 ? "no yoga" : YogaCount + (YogaCount == 1 ? " yoga" : " yogas"))</span></span>
+        }
     </span>
 </button>
 
@@ -34,6 +46,8 @@
     [Parameter] public PlanetStateInfo State { get; set; } = PlanetStateInfo.None;
     [Parameter] public LordNature? Nature { get; set; }
     [Parameter] public PlanetStrengthFacts? Strength { get; set; }
+    [Parameter] public AfLayer Layer { get; set; } = AfLayer.Argala;
+    [Parameter] public int YogaCount { get; set; }
     [Parameter] public bool Lit { get; set; }
     [Parameter] public bool Selected { get; set; }
     [Parameter] public EventCallback<string> OnPick { get; set; }
@@ -67,9 +81,9 @@
 
     private NakshatraPlace Nak => NakshatraPlace.Of(Row);
 
-    private static string TierCss(Ikiastrro.Core.Engines.Strength.StrengthTier t) => t switch
+    private static string TierCss(StrengthTier t) => t switch
     {
-        Ikiastrro.Core.Engines.Strength.StrengthTier.Strong => "strong", Ikiastrro.Core.Engines.Strength.StrengthTier.Weak => "weak", _ => "mid"
+        StrengthTier.Strong => "strong", StrengthTier.Weak => "weak", _ => "mid"
     };
 
     private static string StrengthTitle(PlanetStrengthFacts s) =>
