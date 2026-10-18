@@ -4,6 +4,7 @@
 @using Ikiastrro.Core.Engines.Lords
 @using Ikiastrro.Core.Engines.PlanetaryStates
 @using Ikiastrro.Core.Models
+@using Ikiastrro.Core.Engines.Strength
 @using Ikiastrro.Core.Presentation
 @using Ikiastrro.Web.Components.AstroV10
 @using Ikiastrro.Web.Components.Charts
@@ -21,10 +22,15 @@
 @inject Ikiastrro.Data.NaisargikaKarakaRepository NaisargikaRepo
 @inject Ikiastrro.Data.PlanetaryStateRuleRepository PlanetaryStateRuleRepo
 @inject Ikiastrro.Data.PanchangaRepository PanchangaRepo
+@inject Ikiastrro.Data.PlanetaryStrengthRepository PlanetaryStrengthRepo
+@inject Ikiastrro.Data.BhavaStrengthRepository BhavaStrengthRepo
+@inject Ikiastrro.Data.AshtakavargaRepository AshtakavargaRepo
+@inject Ikiastrro.Data.YogaEvaluationRepository YogaEvaluationRepo
 @inject ActivePerson Active
 @* AF-v10 (Astro Facts v10) — one connected screen instead of ten tabs (docs/ui/af-v10-design.md). The chart stays pinned on the
    left; everything on the right is a view of the same chart and shares ONE selection: pick a house tile, a planet card or a
-   lord chip and the chart, the summary at the top right and the rails all follow (brushing and linking). First slice: houses
+   lord chip and the chart, the summary at the top right and the rails all follow (brushing and linking). Second layer (strength): Ṣaḍbala, Ashtakavarga and Bhava Bala sit on the
+   house tiles and planet cards, nakshatra and pada on the cards, and the present yogas are chips that light their planets. First slice: houses
    (argala force and meaning), planets (avasthas and why, lords and their nature), the chart overlay. The classic tabbed page
    at /astro-facts/{id} is untouched and linked from the foot of this one. Read-only; nothing here is stored. "av10" = this page. *@
 <PageTitle>AF-v10</PageTitle>
@@ -74,6 +80,16 @@ else if (Chart is { } chart)
                         <p class="av10-text">@reading.Summary</p>
                         <p class="av10-meta">@reading.Varga</p>
                         @foreach (var caveat in reading.Caveats) { <p class="av10-caveat">&#9888; @caveat</p> }
+                        @if (HouseStrengths.Count == 12 && HouseStrengths[force.House - 1] is { } hs && (hs.SavBindus is not null || hs.BhavaRupas is not null))
+                        {
+                            <h3 class="av10-sub">Strength of this house</h3>
+                            <p class="av10-text">@HouseStrengthWords(hs)</p>
+                        }
+                        @if (YogasThroughHouse(force.House) is { Count: > 0 } houseYogas)
+                        {
+                            <h3 class="av10-sub">Yogas through this house's lord</h3>
+                            <div class="av10-yogas">@foreach (var y in houseYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                        }
                         @if (HouseLordOf(force.House) is { } lordPlanet && Triads.GetValueOrDefault(lordPlanet) is { } lordTriad)
                         {
                             <h3 class="av10-sub">Lord of this house: @lordPlanet</h3>
@@ -115,6 +131,12 @@ else if (Chart is { } chart)
                                 @foreach (var h in own.HousesOwned) { <button type="button" class="av10-link" @onclick="() => SelectHouse(h)">H@(h)</button> }
                             </p>
                         }
+                        <p class="av10-meta">Nakshatra @NakshatraPlace.Of(row).Name, pada @NakshatraPlace.Of(row).Pada.</p>
+                        @if (Strengths.GetValueOrDefault(row.Planet) is { Tier: not StrengthTier.None } ps)
+                        {
+                            <h3 class="av10-sub">Strength</h3>
+                            <p class="av10-text">@PlanetStrengthWords(ps)</p>
+                        }
                         <h3 class="av10-sub">States, and how each was reached</h3>
                         @foreach (var group in ReasonGroups(row.Planet))
                         {
@@ -122,39 +144,77 @@ else if (Chart is { } chart)
                                 <ul class="av10-list">@foreach (var r in group) { <li><b>@r.State</b> &mdash; @r.Reason</li> }</ul></div>
                         }
                         @foreach (var line in DamageLines(row)) { <p class="av10-caveat">&#9888; @line</p> }
+                        @if (YogasOfPlanet(row.Planet) is { Count: > 0 } planetYogas)
+                        {
+                            <h3 class="av10-sub">Yogas it takes part in</h3>
+                            <div class="av10-yogas">@foreach (var y in planetYogas) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                        }
                         @if (ArgalaRole(row.Planet).Count > 0)
                         {
                             <h3 class="av10-sub">Its part in argala</h3>
                             <ul class="av10-list">@foreach (var line in ArgalaRole(row.Planet)) { <li>@line</li> }</ul>
                         }
                     }
+                    else if (_kind == Kind.Yoga && SelectedYoga is { } yoga)
+                    {
+                        <div class="av10-insp-head">
+                            <span class="av10-badge av10-badge-@yoga.Nature">@yoga.Nature.ToUpperInvariant()</span>
+                            <h2 class="av10-insp-title">@yoga.Name@(yoga.Based is null ? "" : " · " + yoga.Based)</h2>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(yoga.Inference)) { <p class="av10-text">@yoga.Inference</p> }
+                        @if (!string.IsNullOrWhiteSpace(yoga.Rule)) { <p class="av10-meta">Rule: @yoga.Rule</p> }
+                        <p class="av10-meta">Delivery: @StrengthLayer.Delivery(yoga). A yoga shows potential; it usually matures in the dasha of one of its planets.</p>
+                        @if (yoga.Planets.Count > 0)
+                        {
+                            <h3 class="av10-sub">Made by <span class="av10-meta">(lit on the planet cards; pick one to read it)</span></h3>
+                            @foreach (var pl in yoga.Planets) { <button type="button" class="av10-link" @onclick="() => SelectPlanet(pl)">@pl@(Strengths.GetValueOrDefault(pl) is { PercentOfMinimum: { } pct } ? " " + (int)pct + "%" : "")</button> }
+                        }
+                    }
                     else
                     {
-                        <p class="av10-text">Pick a house, a planet or a lord. The chart, this summary and both rails follow one selection. Houses show who wins the argala contest; planets show their lords, states and part in argala.</p>
+                        <p class="av10-text">Pick a house, a planet, a lord or a yoga. The chart, this summary and both rails follow one selection. Houses show who wins the argala contest; planets show their lords, states and part in argala.</p>
                         <p class="av10-meta">Ring on a planet: heavy = awake (Jg), dashed = dreaming (Sw), dotted = asleep (Su). Coloured edge: benefic or malefic for this lagna.</p>
                     }
                 </section>
 
                 <section class="av10-section" aria-label="Houses">
-                    <h2 class="av10-h">Houses <span class="av10-meta">argala against virodhargala, one tile per house</span></h2>
+                    <h2 class="av10-h">Houses <span class="av10-meta">argala against virodhargala · SAV bindus of the sign · Bhava Bala</span></h2>
                     <div class="av10-bhavas">
                         @foreach (var f in _forces)
                         {
-                            <BhavaTile Force="f" Selected="@(_kind == Kind.House && _house == f.House)" OnPick="SelectHouse" />
+                            <BhavaTile Force="f" Strength="@(HouseStrengths.Count == 12 ? HouseStrengths[f.House - 1] : null)" Selected="@(_kind == Kind.House && _house == f.House)" OnPick="SelectHouse" />
                         }
                     </div>
                 </section>
 
                 <section class="av10-section" aria-label="Planets">
-                    <h2 class="av10-h">Planets <span class="av10-meta">place, nature, alertness</span></h2>
+                    <h2 class="av10-h">Planets <span class="av10-meta">place, nakshatra, strength (tick = 100% of minimum), nature, alertness</span></h2>
                     <div class="av10-planets">
                         @foreach (var p in PlanetRows(chart))
                         {
                             <PlanetCard Row="p" State="@(States.GetValueOrDefault(p.Planet) ?? PlanetStateInfo.None)" Nature="Natures.GetValueOrDefault(p.Planet)"
+                                        Strength="Strengths.GetValueOrDefault(p.Planet)" Lit="@(SelectedYoga?.Planets.Contains(p.Planet) == true)"
                                         Selected="@(_kind == Kind.Planet && _planet == p.Planet)" OnPick="SelectPlanet" />
                         }
                     </div>
                 </section>
+
+                @if (Yogas.Count > 0)
+                {
+                    <section class="av10-section" aria-label="Yogas">
+                        <h2 class="av10-h">Yogas <span class="av10-meta">@Yogas.Count present in @_chartType · edge = good / mixed / challenging · dashed = rests on a weak planet</span></h2>
+                        <div class="av10-yogas">
+                            @foreach (var y in Yogas.Take(YogaShown)) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }
+                        </div>
+                        @if (Yogas.Count > YogaShown)
+                        {
+                            <details class="av10-more" open="@(SelectedYoga is not null && Yogas.Skip(YogaShown).Any(y => y.Code == SelectedYoga.Code))">
+                                <summary>More yogas (@(Yogas.Count - YogaShown))</summary>
+                                <div class="av10-yogas">@foreach (var y in Yogas.Skip(YogaShown)) { <YogaChip Fact="y" Selected="@(_kind == Kind.Yoga && _yoga == y.Code)" OnPick="SelectYoga" /> }</div>
+                            </details>
+                        }
+                    </section>
+                }
 
                 <p class="av10-foot"><a href="/astro-facts/@Id">Full tables and the classic tabbed view</a></p>
             </div>
@@ -165,7 +225,7 @@ else if (Chart is { } chart)
 @code {
     [Parameter] public int Id { get; set; }
 
-    private enum Kind { None, House, Planet }
+    private enum Kind { None, House, Planet, Yoga }
 
     private WorkspaceData? _data;
     private int _loadedId = -1;
@@ -174,6 +234,7 @@ else if (Chart is { } chart)
     private int _house;
     private string? _planet;
     private int? _lane;
+    private string? _yoga;
 
     private IReadOnlyList<ArgalaFactRow> _storedFacts = Array.Empty<ArgalaFactRow>();
     private IReadOnlyDictionary<int, string> _houseMatters = new Dictionary<int, string>();
@@ -182,18 +243,29 @@ else if (Chart is { } chart)
     private PlanetaryStateRuleSet? _rules;
     private double? _ghatis;
 
+    // Strength layer inputs: natal rows read once; the yogas follow the chart on screen.
+    private IReadOnlyList<Ikiastrro.Data.ShadbalaSummaryRow> _shadbala = Array.Empty<Ikiastrro.Data.ShadbalaSummaryRow>();
+    private IReadOnlyList<Ikiastrro.Data.BhavaBalaSummaryRow> _bhava = Array.Empty<Ikiastrro.Data.BhavaBalaSummaryRow>();
+    private IReadOnlyList<Ikiastrro.Data.AshtakavargaRow> _ashtakavarga = Array.Empty<Ikiastrro.Data.AshtakavargaRow>();
+    private IReadOnlyList<Ikiastrro.Data.YogaEvaluationRow> _yogaRows = Array.Empty<Ikiastrro.Data.YogaEvaluationRow>();
+
     // Per shown chart, rebuilt whenever the chart changes.
     private IReadOnlyList<HouseForce> _forces = Array.Empty<HouseForce>();
     private IReadOnlyDictionary<string, PlanetStateInfo> States { get; set; } = new Dictionary<string, PlanetStateInfo>();
     private IReadOnlyDictionary<string, IReadOnlyList<StateReason>> Reasons { get; set; } = new Dictionary<string, IReadOnlyList<StateReason>>();
     private IReadOnlyDictionary<string, LordNature> Natures { get; set; } = new Dictionary<string, LordNature>();
     private IReadOnlyDictionary<string, PlanetLordTriad> Triads { get; set; } = new Dictionary<string, PlanetLordTriad>();
+    private IReadOnlyDictionary<string, PlanetStrengthFacts> Strengths { get; set; } = new Dictionary<string, PlanetStrengthFacts>();
+    private IReadOnlyList<HouseStrength> HouseStrengths { get; set; } = Array.Empty<HouseStrength>();
+    private IReadOnlyList<YogaChipFact> Yogas { get; set; } = Array.Empty<YogaChipFact>();
 
     private static readonly string[] PlanetOrder = { "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu" };
     private static readonly string[] SystemOrder = { "Baaladi", "Jagradadi", "Sayanadi", "Deeptadi", "Lajjitadi" };
 
     private LoadedChart? Chart => _data?.Charts.GetValueOrDefault(_chartType);
     private HouseForce? SelectedForce => _kind == Kind.House && _house is >= 1 and <= 12 && _forces.Count == 12 ? _forces[_house - 1] : null;
+    private const int YogaShown = 12;   // good yogas come first, so the fold hides the least useful
+    private YogaChipFact? SelectedYoga => _kind == Kind.Yoga ? Yogas.FirstOrDefault(y => y.Code == _yoga) : null;
     private ChartKeyDetail? SelectedRow => _kind == Kind.Planet ? Chart?.Grahas.FirstOrDefault(k => k.Planet == _planet) : null;
 
     private IEnumerable<LoadedChart> ChartOptions => _data?.Charts.Values
@@ -209,7 +281,7 @@ else if (Chart is { } chart)
     {
         if (_loadedId == Id) return;
         _loadedId = Id;
-        _kind = Kind.None; _lane = null;
+        _kind = Kind.None; _lane = null; _yoga = null;
         _data = WorkspaceData.Load(Id, BirthDetailsRepo, ChartResultsRepo, ChartKeyDetailsRepo, ChartHouseLordsRepo,
             ChartHouseLordInterpretationRepo, ChartAspectsRepo, ChartConjunctionsRepo, ChartMultiGrahaConjunctionRepo, ChartTypeRepo.GetAll());
         if (_data is null || !_data.Charts.ContainsKey("D1")) { _data = null; return; }
@@ -226,6 +298,9 @@ else if (Chart is { } chart)
         _storedFacts = ArgalaFactRepo.GetByBirthDetailId(Id);
         _rules = PlanetaryStateRuleRepo.GetActiveRuleSet();
         _ghatis = (double?)PanchangaRepo.GetByBirthDetailId(Id)?.JanmaGhatis;
+        _shadbala = PlanetaryStrengthRepo.GetSummaryByBirthDetailId(Id);
+        _bhava = BhavaStrengthRepo.GetSummaryByBirthDetailId(Id);
+        _ashtakavarga = AshtakavargaRepo.GetByBirthDetailId(Id);
         Recompute();
     }
 
@@ -237,6 +312,11 @@ else if (Chart is { } chart)
         var facts = ArgalaFacts.ForChart(_storedFacts, chart.ChartType, chart.AscendantSign, chart.Grahas);
         Triads = chart.Grahas.Where(k => k.Planet != "Ascendant").ToDictionary(k => k.Planet, PlanetLordTriad.For);
         Natures = LordNature.For(chart);
+        Strengths = StrengthLayer.Planets(_shadbala, _ashtakavarga, chart.ChartType, chart.Grahas);
+        HouseStrengths = StrengthLayer.Houses(_ashtakavarga, _bhava, chart.ChartType, chart.AscendantSign);
+        _yogaRows = YogaEvaluationRepo.GetByBirthDetailId(Id, chart.ChartType);
+        Yogas = StrengthLayer.Yogas(_yogaRows, YogaHouseLords(chart), YogaPlacements(chart), _shadbala);
+        if (_kind == Kind.Yoga && Yogas.All(y => y.Code != _yoga)) Clear();   // a pick the new varga does not have
         if (_rules is not null)
         {
             var live = AvasthaLive.For(chart, _rules, chart.ChartType == "D1" ? _ghatis : null);
@@ -265,9 +345,15 @@ else if (Chart is { } chart)
         _kind = Kind.Planet; _planet = planet; _lane = null;
     }
 
+    private void SelectYoga(string code)
+    {
+        if (_kind == Kind.Yoga && _yoga == code) { Clear(); return; }
+        _kind = Kind.Yoga; _yoga = code; _planet = null; _lane = null;
+    }
+
     private void PickLane(int offset) => _lane = _lane == offset ? null : offset;
 
-    private void Clear() { _kind = Kind.None; _planet = null; _lane = null; }
+    private void Clear() { _kind = Kind.None; _planet = null; _lane = null; _yoga = null; }
 
     private ArgalaOverlay? Overlay(LoadedChart chart) =>
         SelectedForce is { } f ? ArgalaForceModel.Overlay(chart.ChartType, f, _lane) : null;
@@ -279,8 +365,47 @@ else if (Chart is { } chart)
     {
         Kind.House => $"House {_house}" + (_lane is { } l ? $" · {(l == 3 ? "3rd" : Ordinal(l))} argala" : ""),
         Kind.Planet => _planet ?? "",
+        Kind.Yoga => SelectedYoga?.Name ?? "",
         _ => "Nothing picked"
     };
+
+    private static IReadOnlyDictionary<int, PlanetName> YogaHouseLords(LoadedChart chart) =>
+        chart.HouseLords.Where(h => Enum.TryParse<PlanetName>(h.LordPlanet, true, out _))
+            .GroupBy(h => h.HouseNumber).ToDictionary(g => g.Key, g => Enum.Parse<PlanetName>(g.First().LordPlanet, true));
+
+    private static IReadOnlyDictionary<PlanetName, Ikiastrro.Core.Engines.Yoga.YogaPlacement> YogaPlacements(LoadedChart chart) =>
+        chart.Grahas.Where(g => Enum.TryParse<PlanetName>(g.Planet, true, out _))
+            .GroupBy(g => Enum.Parse<PlanetName>(g.Planet, true))
+            .ToDictionary(g => g.Key, g => new Ikiastrro.Core.Engines.Yoga.YogaPlacement(
+                g.First().HouseNumberFromLagna, g.First().HouseNumberFromSun, g.First().HouseNumberFromMoon));
+
+    private IReadOnlyList<YogaChipFact> YogasOfPlanet(string planet) => Yogas.Where(y => y.Planets.Contains(planet)).ToList();
+
+    private IReadOnlyList<YogaChipFact> YogasThroughHouse(int house) =>
+        HouseLordOf(house) is { } lord ? YogasOfPlanet(lord) : Array.Empty<YogaChipFact>();
+
+    private static string PlanetStrengthWords(PlanetStrengthFacts s)
+    {
+        var parts = new List<string>
+        {
+            $"Ṣaḍbala {s.Rupas:0.00} rūpas, {s.PercentOfMinimum:0}% of its required minimum: {s.Tier.ToString().ToLowerInvariant()}."
+        };
+        if (s.Ishta is { } i && s.Kashta is { } k)
+            parts.Add($"Iṣṭa {i:0} (helpful) against Kaṣṭa {k:0} (harmful): {(i >= k ? "it gives more good than harm" : "it gives more harm than good")}.");
+        if (s.OwnBindus is { } b)
+            parts.Add($"{b} of its own Ashtakavarga bindus in the sign it stands in: {s.BindusTier.ToString().ToLowerInvariant()} (5 or more good, 3 or fewer bad).");
+        return string.Join(" ", parts);
+    }
+
+    private static string HouseStrengthWords(HouseStrength h)
+    {
+        var parts = new List<string>();
+        if (h.SavBindus is { } sav)
+            parts.Add($"Its sign holds {sav} Sarvāṣṭakavarga bindus: {h.SavTier.ToString().ToLowerInvariant()} (over 30 favourable, under 25 unfavourable).");
+        if (h.BhavaRupas is { } r)
+            parts.Add($"Bhava Bala {r:0.0} rūpas: {h.BhavaTier.ToString().ToLowerInvariant()} (7 or more strong, under 5 weak; compare houses within this chart).");
+        return string.Join(" ", parts);
+    }
 
     private string Domain(string chartType) => _domains.GetValueOrDefault(chartType) ?? (chartType == "D1" ? "Self / Overall Life" : "");
 

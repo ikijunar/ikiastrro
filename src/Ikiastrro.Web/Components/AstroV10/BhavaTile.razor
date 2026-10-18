@@ -10,10 +10,18 @@
     <span class="bt-meter" aria-hidden="true"><span class="bt-meter-arg" style="width:@(Share)%"></span></span>
     <span class="bt-word">@Word</span>
     <span class="bt-score">@Force.ArgalaForce&ndash;@Force.VirodhargalaForce</span>
+    @if (Strength is { } st && (st.SavBindus is not null || st.BhavaRupas is not null))
+    {
+        <span class="bt-str" title="@StrengthTitle(st)">
+            @if (st.SavBindus is { } sav) { <span class="bt-pip bt-@TierCss(st.SavTier)">@sav<small> SAV</small></span> }
+            @if (st.BhavaRupas is { } r) { <span class="bt-pip bt-@TierCss(st.BhavaTier)">@r.ToString("0.0")<small> r</small></span> }
+        </span>
+    }
 </button>
 
 @code {
     [Parameter, EditorRequired] public Ikiastrro.Web.Components.Charts.HouseForce Force { get; set; } = null!;
+    [Parameter] public Ikiastrro.Web.Components.AstroV10.HouseStrength? Strength { get; set; }
     [Parameter] public bool Selected { get; set; }
     [Parameter] public EventCallback<int> OnPick { get; set; }
 
@@ -35,6 +43,16 @@
         Ikiastrro.Web.Components.Charts.ArgalaOutcome.Tie => "bt-tie",
         _ => "bt-quiet"
     };
+
+    private static string TierCss(Ikiastrro.Core.Engines.Strength.StrengthTier t) => t switch
+    {
+        Ikiastrro.Core.Engines.Strength.StrengthTier.Strong => "strong", Ikiastrro.Core.Engines.Strength.StrengthTier.Weak => "weak",
+        Ikiastrro.Core.Engines.Strength.StrengthTier.Moderate => "mid", _ => "none"
+    };
+
+    private static string StrengthTitle(Ikiastrro.Web.Components.AstroV10.HouseStrength s) =>
+        (s.SavBindus is { } v ? $"Sarvashtakavarga {v} bindus ({s.SavTier}). " : "") +
+        (s.BhavaRupas is { } r ? $"Bhava Bala {r:0.0} rupas ({s.BhavaTier})." : "");
 
     private static string Short(ZodiacName sign) => (sign == ZodiacName.Capricornus ? "Capricorn" : sign.ToString())[..3];
 }

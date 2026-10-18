@@ -53,3 +53,6 @@
 .av10-foot { margin: 0; font-size: var(--font-size-meta); }
 .av10-foot a { color: var(--brand-midnight); }
 .av10-empty { padding: 24px; }
+.av10-yogas { display: flex; flex-wrap: wrap; gap: 6px; }
+.av10-badge-good { color: var(--status-strong); }
+.av10-badge-challenging { color: var(--status-weak); }

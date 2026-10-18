@@ -1,0 +1,12 @@
+.yc {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 3px 10px; min-width: 0; font: inherit; text-align: left;
+    color: var(--card-fg); background: var(--card-bg); border: 1px solid var(--card-line); border-left-width: 5px; border-radius: 10px; cursor: pointer;
+}
+.yc:hover { border-color: var(--brand-midnight); }
+.yc-good { border-left-color: var(--status-strong); }
+.yc-challenging { border-left-color: var(--status-weak); }
+.yc-mixed { border-left-color: var(--status-moderate); }
+.yc-weak { border-left-style: dashed; }
+.yc-on { background: var(--brand-sunrise); border-color: var(--brand-midnight); }
+.yc-name { font-weight: 700; }
+.yc-meta { font-size: var(--font-size-meta); color: var(--brand-muted); }
